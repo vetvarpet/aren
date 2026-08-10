@@ -44,6 +44,7 @@ That's it. That's the whole job.
 | Folder | What it is |
 |--------|------------|
 | `cat-jump` | 🐱 Կատուն թռչում է — խաղ, որտեղ կատուն թռչում է արկղերի վրայով |
+| `city-drive` | 🚗 Քաղաքի վարորդը — բաց քաղաք, մեքենա ու պիցցայի առաքումներ |
 
 Add a row every time you finish something. 
 
