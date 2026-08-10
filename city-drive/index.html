@@ -58,7 +58,24 @@ const car = {
   angle: -Math.PI / 2,        // դեմքով դեպի հյուսիս
   speed: 0,
 };
-const MAX_SPEED = 7;
+let maxSpeed = 7;             // սովորական մեքենայի առավելագույն արագությունը
+let accel = 0.14;             // ինչ արագ է թափ հավաքում
+let upgraded = false;         // գնե՞լ ես արդեն սպորտային մեքենան
+
+// ——— Մեքենաների խանութը ———
+// Հավաքիր 200֏ ու արի այստեղ. սպորտայինը քեզ է սպասում
+const SHOP = { x: 1750, y: 750 };
+const CAR_PRICE = 200;
+
+// ——— Ոստիկանությունը ———
+// Շատ արագ ես քշում կամ մեքենաներ ես խփում → ոստիկանը կնկատի ու կհետապնդի
+const police = { x: 250, y: 250, angle: 0, speed: 0, chasing: false, giveUp: 0, wp: 1 };
+const PATROL = [ { x: 250, y: 250 }, { x: 2250, y: 250 }, { x: 2250, y: 1750 }, { x: 250, y: 1750 } ];
+let heat = 0;                 // ոստիկանի «ջղայնությունը». լցվեց՝ հետապնդում է
+
+// ——— Գիշեր-ցերեկ ———
+let dayClock = 0;             // ժամանակը հոսում է. ~45 վրկ ցերեկ, ~45 վրկ գիշեր
+let night = 0;                // 0 = ցերեկ, 1 = գիշեր
 
 // ——— Շենքերը ———
 // Ամեն թաղամասում 2×2 շենք. մեկ թաղամաս թողնում ենք որպես զբոսայգի
@@ -144,13 +161,17 @@ let engineOsc = null, engineGain = null;
 function initAudio() {
   if (audioCtx) return;
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  // շարժիչի ձայնը՝ անընդհատ ցածր բզզոց, որ արագության հետ բարձրանում է
+  // շարժիչի ձայնը՝ մեղմ, խուլ թրթռոց, որ արագության հետ մի քիչ բարձրանում է
   engineOsc = audioCtx.createOscillator();
   engineGain = audioCtx.createGain();
-  engineOsc.type = 'sawtooth';
-  engineOsc.frequency.value = 60;
-  engineGain.gain.value = 0.02;
-  engineOsc.connect(engineGain);
+  const muffler = audioCtx.createBiquadFilter();   // «խլացուցիչ»՝ սուր ձայները կտրում է
+  muffler.type = 'lowpass';
+  muffler.frequency.value = 220;
+  engineOsc.type = 'triangle';
+  engineOsc.frequency.value = 50;
+  engineGain.gain.value = 0.012;
+  engineOsc.connect(muffler);
+  muffler.connect(engineGain);
   engineGain.connect(audioCtx.destination);
   engineOsc.start();
 }
@@ -176,6 +197,8 @@ function sound(name) {
   if (name === 'pickup') { beep(660, 660, 'sine', 0.12, 0.3); beep(990, 990, 'sine', 0.18, 0.3, 0.1); }
   if (name === 'deliver') { beep(523, 523, 'triangle', 0.14, 0.35); beep(659, 659, 'triangle', 0.14, 0.35, 0.12); beep(784, 784, 'triangle', 0.3, 0.4, 0.24); }
   if (name === 'bump') { beep(140, 60, 'square', 0.2, 0.3); }
+  if (name === 'fine') { beep(500, 200, 'sawtooth', 0.4, 0.3); }
+  if (name === 'buy') { beep(523, 523, 'triangle', 0.12, 0.35); beep(784, 784, 'triangle', 0.12, 0.35, 0.1); beep(1047, 1047, 'triangle', 0.35, 0.4, 0.2); }
 }
 
 // ——— Կառավարումը ———
@@ -241,10 +264,15 @@ function update() {
   frame++;
   if (bumpCooldown > 0) bumpCooldown--;
 
+  // ժամանակը հոսում է. գիշերն ու ցերեկը սահուն փոխվում են
+  dayClock++;
+  const cyc = (dayClock % 5400) / 5400;
+  night = (Math.sin(cyc * Math.PI * 2 - Math.PI / 2) + 1) / 2;
+
   // գազ, արգելակ, ղեկ
-  if (keys.gas) car.speed += 0.14;
+  if (keys.gas) car.speed += accel;
   if (keys.brake) car.speed -= 0.22;
-  car.speed = Math.max(-2.5, Math.min(MAX_SPEED, car.speed));
+  car.speed = Math.max(-2.5, Math.min(maxSpeed, car.speed));
   car.speed *= 0.985;
   if (!onRoad(car.x, car.y)) car.speed *= 0.96;   // խոտի վրա մեքենան դանդաղ է
 
@@ -280,12 +308,75 @@ function update() {
     if (t.y > WORLD_H + 40) t.y = -40;
     if (t.y < -40) t.y = WORLD_H + 40;
 
-    // բախվեցի՞ր մեքենայի
+    // բախվեցի՞ր մեքենայի. ոստիկանը սա ՇԱՏ չի սիրում
     if (Math.hypot(t.x - car.x, t.y - car.y) < 38) {
-      if (bumpCooldown === 0) { sound('bump'); bumpCooldown = 20; }
+      if (bumpCooldown === 0) { sound('bump'); bumpCooldown = 20; heat += 40; }
       car.speed *= -0.4;
       car.x = prevX; car.y = prevY;
     }
+  }
+
+  // ——— Ոստիկանը ———
+  // Արագ քշելը ջղայնացնում է նրան, հանգիստ քշելը՝ հանգստացնում
+  if (Math.abs(car.speed) > 6.3) heat += 2;
+  else heat = Math.max(0, heat - 1);
+
+  if (!police.chasing && heat > 120) {
+    police.chasing = true;
+    police.giveUp = 0;
+  }
+
+  if (police.chasing) {
+    // սիրենը՝ վի՛-վու, վի՛-վու
+    if (frame % 30 === 0) beep(frame % 60 === 0 ? 720 : 540, frame % 60 === 0 ? 720 : 540, 'square', 0.25, 0.12);
+
+    // թեքվում է դեպի քեզ ու գազ տալիս
+    const target = Math.atan2(car.y - police.y, car.x - police.x);
+    let da = target - police.angle;
+    while (da > Math.PI) da -= Math.PI * 2;
+    while (da < -Math.PI) da += Math.PI * 2;
+    police.angle += Math.max(-0.06, Math.min(0.06, da));
+    police.speed = Math.min(6.9, police.speed + 0.15);
+
+    const dist = Math.hypot(police.x - car.x, police.y - car.y);
+    if (dist < 42) {
+      // բռնեց → տուգանք
+      sound('fine');
+      money = Math.max(0, money - 30);
+      popups.push({ x: car.x, y: car.y - 40, life: 80, text: '🚓 Տուգանք −30֏' });
+      police.chasing = false;
+      police.speed = 0;
+      heat = 0;
+    } else if (dist > 900) {
+      // փախար → մի քիչ հետո հանձնվում է
+      police.giveUp++;
+      if (police.giveUp > 240) { police.chasing = false; heat = 0; }
+    } else {
+      police.giveUp = 0;
+    }
+  } else {
+    // հանգիստ պարեկություն է անում քաղաքի եզրով
+    const wp = PATROL[police.wp];
+    const target = Math.atan2(wp.y - police.y, wp.x - police.x);
+    let da = target - police.angle;
+    while (da > Math.PI) da -= Math.PI * 2;
+    while (da < -Math.PI) da += Math.PI * 2;
+    police.angle += Math.max(-0.05, Math.min(0.05, da));
+    police.speed = 2.4;
+    if (Math.hypot(wp.x - police.x, wp.y - police.y) < 60) police.wp = (police.wp + 1) % PATROL.length;
+  }
+  police.x += Math.cos(police.angle) * police.speed;
+  police.y += Math.sin(police.angle) * police.speed;
+
+  // ——— Խանութը ———
+  // 200֏ ունե՞ս ու եկար խանութ → սպորտային մեքենա 🏎
+  if (!upgraded && money >= CAR_PRICE && Math.hypot(SHOP.x - car.x, SHOP.y - car.y) < 80) {
+    upgraded = true;
+    money -= CAR_PRICE;
+    maxSpeed = 9.2;
+    accel = 0.2;
+    sound('buy');
+    popups.push({ x: car.x, y: car.y - 40, life: 90, text: '🏎 Նոր մեքենա՜' });
   }
 
   // հասա՞ր նշանակետին
@@ -307,10 +398,10 @@ function update() {
   for (const p of popups) { p.y -= 1; p.life--; }
   popups = popups.filter(p => p.life > 0);
 
-  // շարժիչի ձայնը հետևում է արագությանը
+  // շարժիչի ձայնը հետևում է արագությանը՝ մեղմ ու առանց ջղայնացնելու
   if (engineOsc) {
-    engineOsc.frequency.value = 55 + Math.abs(car.speed) * 22;
-    engineGain.gain.value = 0.015 + Math.abs(car.speed) * 0.004;
+    engineOsc.frequency.value = 45 + Math.abs(car.speed) * 12;
+    engineGain.gain.value = 0.008 + Math.abs(car.speed) * 0.002;
   }
 
   draw();
@@ -381,11 +472,48 @@ function draw() {
     ctx.fillText(mission.stage === 'pickup' ? '🍕' : '🏠', mission.x, mission.y + 10);
   }
 
+  // մեքենաների խանութը (մինչև սպորտայինը գնելը)
+  if (!upgraded) {
+    ctx.strokeStyle = '#5bc0de';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(SHOP.x, SHOP.y, 46 + Math.sin(frame * 0.1) * 6, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.font = '34px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🏪', SHOP.x, SHOP.y + 12);
+  }
+
   // երթևեկությունը
   for (const t of traffic) drawCar(t.x, t.y, t.dir, t.color);
 
-  // քո մեքենան՝ կարմիր սպորտայինը
-  drawCar(car.x, car.y, car.angle, '#e63946', true);
+  // ոստիկանական մեքենան
+  drawCar(police.x, police.y, police.angle, '#f2f4f8', false, true);
+
+  // քո մեքենան. կարմիրը՝ սովորական, դեղինը՝ սպորտային
+  drawCar(car.x, car.y, car.angle, upgraded ? '#f4c50f' : '#e63946', true);
+
+  // ——— Գիշերը ———
+  if (night > 0.03) {
+    // մութն իջնում է քաղաքի վրա
+    ctx.fillStyle = 'rgba(8, 12, 35, ' + (0.5 * night) + ')';
+    ctx.fillRect(camX, camY, VW, VH);
+
+    // պատուհանները վառվում են
+    ctx.fillStyle = 'rgba(255, 228, 130, ' + (0.85 * night) + ')';
+    for (const b of buildings) {
+      for (let wx = b.x + 18; wx < b.x + b.w - 18; wx += 38) {
+        for (let wy = b.y + 16; wy < b.y + b.h - 24; wy += 34) {
+          ctx.fillRect(wx, wy, 14, 14);
+        }
+      }
+    }
+
+    // լուսարձակների ճառագայթները
+    drawHeadlights(car.x, car.y, car.angle, night);
+    drawHeadlights(police.x, police.y, police.angle, night * 0.7);
+    for (const t of traffic) drawHeadlights(t.x, t.y, t.dir, night * 0.5);
+  }
 
   // «+50֏» գրությունները
   for (const p of popups) {
@@ -402,7 +530,23 @@ function draw() {
   drawHUD(camX, camY);
 }
 
-function drawCar(x, y, angle, color, isPlayer) {
+// Լուսարձակի դեղին ճառագայթը մեքենայի առջևից
+function drawHeadlights(x, y, angle, strength) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.fillStyle = 'rgba(255, 240, 170, ' + (0.22 * strength) + ')';
+  ctx.beginPath();
+  ctx.moveTo(14, -6);
+  ctx.lineTo(120, -34);
+  ctx.lineTo(120, 34);
+  ctx.lineTo(14, 6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawCar(x, y, angle, color, isPlayer, isPolice) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angle);
@@ -426,6 +570,13 @@ function drawCar(x, y, angle, color, isPlayer) {
   ctx.fillStyle = '#ffe9a8';
   ctx.fillRect(14, -7, 3, 4);
   ctx.fillRect(14, 3, 3, 4);
+  // ոստիկանի կապույտ շերտն ու թարթող փարոսիկը
+  if (isPolice) {
+    ctx.fillStyle = '#2b4a9b';
+    ctx.fillRect(-17, -2, 34, 4);
+    ctx.fillStyle = Math.floor(frame / 10) % 2 === 0 ? '#ff4040' : '#4060ff';
+    ctx.fillRect(-4, -4, 8, 8);
+  }
   ctx.restore();
 }
 
@@ -441,6 +592,18 @@ function drawHUD(camX, camY) {
   ctx.textAlign = 'center';
   const task = mission.stage === 'pickup' ? 'Վերցրու պիցցան 🍕' : 'Հասցրու տուն 🏠';
   ctx.fillText(task + '   ·   ' + money + '֏   ·   Առաքում՝ ' + deliveries, VW / 2, 42);
+
+  // ոստիկանը հետապնդում է → կարմիր զգուշացում
+  if (police.chasing) {
+    ctx.fillStyle = Math.floor(frame / 15) % 2 === 0 ? '#ff5050' : '#ffffff';
+    ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillText('🚓 ՓԱԽԻ՛Ր ՈՍՏԻԿԱՆԻՑ', VW / 2, 130);
+  } else if (!upgraded && money >= CAR_PRICE) {
+    // փողը հերիքում է → հուշում ենք խանութի մասին
+    ctx.fillStyle = '#aef1ff';
+    ctx.font = 'bold 18px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillText('🏪 Փողդ հերիքում է սպորտայինին. գնա խանութ', VW / 2, 130);
+  }
 
   // սլաքը, որ ցույց է տալիս նշանակետի ուղղությունը
   if (mission) {
