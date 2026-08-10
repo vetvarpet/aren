@@ -68,8 +68,11 @@ let running = false;          // խաղը գնո՞ւմ է
 let gameOver = false;
 let frame = 0;
 
-// ——— Գիշերը ———
-const NIGHT_AT = 20;          // այս միավորից սկսած գիշեր է դառնում
+// ——— Գիշեր-ցերեկի հերթափոխը ———
+// 0-20 միավոր՝ ցերեկ, 20-40՝ գիշեր, 40-70՝ ցերեկ, 70-80՝ գիշեր, 80-ից՝ ցերեկ
+function isNightNow() {
+  return (score >= 20 && score < 40) || (score >= 70 && score < 80);
+}
 let night = 0;                // 0 = ցերեկ, 1 = գիշեր (կամաց-կամաց է փոխվում)
 let stars = [];               // աստղերը երկնքում
 
@@ -510,8 +513,8 @@ function update() {
   frame++;
   scheduleMusic();
 
-  // 59 միավորից գիշերը կամաց-կամաց իջնում է, նոր խաղում՝ նորից լուսանում
-  const nightTarget = score >= NIGHT_AT ? 1 : 0;
+  // Գիշերն ու ցերեկը կամաց-կամաց են փոխվում, ինչպես իսկական մայրամուտ-արշալույս
+  const nightTarget = isNightNow() ? 1 : 0;
   night += (nightTarget - night) * 0.02;
 
   if (running && !gameOver) {
