@@ -146,7 +146,12 @@ function sound(name) {
 // ——— Ֆոնային երաժշտությունը ———
 // Փոքրիկ մեղեդի, որ պտտվում է անվերջ, քանի դեռ խաղում ես։
 // Թվերը նոտաների «բարձրություններն» են (Հց). 0 նշանակում է դադար։
-const STEP = 0.21;   // ամեն նոտայի տևողությունը (վայրկյան)
+// Ամեն նոտայի տևողությունը (վայրկյան)։ Ինչքան խաղն արագ է,
+// այնքան նոտաները կարճ են → երաժշտությունը արագանում է։
+// Math.max-ը թույլ չի տալիս, որ չափից դուրս խելագարվի։
+function musicStep() {
+  return Math.max(0.12, 0.21 * (5 / speed));
+}
 const MELODY = [
   523, 0, 659, 0, 784, 659, 880, 0,     // դո մի սոլ մի լա
   784, 0, 659, 0, 587, 659, 523, 0,     // սոլ մի ռե մի դո
@@ -181,16 +186,17 @@ function scheduleMusic() {
   }
 
   while (nextNoteTime < audioCtx.currentTime + 0.15) {
+    const step = musicStep();
     const freq = MELODY[noteIndex % MELODY.length];
-    if (freq) playNote(freq, nextNoteTime, STEP * 0.9, 'square', 0.04);
+    if (freq) playNote(freq, nextNoteTime, step * 0.9, 'square', 0.04);
 
     // ամեն 4 նոտան մեկ՝ բասի հարված
     if (noteIndex % 4 === 0) {
-      playNote(BASS[(noteIndex / 4) % BASS.length], nextNoteTime, STEP * 3.5, 'triangle', 0.09);
+      playNote(BASS[(noteIndex / 4) % BASS.length], nextNoteTime, step * 3.5, 'triangle', 0.09);
     }
 
     noteIndex++;
-    nextNoteTime += STEP;
+    nextNoteTime += step;
   }
 }
 
