@@ -670,12 +670,10 @@ function update() {
       ctx.restore();
     }
 
-    // մրցանակը՝ մեծ գավաթ, որ վեր-վար է ցատկոտում
-    ctx.font = (64 + Math.sin(frame * 0.1) * 6) + 'px Arial, sans-serif';
+    // մրցանակը՝ մեծ գավաթ, որ վեր-վար է ցատկոտում. առանց որևէ գրության
+    ctx.font = (90 + Math.sin(frame * 0.1) * 8) + 'px Arial, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('🏆', W / 2, H / 2 - 80);
-
-    drawCenterText('ՀԱՂԹԵՑԻ՛Ր, ԱՐԵ՛Ն 🎉', score + ' միավոր · Չեմպիոն կատու · Դիպչիր՝ նորից խաղալու');
+    ctx.fillText('🏆', W / 2, H / 2 + 20);
   }
 
   requestAnimationFrame(update);
