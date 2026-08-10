@@ -53,7 +53,8 @@ const cat = {
   jumping: false,
 };
 const GRAVITY = 0.55;         // ինչքան ուժեղ է ձգում ներքև
-const JUMP_POWER = -12.5;     // ինչքան ուժեղ է թռչում վերև
+const JUMP_POWER = -13.5;     // ինչքան ուժեղ է թռչում վերև (մեծ կատուն ուժեղ է թռչում)
+const CAT_SIZE = 1.35;        // կատվի չափը. 1-ը սովորականն է, 1.35-ը՝ մեծ կատու
 
 // ——— Խաղի վիճակը ———
 let boxes = [];               // արկղերը, որ գալիս են
@@ -244,6 +245,7 @@ function drawCat() {
 
   ctx.save();
   ctx.translate(x, y);
+  ctx.scale(CAT_SIZE, CAT_SIZE);   // ամբողջ կատուն մեծանում է միանգամից
 
   // պոչը
   ctx.strokeStyle = '#f28c3b';
@@ -482,8 +484,8 @@ function update() {
       f.x -= speed * (f.gold ? 1.4 : 1);   // ոսկե ձուկը շտապում է փախչել
 
       // բռնեցի՞նք ձուկը → բոնուս
-      const catchX = Math.abs(f.x - cat.x) < 40;
-      const catchY = f.y > cat.y - 70 && f.y < cat.y + 5;
+      const catchX = Math.abs(f.x - cat.x) < 40 * CAT_SIZE;
+      const catchY = f.y > cat.y - 70 * CAT_SIZE && f.y < cat.y + 5;
       if (catchX && catchY) {
         f.caught = true;
         const bonus = f.gold ? 6 : 3;
@@ -518,7 +520,7 @@ function update() {
       }
 
       // բախվեցի՞նք
-      const catLeft = cat.x - 26, catRight = cat.x + 38, catBottom = cat.y;
+      const catLeft = cat.x - 26 * CAT_SIZE, catRight = cat.x + 38 * CAT_SIZE, catBottom = cat.y;
       if (catRight > b.x + 6 && catLeft < b.x + b.w - 6 && catBottom > GROUND - b.h + 8) {
         if (!gameOver) sound('crash');
         gameOver = true;
