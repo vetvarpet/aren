@@ -66,6 +66,9 @@ let best = Number(localStorage.getItem('cat-best') || 0);
 let speed = 5;                // ինչ արագ են գալիս արկղերը
 let running = false;          // խաղը գնո՞ւմ է
 let gameOver = false;
+let won = false;              // հասա՞ր 100-ի → հաղթանակ 🏆
+let confetti = [];            // տոնական թղթիկները հաղթելիս
+const WIN_AT = 100;           // այսքան միավորից խաղը հաղթված է
 let frame = 0;
 
 // ——— Գիշեր-ցերեկի հերթափոխը ———
@@ -175,6 +178,14 @@ function sound(name) {
     // բախվելը՝ ցածր «բո՛ւմ»
     beep(220, 55, 'sawtooth', 0.45, 0.35);
   }
+  if (name === 'win') {
+    // հաղթանակի շեփորները՝ «տա-տա-տա-տաաա՜»
+    beep(523, 523, 'triangle', 0.15, 0.35);
+    beep(659, 659, 'triangle', 0.15, 0.35, 0.15);
+    beep(784, 784, 'triangle', 0.15, 0.35, 0.3);
+    beep(1047, 1047, 'triangle', 0.6, 0.4, 0.45);
+    beep(1319, 1319, 'sine', 0.6, 0.25, 0.5);
+  }
 }
 
 // ——— Ֆոնային երաժշտությունը ———
@@ -235,6 +246,7 @@ function scheduleMusic() {
 }
 
 function jump() {
+  if (won) { restart(); return; }
   if (gameOver) { restart(); return; }
   if (!running) { running = true; }
   if (!cat.jumping) {
@@ -248,6 +260,8 @@ function restart() {
   boxes = [];
   fishes = [];
   popups = [];
+  confetti = [];
+  won = false;
   score = 0;
   speed = 5;
   cat.y = GROUND;
@@ -517,6 +531,35 @@ function update() {
   const nightTarget = isNightNow() ? 1 : 0;
   night += (nightTarget - night) * 0.02;
 
+  // Հասա՞ր 100-ի → ՀԱՂԹԱՆԱԿ 🏆
+  if (!won && score >= WIN_AT) {
+    won = true;
+    running = false;
+    sound('win');
+    // կոնֆետիների անձրև ենք պատրաստում
+    for (let i = 0; i < 120; i++) {
+      confetti.push({
+        x: Math.random() * W,
+        y: -Math.random() * H,                  // սկսում են էկրանից վերև
+        vy: 1.5 + Math.random() * 2.5,          // ընկնելու արագությունը
+        vx: -1 + Math.random() * 2,             // մի քիչ կողք-կողք
+        size: 4 + Math.random() * 5,
+        color: ['#ff5d5d', '#ffd76e', '#6ecb7e', '#4aa3d8', '#c58ae0'][i % 5],
+        spin: Math.random() * Math.PI,
+      });
+    }
+  }
+
+  // կոնֆետիները թափվում են ու պտտվում
+  if (won) {
+    for (const c of confetti) {
+      c.y += c.vy;
+      c.x += c.vx + Math.sin((frame + c.spin * 50) * 0.05);
+      c.spin += 0.08;
+      if (c.y > H + 20) { c.y = -20; c.x = Math.random() * W; }  // նորից վերևից
+    }
+  }
+
   if (running && !gameOver) {
     // կատվի թռիչքը
     cat.vy += GRAVITY;
@@ -610,11 +653,29 @@ function update() {
   drawPopups();
   drawScore();
 
-  if (!running && !gameOver) {
+  if (!running && !gameOver && !won) {
     drawCenterText('Կատուն թռչում է 🐱', 'Դիպչիր էկրանին կամ սեղմիր ՊՐՈԲԵԼԸ');
   }
   if (gameOver) {
     drawCenterText('Ա՜խ, բախվեցիր 😿', 'Հավաքեցիր ' + score + ' միավոր · Դիպչիր՝ նորից խաղալու');
+  }
+  if (won) {
+    // կոնֆետիների անձրևը
+    for (const c of confetti) {
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      ctx.rotate(c.spin);
+      ctx.fillStyle = c.color;
+      ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size * 0.6);
+      ctx.restore();
+    }
+
+    // մրցանակը՝ մեծ գավաթ, որ վեր-վար է ցատկոտում
+    ctx.font = (64 + Math.sin(frame * 0.1) * 6) + 'px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🏆', W / 2, H / 2 - 80);
+
+    drawCenterText('ՀԱՂԹԵՑԻ՛Ր, ԱՐԵ՛Ն 🎉', score + ' միավոր · Չեմպիոն կատու · Դիպչիր՝ նորից խաղալու');
   }
 
   requestAnimationFrame(update);
