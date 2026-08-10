@@ -1,0 +1,269 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Արենի դաշնամուրը 🎹</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    height: 100dvh;
+    padding: 14px;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+  }
+  h1 { font-size: clamp(1.2rem, 4vw, 1.9rem); color: #ffd76e; }
+  .hint { font-size: 0.9rem; opacity: 0.7; text-align: center; }
+
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .controls button {
+    border: none;
+    border-radius: 999px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #3d3560;
+    color: #f5eede;
+    border: 2px solid #6a5f9e;
+  }
+  .controls button:active { transform: scale(0.95); }
+  .controls button:disabled { opacity: 0.4; }
+  #recBtn.recording {
+    background: #c0392b;
+    border-color: #ff7b6b;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(255, 80, 80, 0.25); } }
+
+  /* ——— Դաշնամուրը ——— */
+  .piano-body {
+    width: min(96vw, 820px);
+    background: linear-gradient(#5a1f28, #3d1219);
+    border-radius: 16px 16px 10px 10px;
+    padding: 16px 12px 14px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+  }
+  #keys {
+    position: relative;
+    display: flex;
+    height: min(34vh, 240px);
+  }
+  .white {
+    flex: 1;
+    background: linear-gradient(#fffdf5, #ece5d3);
+    border: 1px solid #b9ad92;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+    font-size: clamp(0.6rem, 2vw, 0.85rem);
+    color: #7a6f58;
+    cursor: pointer;
+  }
+  .white.on { background: linear-gradient(#ffe9a8, #ffd76e); }
+  .black {
+    position: absolute;
+    top: 0;
+    width: 6.2%;
+    height: 58%;
+    background: linear-gradient(#3a3a44, #17171d);
+    border-radius: 0 0 6px 6px;
+    z-index: 2;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+    font-size: 0.6rem;
+    color: #9a93b5;
+  }
+  .black.on { background: linear-gradient(#6a5f9e, #4a4170); }
+</style>
+
+<h1>Արենի դաշնամուրը 🎹</h1>
+
+<div class="controls">
+  <button id="recBtn">⏺ Ձայնագրել</button>
+  <button id="playBtn" disabled>▶ Լսել իմ մեղեդին</button>
+  <button id="demoBtn">🌟 Նմուշ երգ</button>
+</div>
+
+<div class="piano-body">
+  <div id="keys"></div>
+</div>
+
+<p class="hint">Նվագիր մատով կամ ստեղնաշարով՝ A S D F G H J K L ; — սևերը՝ W E T Y U O P</p>
+
+<script>
+// ——————————————————————————————————————
+//  ԱՐԵՆԻ ԴԱՇՆԱՄՈՒՐԸ — չորրորդ նախագիծը
+//  Նվագիր, ձայնագրիր ու լսիր քո սեփական մեղեդին
+// ——————————————————————————————————————
+
+// ——— Նոտաները ———
+// semi = քանի «կիսատոն» է Դո-ից բարձր։ Ինչքան մեծ թիվը, այնքան բարձր ձայնը։
+const NOTES = [
+  { name: 'Դո',  semi: 0,  key: 'KeyA' },
+  { name: 'Դո#', semi: 1,  key: 'KeyW', black: true },
+  { name: 'Ռե',  semi: 2,  key: 'KeyS' },
+  { name: 'Ռե#', semi: 3,  key: 'KeyE', black: true },
+  { name: 'Մի',  semi: 4,  key: 'KeyD' },
+  { name: 'Ֆա',  semi: 5,  key: 'KeyF' },
+  { name: 'Ֆա#', semi: 6,  key: 'KeyT', black: true },
+  { name: 'Սոլ', semi: 7,  key: 'KeyG' },
+  { name: 'Սոլ#',semi: 8,  key: 'KeyY', black: true },
+  { name: 'Լա',  semi: 9,  key: 'KeyH' },
+  { name: 'Լա#', semi: 10, key: 'KeyU', black: true },
+  { name: 'Սի',  semi: 11, key: 'KeyJ' },
+  { name: 'Դո²', semi: 12, key: 'KeyK' },
+  { name: 'Դո#²',semi: 13, key: 'KeyO', black: true },
+  { name: 'Ռե²', semi: 14, key: 'KeyL' },
+  { name: 'Ռե#²',semi: 15, key: 'KeyP', black: true },
+  { name: 'Մի²', semi: 16, key: 'Semicolon' },
+];
+
+// ——— Ստեղները էկրանին ———
+const keysBox = document.getElementById('keys');
+const keyEls = [];
+const whites = NOTES.filter(n => !n.black);
+
+NOTES.forEach((note, i) => {
+  const el = document.createElement('div');
+  el.className = note.black ? 'black' : 'white';
+  el.textContent = note.name;
+  el.dataset.i = i;
+  keysBox.appendChild(el);
+  keyEls[i] = el;
+});
+
+// Սև ստեղները դնում ենք ճիշտ տեղերում՝ սպիտակների արանքում
+function placeBlacks() {
+  const whiteW = 100 / whites.length;
+  let whiteIdx = 0;
+  NOTES.forEach((note, i) => {
+    if (!note.black) { whiteIdx++; return; }
+    keyEls[i].style.left = (whiteIdx * whiteW - 3.1) + '%';
+  });
+}
+placeBlacks();
+
+// ——— Ձայնը ———
+let audioCtx = null;
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+// Մեկ նոտա. հիմնական ձայն + թեթև «փայլ» վերևից, որ դաշնամուրի նման հնչի
+function playTone(semi) {
+  initAudio();
+  const freq = 261.63 * Math.pow(2, semi / 12);   // Դո = 261.63 Հց
+  const t = audioCtx.currentTime;
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.001, t);
+  gain.gain.exponentialRampToValueAtTime(0.35, t + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 1.3);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(t); osc.stop(t + 1.3);
+
+  const shine = audioCtx.createOscillator();
+  const shineGain = audioCtx.createGain();
+  shine.type = 'sine';
+  shine.frequency.value = freq * 2;
+  shineGain.gain.setValueAtTime(0.001, t);
+  shineGain.gain.exponentialRampToValueAtTime(0.08, t + 0.01);
+  shineGain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+  shine.connect(shineGain); shineGain.connect(audioCtx.destination);
+  shine.start(t); shine.stop(t + 0.6);
+}
+
+// ——— Նվագելը ———
+let recording = false;
+let recorded = [];        // ձայնագրված նոտաները՝ {i, dt}
+let recStart = 0;
+let playTimers = [];      // որ կարողանանք կանգնեցնել նվագարկումը
+
+function pressKey(i) {
+  playTone(NOTES[i].semi);
+  const el = keyEls[i];
+  el.classList.add('on');
+  setTimeout(() => el.classList.remove('on'), 180);
+
+  if (recording) {
+    recorded.push({ i, dt: performance.now() - recStart });
+  }
+}
+
+// Մատով / մկնիկով
+keysBox.addEventListener('pointerdown', (e) => {
+  const el = e.target.closest('.white, .black');
+  if (el) pressKey(Number(el.dataset.i));
+});
+
+// Ստեղնաշարով
+const keyMap = {};
+NOTES.forEach((n, i) => { keyMap[n.key] = i; });
+document.addEventListener('keydown', (e) => {
+  if (e.repeat) return;
+  if (keyMap[e.code] !== undefined) { e.preventDefault(); pressKey(keyMap[e.code]); }
+});
+
+// ——— Ձայնագրելը ———
+const recBtn = document.getElementById('recBtn');
+const playBtn = document.getElementById('playBtn');
+const demoBtn = document.getElementById('demoBtn');
+
+recBtn.addEventListener('click', () => {
+  if (!recording) {
+    recording = true;
+    recorded = [];
+    recStart = performance.now();
+    recBtn.textContent = '⏹ Կանգնեցնել';
+    recBtn.classList.add('recording');
+  } else {
+    recording = false;
+    recBtn.textContent = '⏺ Ձայնագրել';
+    recBtn.classList.remove('recording');
+    playBtn.disabled = recorded.length === 0;
+  }
+});
+
+// Նվագարկում ենք նոտաների ցուցակը՝ ճիշտ ժամանակներով
+function playSequence(seq) {
+  stopPlayback();
+  for (const note of seq) {
+    playTimers.push(setTimeout(() => pressKey(note.i), note.dt));
+  }
+}
+function stopPlayback() {
+  for (const t of playTimers) clearTimeout(t);
+  playTimers = [];
+}
+
+playBtn.addEventListener('click', () => playSequence(recorded));
+
+// ——— Նմուշ երգը՝ «Փայլի՛ր, փայլի՛ր, փոքրիկ աստղ» ———
+// Ամեն տող՝ [նոտայի համարը, երբ նվագել (միլիվայրկյան)]
+const STAR = [
+  [0, 0], [0, 400], [7, 800], [7, 1200], [9, 1600], [9, 2000], [7, 2400],
+  [5, 3200], [5, 3600], [4, 4000], [4, 4400], [2, 4800], [2, 5200], [0, 5600],
+];
+demoBtn.addEventListener('click', () => {
+  initAudio();
+  playSequence(STAR.map(([i, dt]) => ({ i, dt })));
+});
+</script>
