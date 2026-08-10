@@ -626,7 +626,8 @@ function update() {
       if (!b.passed && b.x + b.w < cat.x - 30) {
         b.passed = true;
         score++;
-        if (score % 5 === 0) speed += 0.5;   // ամեն 5 միավորից՝ ավելի արագ
+        // մինչև 40 միավոր՝ հանգիստ տեմպ, 40-ից հետո ամեն 5 միավորը արագացնում է
+        if (score >= 40 && score % 5 === 0) speed += 0.5;
         if (score > best) {
           best = score;
           localStorage.setItem('cat-best', best);
