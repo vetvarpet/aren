@@ -69,6 +69,9 @@ let gameOver = false;
 let won = false;              // հասա՞ր 100-ի → հաղթանակ 🏆
 let confetti = [];            // տոնական թղթիկները հաղթելիս
 const WIN_AT = 100;           // այսքան միավորից խաղը հաղթված է
+let lives = 3;                // ❤️❤️❤️ երեք կյանք
+let invincible = 0;           // հարվածից հետո մի պահ անխոցելի ես (թարթում ես)
+let ducking = false;          // կռացա՞ծ ես հիմա
 let frame = 0;
 
 // ——— Գիշեր-ցերեկի հերթափոխը ———
@@ -178,6 +181,10 @@ function sound(name) {
     // բախվելը՝ ցածր «բո՛ւմ»
     beep(220, 55, 'sawtooth', 0.45, 0.35);
   }
+  if (name === 'hurt') {
+    // սիրտ կորցնելը՝ կարճ «ա՛յ» (դեռ չմեռար, շարունակիր)
+    beep(330, 140, 'square', 0.2, 0.3);
+  }
   if (name === 'win') {
     // հաղթանակի շեփորները՝ «տա-տա-տա-տաաա՜»
     beep(523, 523, 'triangle', 0.15, 0.35);
@@ -262,6 +269,9 @@ function restart() {
   popups = [];
   confetti = [];
   won = false;
+  lives = 3;
+  invincible = 0;
+  ducking = false;
   score = 0;
   speed = 5;
   cat.y = GROUND;
@@ -272,11 +282,39 @@ function restart() {
 }
 
 // Ստեղները (համակարգչի համար)
+// Թռիչք՝ ՊՐՈԲԵԼ կամ ↑, կռանալ՝ ↓ կամ S (բաց ես թողնում՝ վեր ես կենում)
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); jump(); }
+  if (e.code === 'ArrowDown' || e.code === 'KeyS') { e.preventDefault(); ducking = true; }
 });
-// Մատով դիպչելը կամ մկնիկով կտտացնելը (հեռախոսի համար)
-canvas.addEventListener('pointerdown', (e) => { e.preventDefault(); jump(); });
+document.addEventListener('keyup', (e) => {
+  if (e.code === 'ArrowDown' || e.code === 'KeyS') ducking = false;
+});
+
+// Հեռախոսի համար. դիպչում ես՝ թռչում ես, մատդ ներքև ես քաշում՝ կռանում ես
+let touchStartY = null;
+let touchStartTime = 0;
+canvas.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  touchStartY = e.clientY;
+  touchStartTime = performance.now();
+  jump();
+});
+canvas.addEventListener('pointermove', (e) => {
+  if (touchStartY === null) return;
+  if (e.clientY - touchStartY > 40) {
+    ducking = true;
+    // եթե հենց նոր սկսեցիր թռչել, բայց իրականում կռանալ էիր ուզում՝
+    // կատվին հետ ենք բերում գետնին
+    if (cat.jumping && performance.now() - touchStartTime < 300 && cat.y > GROUND - 50) {
+      cat.y = GROUND;
+      cat.vy = 0;
+      cat.jumping = false;
+    }
+  }
+});
+canvas.addEventListener('pointerup', () => { touchStartY = null; ducking = false; });
+canvas.addEventListener('pointercancel', () => { touchStartY = null; ducking = false; });
 
 // ——— Նկարում ենք կատվին ———
 function drawCat() {
@@ -286,7 +324,13 @@ function drawCat() {
 
   ctx.save();
   ctx.translate(x, y);
-  ctx.scale(CAT_SIZE, CAT_SIZE);   // ամբողջ կատուն մեծանում է միանգամից
+
+  // հարվածից հետո կատուն թարթում է՝ ցույց տալու, որ մի պահ անխոցելի է
+  if (invincible > 0 && Math.floor(frame / 5) % 2 === 0) ctx.globalAlpha = 0.35;
+
+  // կռացած կատուն տափակ ու երկար է դառնում
+  if (ducking && !cat.jumping) ctx.scale(CAT_SIZE * 1.2, CAT_SIZE * 0.55);
+  else ctx.scale(CAT_SIZE, CAT_SIZE);
 
   // պոչը
   ctx.strokeStyle = '#f28c3b';
@@ -362,6 +406,42 @@ function drawBox(b) {
   // ժապավենը արկղի վրա
   ctx.fillStyle = '#8f5a24';
   ctx.fillRect(b.x + b.w / 2 - 4, GROUND - b.h, 8, b.h);
+}
+
+// ——— Նկարում ենք ագռավին ———
+function drawBird(b) {
+  ctx.save();
+  ctx.translate(b.x, b.y + Math.sin(frame * 0.12 + b.x) * 3);
+
+  // մարմինը
+  ctx.fillStyle = '#4a4a5a';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 16, 9, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // թևը թափահարում է
+  const flap = Math.sin(frame * 0.35) * 12;
+  ctx.beginPath();
+  ctx.moveTo(-2, -2);
+  ctx.lineTo(-14, -10 - flap);
+  ctx.lineTo(6, -4);
+  ctx.closePath();
+  ctx.fill();
+
+  // կտուցը
+  ctx.fillStyle = '#f5a623';
+  ctx.beginPath();
+  ctx.moveTo(-16, 0); ctx.lineTo(-24, 2); ctx.lineTo(-16, 4);
+  ctx.closePath();
+  ctx.fill();
+
+  // աչքը
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(-10, -2, 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
 }
 
 // ——— Նկարում ենք ձուկը ———
@@ -499,6 +579,13 @@ function drawScore() {
   ctx.fillText('Միավոր՝ ' + score, 20, 36);
   ctx.textAlign = 'right';
   ctx.fillText('Ռեկորդ՝ ' + best, W - 20, 36);
+
+  // սրտերը՝ վերևի մեջտեղում. կարմիրը՝ ողջ կյանք, սևը՝ կորցրած
+  ctx.textAlign = 'center';
+  ctx.font = '22px Arial, sans-serif';
+  let hearts = '';
+  for (let i = 0; i < 3; i++) hearts += i < lives ? '❤️' : '🖤';
+  ctx.fillText(hearts, W / 2, 36);
 }
 
 // Հաղորդագրության վահանակը էկրանի մեջտեղում
@@ -561,8 +648,11 @@ function update() {
   }
 
   if (running && !gameOver) {
+    if (invincible > 0) invincible--;
+
     // կատվի թռիչքը
     cat.vy += GRAVITY;
+    if (ducking && cat.jumping) cat.vy += 0.9;   // օդում կռանալով՝ արագ ես վայրէջք կատարում
     cat.y += cat.vy;
     if (cat.y >= GROUND) {
       cat.y = GROUND;
@@ -576,11 +666,16 @@ function update() {
       if (c.x < -60) c.x = W + 60;
     }
 
-    // նոր արկղ ենք ավելացնում
+    // նոր խոչընդոտ ենք ավելացնում
     const last = boxes[boxes.length - 1];
     if (!last || last.x < W - 260 - Math.random() * 220) {
-      const tall = Math.random() < 0.3;
-      boxes.push({ x: W + 40, w: 26 + Math.random() * 10, h: tall ? 70 : 45, passed: false });
+      // 12 միավորից երբեմն ագռավ է թռչում գլխի բարձրությամբ. պիտի ԿՌԱՆԱՍ տակով
+      if (score >= 12 && Math.random() < 0.25) {
+        boxes.push({ type: 'bird', x: W + 40, y: GROUND - 52, w: 36, h: 28, passed: false });
+      } else {
+        const tall = Math.random() < 0.3;
+        boxes.push({ x: W + 40, w: 26 + Math.random() * 10, h: tall ? 70 : 45, passed: false });
+      }
     }
 
     // երբեմն նոր ձուկ է հայտնվում օդում
@@ -636,10 +731,25 @@ function update() {
 
       // բախվեցի՞նք
       const catLeft = cat.x - 26 * CAT_SIZE, catRight = cat.x + 38 * CAT_SIZE, catBottom = cat.y;
-      if (catRight > b.x + 6 && catLeft < b.x + b.w - 6 && catBottom > GROUND - b.h + 8) {
-        if (!gameOver) sound('crash');
-        gameOver = true;
-        running = false;
+      const catTop = cat.y - (ducking ? 30 : 64) * CAT_SIZE;   // կռացած կատուն ցածր է
+      let hit = false;
+      if (b.type === 'bird') {
+        hit = catRight > b.x - b.w / 2 + 6 && catLeft < b.x + b.w / 2 - 6 &&
+              catBottom > b.y - b.h / 2 && catTop < b.y + b.h / 2;
+      } else {
+        hit = catRight > b.x + 6 && catLeft < b.x + b.w - 6 && catBottom > GROUND - b.h + 8;
+      }
+
+      if (hit && invincible <= 0) {
+        lives--;
+        if (lives <= 0) {
+          sound('crash');
+          gameOver = true;
+          running = false;
+        } else {
+          sound('hurt');
+          invincible = 90;   // ~1.5 վայրկյան կատուն թարթում է ու անխոցելի է
+        }
       }
     }
     boxes = boxes.filter(b => b.x > -80);
@@ -648,14 +758,14 @@ function update() {
   // ——— Նկարում ենք ամեն ինչ ———
   ctx.clearRect(0, 0, W, H);
   drawWorld();
-  for (const b of boxes) drawBox(b);
+  for (const b of boxes) b.type === 'bird' ? drawBird(b) : drawBox(b);
   for (const f of fishes) drawFish(f);
   drawCat();
   drawPopups();
   drawScore();
 
   if (!running && !gameOver && !won) {
-    drawCenterText('Կատուն թռչում է 🐱', 'Դիպչիր էկրանին կամ սեղմիր ՊՐՈԲԵԼԸ');
+    drawCenterText('Կատուն թռչում է 🐱', 'Թռիչք՝ դիպչիր / ՊՐՈԲԵԼ · Կռանալ՝ մատը քաշիր ներքև / ↓');
   }
   if (gameOver) {
     drawCenterText('Ա՜խ, բախվեցիր 😿', 'Հավաքեցիր ' + score + ' միավոր · Դիպչիր՝ նորից խաղալու');
