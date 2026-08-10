@@ -534,7 +534,7 @@ function update() {
     const last = boxes[boxes.length - 1];
     if (!last || last.x < W - 260 - Math.random() * 220) {
       const tall = Math.random() < 0.3;
-      boxes.push({ x: W + 40, w: 34 + Math.random() * 16, h: tall ? 70 : 45, passed: false });
+      boxes.push({ x: W + 40, w: 26 + Math.random() * 10, h: tall ? 70 : 45, passed: false });
     }
 
     // երբեմն նոր ձուկ է հայտնվում օդում
