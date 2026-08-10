@@ -76,6 +76,18 @@
     border-bottom-right-radius: 4px;
   }
   .typing { opacity: 0.7; font-style: italic; }
+  .search-link {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 8px 14px;
+    background: #c9a227;
+    color: #2e1d0e;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-decoration: none;
+  }
+  .search-link:active { transform: scale(0.95); }
   .chips {
     display: flex;
     gap: 8px;
@@ -331,13 +343,12 @@ const RULES = [
   },
 ];
 
-// Երբ ոչ մի բանալի բառ չի գտնում, կապիտանը սրանցից մեկն է ասում
+// Երբ ոչ մի բանալի բառ չի գտնում, կապիտանը խոստովանում է
+// ու տալիս «գանձի քարտեզ»՝ կոճակ, որ բացում է որոնումը ինտերնետում
 const FALLBACKS = [
-  'Արրր, «__» ես ասում… Ծովում դրա մասին շատ եմ լսել, բայց ալիքները խլացրին։ Էլի՛ պատմիր։ 🌊',
-  'Հմմ, «__»… Թութակս ասում է, որ դա համեղ բան է։ Բայց նա ամեն ինչի մասին է այդպես ասում։ 🦜',
-  'Յո-հո-հո՜, հետաքրքիր է։ Իսկ դու գիտե՞ս, որ ծովահենները դրա մասին երգեր են հորինում։ 🎵',
-  'Արրր, չհասկացա, նավաստի՛։ Ականջս թնդանոթից հետո վատ է լսում։ Այլ կերպ ասա։ 💥😅',
-  'Դա ինձ հիշեցնում է մի պատմություն… որը մոռացել եմ։ Հարցրու կատակի, գանձի կամ նավիս մասին։ ⚓',
+  'Արրր, «__»… Այս մեկը սնդուկումս չկա։ Բայց ահա՛ գանձի քարտեզը — սեղմիր ու պատասխանը կգտնես։ 🗺️',
+  'Հմմ, «__»… Թութակս էլ չգիտի, իսկ նա ամեն ինչ գիտի (իր կարծիքով)։ Վերցրու քարտեզս ու ինքդ գտիր։ 🦜',
+  'Յո-հո-հո՜, ծանր հարց է, նավաստի՛։ Իմ սնդուկը այստեղ անզոր է, բայց քարտեզս քեզ կտանի պատասխանի մոտ։ ⚓',
 ];
 
 // ——— Ձայնիկ՝ հաղորդագրության «բլյուպ» ———
@@ -357,10 +368,22 @@ function blip(freq) {
 }
 
 // ——— Հաղորդագրություն ավելացնելը ———
-function addMsg(text, who) {
+// searchQuery կա → վերջում ավելացնում ենք «գանձի քարտեզ» կոճակը,
+// որ բացում է ինտերնետի որոնումը հենց այդ հարցով
+function addMsg(text, who, searchQuery) {
   const div = document.createElement('div');
   div.className = 'msg ' + who;
   div.textContent = text;
+  if (searchQuery) {
+    const a = document.createElement('a');
+    a.className = 'search-link';
+    a.href = 'https://www.google.com/search?q=' + encodeURIComponent(searchQuery);
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = '🗺️ Գտնել պատասխանը ինտերնետում';
+    div.appendChild(document.createElement('br'));
+    div.appendChild(a);
+  }
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
   return div;
@@ -378,18 +401,20 @@ for (const r of RULES) {
 }
 
 // ——— Կապիտանի ուղեղը ———
+// Վերադարձնում է {text, search}. search-ը լցվում է միայն այն դեպքում,
+// երբ կապիտանը պատասխանը չգիտի ու «քարտեզ» է առաջարկում
 function captainReply(text) {
   const t = text.toLowerCase();
   // «փաստ» խնդրեց → բացում ենք գիտելիքների սնդուկը
-  if (t.includes('փաստ')) return pick(FACT_POOL);
+  if (t.includes('փաստ')) return { text: pick(FACT_POOL) };
   for (const rule of RULES) {
     for (const key of rule.keys) {
-      if (t.includes(key)) return pick(rule.answers);
+      if (t.includes(key)) return { text: pick(rule.answers) };
     }
   }
-  // ոչինչ չգտավ → ընդհանուր պատասխան՝ քո բառերով
+  // ոչինչ չգտավ → խոստովանում է ու տալիս որոնման քարտեզը
   const shortText = text.length > 25 ? text.slice(0, 25) + '…' : text;
-  return pick(FALLBACKS).replace('__', shortText);
+  return { text: pick(FALLBACKS).replace('__', shortText), search: text };
 }
 
 // ——— Խոսակցությունը ———
@@ -406,7 +431,8 @@ function send(text) {
 
   setTimeout(() => {
     typing.remove();
-    addMsg(captainReply(text), 'bot');
+    const reply = captainReply(text);
+    addMsg(reply.text, 'bot', reply.search);
     blip(700);
     busy = false;
   }, 700 + Math.random() * 800);
