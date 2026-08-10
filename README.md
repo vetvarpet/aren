@@ -43,7 +43,7 @@ That's it. That's the whole job.
 
 | Folder | What it is |
 |--------|------------|
-| _(empty for now)_ | Your first project goes here! |
+| `cat-jump` | 🐱 Կատուն թռչում է — խաղ, որտեղ կատուն թռչում է արկղերի վրայով |
 
 Add a row every time you finish something. 
 
