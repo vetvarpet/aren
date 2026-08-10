@@ -57,6 +57,8 @@ const JUMP_POWER = -12.5;     // ինչքան ուժեղ է թռչում վեր�
 
 // ——— Խաղի վիճակը ———
 let boxes = [];               // արկղերը, որ գալիս են
+let fishes = [];              // ձկները, որ լողում են օդում
+let popups = [];              // «+3» գրությունները, երբ ձուկ ես բռնում
 let clouds = [];              // ամպերը երկնքում
 let score = 0;                // միավորներ
 let best = Number(localStorage.getItem('cat-best') || 0);
@@ -112,6 +114,8 @@ function jump() {
 
 function restart() {
   boxes = [];
+  fishes = [];
+  popups = [];
   score = 0;
   speed = 5;
   cat.y = GROUND;
@@ -213,6 +217,52 @@ function drawBox(b) {
   ctx.fillRect(b.x + b.w / 2 - 4, GROUND - b.h, 8, b.h);
 }
 
+// ——— Նկարում ենք ձուկը ———
+function drawFish(f) {
+  ctx.save();
+  ctx.translate(f.x, f.y + Math.sin(frame * 0.1 + f.x) * 4);  // մի քիչ վեր-վար է լողում
+
+  // մարմինը
+  ctx.fillStyle = '#4aa3d8';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 16, 9, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // պոչը
+  ctx.beginPath();
+  ctx.moveTo(13, 0);
+  ctx.lineTo(24, -8);
+  ctx.lineTo(24, 8);
+  ctx.closePath();
+  ctx.fill();
+
+  // փորիկը
+  ctx.fillStyle = '#8fd0f0';
+  ctx.beginPath();
+  ctx.ellipse(-2, 3, 10, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // աչքը
+  ctx.fillStyle = '#23405c';
+  ctx.beginPath();
+  ctx.arc(-9, -2, 1.8, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// ——— «+3» գրությունը, որ վեր է թռչում ձուկ բռնելիս ———
+function drawPopups() {
+  for (const p of popups) {
+    ctx.globalAlpha = p.life / 50;
+    ctx.fillStyle = '#ff5d5d';
+    ctx.font = 'bold 24px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.text, p.x, p.y);
+    ctx.globalAlpha = 1;
+  }
+}
+
 // ——— Ֆոնը՝ արև, ամպեր, գետին ———
 function drawWorld() {
   // արևը
@@ -296,6 +346,37 @@ function update() {
       boxes.push({ x: W + 40, w: 34 + Math.random() * 16, h: tall ? 70 : 45, passed: false });
     }
 
+    // երբեմն նոր ձուկ է հայտնվում օդում
+    if (Math.random() < 0.008 && fishes.length < 2) {
+      fishes.push({
+        x: W + 40,
+        y: GROUND - 75 - Math.random() * 55,   // այնքան բարձր, որ թռչելով հասնես
+      });
+    }
+
+    // ձկները լողում են դեպի կատուն
+    for (const f of fishes) {
+      f.x -= speed;
+
+      // բռնեցի՞նք ձուկը → +3 բոնուս
+      const catchX = Math.abs(f.x - cat.x) < 40;
+      const catchY = f.y > cat.y - 70 && f.y < cat.y + 5;
+      if (catchX && catchY) {
+        f.caught = true;
+        score += 3;
+        popups.push({ x: f.x, y: f.y - 15, life: 50, text: '+3 🐟' });
+        if (score > best) {
+          best = score;
+          localStorage.setItem('cat-best', best);
+        }
+      }
+    }
+    fishes = fishes.filter(f => !f.caught && f.x > -40);
+
+    // «+3» գրությունները վեր են բարձրանում ու հալվում
+    for (const p of popups) { p.y -= 1.2; p.life--; }
+    popups = popups.filter(p => p.life > 0);
+
     // արկղերը շարժվում են
     for (const b of boxes) {
       b.x -= speed;
@@ -325,7 +406,9 @@ function update() {
   ctx.clearRect(0, 0, W, H);
   drawWorld();
   for (const b of boxes) drawBox(b);
+  for (const f of fishes) drawFish(f);
   drawCat();
+  drawPopups();
   drawScore();
 
   if (!running && !gameOver) {
