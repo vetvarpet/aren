@@ -1,74 +1,54 @@
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Կատուն թռչում է 🐱</title>
 <style>
   /* ——— Խաղի գույները ——— */
   :root {
     --sky-top: #9fd9ef;
     --sky-bottom: #eaf8ff;
-    --ground: #e8a94c;
-    --ground-dark: #c9863f;
     --ink: #23405c;
-    --paper: #fffdf7;
-    --accent: #ff5d5d;
   }
   * { margin: 0; box-sizing: border-box; }
-  html, body { height: 100%; }
+  html, body {
+    height: 100%;
+    overflow: hidden;           /* էջը երբեք չի սահում */
+  }
   body {
     background: linear-gradient(var(--sky-top), var(--sky-bottom));
-    color: var(--ink);
     font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    padding: 16px;
     user-select: none;
     -webkit-user-select: none;
-    touch-action: manipulation;
-  }
-  h1 {
-    font-size: clamp(1.4rem, 4vw, 2.2rem);
-    letter-spacing: 0.02em;
-    text-wrap: balance;
-    text-align: center;
-  }
-  .hint {
-    font-size: clamp(0.9rem, 2.5vw, 1.05rem);
-    opacity: 0.75;
-    text-align: center;
   }
   canvas {
-    width: min(96vw, 900px);
-    max-width: 100%;
-    border-radius: 18px;
-    box-shadow: 0 10px 30px rgba(35, 64, 92, 0.25);
-    background: linear-gradient(#bfe8ff, #f2fbff 70%);
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;         /* մատով դիպչելիս էկրանը չի շարժվում */
     cursor: pointer;
   }
 </style>
 
-<h1>Կատուն թռչում է 🐱📦</h1>
-<canvas id="game" width="900" height="300"></canvas>
-<p class="hint">Սեղմիր <b>ՊՐՈԲԵԼԸ</b> կամ կտտացրու խաղին, որ կատուն թռչի</p>
+<canvas id="game"></canvas>
 
 <script>
 // ——————————————————————————————————————
 //  ԿԱՏՈՒՆ ԹՌՉՈՒՄ Է — Արենի առաջին խաղը
+//  Հիմա աշխատում է և՛ հեռախոսով, և՛ համակարգչով
 // ——————————————————————————————————————
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-const W = canvas.width;       // խաղադաշտի լայնությունը
-const H = canvas.height;      // բարձրությունը
-const GROUND = H - 50;        // որտեղ է գետինը
+// Խաղադաշտի չափերը՝ «խաղային» միավորներով։
+// resize()-ը դրանք հաշվում է էկրանի չափից։
+let W = 900, H = 300, GROUND = 250, scale = 1;
 
 // ——— Կատուն ———
 const cat = {
   x: 90,
-  y: GROUND,        // ոտքերի տեղը
+  y: 250,           // ոտքերի տեղը
   vy: 0,            // ինչ արագությամբ է բարձրանում/իջնում
   jumping: false,
 };
@@ -85,10 +65,41 @@ let running = false;          // խաղը գնո՞ւմ է
 let gameOver = false;
 let frame = 0;
 
-// Սկզբի ամպերը
-for (let i = 0; i < 4; i++) {
-  clouds.push({ x: Math.random() * W, y: 30 + Math.random() * 80, s: 0.6 + Math.random() * 0.8 });
+// ——— Էկրանի չափին հարմարվելը ———
+// Հեռախոսը ուղղահայաց էլ բռնես, կողքի էլ՝ խաղը լցնում է ամբողջ էկրանը։
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  const winW = window.innerWidth;
+  const winH = window.innerHeight;
+
+  canvas.width = winW * dpr;
+  canvas.height = winH * dpr;
+
+  // Ընտրում ենք այնպիսի խոշորացում, որ խաղադաշտը միշտ
+  // բավական լայն լինի (արկղերին հասցնես նկատել)
+  // և բավական բարձր (թռիչքը տեղավորվի)։
+  scale = Math.min(winH / 360, winW / 620);
+  ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+
+  W = winW / scale;
+  H = winH / scale;
+  GROUND = H - 55;
+
+  cat.x = Math.max(70, Math.min(130, W * 0.16));
+  if (!cat.jumping) { cat.y = GROUND; cat.vy = 0; }
+
+  // ամպերը նորից ենք ցրում երկնքով
+  clouds = [];
+  for (let i = 0; i < 5; i++) {
+    clouds.push({
+      x: Math.random() * W,
+      y: 30 + Math.random() * Math.max(60, H * 0.35),
+      s: 0.6 + Math.random() * 0.9,
+    });
+  }
 }
+window.addEventListener('resize', resize);
+resize();
 
 function jump() {
   if (gameOver) { restart(); return; }
@@ -110,11 +121,12 @@ function restart() {
   running = true;
 }
 
-// Ստեղները
+// Ստեղները (համակարգչի համար)
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); jump(); }
 });
-canvas.addEventListener('pointerdown', jump);
+// Մատով դիպչելը կամ մկնիկով կտտացնելը (հեռախոսի համար)
+canvas.addEventListener('pointerdown', (e) => { e.preventDefault(); jump(); });
 
 // ——— Նկարում ենք կատվին ———
 function drawCat() {
@@ -231,23 +243,30 @@ function drawScore() {
   ctx.fillStyle = '#23405c';
   ctx.font = 'bold 22px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText('Միավոր՝ ' + score, 20, 34);
+  ctx.fillText('Միավոր՝ ' + score, 20, 36);
   ctx.textAlign = 'right';
-  ctx.fillText('Ռեկորդ՝ ' + best, W - 20, 34);
+  ctx.fillText('Ռեկորդ՝ ' + best, W - 20, 36);
 }
 
+// Հաղորդագրության վահանակը էկրանի մեջտեղում
 function drawCenterText(big, small) {
-  ctx.fillStyle = 'rgba(255, 253, 247, 0.88)';
-  ctx.fillRect(W / 2 - 240, H / 2 - 62, 480, 104);
+  const bw = Math.min(W - 30, 500);   // վահանակը միշտ տեղավորվում է էկրանին
+  const bh = 110;
+  const bx = W / 2 - bw / 2;
+  const by = H / 2 - bh / 2;
+
+  ctx.fillStyle = 'rgba(255, 253, 247, 0.9)';
+  ctx.fillRect(bx, by, bw, bh);
   ctx.strokeStyle = '#23405c';
   ctx.lineWidth = 3;
-  ctx.strokeRect(W / 2 - 240, H / 2 - 62, 480, 104);
+  ctx.strokeRect(bx, by, bw, bh);
+
   ctx.fillStyle = '#23405c';
   ctx.textAlign = 'center';
-  ctx.font = 'bold 30px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
-  ctx.fillText(big, W / 2, H / 2 - 18);
-  ctx.font = '18px "Noto Sans Armenian", Arial, sans-serif';
-  ctx.fillText(small, W / 2, H / 2 + 18);
+  ctx.font = 'bold 28px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+  ctx.fillText(big, W / 2, by + 44);
+  ctx.font = '17px "Noto Sans Armenian", Arial, sans-serif';
+  ctx.fillText(small, W / 2, by + 80);
 }
 
 // ——— Խաղի քայլը՝ ամեն կադր ———
@@ -310,10 +329,10 @@ function update() {
   drawScore();
 
   if (!running && !gameOver) {
-    drawCenterText('Պատրա՞ստ ես', 'Սեղմիր ՊՐՈԲԵԼԸ կամ կտտացրու՝ սկսելու համար');
+    drawCenterText('Կատուն թռչում է 🐱', 'Դիպչիր էկրանին կամ սեղմիր ՊՐՈԲԵԼԸ');
   }
   if (gameOver) {
-    drawCenterText('Ա՜խ, բախվեցիր 😿', 'Հավաքեցիր ' + score + ' միավոր · Կտտացրու՝ նորից խաղալու');
+    drawCenterText('Ա՜խ, բախվեցիր 😿', 'Հավաքեցիր ' + score + ' միավոր · Դիպչիր՝ նորից խաղալու');
   }
 
   requestAnimationFrame(update);
