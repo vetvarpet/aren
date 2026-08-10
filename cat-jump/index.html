@@ -103,12 +103,53 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+// ——— Ձայները ———
+// Ձայնային ֆայլեր չկան. համակարգիչը ինքն է «երգում» տատանումներով։
+let audioCtx = null;
+
+// Մեկ նոտա. հաճախությունը (բարձր/ցածր ձայն), տեսակը, տևողությունը
+function beep(freq, endFreq, type, duration, volume, delay) {
+  const t = audioCtx.currentTime + (delay || 0);
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t);
+  osc.frequency.exponentialRampToValueAtTime(endFreq, t + duration);
+  gain.gain.setValueAtTime(volume, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(t);
+  osc.stop(t + duration);
+}
+
+function sound(name) {
+  // Ձայնը միանում է միայն առաջին դիպչելուց հետո (հեռախոսի կանոնն է)
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  if (name === 'jump') {
+    // թռիչք՝ արագ վերև սլացող «թռյո՛ւթ»
+    beep(300, 700, 'triangle', 0.18, 0.25);
+  }
+  if (name === 'fish') {
+    // ձուկ բռնելը՝ ուրախ երկու նոտա «դզի՛նգ-դզի՛նգ»
+    beep(880, 880, 'sine', 0.1, 0.3);
+    beep(1320, 1320, 'sine', 0.15, 0.3, 0.09);
+  }
+  if (name === 'crash') {
+    // բախվելը՝ ցածր «բո՛ւմ»
+    beep(220, 55, 'sawtooth', 0.45, 0.35);
+  }
+}
+
 function jump() {
   if (gameOver) { restart(); return; }
   if (!running) { running = true; }
   if (!cat.jumping) {
     cat.vy = JUMP_POWER;
     cat.jumping = true;
+    sound('jump');
   }
 }
 
@@ -364,6 +405,7 @@ function update() {
       if (catchX && catchY) {
         f.caught = true;
         score += 3;
+        sound('fish');
         popups.push({ x: f.x, y: f.y - 15, life: 50, text: '+3 🐟' });
         if (score > best) {
           best = score;
@@ -395,6 +437,7 @@ function update() {
       // բախվեցի՞նք
       const catLeft = cat.x - 26, catRight = cat.x + 38, catBottom = cat.y;
       if (catRight > b.x + 6 && catLeft < b.x + b.w - 6 && catBottom > GROUND - b.h + 8) {
+        if (!gameOver) sound('crash');
         gameOver = true;
         running = false;
       }
