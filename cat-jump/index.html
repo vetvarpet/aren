@@ -68,6 +68,19 @@ let running = false;          // խաղը գնո՞ւմ է
 let gameOver = false;
 let frame = 0;
 
+// ——— Գիշերը ———
+const NIGHT_AT = 59;          // այս միավորից սկսած գիշեր է դառնում
+let night = 0;                // 0 = ցերեկ, 1 = գիշեր (կամաց-կամաց է փոխվում)
+let stars = [];               // աստղերը երկնքում
+
+// Երկու գույնի արանքում գույն ենք ընտրում. t=0 → առաջինը, t=1 → երկրորդը
+function mixColor(c1, c2, t) {
+  const r = Math.round(c1[0] + (c2[0] - c1[0]) * t);
+  const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
+  const b = Math.round(c1[2] + (c2[2] - c1[2]) * t);
+  return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
 // ——— Էկրանի չափին հարմարվելը ———
 // Հեռախոսը ուղղահայաց էլ բռնես, կողքի էլ՝ խաղը լցնում է ամբողջ էկրանը։
 function resize() {
@@ -98,6 +111,17 @@ function resize() {
       x: Math.random() * W,
       y: 30 + Math.random() * Math.max(60, H * 0.35),
       s: 0.6 + Math.random() * 0.9,
+    });
+  }
+
+  // աստղերն էլ ենք նորից ցրում (գիշերը կերևան)
+  stars = [];
+  for (let i = 0; i < 50; i++) {
+    stars.push({
+      x: Math.random() * W,
+      y: Math.random() * (GROUND - 60),
+      r: 0.8 + Math.random() * 1.6,
+      tw: Math.random() * 100,     // ամեն աստղ իր ռիթմով է թարթում
     });
   }
 }
@@ -385,16 +409,55 @@ function drawPopups() {
   }
 }
 
-// ——— Ֆոնը՝ արև, ամպեր, գետին ———
+// ——— Ֆոնը՝ երկինք, արև/լուսին, աստղեր, ամպեր, գետին ———
 function drawWorld() {
-  // արևը
-  ctx.fillStyle = '#ffd76e';
-  ctx.beginPath();
-  ctx.arc(W - 70, 60, 30, 0, Math.PI * 2);
-  ctx.fill();
+  // երկինքը. ցերեկը՝ երկնագույն, գիշերը՝ մուգ կապույտ
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, mixColor([159, 217, 239], [14, 22, 52], night));
+  sky.addColorStop(1, mixColor([234, 248, 255], [43, 62, 105], night));
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
 
-  // ամպերը
-  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  // աստղերը. գիշերը վառվում են ու թարթում
+  if (night > 0.05) {
+    for (const s of stars) {
+      const twinkle = 0.6 + Math.sin((frame + s.tw) * 0.08) * 0.4;
+      ctx.globalAlpha = night * twinkle;
+      ctx.fillStyle = '#fff9e8';
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // արևը ցերեկն է երևում…
+  if (night < 0.95) {
+    ctx.globalAlpha = 1 - night;
+    ctx.fillStyle = '#ffd76e';
+    ctx.beginPath();
+    ctx.arc(W - 70, 60, 30, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // …իսկ գիշերը նրա տեղը լուսինն է գալիս
+  if (night > 0.05) {
+    ctx.globalAlpha = night;
+    ctx.fillStyle = '#f4f0dc';
+    ctx.beginPath();
+    ctx.arc(W - 70, 60, 26, 0, Math.PI * 2);
+    ctx.fill();
+    // մի կտոր «կծում ենք», որ կիսալուսին դառնա
+    ctx.fillStyle = mixColor([159, 217, 239], [14, 22, 52], night);
+    ctx.beginPath();
+    ctx.arc(W - 82, 52, 22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // ամպերը. գիշերը հազիվ են երևում
+  ctx.fillStyle = 'rgba(255,255,255,' + (0.9 - night * 0.65) + ')';
   for (const c of clouds) {
     ctx.beginPath();
     ctx.arc(c.x, c.y, 16 * c.s, 0, Math.PI * 2);
@@ -403,16 +466,17 @@ function drawWorld() {
     ctx.fill();
   }
 
-  // գետինը
-  ctx.fillStyle = '#e8a94c';
+  // գետինը. գիշերը մթնում է
+  ctx.fillStyle = mixColor([232, 169, 76], [96, 74, 46], night);
   ctx.fillRect(0, GROUND, W, H - GROUND);
-  ctx.fillStyle = '#c9863f';
+  ctx.fillStyle = mixColor([201, 134, 63], [70, 52, 32], night);
   ctx.fillRect(0, GROUND, W, 5);
 }
 
 // ——— Միավորները ———
 function drawScore() {
-  ctx.fillStyle = '#23405c';
+  // գիշերը տառերը բաց գույն են դառնում, որ կարդացվեն
+  ctx.fillStyle = mixColor([35, 64, 92], [234, 243, 255], night);
   ctx.font = 'bold 22px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
   ctx.textAlign = 'left';
   ctx.fillText('Միավոր՝ ' + score, 20, 36);
@@ -445,6 +509,10 @@ function drawCenterText(big, small) {
 function update() {
   frame++;
   scheduleMusic();
+
+  // 59 միավորից գիշերը կամաց-կամաց իջնում է, նոր խաղում՝ նորից լուսանում
+  const nightTarget = score >= NIGHT_AT ? 1 : 0;
+  night += (nightTarget - night) * 0.02;
 
   if (running && !gameOver) {
     // կատվի թռիչքը
