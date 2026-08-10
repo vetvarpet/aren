@@ -137,6 +137,12 @@ function sound(name) {
     beep(880, 880, 'sine', 0.1, 0.3);
     beep(1320, 1320, 'sine', 0.15, 0.3, 0.09);
   }
+  if (name === 'gold') {
+    // ոսկե ձուկը՝ հաղթական երեք նոտա «դզի՛նգ-դզի՛նգ-դզի՛՜նգ»
+    beep(880, 880, 'sine', 0.1, 0.3);
+    beep(1109, 1109, 'sine', 0.1, 0.3, 0.09);
+    beep(1319, 1319, 'sine', 0.25, 0.35, 0.18);
+  }
   if (name === 'crash') {
     // բախվելը՝ ցածր «բո՛ւմ»
     beep(220, 55, 'sawtooth', 0.45, 0.35);
@@ -320,8 +326,16 @@ function drawFish(f) {
   ctx.save();
   ctx.translate(f.x, f.y + Math.sin(frame * 0.1 + f.x) * 4);  // մի քիչ վեր-վար է լողում
 
+  // ոսկե ձուկը փայլում է՝ շուրջը դեղին լուսապսակ
+  if (f.gold) {
+    ctx.fillStyle = 'rgba(255, 215, 80, 0.25)';
+    ctx.beginPath();
+    ctx.arc(0, 0, 26 + Math.sin(frame * 0.25) * 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   // մարմինը
-  ctx.fillStyle = '#4aa3d8';
+  ctx.fillStyle = f.gold ? '#f5b73b' : '#4aa3d8';
   ctx.beginPath();
   ctx.ellipse(0, 0, 16, 9, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -335,7 +349,7 @@ function drawFish(f) {
   ctx.fill();
 
   // փորիկը
-  ctx.fillStyle = '#8fd0f0';
+  ctx.fillStyle = f.gold ? '#ffe08a' : '#8fd0f0';
   ctx.beginPath();
   ctx.ellipse(-2, 3, 10, 4, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -345,6 +359,14 @@ function drawFish(f) {
   ctx.beginPath();
   ctx.arc(-9, -2, 1.8, 0, Math.PI * 2);
   ctx.fill();
+
+  // ոսկե ձկան փայլիկը
+  if (f.gold) {
+    ctx.fillStyle = '#fff6d8';
+    ctx.beginPath();
+    ctx.arc(2, -4, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   ctx.restore();
 }
@@ -446,25 +468,28 @@ function update() {
     }
 
     // երբեմն նոր ձուկ է հայտնվում օդում
+    // 5-ից 1 դեպքում ձուկը ՈՍԿԵ է՝ +6, բայց ավելի արագ է լողում
     if (Math.random() < 0.008 && fishes.length < 2) {
       fishes.push({
         x: W + 40,
         y: GROUND - 75 - Math.random() * 55,   // այնքան բարձր, որ թռչելով հասնես
+        gold: Math.random() < 0.2,
       });
     }
 
     // ձկները լողում են դեպի կատուն
     for (const f of fishes) {
-      f.x -= speed;
+      f.x -= speed * (f.gold ? 1.4 : 1);   // ոսկե ձուկը շտապում է փախչել
 
-      // բռնեցի՞նք ձուկը → +3 բոնուս
+      // բռնեցի՞նք ձուկը → բոնուս
       const catchX = Math.abs(f.x - cat.x) < 40;
       const catchY = f.y > cat.y - 70 && f.y < cat.y + 5;
       if (catchX && catchY) {
         f.caught = true;
-        score += 3;
-        sound('fish');
-        popups.push({ x: f.x, y: f.y - 15, life: 50, text: '+3 🐟' });
+        const bonus = f.gold ? 6 : 3;
+        score += bonus;
+        sound(f.gold ? 'gold' : 'fish');
+        popups.push({ x: f.x, y: f.y - 15, life: 50, text: '+' + bonus + (f.gold ? ' 🌟' : ' 🐟') });
         if (score > best) {
           best = score;
           localStorage.setItem('cat-best', best);
