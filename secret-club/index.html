@@ -1,0 +1,303 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Գաղտնի ակումբ 🕵️</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { min-height: 100%; }
+  body {
+    background: radial-gradient(circle at 50% 20%, #263145, #12161f 70%);
+    color: #e8e2d0;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 20px 14px;
+    min-height: 100dvh;
+  }
+  .wrap { width: min(100%, 560px); }
+
+  /* ——— Դուռը ——— */
+  #door {
+    text-align: center;
+    padding-top: 8vh;
+  }
+  .door-art { font-size: 90px; }
+  #door h1 { color: #ffd76e; margin: 12px 0 6px; font-size: 1.6rem; }
+  #door p { opacity: 0.75; margin-bottom: 22px; }
+  #door form { display: flex; gap: 8px; justify-content: center; }
+  #pass {
+    padding: 13px 16px;
+    font-size: 1.05rem;
+    font-family: inherit;
+    border-radius: 12px;
+    border: 2px solid #46536e;
+    background: #1b2231;
+    color: #e8e2d0;
+    outline: none;
+    width: 220px;
+    text-align: center;
+  }
+  #pass:focus { border-color: #ffd76e; }
+  #door button {
+    border: none;
+    background: #ffd76e;
+    color: #2e2410;
+    font-size: 1.2rem;
+    border-radius: 12px;
+    padding: 0 18px;
+    cursor: pointer;
+  }
+  #guard { margin-top: 18px; min-height: 26px; color: #ff9c8a; font-size: 0.95rem; }
+  .shake { animation: shake 0.4s; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+  }
+
+  /* ——— Ակումբը ——— */
+  #club { display: none; }
+  .card {
+    background: #1b2231;
+    border: 2px solid #46536e;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .card h2 { color: #ffd76e; font-size: 1.05rem; margin-bottom: 10px; }
+  .banner { text-align: center; padding: 20px 16px; }
+  .banner h1 { color: #ffd76e; font-size: 1.5rem; }
+  .banner p { opacity: 0.75; font-size: 0.9rem; margin-top: 6px; }
+  ul { list-style: none; }
+  li { padding: 6px 0; border-bottom: 1px dashed #2e3a52; }
+  .row { display: flex; gap: 8px; margin-top: 10px; }
+  .row input, textarea {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    border-radius: 10px;
+    border: 2px solid #46536e;
+    background: #12161f;
+    color: #e8e2d0;
+    outline: none;
+  }
+  textarea { width: 100%; min-height: 70px; resize: vertical; }
+  .row button, .card > button {
+    border: none;
+    background: #46536e;
+    color: #e8e2d0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  .card button:active { transform: scale(0.95); }
+  .gold { background: #ffd76e !important; color: #2e2410 !important; font-weight: bold; }
+  .cipher-out {
+    margin-top: 10px;
+    padding: 12px;
+    background: #12161f;
+    border-radius: 10px;
+    border: 2px dashed #ffd76e55;
+    min-height: 46px;
+    word-break: break-word;
+    font-size: 1.05rem;
+  }
+  .rules li::before { content: '⭐ '; }
+</style>
+
+<div class="wrap">
+
+  <!-- ——— Փակ դուռը ——— -->
+  <div id="door">
+    <div class="door-art">🚪</div>
+    <h1>ԿԱՆԳ ԱՌ։ Գաղտնի ակումբ է</h1>
+    <p>Մուտքը միայն գաղտնաբառով։ Պահակը հսկում է։ 🦉</p>
+    <form id="doorForm">
+      <input id="pass" placeholder="Գաղտնաբառը…" autocomplete="off">
+      <button type="submit">🔑</button>
+    </form>
+    <div id="guard"></div>
+  </div>
+
+  <!-- ——— Ակումբի ներսը ——— -->
+  <div id="club">
+    <div class="card banner">
+      <h1>🕵️ Արենի գաղտնի ակումբը</h1>
+      <p>Այն, ինչ այստեղ է, այստեղ էլ մնում է։</p>
+    </div>
+
+    <div class="card">
+      <h2>📜 Ակումբի կանոնները</h2>
+      <ul class="rules">
+        <li>Գաղտնաբառը ոչ մեկին չասել (բացի լավագույն ընկերներից)</li>
+        <li>Անդամները միշտ օգնում են իրար</li>
+        <li>Գաղտնագրերը կարդում ենք միայն ակումբում</li>
+        <li>Ամեն հավաքույթ սկսվում է գաղտնի ողջույնով</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>🕵️ Անդամները</h2>
+      <ul id="memberList"></ul>
+      <div class="row">
+        <input id="memberName" placeholder="Նոր անդամի անունը…">
+        <button id="addMember">➕</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔐 Գաղտնագրի մեքենան</h2>
+      <p style="opacity:0.7; font-size:0.85rem; margin-bottom:8px">
+        Գրիր հաղորդագրություն, սեղմիր «Գաղտնագրել» ու ուղարկիր ընկերոջդ։
+        Նա այն կկարդա միայն այս մեքենայով՝ «Վերծանել» կոճակով։
+      </p>
+      <textarea id="cipherIn" placeholder="Գրիր այստեղ…"></textarea>
+      <div class="row">
+        <button id="encodeBtn" class="gold">🔒 Գաղտնագրել</button>
+        <button id="decodeBtn">🔓 Վերծանել</button>
+      </div>
+      <div class="cipher-out" id="cipherOut"></div>
+    </div>
+
+    <div class="card">
+      <h2>📋 Գաղտնի գրառումներ</h2>
+      <ul id="noteList"></ul>
+      <div class="row">
+        <input id="noteText" placeholder="Նոր գրառում…">
+        <button id="addNote">✍️</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ԱՐԵՆԻ ԳԱՂՏՆԻ ԱԿՈՒՄԲԸ — հինգերորդ նախագիծը
+//  Գաղտնաբառ, գաղտնագրեր ու անդամներ։ Շշշ՜…
+// ——————————————————————————————————————
+
+// ——— Գաղտնաբառը ———
+// Ուզում ես փոխել՝ գրիր Կլոդին, թե ինչ դառնա։
+const PASSWORD = 'սևբեղ';
+
+const door = document.getElementById('door');
+const club = document.getElementById('club');
+const guard = document.getElementById('guard');
+
+// Պահակի պատասխանները սխալ գաղտնաբառի դեպքում
+const GUARD_LINES = [
+  'Սխա՛լ է։ Բուն թարթեց աչքերը ու չհավատաց։ 🦉',
+  'Չէ՛։ Էդ գաղտնաբառով միայն նկուղ կմտնես։ 😾',
+  'Հը՞։ Նորից փորձիր, լրտես չլինե՞ս մի բան։ 🧐',
+  'Մոտ էր… Չէ, կատակում եմ, ընդհանրապես մոտ չէր։ 😄',
+];
+
+document.getElementById('doorForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const guess = document.getElementById('pass').value.trim().toLowerCase();
+  if (guess === PASSWORD) {
+    door.style.display = 'none';
+    club.style.display = 'block';
+  } else {
+    guard.textContent = GUARD_LINES[Math.floor(Math.random() * GUARD_LINES.length)];
+    door.classList.remove('shake');
+    setTimeout(() => door.classList.add('shake'), 10);
+  }
+});
+
+// ——— Անդամները (հիշվում են այս սարքի վրա) ———
+let members = JSON.parse(localStorage.getItem('club-members') || '["Արեն (հիմնադիր) 👑"]');
+const memberList = document.getElementById('memberList');
+
+function renderMembers() {
+  memberList.innerHTML = '';
+  members.forEach((m, i) => {
+    const li = document.createElement('li');
+    li.textContent = '🕵️ ' + m;
+    // երկու անգամ սեղմես՝ անդամը դուրս է ակումբից (բացի հիմնադրից)
+    if (i > 0) li.addEventListener('dblclick', () => {
+      members.splice(i, 1);
+      save();
+      renderMembers();
+    });
+    memberList.appendChild(li);
+  });
+}
+function save() {
+  localStorage.setItem('club-members', JSON.stringify(members));
+  localStorage.setItem('club-notes', JSON.stringify(notes));
+}
+
+document.getElementById('addMember').addEventListener('click', () => {
+  const input = document.getElementById('memberName');
+  if (input.value.trim()) {
+    members.push(input.value.trim());
+    input.value = '';
+    save();
+    renderMembers();
+  }
+});
+
+// ——— Գաղտնագրի մեքենան ———
+// Ամեն հայերեն տառ «ցատկում է» 5 տեղ առաջ այբուբենով։
+// Վերծանելիս՝ 5 տեղ հետ։ Սա կոչվում է Կեսարի գաղտնագիր՝
+// հին Հռոմի զորավար Կեսարն էր այսպես նամակ գրում։
+function shiftLetter(ch, delta) {
+  const code = ch.codePointAt(0);
+  // մեծատառեր Ա…Ֆ
+  if (code >= 0x0531 && code <= 0x0556) {
+    return String.fromCodePoint(0x0531 + ((code - 0x0531 + delta + 38) % 38));
+  }
+  // փոքրատառեր ա…ֆ
+  if (code >= 0x0561 && code <= 0x0586) {
+    return String.fromCodePoint(0x0561 + ((code - 0x0561 + delta + 38) % 38));
+  }
+  return ch;
+}
+function cipher(text, delta) {
+  return [...text].map(ch => shiftLetter(ch, delta)).join('');
+}
+
+const cipherIn = document.getElementById('cipherIn');
+const cipherOut = document.getElementById('cipherOut');
+document.getElementById('encodeBtn').addEventListener('click', () => {
+  cipherOut.textContent = cipher(cipherIn.value, 5) || '…';
+});
+document.getElementById('decodeBtn').addEventListener('click', () => {
+  cipherOut.textContent = cipher(cipherIn.value, -5) || '…';
+});
+
+// ——— Գաղտնի գրառումները ———
+let notes = JSON.parse(localStorage.getItem('club-notes') || '[]');
+const noteList = document.getElementById('noteList');
+
+function renderNotes() {
+  noteList.innerHTML = '';
+  notes.forEach((n, i) => {
+    const li = document.createElement('li');
+    li.textContent = '📌 ' + n;
+    li.addEventListener('dblclick', () => {
+      notes.splice(i, 1);
+      save();
+      renderNotes();
+    });
+    noteList.appendChild(li);
+  });
+}
+
+document.getElementById('addNote').addEventListener('click', () => {
+  const input = document.getElementById('noteText');
+  if (input.value.trim()) {
+    notes.push(input.value.trim());
+    input.value = '';
+    save();
+    renderNotes();
+  }
+});
+
+renderMembers();
+renderNotes();
+</script>
