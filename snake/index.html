@@ -1,0 +1,290 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Օձուկը 🐍</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: linear-gradient(#1e3d2f, #12241c);
+    color: #eaf3e6;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    height: 100dvh;
+    padding: 12px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  h1 { color: #ffd76e; font-size: clamp(1.1rem, 4vw, 1.6rem); }
+  .score-row {
+    display: flex;
+    gap: 24px;
+    font-size: 1rem;
+  }
+  canvas {
+    background: #24462f;
+    border: 4px solid #0d1a12;
+    border-radius: 14px;
+    box-shadow: 0 12px 34px rgba(0,0,0,0.45);
+    touch-action: none;
+    max-width: 96vw;
+    max-height: 62vh;
+  }
+  .hint { font-size: 0.85rem; opacity: 0.7; text-align: center; }
+</style>
+
+<h1>Օձուկը 🐍</h1>
+<div class="score-row">
+  <span>Միավոր՝ <b id="score">0</b></span>
+  <span>Ռեկորդ՝ <b id="best">0</b></span>
+</div>
+<canvas id="game" width="420" height="420"></canvas>
+<p class="hint">Սլաքներով կամ մատով սահեցնելով ասա օձին՝ ուր գնա</p>
+
+<script>
+// ——————————————————————————————————————
+//  ՕՁՈՒԿԸ — Արենի նոր խաղը
+//  Կեր խնձորները, երկարիր, բայց պոչիդ չկպնե՛ս
+// ——————————————————————————————————————
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score');
+const bestEl = document.getElementById('best');
+
+const CELL = 21;                       // մեկ վանդակի չափը
+const GRID = 20;                       // 20×20 վանդակ
+canvas.width = canvas.height = CELL * GRID;
+
+// ——— Խաղի վիճակը ———
+let snake, dir, nextDir, food, goldFood, score, best, speed, timer, running, gameOver;
+best = Number(localStorage.getItem('snake-best') || 0);
+bestEl.textContent = best;
+
+function reset() {
+  snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];  // օձի սկիզբը
+  dir = { x: 1, y: 0 };               // գնում է աջ
+  nextDir = dir;
+  score = 0;
+  speed = 160;                        // քանի միլիվայրկյանը մեկ է քայլում (փոքր = արագ)
+  goldFood = null;
+  scoreEl.textContent = 0;
+  placeFood();
+  gameOver = false;
+  running = false;
+  draw();
+}
+
+// Խնձորը դնում ենք դատարկ վանդակում
+function placeFood() {
+  do {
+    food = { x: Math.floor(Math.random() * GRID), y: Math.floor(Math.random() * GRID) };
+  } while (snake.some(s => s.x === food.x && s.y === food.y));
+}
+
+// ——— Ձայները ———
+let audioCtx = null;
+function beep(freq, endFreq, type, duration, volume, delay) {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  const t = audioCtx.currentTime + (delay || 0);
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t);
+  osc.frequency.exponentialRampToValueAtTime(endFreq, t + duration);
+  gain.gain.setValueAtTime(volume, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(t); osc.stop(t + duration);
+}
+
+// ——— Խաղի քայլը ———
+function step() {
+  dir = nextDir;
+  const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+  // պատին կամ պոչին կպա՞վ → խաղն ավարտվեց
+  if (
+    head.x < 0 || head.x >= GRID || head.y < 0 || head.y >= GRID ||
+    snake.some(s => s.x === head.x && s.y === head.y)
+  ) {
+    beep(220, 50, 'sawtooth', 0.5, 0.35);
+    gameOver = true;
+    running = false;
+    clearInterval(timer);
+    draw();
+    return;
+  }
+
+  snake.unshift(head);   // գլուխը առաջ է գնում
+
+  if (head.x === food.x && head.y === food.y) {
+    // խնձոր կերավ → +1, երկարեց, խաղը մի քիչ արագացավ
+    score++;
+    beep(660, 880, 'sine', 0.12, 0.3);
+    placeFood();
+    if (speed > 70) { speed -= 3; restartTimer(); }
+    // երբեմն ոսկե խնձոր է հայտնվում՝ 8 վայրկյանով
+    if (!goldFood && Math.random() < 0.25) {
+      do {
+        goldFood = { x: Math.floor(Math.random() * GRID), y: Math.floor(Math.random() * GRID), life: 50 };
+      } while (snake.some(s => s.x === goldFood.x && s.y === goldFood.y) || (goldFood.x === food.x && goldFood.y === food.y));
+    }
+  } else if (goldFood && head.x === goldFood.x && head.y === goldFood.y) {
+    // ոսկե խնձոր → +5
+    score += 5;
+    beep(880, 880, 'sine', 0.1, 0.3);
+    beep(1319, 1319, 'sine', 0.25, 0.35, 0.1);
+    goldFood = null;
+  } else {
+    snake.pop();         // չկերավ → պոչը հետևից քաշվում է
+  }
+
+  if (goldFood && --goldFood.life <= 0) goldFood = null;
+
+  scoreEl.textContent = score;
+  if (score > best) {
+    best = score;
+    bestEl.textContent = best;
+    localStorage.setItem('snake-best', best);
+  }
+
+  draw();
+}
+
+function restartTimer() {
+  clearInterval(timer);
+  timer = setInterval(step, speed);
+}
+
+function start() {
+  if (running) return;
+  if (gameOver) reset();
+  running = true;
+  restartTimer();
+}
+
+// Խնձոր ենք նկարում տրված վանդակում
+function drawApple(gx, gy, color) {
+  const cx = gx * CELL + CELL / 2;
+  const cy = gy * CELL + CELL / 2;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(cx, cy + 1, CELL * 0.38, 0, Math.PI * 2);
+  ctx.fill();
+  // կոթիկը
+  ctx.strokeStyle = '#6b4a2b';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - CELL * 0.3);
+  ctx.lineTo(cx + 2, cy - CELL * 0.48);
+  ctx.stroke();
+  // տերևը
+  ctx.fillStyle = '#8be36a';
+  ctx.beginPath();
+  ctx.ellipse(cx + 5, cy - CELL * 0.42, 4, 2.4, -0.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// ——— Նկարում ենք ———
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // շախմատաձև ֆոն, որ վանդակները երևան
+  for (let x = 0; x < GRID; x++) {
+    for (let y = 0; y < GRID; y++) {
+      if ((x + y) % 2 === 0) {
+        ctx.fillStyle = 'rgba(255,255,255,0.03)';
+        ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+      }
+    }
+  }
+
+  // խնձորը՝ կարմիր, կոթիկով ու տերևով
+  drawApple(food.x, food.y, '#e5484d');
+
+  // ոսկե խնձորը (թարթում է, երբ քիչ ժամանակ է մնում)
+  if (goldFood && (goldFood.life > 15 || goldFood.life % 4 < 2)) {
+    ctx.fillStyle = 'rgba(255, 215, 80, 0.25)';
+    ctx.beginPath();
+    ctx.arc(goldFood.x * CELL + CELL / 2, goldFood.y * CELL + CELL / 2, CELL * 0.8, 0, Math.PI * 2);
+    ctx.fill();
+    drawApple(goldFood.x, goldFood.y, '#f4c50f');
+  }
+
+  // օձը՝ գլխից պոչ, գույնը կամաց բացվում է
+  snake.forEach((s, i) => {
+    const g = 190 - Math.min(100, i * 6);
+    ctx.fillStyle = i === 0 ? '#8be36a' : 'rgb(70,' + g + ',80)';
+    ctx.beginPath();
+    ctx.roundRect(s.x * CELL + 1, s.y * CELL + 1, CELL - 2, CELL - 2, i === 0 ? 8 : 5);
+    ctx.fill();
+  });
+
+  // աչքերը գլխի վրա
+  const h = snake[0];
+  ctx.fillStyle = '#12241c';
+  const ex = h.x * CELL + CELL / 2, ey = h.y * CELL + CELL / 2;
+  ctx.beginPath();
+  ctx.arc(ex - 4 + dir.x * 3, ey - 4 + dir.y * 3, 2.2, 0, Math.PI * 2);
+  ctx.arc(ex + 4 + dir.x * 3, ey + 4 + dir.y * 3, 2.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // հաղորդագրությունները
+  if (!running) {
+    ctx.fillStyle = 'rgba(13, 26, 18, 0.75)';
+    ctx.fillRect(0, canvas.height / 2 - 50, canvas.width, 100);
+    ctx.fillStyle = '#ffd76e';
+    ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillText(
+      gameOver ? 'Ա՜խ… ' + score + ' միավոր 🐍' : 'Օձուկը 🐍',
+      canvas.width / 2, canvas.height / 2 - 14
+    );
+    ctx.font = '16px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillStyle = '#eaf3e6';
+    ctx.fillText(
+      gameOver ? 'Սեղմիր կամ դիպչիր՝ նորից խաղալու' : 'Սեղմիր սլաք կամ դիպչիր՝ սկսելու',
+      canvas.width / 2, canvas.height / 2 + 20
+    );
+  }
+}
+
+// ——— Կառավարումը ———
+// Օձը չի կարող կտրուկ հետ շրջվել՝ ինքն իր վրա
+function setDir(x, y) {
+  if (x === -dir.x && y === -dir.y) return;
+  nextDir = { x, y };
+  start();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'ArrowUp' || e.code === 'KeyW') { e.preventDefault(); setDir(0, -1); }
+  if (e.code === 'ArrowDown' || e.code === 'KeyS') { e.preventDefault(); setDir(0, 1); }
+  if (e.code === 'ArrowLeft' || e.code === 'KeyA') { e.preventDefault(); setDir(-1, 0); }
+  if (e.code === 'ArrowRight' || e.code === 'KeyD') { e.preventDefault(); setDir(1, 0); }
+});
+
+// Հեռախոսով՝ մատով սահեցնում ես այն կողմ, ուր օձը պիտի գնա
+let swipeStart = null;
+canvas.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  swipeStart = { x: e.clientX, y: e.clientY };
+  if (gameOver || !running) start();
+});
+canvas.addEventListener('pointermove', (e) => {
+  if (!swipeStart) return;
+  const dx = e.clientX - swipeStart.x;
+  const dy = e.clientY - swipeStart.y;
+  if (Math.abs(dx) < 24 && Math.abs(dy) < 24) return;   // դեռ շատ փոքր շարժում է
+  if (Math.abs(dx) > Math.abs(dy)) setDir(Math.sign(dx), 0);
+  else setDir(0, Math.sign(dy));
+  swipeStart = { x: e.clientX, y: e.clientY };
+});
+canvas.addEventListener('pointerup', () => { swipeStart = null; });
+
+reset();
+</script>
