@@ -409,9 +409,11 @@ function drawBox(b) {
 }
 
 // ——— Նկարում ենք ագռավին ———
+// Գիշերային վիթխարի ագռավն է. ամեն ինչ 3 անգամ մեծ ենք նկարում
 function drawBird(b) {
   ctx.save();
   ctx.translate(b.x, b.y + Math.sin(frame * 0.12 + b.x) * 3);
+  ctx.scale(3, 3);
 
   // մարմինը
   ctx.fillStyle = '#4a4a5a';
@@ -669,9 +671,10 @@ function update() {
     // նոր խոչընդոտ ենք ավելացնում
     const last = boxes[boxes.length - 1];
     if (!last || last.x < W - 260 - Math.random() * 220) {
-      // 12 միավորից երբեմն ագռավ է թռչում գլխի բարձրությամբ. պիտի ԿՌԱՆԱՍ տակով
-      if (score >= 12 && Math.random() < 0.25) {
-        boxes.push({ type: 'bird', x: W + 40, y: GROUND - 52, w: 36, h: 28, passed: false });
+      // Ագռավները միայն ԳԻՇԵՐՆ են դուրս գալիս, ու վիթխարի են՝
+      // վրայով թռչել ՉԵՍ կարող, միայն տակով ԿՌԱՆԱԼ
+      if (night > 0.5 && Math.random() < 0.3) {
+        boxes.push({ type: 'bird', x: W + 60, y: GROUND - 100, w: 60, h: 120, passed: false });
       } else {
         const tall = Math.random() < 0.3;
         boxes.push({ x: W + 40, w: 26 + Math.random() * 10, h: tall ? 70 : 45, passed: false });
