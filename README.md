@@ -3,7 +3,7 @@
 Games and web toys built by **Aren, age 10** — by describing what he wants
 and iterating on the code together with Claude, one change at a time.
 
-**▶ Play everything here:** _(Vercel link coming soon)_
+**▶ Play everything here: [aren-alpha.vercel.app](https://aren-alpha.vercel.app)**
 
 ## Projects
 
