@@ -1,57 +1,40 @@
-# Aren's Playground 🚀
+# Aren's Arcade 🕹️
 
-Hi Aren! This is **your** place to build things with Claude.
+Games and web toys built by **Aren, age 10** — by describing what he wants
+and iterating on the code together with Claude, one change at a time.
 
-Nothing here can break. If something goes wrong, you just try again.
+**▶ Play everything here:** _(Vercel link coming soon)_
 
-## What is this?
+## Projects
 
-A folder on the internet (called a *repository*, or *repo*) where you keep
-the stuff you make. Games, drawings, robots, jokes — anything.
+| Folder | Project | What it is |
+|--------|---------|------------|
+| [`cat-jump`](./cat-jump/) | 🐱 Կատվիկ | Runner: jump over boxes, catch fish, duck under giant night crows, win the trophy at 100 points |
+| [`city-drive`](./city-drive/) | 🚗 Քաղաքի վարորդը | Open city: pizza deliveries, traffic, a police chase, a day/night cycle and a car shop |
+| [`pirate-chat`](./pirate-chat/) | 🏴‍☠️ Կապիտան Սևբեղ | Pirate chatbot with jokes, songs and a chest of real facts |
+| [`piano`](./piano/) | 🎹 Դաշնամուր | Playable piano that records your melody and knows 5 songs |
+| [`secret-club`](./secret-club/) | 🕵️ Գաղտնի ակումբ | Password door, Caesar cipher machine, members and secret notes |
+| [`snake`](./snake/) | 🐍 Օձուկը | The classic — with golden apples and swipe controls |
 
-## How to start
+Every project is a single self-contained `index.html` — no frameworks, no
+build step. Open any folder's `index.html` in a browser and play. Sounds and
+music are synthesized in code with the Web Audio API; graphics are hand-drawn
+on `<canvas>`.
 
-1. Open Claude.
-2. Tell it what you want to make. Talk normally, like to a friend:
-   - "make me a game where a cat jumps over boxes"
-   - "make a page that shows the weather with big emojis"
-   - "make a program that tells a random joke"
-3. Look at what it made.
-4. Say what you want changed: "make the cat bigger", "add sound", "make it harder".
-5. Repeat until you like it.
+## About
 
-That's it. That's the whole job.
-
-## Ideas to try
-
-- 🎮 A game (guessing, jumping, racing, quiz)
-- 🎨 A drawing that moves
-- 🤖 A chatbot that talks like a pirate
-- 🧮 A calculator, but silly
-- 🎵 Something that makes noise
-- 🌍 A page about something you love
+This repo is Aren's portfolio and playground. The commit history is his
+builder's diary — every "make the cat bigger" and "add sound" is a step in
+it. See [about.html](./about.html) for the story.
 
 ## Rules of the playground
 
 1. **Break things.** That's how you learn.
-2. **Ask "why?"** If you don't understand something, ask Claude to explain it like you're 10.
-3. **Save what you like.** Put finished projects in their own folder.
+2. **Ask "why?"** If you don't understand something, ask.
+3. **Save what you like.** Every finished project gets its own folder.
 4. **Don't share passwords or your address** with any program.
 5. **Have fun.** If it's boring, build something else.
 
-## Projects
-
-| Folder | What it is |
-|--------|------------|
-| `cat-jump` | 🐱 Կատուն թռչում է — խաղ, որտեղ կատուն թռչում է արկղերի վրայով |
-| `city-drive` | 🚗 Քաղաքի վարորդը — բաց քաղաք, մեքենա ու պիցցայի առաքումներ |
-| `pirate-chat` | 🏴‍☠️ Կապիտան Սևբեղ — ծովահեն-չատբոտ, որ կատակներ է պատմում |
-| `piano` | 🎹 Արենի դաշնամուրը — նվագիր, ձայնագրիր ու լսիր քո մեղեդին |
-| `secret-club` | 🕵️ Գաղտնի ակումբ — գաղտնաբառ, գաղտնագրերի մեքենա ու անդամներ |
-| `snake` | 🐍 Օձուկը — կեր խնձորները, երկարիր, պոչիդ չկպնես |
-
-Add a row every time you finish something. 
-
 ---
 
-Made for Aren. Go build something. 🛠️
+Made by Aren. 🛠️

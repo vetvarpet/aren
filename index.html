@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Արենի խաղասրահը 🕹️</title>
+<meta name="description" content="Aren's Arcade — games and projects built by a 10-year-old maker">
+<style>
+  :root {
+    --bg: #12122b;
+    --card: #1d1d3f;
+    --ink: #eef0ff;
+    --dim: #9a9ec7;
+    --accent: #ffd166;
+    --accent2: #6ee7b7;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    background:
+      radial-gradient(circle at 15% 10%, rgba(110, 231, 183, 0.08), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(255, 209, 102, 0.07), transparent 45%),
+      var(--bg);
+    color: var(--ink);
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    min-height: 100dvh;
+  }
+  .wrap { max-width: 1020px; margin: 0 auto; padding: 20px 18px 60px; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0 26px;
+    flex-wrap: wrap;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo .joy { font-size: 40px; }
+  .logo h1 { font-size: clamp(1.3rem, 4vw, 1.9rem); color: var(--accent); letter-spacing: 0.01em; }
+  .logo p { color: var(--dim); font-size: 0.85rem; }
+  nav { display: flex; gap: 10px; }
+  nav a {
+    color: var(--ink);
+    text-decoration: none;
+    background: var(--card);
+    border: 2px solid #33356b;
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+  }
+  nav a:hover { border-color: var(--accent); color: var(--accent); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+  }
+  .game {
+    background: var(--card);
+    border: 2px solid #33356b;
+    border-radius: 18px;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+  .game:hover {
+    transform: translateY(-6px);
+    border-color: var(--accent);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+  }
+  .cover {
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+  }
+  .c1 { background: linear-gradient(135deg, #2b6cb0, #90cdf4); }
+  .c2 { background: linear-gradient(135deg, #2f855a, #9ae6b4); }
+  .c3 { background: linear-gradient(135deg, #1a2a4a, #4a3018); }
+  .c4 { background: linear-gradient(135deg, #44337a, #b794f4); }
+  .c5 { background: linear-gradient(135deg, #1a202c, #4a5568); }
+  .c6 { background: linear-gradient(135deg, #22543d, #68d391); }
+  .info { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .info h2 { font-size: 1.05rem; }
+  .info p { color: var(--dim); font-size: 0.85rem; line-height: 1.45; flex: 1; }
+  .play {
+    margin-top: 10px;
+    background: var(--accent);
+    color: #2e2410;
+    text-align: center;
+    padding: 9px 0;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 0.95rem;
+  }
+  .game:hover .play { background: var(--accent2); }
+
+  footer {
+    margin-top: 44px;
+    text-align: center;
+    color: var(--dim);
+    font-size: 0.85rem;
+    line-height: 1.8;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">
+      <div class="joy">🕹️</div>
+      <div>
+        <h1>Արենի խաղասրահը</h1>
+        <p>Aren's Arcade — խաղա՛, բոլորն անվճար են</p>
+      </div>
+    </div>
+    <nav>
+      <a href="./about.html">😼 Մեր մասին</a>
+      <a href="https://github.com/vetvarpet/aren">⭐ GitHub</a>
+    </nav>
+  </header>
+
+  <div class="grid">
+
+    <a class="game" href="./cat-jump/">
+      <div class="cover c1">🐱</div>
+      <div class="info">
+        <h2>Կատվիկ</h2>
+        <p>Թռիր արկղերի վրայով, բռնիր ձկներ, կռացիր գիշերային վիթխարի ագռավների տակ։ 100 միավոր՝ գավաթ։</p>
+        <div class="play">▶ Խաղալ</div>
+      </div>
+    </a>
+
+    <a class="game" href="./city-drive/">
+      <div class="cover c2">🚗</div>
+      <div class="info">
+        <h2>Քաղաքի վարորդը</h2>
+        <p>Բաց քաղաք, պիցցայի առաքումներ, գիշեր-ցերեկ ու ոստիկան, որ չի սիրում արագ քշողներին։</p>
+        <div class="play">▶ Խաղալ</div>
+      </div>
+    </a>
+
+    <a class="game" href="./snake/">
+      <div class="cover c6">🐍</div>
+      <div class="info">
+        <h2>Օձուկը</h2>
+        <p>Դասականը՝ կեր խնձորները, երկարիր, որսա ոսկե բոնուսը, բայց պոչիդ չկպնես։</p>
+        <div class="play">▶ Խաղալ</div>
+      </div>
+    </a>
+
+    <a class="game" href="./piano/">
+      <div class="cover c4">🎹</div>
+      <div class="info">
+        <h2>Դաշնամուր</h2>
+        <p>Նվագիր ստեղնաշարով կամ մատով, ձայնագրիր քո մեղեդին ու լսիր 5 ներկառուցված երգ։</p>
+        <div class="play">▶ Նվագել</div>
+      </div>
+    </a>
+
+    <a class="game" href="./pirate-chat/">
+      <div class="cover c3">🏴‍☠️</div>
+      <div class="info">
+        <h2>Կապիտան Սևբեղ</h2>
+        <p>Ծովահեն-զրուցակից՝ կատակներով, երգով ու գիտելիքների սնդուկով։ Արրր՜։</p>
+        <div class="play">▶ Խոսել</div>
+      </div>
+    </a>
+
+    <a class="game" href="./secret-club/">
+      <div class="cover c5">🕵️</div>
+      <div class="info">
+        <h2>Գաղտնի ակումբ</h2>
+        <p>Փակ դուռ, պահակ-բու ու Կեսարի գաղտնագրերի մեքենա։ Մուտքը՝ միայն գաղտնաբառ իմացողներին։</p>
+        <div class="play">🔑 Մտնել</div>
+      </div>
+    </a>
+
+  </div>
+
+  <footer>
+    Սարքել է Արենը՝ 10 տարեկան 😼 · Built by Aren, age 10<br>
+    Բոլոր խաղերը գրված են JavaScript-ով, ստեղծված Claude-ի հետ միասին ·
+    <a href="https://github.com/vetvarpet/aren">Կոդը GitHub-ում</a>
+  </footer>
+
+</div>
+</body>
+</html>
