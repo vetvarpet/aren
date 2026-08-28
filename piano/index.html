@@ -71,6 +71,7 @@
     cursor: pointer;
   }
   .white.on { background: linear-gradient(#ffe9a8, #ffd76e); }
+  .white.bad { background: linear-gradient(#ffc4b8, #ff8a78); }
   .black {
     position: absolute;
     top: 0;
@@ -88,6 +89,50 @@
     color: #9a93b5;
   }
   .black.on { background: linear-gradient(#6a5f9e, #4a4170); }
+  .black.bad { background: linear-gradient(#c0392b, #7a1f15); }
+
+  /* ——— Սովորելու ռեժիմ ——— */
+  /* Ստեղնը, որ պիտի սեղմես՝ վառվում-փայլում է ոսկեգույն */
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 6px 2px rgba(255, 215, 110, 0.5); }
+    50%      { box-shadow: 0 0 26px 8px rgba(255, 215, 110, 0.95); }
+  }
+  .white.learn-target { background: linear-gradient(#fff3c4, #ffd76e); animation: glow 0.9s infinite; }
+  .black.learn-target { background: linear-gradient(#d9b35a, #8a6a1f); animation: glow 0.9s infinite; color: #2e2410; }
+  #learnBtn.active { background: #ffd76e; color: #2e2410; border-color: #ffe9a8; }
+
+  #learnBar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #3d3560;
+    border: 2px solid #6a5f9e;
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-size: 0.95rem;
+  }
+  #learnBar button {
+    border: none;
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #6a5f9e;
+    color: #f5eede;
+  }
+
+  /* Կոնֆետին՝ հաղթանակի համար */
+  .confetti {
+    position: fixed;
+    top: -50px;
+    z-index: 9;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(115vh) rotate(720deg); }
+  }
 </style>
 
 <h1>Արենի դաշնամուրը 🎹</h1>
@@ -95,6 +140,12 @@
 <div class="controls">
   <button id="recBtn">⏺ Ձայնագրել</button>
   <button id="playBtn" disabled>▶ Լսել իմ մեղեդին</button>
+  <button id="learnBtn">🎓 Սովորել</button>
+</div>
+
+<div id="learnBar" hidden>
+  <span id="learnText"></span>
+  <button id="learnListen" hidden>👂 Լսել</button>
 </div>
 
 <div class="controls" id="songs">
@@ -213,6 +264,9 @@ function pressKey(i) {
   if (recording) {
     recorded.push({ i, dt: performance.now() - recStart });
   }
+
+  // Սովորելու ռեժիմում ստուգում ենք՝ ճի՞շտ ստեղնը սեղմեցիր
+  if (learn && learn.seq && !demo) checkLearn(i);
 }
 
 // Մատով / մկնիկով
@@ -323,8 +377,114 @@ const SONGS = {
 document.querySelectorAll('#songs button').forEach(btn => {
   btn.addEventListener('click', () => {
     initAudio();
+    // Սովորելու ռեժիմում երգի կոճակը երգը չի նվագում, այլ սկսում է դասը
+    if (learn) { startLesson(btn); return; }
     const song = SONGS[btn.dataset.song];
     playSequence(song.notes.map(([i, b]) => ({ i, dt: b * song.beat })));
   });
 });
+
+// ——————————————————————————————————————
+//  ՍՈՎՈՐԵԼՈՒ ՌԵԺԻՄ 🎓
+//  Ստեղնը վառվում է → դու սեղմում ես → հաջորդը։
+//  Երբ ամբողջ երգը նվագես՝ կոնֆետի՜ 🎉
+// ——————————————————————————————————————
+let learn = null;    // { seq, idx, title } կամ null, երբ ռեժիմն անջատված է
+let demo = false;    // երբ «Լսել»-ն է նվագում, սեղմումները չենք հաշվում
+
+const learnBtn = document.getElementById('learnBtn');
+const learnBar = document.getElementById('learnBar');
+const learnText = document.getElementById('learnText');
+const learnListen = document.getElementById('learnListen');
+
+learnBtn.addEventListener('click', () => {
+  if (learn) { exitLearn(); return; }
+  stopPlayback();
+  learn = { seq: null, idx: 0, title: '' };
+  learnBtn.classList.add('active');
+  learnBar.hidden = false;
+  learnListen.hidden = true;
+  learnText.textContent = '🎓 Ընտրիր երգը վերևից 👆';
+});
+
+function exitLearn() {
+  clearGlow();
+  learn = null;
+  learnBtn.classList.remove('active');
+  learnBar.hidden = true;
+}
+
+function clearGlow() {
+  keyEls.forEach(el => el.classList.remove('learn-target'));
+}
+
+function startLesson(btn) {
+  const song = SONGS[btn.dataset.song];
+  learn.songKey = btn.dataset.song;
+  learn.title = btn.textContent;
+  learn.seq = song.notes.map(([i]) => i);   // միայն նոտաները, առանց ռիթմի
+  learn.idx = 0;
+  learnListen.hidden = false;
+  showTarget();
+}
+
+// Վառում ենք հերթական ստեղնը ու գրում, թե որտեղ ենք հասել
+function showTarget() {
+  clearGlow();
+  keyEls[learn.seq[learn.idx]].classList.add('learn-target');
+  learnText.textContent = `${learn.title} — նոտա ${learn.idx + 1}/${learn.seq.length}`;
+}
+
+function checkLearn(i) {
+  if (i === learn.seq[learn.idx]) {
+    learn.idx++;
+    if (learn.idx >= learn.seq.length) { finishLesson(); return; }
+    showTarget();
+  } else {
+    // Սխալ ստեղն է. մի պահ կարմրում է, հետո նորից փորձիր
+    const el = keyEls[i];
+    el.classList.add('bad');
+    setTimeout(() => el.classList.remove('bad'), 250);
+  }
+}
+
+function finishLesson() {
+  clearGlow();
+  learnText.textContent = `🏆 Բրավո՜։ Դու սովորեցիր «${learn.title.slice(2).trim()}»`;
+  learn.seq = null;   // դասը վերջացավ, կարող ես նոր երգ ընտրել
+  learnListen.hidden = true;
+  fanfare();
+  confetti();
+}
+
+// «Լսել» կոճակը՝ երգը մեկ անգամ ցույց է տալիս, հետո նորից դու ես նվագում
+learnListen.addEventListener('click', () => {
+  if (!learn || !learn.seq) return;
+  const song = SONGS[learn.songKey];
+  demo = true;
+  playSequence(song.notes.map(([i, b]) => ({ i, dt: b * song.beat })));
+  const last = song.notes[song.notes.length - 1];
+  setTimeout(() => { demo = false; }, last[1] * song.beat + 600);
+});
+
+// Հաղթանակի փոքրիկ շեփորիկ՝ Դո-Մի-Սոլ-Դո²-Մի²
+function fanfare() {
+  [0, 4, 7, 12, 16].forEach((semi, k) => setTimeout(() => playTone(semi), k * 130));
+}
+
+// Կոնֆետի՝ վերևից թափվող 40 զվարճալի բան
+function confetti() {
+  const stuff = ['🎉', '⭐', '🎵', '💛', '🎊', '✨'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
 </script>
