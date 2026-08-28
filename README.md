@@ -11,10 +11,7 @@ and iterating on the code together with Claude, one change at a time.
 |--------|---------|------------|
 | [`cat-jump`](./cat-jump/) | 🐱 Կատվիկ | Runner: jump over boxes, catch fish, duck under giant night crows, win the trophy at 100 points |
 | [`city-drive`](./city-drive/) | 🚗 Քաղաքի վարորդը | Open city: pizza deliveries, traffic, a police chase, a day/night cycle and a car shop |
-| [`pirate-chat`](./pirate-chat/) | 🏴‍☠️ Կապիտան Սևբեղ | Pirate chatbot with jokes, songs and a chest of real facts |
 | [`piano`](./piano/) | 🎹 Դաշնամուր | Playable piano that records your melody and knows 5 songs |
-| [`secret-club`](./secret-club/) | 🕵️ Գաղտնի ակումբ | Password door, Caesar cipher machine, members and secret notes |
-| [`snake`](./snake/) | 🐍 Օձուկը | The classic — with golden apples and swipe controls |
 
 Every project is a single self-contained `index.html` — no frameworks, no
 build step. Open any folder's `index.html` in a browser and play. Sounds and
