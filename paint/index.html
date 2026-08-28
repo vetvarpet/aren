@@ -1,0 +1,257 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Նկարչական տախտակ 🎨</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    height: 100dvh;
+    padding: 10px;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    touch-action: none;
+  }
+  h1 { font-size: clamp(1rem, 3.5vw, 1.5rem); color: #ffd76e; }
+
+  /* ——— Գործիքների գոտին ——— */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    max-width: 860px;
+  }
+  .swatch {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.25);
+    cursor: pointer;
+  }
+  .swatch.sel { border-color: #ffd76e; transform: scale(1.18); }
+  .swatch, .size, .tbtn { transition: transform 0.1s; }
+  .swatch:active, .size:active, .tbtn:active { transform: scale(0.9); }
+
+  .size {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #3d3560;
+    border: 3px solid #6a5f9e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .size.sel { border-color: #ffd76e; background: #4a4170; }
+  .size i {
+    background: #f5eede;
+    border-radius: 50%;
+    display: block;
+  }
+
+  .tbtn {
+    border: 2px solid #6a5f9e;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #3d3560;
+    color: #f5eede;
+  }
+  .tbtn.sel { background: #ffd76e; color: #2e2410; border-color: #ffe9a8; }
+
+  /* ——— Թուղթը ——— */
+  .paper {
+    flex: 1;
+    width: min(100%, 860px);
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 14px 36px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+  canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+</style>
+
+<h1>Նկարչական տախտակ 🎨</h1>
+
+<div class="toolbar" id="colors"></div>
+
+<div class="toolbar">
+  <div class="toolbar" id="sizes"></div>
+  <button class="tbtn" id="eraser">🧽 Ռետին</button>
+  <button class="tbtn" id="undo">↩ Հետ</button>
+  <button class="tbtn" id="clear">🗑 Մաքրել</button>
+  <button class="tbtn" id="save">💾 Պահել</button>
+</div>
+
+<div class="paper"><canvas id="pad"></canvas></div>
+
+<script>
+// ——————————————————————————————————————
+//  ՆԿԱՐՉԱԿԱՆ ՏԱԽՏԱԿ — նկարիր մատով կամ մկնիկով
+//  Նկարդ ինքն իրեն հիշվում է, իսկ «Պահել»-ը տալիս է PNG ֆայլ
+// ——————————————————————————————————————
+
+const COLORS = [
+  '#111111', '#e74c3c', '#e67e22', '#ffd166', '#2ecc71',
+  '#1e90ff', '#8e44ad', '#ff7bac', '#8d5524', '#95a5a6',
+];
+const SIZES = [4, 10, 20, 36];
+
+let color = COLORS[0];
+let size = SIZES[1];
+let erasing = false;
+
+const canvas = document.getElementById('pad');
+const ctx = canvas.getContext('2d');
+const paper = document.querySelector('.paper');
+
+// Էկրանի խտության չափով ենք սարքում, որ գծերը սուր ու գեղեցիկ լինեն
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+function sizeCanvas() {
+  const old = canvas.width ? canvas.toDataURL() : null;
+  canvas.width = paper.clientWidth * DPR;
+  canvas.height = paper.clientHeight * DPR;
+  ctx.scale(DPR, DPR);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  whiten();
+  if (old) drawImageFromURL(old);
+}
+function whiten() {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+function drawImageFromURL(url) {
+  const img = new Image();
+  img.onload = () => ctx.drawImage(img, 0, 0, canvas.width / DPR, canvas.height / DPR);
+  img.src = url;
+}
+
+// ——— Գույների կոճակները ———
+const colorsBox = document.getElementById('colors');
+COLORS.forEach((c, k) => {
+  const b = document.createElement('div');
+  b.className = 'swatch' + (k === 0 ? ' sel' : '');
+  b.style.background = c;
+  b.addEventListener('pointerdown', () => {
+    color = c;
+    erasing = false;
+    document.querySelectorAll('.swatch').forEach(x => x.classList.remove('sel'));
+    eraserBtn.classList.remove('sel');
+    b.classList.add('sel');
+  });
+  colorsBox.appendChild(b);
+});
+
+// ——— Վրձնի չափսերը ———
+const sizesBox = document.getElementById('sizes');
+SIZES.forEach((s, k) => {
+  const b = document.createElement('div');
+  b.className = 'size' + (k === 1 ? ' sel' : '');
+  const dot = document.createElement('i');
+  dot.style.width = dot.style.height = Math.min(s, 24) + 'px';
+  b.appendChild(dot);
+  b.addEventListener('pointerdown', () => {
+    size = s;
+    document.querySelectorAll('.size').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel');
+  });
+  sizesBox.appendChild(b);
+});
+
+// ——— Ռետինը (իրականում սպիտակ վրձին է 🤫) ———
+const eraserBtn = document.getElementById('eraser');
+eraserBtn.addEventListener('click', () => {
+  erasing = !erasing;
+  eraserBtn.classList.toggle('sel', erasing);
+  if (erasing) document.querySelectorAll('.swatch').forEach(x => x.classList.remove('sel'));
+});
+
+// ——— Նկարելը ———
+let drawing = false;
+let last = null;
+
+function pos(e) {
+  const r = canvas.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+
+canvas.addEventListener('pointerdown', (e) => {
+  drawing = true;
+  canvas.setPointerCapture(e.pointerId);
+  last = pos(e);
+  stroke(last, last);   // մեկ կետ էլ է նկար
+});
+canvas.addEventListener('pointermove', (e) => {
+  if (!drawing) return;
+  const p = pos(e);
+  stroke(last, p);
+  last = p;
+});
+canvas.addEventListener('pointerup', () => {
+  if (!drawing) return;
+  drawing = false;
+  remember();
+});
+
+function stroke(a, b) {
+  ctx.strokeStyle = erasing ? '#ffffff' : color;
+  ctx.lineWidth = erasing ? size * 2.5 : size;
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+}
+
+// ——— «Հետ» կոճակը. հիշում ենք վերջին 15 քայլը ———
+let history = [];
+function remember() {
+  history.push(canvas.toDataURL());
+  if (history.length > 15) history.shift();
+  try { localStorage.setItem('aren-paint', history[history.length - 1]); } catch (e) {}
+}
+document.getElementById('undo').addEventListener('click', () => {
+  if (history.length === 0) return;
+  history.pop();                                   // հանում ենք վերջին քայլը
+  whiten();
+  const prev = history[history.length - 1];
+  if (prev) drawImageFromURL(prev);
+  try { localStorage.setItem('aren-paint', prev || ''); } catch (e) {}
+});
+
+// ——— Մաքրել ———
+document.getElementById('clear').addEventListener('click', () => {
+  whiten();
+  remember();
+});
+
+// ——— Պահել՝ PNG ֆայլ քո սարքի մեջ ———
+document.getElementById('save').addEventListener('click', () => {
+  const a = document.createElement('a');
+  a.download = 'areni-nkar.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+});
+
+// ——— Սկիզբ. եթե հին նկար կա հիշված՝ բերում ենք այն ———
+sizeCanvas();
+try {
+  const saved = localStorage.getItem('aren-paint');
+  if (saved) { drawImageFromURL(saved); history.push(saved); }
+} catch (e) {}
+
+window.addEventListener('resize', sizeCanvas);
+</script>
