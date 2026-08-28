@@ -419,6 +419,7 @@ function clearGlow() {
 }
 
 function startLesson(btn) {
+  stopPlayback();   // եթե երգ էր հնչում, լռեցնում ենք՝ դասը մաքուր սկսելու համար
   const song = SONGS[btn.dataset.song];
   learn.songKey = btn.dataset.song;
   learn.title = btn.textContent;
@@ -455,6 +456,12 @@ function finishLesson() {
   learnListen.hidden = true;
   fanfare();
   confetti();
+
+  // Իսկ հիմա՝ պարգևը. երգը հնչում է ամբողջությամբ, իսկական ռիթմով 🎶
+  const song = SONGS[learn.songKey];
+  setTimeout(() => {
+    playSequence(song.notes.map(([i, b]) => ({ i, dt: b * song.beat })));
+  }, 1600);
 }
 
 // «Լսել» կոճակը՝ երգը մեկ անգամ ցույց է տալիս, հետո նորից դու ես նվագում
