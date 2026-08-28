@@ -1,0 +1,298 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Հրթիռը տիեզերքում 🚀</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: #05051a; touch-action: none; }
+  canvas { display: block; width: 100vw; height: 100dvh; touch-action: none; }
+</style>
+
+<canvas id="game"></canvas>
+
+<script>
+// ——————————————————————————————————————
+//  ՀՐԹԻՌԸ ՏԻԵԶԵՐՔՈՒՄ 🚀
+//  Հավաքիր աստղերը, խուսափիր ասթերոիդներից։
+//  Հրթիռը գնում է մատիդ (կամ մկնիկիդ) հետևից, ստեղնաշարով էլ կարելի է։
+// ——————————————————————————————————————
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let W, H;
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ——— Ձայները (ամեն ինչ սարքում ենք թվերով, առանց ֆայլերի) ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function beep(freq1, freq2, dur, type, vol) {
+  if (!actx) return;
+  const t = actx.currentTime;
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'square';
+  o.frequency.setValueAtTime(freq1, t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(freq2, 1), t + dur);
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sStar = () => beep(600, 1200, 0.15, 'square', 0.12);   // աստղ վերցրիր
+const sHit  = () => beep(300, 60, 0.4, 'sawtooth', 0.2);     // բա՜խ
+const sOver = () => { beep(400, 100, 0.8, 'triangle', 0.2); }; // խաղն ավարտվեց
+
+// ——— Խաղի վիճակը ———
+let rocket = { x: 0, y: 0, tx: 0, ty: 0 };   // tx, ty = ուր է ուզում գնալ
+let stars = [];        // ⭐ հավաքելու
+let rocks = [];        // ասթերոիդներ
+let dust = [];         // ֆոնի մանր աստղիկները
+let score = 0;
+let lives = 3;
+let inv = 0;           // անխոցելիության ժամանակ հարվածից հետո
+let speed = 2;
+let running = false;
+let over = false;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-rocket-best') || 0); } catch (e) {}
+
+function reset() {
+  rocket.x = rocket.tx = W / 2;
+  rocket.y = rocket.ty = H * 0.75;
+  stars = []; rocks = [];
+  score = 0; lives = 3; inv = 0; speed = 2;
+  over = false;
+}
+
+// Ֆոնի աստղափոշին
+for (let i = 0; i < 70; i++) {
+  dust.push({ x: Math.random(), y: Math.random(), s: Math.random() * 1.6 + 0.4 });
+}
+
+// ——— Կառավարումը ———
+function aim(e) {
+  const p = e.touches ? e.touches[0] : e;
+  rocket.tx = p.clientX;
+  rocket.ty = p.clientY - 70;   // մատից մի քիչ վերև, որ հրթիռը երևա
+}
+canvas.addEventListener('pointerdown', (e) => { e.preventDefault(); initAudio(); if (!running || over) { start(); return; } aim(e); });
+canvas.addEventListener('pointermove', (e) => { e.preventDefault(); aim(e); });
+canvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+const keys = {};
+document.addEventListener('keydown', (e) => {
+  keys[e.code] = true;
+  if ((!running || over) && (e.code === 'Space' || e.code === 'Enter')) { initAudio(); start(); }
+});
+document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+function start() {
+  reset();
+  running = true;
+}
+
+// ——— Նոր բաներ են գալիս վերևից ———
+function spawn() {
+  if (Math.random() < 0.035) {
+    stars.push({ x: 30 + Math.random() * (W - 60), y: -30, r: 14, spin: Math.random() * 6 });
+  }
+  if (Math.random() < 0.016 + Math.min(score, 60) * 0.0004) {
+    const r = 18 + Math.random() * 26;
+    rocks.push({
+      x: r + Math.random() * (W - r * 2), y: -r - 10, r,
+      drift: (Math.random() - 0.5) * 1.2,
+      spin: Math.random() * 6, vspin: (Math.random() - 0.5) * 0.04,
+    });
+  }
+}
+
+// ——— Թարմացում ———
+function update() {
+  // հրթիռը սահուն գնում է նպատակակետին
+  if (keys.ArrowLeft)  rocket.tx -= 7;
+  if (keys.ArrowRight) rocket.tx += 7;
+  if (keys.ArrowUp)    rocket.ty -= 7;
+  if (keys.ArrowDown)  rocket.ty += 7;
+  rocket.tx = Math.max(20, Math.min(W - 20, rocket.tx));
+  rocket.ty = Math.max(40, Math.min(H - 30, rocket.ty));
+  rocket.x += (rocket.tx - rocket.x) * 0.18;
+  rocket.y += (rocket.ty - rocket.y) * 0.18;
+
+  spawn();
+  speed = 2 + Math.min(score, 80) * 0.03;   // ինչքան շատ աստղ, այնքան արագ
+
+  for (const st of stars) { st.y += speed; st.spin += 0.05; }
+  for (const rk of rocks) { rk.y += speed * 1.15; rk.x += rk.drift; rk.spin += rk.vspin; }
+  stars = stars.filter(st => st.y < H + 40);
+  rocks = rocks.filter(rk => rk.y < H + 60);
+
+  // աստղ բռնեցի՞նք
+  for (let i = stars.length - 1; i >= 0; i--) {
+    const st = stars[i];
+    if (Math.hypot(st.x - rocket.x, st.y - rocket.y) < st.r + 22) {
+      stars.splice(i, 1);
+      score++;
+      sStar();
+    }
+  }
+
+  // ասթերոիդին կպա՞նք
+  if (inv > 0) inv--;
+  else {
+    for (const rk of rocks) {
+      if (Math.hypot(rk.x - rocket.x, rk.y - rocket.y) < rk.r + 16) {
+        lives--;
+        inv = 90;   // 1.5 վայրկյան անխոցելի ես ու թարթում ես
+        sHit();
+        if (lives <= 0) {
+          over = true;
+          sOver();
+          if (score > best) {
+            best = score;
+            try { localStorage.setItem('aren-rocket-best', best); } catch (e) {}
+          }
+        }
+        break;
+      }
+    }
+  }
+}
+
+// ——— Նկարելը ———
+function drawRocket() {
+  if (inv > 0 && Math.floor(inv / 6) % 2 === 0) return;   // թարթում
+  const x = rocket.x, y = rocket.y;
+  // բոցը
+  const f = 14 + Math.random() * 10;
+  ctx.fillStyle = '#ff9f43';
+  ctx.beginPath(); ctx.moveTo(x - 7, y + 22); ctx.lineTo(x, y + 22 + f); ctx.lineTo(x + 7, y + 22); ctx.fill();
+  ctx.fillStyle = '#ffd166';
+  ctx.beginPath(); ctx.moveTo(x - 4, y + 22); ctx.lineTo(x, y + 22 + f * 0.6); ctx.lineTo(x + 4, y + 22); ctx.fill();
+  // իրանը
+  ctx.fillStyle = '#eef0ff';
+  ctx.beginPath();
+  ctx.moveTo(x, y - 26);
+  ctx.quadraticCurveTo(x + 14, y - 4, x + 11, y + 22);
+  ctx.lineTo(x - 11, y + 22);
+  ctx.quadraticCurveTo(x - 14, y - 4, x, y - 26);
+  ctx.fill();
+  // թևիկները
+  ctx.fillStyle = '#e74c3c';
+  ctx.beginPath(); ctx.moveTo(x - 11, y + 8); ctx.lineTo(x - 20, y + 24); ctx.lineTo(x - 11, y + 22); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x + 11, y + 8); ctx.lineTo(x + 20, y + 24); ctx.lineTo(x + 11, y + 22); ctx.fill();
+  // քիթը և պատուհանը
+  ctx.fillStyle = '#e74c3c';
+  ctx.beginPath(); ctx.moveTo(x, y - 26); ctx.quadraticCurveTo(x + 9, y - 16, x + 10, y - 8); ctx.lineTo(x - 10, y - 8); ctx.quadraticCurveTo(x - 9, y - 16, x, y - 26); ctx.fill();
+  ctx.fillStyle = '#6ec5ff';
+  ctx.beginPath(); ctx.arc(x, y + 2, 6, 0, 7); ctx.fill();
+  ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(x, y + 2, 6, 0, 7); ctx.stroke();
+}
+
+function drawStar(st) {
+  ctx.save();
+  ctx.translate(st.x, st.y);
+  ctx.rotate(st.spin);
+  ctx.fillStyle = '#ffd166';
+  ctx.beginPath();
+  for (let k = 0; k < 10; k++) {
+    const r = k % 2 === 0 ? st.r : st.r * 0.45;
+    const a = (Math.PI / 5) * k - Math.PI / 2;
+    ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawRock(rk) {
+  ctx.save();
+  ctx.translate(rk.x, rk.y);
+  ctx.rotate(rk.spin);
+  ctx.fillStyle = '#7f8c8d';
+  ctx.beginPath();
+  for (let k = 0; k < 9; k++) {
+    const a = (Math.PI * 2 / 9) * k;
+    const r = rk.r * (0.82 + 0.18 * Math.sin(k * 7 + rk.r));
+    ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+  }
+  ctx.closePath();
+  ctx.fill();
+  // խառնարանները
+  ctx.fillStyle = '#626f70';
+  ctx.beginPath(); ctx.arc(-rk.r * 0.3, -rk.r * 0.15, rk.r * 0.22, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(rk.r * 0.25, rk.r * 0.3, rk.r * 0.16, 0, 7); ctx.fill();
+  ctx.restore();
+}
+
+function draw() {
+  ctx.fillStyle = '#05051a';
+  ctx.fillRect(0, 0, W, H);
+
+  // աստղափոշին սահում է ներքև՝ թռիչքի զգացողության համար
+  ctx.fillStyle = '#9a9ec7';
+  for (const d of dust) {
+    d.y += 0.0012 * speed;
+    if (d.y > 1) d.y -= 1;
+    ctx.globalAlpha = 0.5 + d.s * 0.3;
+    ctx.fillRect(d.x * W, d.y * H, d.s, d.s * 2);
+  }
+  ctx.globalAlpha = 1;
+
+  for (const st of stars) drawStar(st);
+  for (const rk of rocks) drawRock(rk);
+  if (running) drawRocket();
+
+  // հաշիվն ու կյանքերը
+  ctx.fillStyle = '#ffd166';
+  ctx.font = 'bold 22px system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText('⭐ ' + score, 14, 32);
+  ctx.textAlign = 'right';
+  ctx.fillText('❤️'.repeat(Math.max(lives, 0)), W - 14, 32);
+
+  if (!running || over) {
+    ctx.fillStyle = 'rgba(5,5,26,0.75)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#eef0ff';
+    ctx.font = 'bold ' + Math.min(38, W * 0.07) + 'px system-ui';
+    if (over) {
+      ctx.fillText('Խաղն ավարտվեց 💥', W / 2, H / 2 - 60);
+      ctx.font = 'bold 26px system-ui';
+      ctx.fillStyle = '#ffd166';
+      ctx.fillText('⭐ ' + score + '   ·   Ռեկորդ՝ ' + best, W / 2, H / 2 - 10);
+    } else {
+      ctx.fillText('Հրթիռը տիեզերքում 🚀', W / 2, H / 2 - 60);
+      ctx.font = '20px system-ui';
+      ctx.fillStyle = '#9a9ec7';
+      ctx.fillText('Հավաքիր ⭐ աստղերը, խուսափիր ասթերոիդներից', W / 2, H / 2 - 15);
+      if (best > 0) {
+        ctx.fillStyle = '#ffd166';
+        ctx.fillText('Ռեկորդդ՝ ' + best + ' ⭐', W / 2, H / 2 + 20);
+      }
+    }
+    ctx.font = 'bold 24px system-ui';
+    ctx.fillStyle = '#6ee7b7';
+    ctx.fillText(over ? 'Սեղմիր՝ նորից թռչելու 🚀' : 'Սեղմիր՝ թռչելու 🚀', W / 2, H / 2 + 70);
+  }
+}
+
+function loop() {
+  if (running && !over) update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
