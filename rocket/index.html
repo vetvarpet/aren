@@ -216,6 +216,16 @@ function drawStar(st) {
   ctx.restore();
 }
 
+// Սրտիկ՝ կյանքերի համար (երկու կլոր + եռանկյուն)
+function drawHeart(x, y, s) {
+  ctx.fillStyle = '#ff4d5a';
+  ctx.beginPath();
+  ctx.moveTo(x, y + s);
+  ctx.bezierCurveTo(x - s * 1.4, y, x - s * 0.7, y - s, x, y - s * 0.25);
+  ctx.bezierCurveTo(x + s * 0.7, y - s, x + s * 1.4, y, x, y + s);
+  ctx.fill();
+}
+
 function drawRock(rk) {
   ctx.save();
   ctx.translate(rk.x, rk.y);
@@ -254,13 +264,16 @@ function draw() {
   for (const rk of rocks) drawRock(rk);
   if (running) drawRocket();
 
-  // հաշիվն ու կյանքերը
+  // Հաշիվն ու կյանքերը։ ԿԱՐԵՎՈՐ՝ canvas-ի մեջ էմոջի չենք գրում,
+  // որովհետև հեռախոսներում հաճախ չի երևում — ամեն ինչ ինքներս ենք նկարում։
+  drawStar({ x: 26, y: 26, r: 12, spin: -0.3 });
   ctx.fillStyle = '#ffd166';
   ctx.font = 'bold 22px system-ui';
   ctx.textAlign = 'left';
-  ctx.fillText('⭐ ' + score, 14, 32);
-  ctx.textAlign = 'right';
-  ctx.fillText('❤️'.repeat(Math.max(lives, 0)), W - 14, 32);
+  ctx.textBaseline = 'middle';
+  ctx.fillText(String(score), 46, 27);
+  for (let k = 0; k < Math.max(lives, 0); k++) drawHeart(W - 24 - k * 30, 26, 11);
+  ctx.textBaseline = 'alphabetic';
 
   if (!running || over) {
     ctx.fillStyle = 'rgba(5,5,26,0.75)';
@@ -269,23 +282,33 @@ function draw() {
     ctx.fillStyle = '#eef0ff';
     ctx.font = 'bold ' + Math.min(38, W * 0.07) + 'px system-ui';
     if (over) {
-      ctx.fillText('Խաղն ավարտվեց 💥', W / 2, H / 2 - 60);
+      ctx.fillText('Խաղն ավարտվեց', W / 2, H / 2 - 70);
+      drawStar({ x: W / 2 - 70, y: H / 2 - 18, r: 13, spin: -0.3 });
       ctx.font = 'bold 26px system-ui';
       ctx.fillStyle = '#ffd166';
-      ctx.fillText('⭐ ' + score + '   ·   Ռեկորդ՝ ' + best, W / 2, H / 2 - 10);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(score + '  ·  Ռեկորդ՝ ' + best, W / 2 - 48, H / 2 - 16);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
     } else {
-      ctx.fillText('Հրթիռը տիեզերքում 🚀', W / 2, H / 2 - 60);
-      ctx.font = '20px system-ui';
+      ctx.fillText('Հրթիռը տիեզերքում', W / 2, H / 2 - 90);
+      ctx.font = Math.min(20, W * 0.05) + 'px system-ui';
       ctx.fillStyle = '#9a9ec7';
-      ctx.fillText('Հավաքիր ⭐ աստղերը, խուսափիր ասթերոիդներից', W / 2, H / 2 - 15);
+      ctx.fillText('Հավաքիր աստղերը,', W / 2, H / 2 - 48);
+      ctx.fillText('խուսափիր ասթերոիդներից', W / 2, H / 2 - 20);
       if (best > 0) {
         ctx.fillStyle = '#ffd166';
-        ctx.fillText('Ռեկորդդ՝ ' + best + ' ⭐', W / 2, H / 2 + 20);
+        ctx.fillText('Ռեկորդդ՝ ' + best, W / 2, H / 2 + 12);
       }
     }
+    // Ցուցադրական հրթիռ՝ վերնագրի էկրանին էլ ենք մենք նկարում
+    rocket.x = W / 2; rocket.y = H / 2 + 70;
+    inv = 0;
+    drawRocket();
     ctx.font = 'bold 24px system-ui';
     ctx.fillStyle = '#6ee7b7';
-    ctx.fillText(over ? 'Սեղմիր՝ նորից թռչելու 🚀' : 'Սեղմիր՝ թռչելու 🚀', W / 2, H / 2 + 70);
+    ctx.fillText(over ? 'Սեղմիր՝ նորից թռչելու' : 'Սեղմիր՝ թռչելու', W / 2, H / 2 + 150);
   }
 }
 
