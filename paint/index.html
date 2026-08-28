@@ -18,6 +18,7 @@
     -webkit-user-select: none;
     overflow: hidden;
     touch-action: none;
+    overscroll-behavior: none;   /* որ էջը «ռեզինի պես» չձգվի iPhone-ում */
   }
   h1 { font-size: clamp(1rem, 3.5vw, 1.5rem); color: #ffd76e; }
 
@@ -81,7 +82,25 @@
     box-shadow: 0 14px 36px rgba(0,0,0,0.5);
     overflow: hidden;
   }
-  canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+  /* touch-action: none — ամենակարևոր տողը հեռախոսի համար.
+     ասում է բրաուզերին՝ «մատը այստեղ նկարելու համար է, էջը մի՛ շարժիր» */
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+    touch-action: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Նեղ էկրանին (հեռախոս) գործիքները փոքրանում են, որ ամեն ինչ տեղավորվի */
+  @media (max-width: 520px) {
+    .swatch { width: 26px; height: 26px; border-width: 2px; }
+    .size { width: 28px; height: 28px; }
+    .size i { transform: scale(0.8); }
+    .tbtn { padding: 6px 11px; font-size: 0.8rem; }
+    .toolbar { gap: 6px; }
+  }
 </style>
 
 <h1>Նկարչական տախտակ 🎨</h1>
@@ -189,23 +208,46 @@ function pos(e) {
   return { x: e.clientX - r.left, y: e.clientY - r.top };
 }
 
-canvas.addEventListener('pointerdown', (e) => {
+function startDraw(p) {
   drawing = true;
-  canvas.setPointerCapture(e.pointerId);
-  last = pos(e);
-  stroke(last, last);   // մեկ կետ էլ է նկար
-});
-canvas.addEventListener('pointermove', (e) => {
+  last = p;
+  stroke(p, p);   // մեկ կետ էլ է նկար
+}
+function moveDraw(p) {
   if (!drawing) return;
-  const p = pos(e);
   stroke(last, p);
   last = p;
-});
-canvas.addEventListener('pointerup', () => {
+}
+function endDraw() {
   if (!drawing) return;
   drawing = false;
   remember();
-});
+}
+
+if (window.PointerEvent) {
+  // Նոր բրաուզերներ՝ մկնիկը, մատն ու գրիչը բոլորը մեկ տեղով են գալիս
+  canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();   // հեռախոսին ասում ենք՝ սա նկարել է, ոչ թե էջը քաշել
+    startDraw(pos(e));
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!drawing) return;
+    e.preventDefault();
+    moveDraw(pos(e));
+  });
+  canvas.addEventListener('pointerup', endDraw);
+  canvas.addEventListener('pointercancel', endDraw);
+} else {
+  // Հին հեռախոսներ, որ pointer չգիտեն՝ նկարում ենք touch-ով
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(pos(e.touches[0])); }, { passive: false });
+  canvas.addEventListener('touchmove', (e) => { e.preventDefault(); moveDraw(pos(e.touches[0])); }, { passive: false });
+  canvas.addEventListener('touchend', endDraw);
+  // ...իսկ մկնիկի համար՝ պահուստային տարբերակ
+  canvas.addEventListener('mousedown', (e) => startDraw(pos(e)));
+  canvas.addEventListener('mousemove', (e) => moveDraw(pos(e)));
+  canvas.addEventListener('mouseup', endDraw);
+}
 
 function stroke(a, b) {
   ctx.strokeStyle = erasing ? '#ffffff' : color;
