@@ -91,6 +91,14 @@
 //  Սեղմիր հերթով՝ 1, 2, 3… եթե հիշում ես, թե որն որտեղ էր։
 // ——————————————————————————————————————
 
+// Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
 const field = document.getElementById('field');
 const levelEl = document.getElementById('level');
 const bestEl = document.getElementById('best');

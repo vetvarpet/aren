@@ -18,6 +18,7 @@
     user-select: none;
     -webkit-user-select: none;
     overflow: hidden;
+    touch-action: manipulation;   /* արագ սեղմելիս էկրանը չմեծանա */
   }
   h1 { font-size: clamp(1.2rem, 4vw, 1.9rem); color: #ffd76e; }
   .hint { font-size: 0.9rem; opacity: 0.7; text-align: center; }
@@ -166,6 +167,14 @@
 //  ԱՐԵՆԻ ԴԱՇՆԱՄՈՒՐԸ — չորրորդ նախագիծը
 //  Նվագիր, ձայնագրիր ու լսիր քո սեփական մեղեդին
 // ——————————————————————————————————————
+
+// Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
 
 // ——— Նոտաները ———
 // semi = քանի «կիսատոն» է Դո-ից բարձր։ Ինչքան մեծ թիվը, այնքան բարձր ձայնը։

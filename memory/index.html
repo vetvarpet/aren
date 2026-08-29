@@ -107,6 +107,14 @@
 //  Փորձիր գտնել բոլորը ամենաքիչ փորձով։
 // ——————————————————————————————————————
 
+// Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
 // Զույգերի նկարները՝ Արենի սայտի հերոսները 😄
 const PICS = ['🐱', '🚗', '🎹', '🚀', '⭐', '🍕', '🐶', '⚽'];
 

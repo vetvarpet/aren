@@ -91,6 +91,14 @@
 //  Ամեն շրջան շղթան մեկով երկարում է։ Ինչքա՞ն կհիշես։
 // ——————————————————————————————————————
 
+// Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
 const panes = [0, 1, 2, 3].map(i => document.getElementById('p' + i));
 const roundEl = document.getElementById('round');
 const bestEl = document.getElementById('best');
