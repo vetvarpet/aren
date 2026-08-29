@@ -22,6 +22,7 @@
     color: var(--ink);
     font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
     min-height: 100dvh;
+    touch-action: manipulation;   /* արագ սեղմելիս էկրանը չմեծանա */
   }
   .wrap { max-width: 760px; margin: 0 auto; padding: 20px 18px 60px; }
   nav { padding-bottom: 24px; }
@@ -125,5 +126,15 @@
   </div>
 
 </div>
+
+<script>
+// Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>
 </body>
 </html>
