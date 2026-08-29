@@ -60,12 +60,15 @@ const car = {
 };
 let maxSpeed = 7;             // սովորական մեքենայի առավելագույն արագությունը
 let accel = 0.14;             // ինչ արագ է թափ հավաքում
-let upgraded = false;         // գնե՞լ ես արդեն սպորտային մեքենան
+let carLevel = 0;             // 0 = սովորական, 1 = սպորտային, 2 = ՈՍԿԵ 👑
 
 // ——— Մեքենաների խանութը ———
-// Հավաքիր 200֏ ու արի այստեղ. սպորտայինը քեզ է սպասում
+// Երկու մակարդակ կա. սպորտայինը՝ 200֏, իսկ ՈՍԿԵՆ՝ 500֏ ու ամենաարագն է
 const SHOP = { x: 1750, y: 750 };
-const CAR_PRICE = 200;
+const UPGRADES = [
+  { price: 200, maxSpeed: 9.2, accel: 0.2,  text: '🏎 Նոր մեքենա՜' },
+  { price: 500, maxSpeed: 11,  accel: 0.27, text: '👑 ՈՍԿԵ ՄԵՔԵՆԱ՜' },
+];
 
 // ——— Ոստիկանությունը ———
 // Շատ արագ ես քշում կամ մեքենաներ ես խփում → ոստիկանը կնկատի ու կհետապնդի
@@ -369,14 +372,15 @@ function update() {
   police.y += Math.sin(police.angle) * police.speed;
 
   // ——— Խանութը ———
-  // 200֏ ունե՞ս ու եկար խանութ → սպորտային մեքենա 🏎
-  if (!upgraded && money >= CAR_PRICE && Math.hypot(SHOP.x - car.x, SHOP.y - car.y) < 80) {
-    upgraded = true;
-    money -= CAR_PRICE;
-    maxSpeed = 9.2;
-    accel = 0.2;
+  // Փողդ հերիքո՞ւմ է հաջորդ մեքենային ու եկար խանութ → գնում ես
+  const nextCar = UPGRADES[carLevel];
+  if (nextCar && money >= nextCar.price && Math.hypot(SHOP.x - car.x, SHOP.y - car.y) < 80) {
+    money -= nextCar.price;
+    carLevel++;
+    maxSpeed = nextCar.maxSpeed;
+    accel = nextCar.accel;
     sound('buy');
-    popups.push({ x: car.x, y: car.y - 40, life: 90, text: '🏎 Նոր մեքենա՜' });
+    popups.push({ x: car.x, y: car.y - 40, life: 90, text: nextCar.text });
   }
 
   // հասա՞ր նշանակետին
@@ -472,9 +476,10 @@ function draw() {
     ctx.fillText(mission.stage === 'pickup' ? '🍕' : '🏠', mission.x, mission.y + 10);
   }
 
-  // մեքենաների խանութը (մինչև սպորտայինը գնելը)
-  if (!upgraded) {
-    ctx.strokeStyle = '#5bc0de';
+  // մեքենաների խանութը (մինչև բոլոր մեքենաները գնելը)
+  // Կապույտ շրջան՝ սպորտայինի հերթն է, ոսկեգույն՝ ՈՍԿԵ մեքենայի 👑
+  if (carLevel < UPGRADES.length) {
+    ctx.strokeStyle = carLevel === 1 ? '#ffd700' : '#5bc0de';
     ctx.lineWidth = 5;
     ctx.beginPath();
     ctx.arc(SHOP.x, SHOP.y, 46 + Math.sin(frame * 0.1) * 6, 0, Math.PI * 2);
@@ -490,8 +495,13 @@ function draw() {
   // ոստիկանական մեքենան
   drawCar(police.x, police.y, police.angle, '#f2f4f8', false, true);
 
-  // քո մեքենան. կարմիրը՝ սովորական, դեղինը՝ սպորտային
-  drawCar(car.x, car.y, car.angle, upgraded ? '#f4c50f' : '#e63946', true);
+  // քո մեքենան. կարմիր՝ սովորական, դեղին՝ սպորտային, փայլուն ոսկե՝ 👑
+  const myColor = carLevel === 2 ? '#ffd700' : carLevel === 1 ? '#f4c50f' : '#e63946';
+  drawCar(car.x, car.y, car.angle, myColor, true);
+  if (carLevel === 2) {
+    drawSparkles(car.x, car.y);        // փայլիկները պտտվում են մեքենայի շուրջ
+    drawCrown(car.x, car.y - 34);      // թագը լողում է մեքենայի վրայում
+  }
 
   // ——— Գիշերը ———
   if (night > 0.03) {
@@ -561,6 +571,12 @@ function drawCar(x, y, angle, color, isPlayer, isPolice) {
   ctx.beginPath();
   ctx.roundRect(-17, -9, 34, 18, 5);
   ctx.fill();
+  // ոսկե մեքենան մրցարշավային սպիտակ շերտեր ունի
+  if (isPlayer && carLevel === 2) {
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillRect(-17, -6, 34, 2.5);
+    ctx.fillRect(-17, 3.5, 34, 2.5);
+  }
   // ապակիները
   ctx.fillStyle = 'rgba(40,60,80,0.85)';
   ctx.beginPath();
@@ -578,6 +594,53 @@ function drawCar(x, y, angle, color, isPlayer, isPolice) {
     ctx.fillRect(-4, -4, 8, 8);
   }
   ctx.restore();
+}
+
+// Ոսկե թագը՝ միշտ ուղիղ, լողում է մեքենայի վրայում 👑
+function drawCrown(x, y) {
+  const bob = Math.sin(frame * 0.08) * 3;   // կամաց վեր-վար է շնչում
+  ctx.save();
+  ctx.translate(x, y + bob);
+  ctx.fillStyle = '#ffd700';
+  ctx.strokeStyle = '#a8760b';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(-11, 6);
+  ctx.lineTo(-11, -3); ctx.lineTo(-5.5, 2);
+  ctx.lineTo(0, -7);   ctx.lineTo(5.5, 2);
+  ctx.lineTo(11, -3);  ctx.lineTo(11, 6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  // թագի կարմիր քարիկը
+  ctx.fillStyle = '#e63946';
+  ctx.beginPath();
+  ctx.arc(0, 2, 2.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+// Փայլիկներ, որ թարթում են ոսկե մեքենայի շուրջը ✨
+function drawSparkles(x, y) {
+  for (let k = 0; k < 4; k++) {
+    const a = frame * 0.06 + k * 1.6;
+    const sx = x + Math.cos(a) * (30 + k * 4);
+    const sy = y + Math.sin(a * 1.3 + k * 5) * (24 + k * 3);
+    const tw = (Math.sin(frame * 0.3 + k * 2) + 1) / 2;   // թարթելը
+    const s = 2.5 + tw * 3;
+    ctx.fillStyle = 'rgba(255, 240, 150, ' + (0.35 + tw * 0.65) + ')';
+    ctx.beginPath();
+    ctx.moveTo(sx, sy - s);
+    ctx.lineTo(sx + s * 0.35, sy - s * 0.35);
+    ctx.lineTo(sx + s, sy);
+    ctx.lineTo(sx + s * 0.35, sy + s * 0.35);
+    ctx.lineTo(sx, sy + s);
+    ctx.lineTo(sx - s * 0.35, sy + s * 0.35);
+    ctx.lineTo(sx - s, sy);
+    ctx.lineTo(sx - s * 0.35, sy - s * 0.35);
+    ctx.closePath();
+    ctx.fill();
+  }
 }
 
 // ——— Էկրանի գրությունները ———
@@ -598,11 +661,12 @@ function drawHUD(camX, camY) {
     ctx.fillStyle = Math.floor(frame / 15) % 2 === 0 ? '#ff5050' : '#ffffff';
     ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
     ctx.fillText('🚓 ՓԱԽԻ՛Ր ՈՍՏԻԿԱՆԻՑ', VW / 2, 130);
-  } else if (!upgraded && money >= CAR_PRICE) {
-    // փողը հերիքում է → հուշում ենք խանութի մասին
-    ctx.fillStyle = '#aef1ff';
+  } else if (carLevel < UPGRADES.length && money >= UPGRADES[carLevel].price) {
+    // փողը հերիքում է հաջորդ մեքենային → հուշում ենք խանութի մասին
+    ctx.fillStyle = carLevel === 1 ? '#ffe066' : '#aef1ff';
     ctx.font = 'bold 18px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('🏪 Փողդ հերիքում է սպորտայինին. գնա խանութ', VW / 2, 130);
+    const carName = carLevel === 1 ? 'ՈՍԿԵ մեքենային 👑' : 'սպորտայինին';
+    ctx.fillText('🏪 Փողդ հերիքում է ' + carName + '. գնա խանութ', VW / 2, 130);
   }
 
   // սլաքը, որ ցույց է տալիս նշանակետի ուղղությունը
