@@ -1,0 +1,253 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Թվերի որսորդ 🔢</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    height: 100dvh;
+    padding: 12px;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+  h1 { font-size: clamp(1.1rem, 4vw, 1.6rem); color: #ffd76e; }
+  .stats { display: flex; gap: 18px; color: #9a9ec7; font-size: 0.95rem; }
+  .stats b { color: #6ee7b7; }
+  #status { font-size: 1.05rem; color: #ffd76e; min-height: 1.4em; text-align: center; }
+
+  /* ——— Խաղադաշտը ——— */
+  #field {
+    position: relative;
+    flex: 1;
+    width: min(96vw, 560px);
+    background: #241d42;
+    border: 2px solid #33356b;
+    border-radius: 18px;
+  }
+  .num {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #ffd76e;
+    color: #2e2410;
+    border: 3px solid #fff3c4;
+    touch-action: manipulation;
+    transition: transform 0.1s;
+  }
+  .num:active { transform: scale(0.92); }
+  .num.hidden2 { background: #3d3560; color: transparent; border-color: #6a5f9e; }
+  .num.good { background: #2ecc71; color: #fff; border-color: #b8f5d0; }
+  .num.bad { background: #e74c3c; color: #fff; border-color: #ffb4a8; animation: shake 0.3s; }
+  @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+  #startBtn {
+    border: 2px solid #6a5f9e;
+    border-radius: 999px;
+    padding: 12px 26px;
+    font-size: 1.05rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #ffd76e;
+    color: #2e2410;
+  }
+
+  .confetti {
+    position: fixed;
+    top: -50px;
+    z-index: 9;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<h1>Թվերի որսորդ 🔢</h1>
+<div class="stats">Մակարդակ՝ <b id="level">–</b><span>Ռեկորդ՝ <b id="best">0</b></span></div>
+<div id="field"></div>
+<div id="status">Հիշիր թվերի տեղերը, հետո սեղմիր հերթով՝ 1, 2, 3…</div>
+<button id="startBtn">▶ Սկսել</button>
+
+<script>
+// ——————————————————————————————————————
+//  ԹՎԵՐԻ ՈՐՍՈՐԴ 🔢
+//  Թվերը մի պահ երևում են, հետո թաքնվում։
+//  Սեղմիր հերթով՝ 1, 2, 3… եթե հիշում ես, թե որն որտեղ էր։
+// ——————————————————————————————————————
+
+const field = document.getElementById('field');
+const levelEl = document.getElementById('level');
+const bestEl = document.getElementById('best');
+const statusEl = document.getElementById('status');
+const startBtn = document.getElementById('startBtn');
+
+let count = 3;         // քանի թիվ է այս մակարդակում (սկսում ենք 3-ից)
+let expect = 1;        // որ թիվն է հիմա պետք սեղմել
+let waiting = false;   // թվերը դեռ երևում են, սեղմել դեռ պետք չէ
+let playing = false;
+let hideTimer = null;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-numbers-best') || 0); } catch (e) {}
+bestEl.textContent = best;
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.18, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sTap = (n) => tone(400 + n * 80, 0.12);
+const sLevel = () => { tone(660, 0.15); tone(880, 0.2, 'triangle', 0.2, 0.12); };
+const sBuzz = () => tone(120, 0.6, 'sawtooth', 0.25);
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.25, 'triangle', 0.2, k * 0.13));
+
+// ——— Թվերը դաշտի վրա շաղ տալը (որ իրար չկպչեն) ———
+function placeNumbers() {
+  field.innerHTML = '';
+  const W = field.clientWidth, H = field.clientHeight;
+  const R = 64;
+  const spots = [];
+  for (let n = 1; n <= count; n++) {
+    let x, y, tries = 0;
+    do {
+      x = 8 + Math.random() * (W - R - 16);
+      y = 8 + Math.random() * (H - R - 16);
+      tries++;
+    } while (tries < 200 && spots.some(s => Math.hypot(s.x - x, s.y - y) < R + 14));
+    spots.push({ x, y });
+
+    const el = document.createElement('div');
+    el.className = 'num';
+    el.textContent = n;
+    el.dataset.n = n;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.addEventListener('pointerdown', () => tap(el));
+    field.appendChild(el);
+  }
+}
+
+// ——— Խաղի ընթացքը ———
+function startGame() {
+  initAudio();
+  count = 3;
+  playing = true;
+  startBtn.hidden = true;
+  newLevel();
+}
+
+function newLevel() {
+  levelEl.textContent = count + ' թիվ';
+  expect = 1;
+  waiting = true;
+  placeNumbers();
+  statusEl.textContent = 'Հիշի՛ր տեղերը 👀';
+
+  // ինչքան շատ թիվ, այնքան մի քիչ ավելի ժամանակ ենք տալիս հիշելու
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(() => {
+    document.querySelectorAll('.num').forEach(el => el.classList.add('hidden2'));
+    waiting = false;
+    statusEl.textContent = 'Սեղմիր հերթով՝ 1, 2, 3… 👆';
+  }, 1500 + count * 500);
+}
+
+function tap(el) {
+  if (!playing || waiting) return;
+  const n = Number(el.dataset.n);
+  if (el.classList.contains('good')) return;   // արդեն գտածին նորից չսեղմես
+
+  if (n === expect) {
+    // Ճի՛շտ է — թիվը բացվում է ու կանաչում
+    el.classList.remove('hidden2');
+    el.classList.add('good');
+    sTap(n);
+    expect++;
+    if (expect > count) {
+      // ամբողջ մակարդակն անցա՜ր
+      sLevel();
+      count++;
+      if (count > 9) {
+        // 9 թիվ հիշեցիր — դու չեմպիոն ես 🏆
+        finish(true);
+        return;
+      }
+      statusEl.textContent = 'Ապրե՛ս 🎉 Հիմա ' + count + ' թիվ';
+      setTimeout(newLevel, 1000);
+    }
+  } else {
+    // Սխա՜լ — բոլորը բացվում են, խաղն ավարտվեց
+    el.classList.add('bad');
+    finish(false);
+  }
+}
+
+function finish(champion) {
+  playing = false;
+  clearTimeout(hideTimer);
+  document.querySelectorAll('.num').forEach(el => el.classList.remove('hidden2'));
+  const score = champion ? 9 : count - 1;   // վերջին ԱՆՑԱԾ մակարդակը
+
+  let text = champion
+    ? '🏆 ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ — 9 թիվ հիշեցիր'
+    : (score >= 3 ? 'Դու հիշեցիր ' + score + ' թիվ' : 'Ոչինչ, նորից փորձիր');
+
+  if (champion) { sWin(); confetti(); }
+  else sBuzz();
+
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('aren-numbers-best', best); } catch (e) {}
+    bestEl.textContent = best;
+    if (!champion) { text += ' — ՆՈՐ ՌԵԿՈՐԴ 🎉'; sWin(); confetti(); }
+  }
+  statusEl.textContent = text;
+  startBtn.textContent = '🔄 Նորից';
+  startBtn.hidden = false;
+}
+
+startBtn.addEventListener('click', startGame);
+
+function confetti() {
+  const stuff = ['🎉', '⭐', '🔢', '💛', '🎊', '✨'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+</script>

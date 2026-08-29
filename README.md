@@ -14,6 +14,8 @@ and iterating on the code together with Claude, one change at a time.
 | [`piano`](./piano/) | 🎹 Դաշնամուր | Playable piano with recording, built-in songs and a learn mode with glowing keys |
 | [`rocket`](./rocket/) | 🚀 Հրթիռը տիեզերքում | Space flyer: catch stars, dodge spinning asteroids, 3 lives, best score saved |
 | [`memory`](./memory/) | 🧠 Հիշողության խաղ | Memory: 16 cards, 8 pairs, find them all in the fewest tries |
+| [`repeat`](./repeat/) | 💡 Կրկնիր ինձ | Simon: 4 colors and tones, repeat the growing sequence |
+| [`numbers`](./numbers/) | 🔢 Թվերի որսորդ | Numbers flash and hide — tap them in order from memory |
 
 Every project is a single self-contained `index.html` — no frameworks, no
 build step. Open any folder's `index.html` in a browser and play. Sounds and
