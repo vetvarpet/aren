@@ -173,6 +173,7 @@ function press(i) {
     step++;
     if (step === seq.length) {
       // ամբողջ շղթան ճիշտ կրկնեցիր
+      showing = true;   // որ արագ սեղմողը «Ապրե՛ս»-ի պահին սխալմամբ չտուժի
       statusEl.textContent = 'Ապրե՛ս 🎉';
       setTimeout(nextRound, 900);
     }
