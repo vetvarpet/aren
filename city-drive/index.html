@@ -505,8 +505,8 @@ function draw() {
   // ոստիկանական մեքենան
   drawCar(police.x, police.y, police.angle, '#f2f4f8', false, true);
 
-  // քո մեքենան. կարմիր՝ սովորական, դեղին՝ սպորտային, փայլուն ոսկե՝ 👑
-  const myColor = carLevel === 2 ? '#ffd700' : carLevel === 1 ? '#f4c50f' : '#e63946';
+  // քո մեքենան. կարմիր՝ սովորական, սպիտակ՝ սպորտային, փայլուն ոսկե՝ 👑
+  const myColor = carLevel === 2 ? '#ffd700' : carLevel === 1 ? '#f7f9fc' : '#e63946';
   drawCar(car.x, car.y, car.angle, myColor, true);
   if (carLevel === 2) {
     drawSparkles(car.x, car.y);        // փայլիկները պտտվում են մեքենայի շուրջ
@@ -581,7 +581,13 @@ function drawCar(x, y, angle, color, isPlayer, isPolice) {
   ctx.beginPath();
   ctx.roundRect(-17, -9, 34, 18, 5);
   ctx.fill();
-  // ոսկե մեքենան մրցարշավային սպիտակ շերտեր ունի
+  // սպիտակ սպորտայինը կապույտ մրցարշավային շերտեր ունի (Արենի դիզայնը),
+  // իսկ ոսկեն՝ սպիտակ
+  if (isPlayer && carLevel === 1) {
+    ctx.fillStyle = '#2b6cd4';
+    ctx.fillRect(-17, -6, 34, 2.5);
+    ctx.fillRect(-17, 3.5, 34, 2.5);
+  }
   if (isPlayer && carLevel === 2) {
     ctx.fillStyle = 'rgba(255,255,255,0.85)';
     ctx.fillRect(-17, -6, 34, 2.5);
