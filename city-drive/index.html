@@ -39,13 +39,13 @@ const ROADS_V = [250, 750, 1250, 1750, 2250];   // ուղղահայաց փողո
 const ROADS_H = [250, 750, 1250, 1750];         // հորիզոնական փողոցները
 
 // ——— Էկրանը ———
-let VW = 900, VH = 600, scale = 1;
+let VW = 900, VH = 600, scale = 1, DPR = 1;
 function resize() {
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = innerWidth * dpr;
-  canvas.height = innerHeight * dpr;
+  DPR = window.devicePixelRatio || 1;
+  canvas.width = innerWidth * DPR;
+  canvas.height = innerHeight * DPR;
   scale = Math.min(innerHeight / 560, innerWidth / 860);
-  ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+  ctx.setTransform(DPR * scale, 0, 0, DPR * scale, 0, 0);
   VW = innerWidth / scale;
   VH = innerHeight / scale;
 }
@@ -222,34 +222,44 @@ document.addEventListener('keyup', (e) => {
 });
 
 // Հեռախոսի կոճակները. ձախում՝ ղեկը, աջում՝ գազ ու արգելակ
+// ԿԱՐԵՎՈՐ. չափսերն ու տեղերը հաշվում ենք էկրանի ԻՍԿԱԿԱՆ պիքսելներով,
+// որ փոքր հեռախոսում կոճակները մեծ ու սեղմելի մնան
+function btnR() {
+  return Math.max(42, Math.min(62, innerWidth * 0.085));
+}
 function buttons() {
+  const r = btnR();
+  const pad = 14;
+  const y = innerHeight - pad - r;
+  // Ղեկը՝ ձախից կողք-կողքի, իսկ գազն ու արգելակը՝ աջից իրար ՎՐԱ,
+  // որ նեղ էկրանին էլ իրար չկպչեն
   return [
-    { key: 'left',  x: 75,       y: VH - 75, icon: '◀' },
-    { key: 'right', x: 190,      y: VH - 75, icon: '▶' },
-    { key: 'brake', x: VW - 190, y: VH - 75, icon: '🛑' },
-    { key: 'gas',   x: VW - 75,  y: VH - 75, icon: '▲' },
+    { key: 'left',  x: pad + r,              y, icon: 'left' },
+    { key: 'right', x: pad + r * 3 + 16,     y, icon: 'right' },
+    { key: 'gas',   x: innerWidth - pad - r, y, icon: 'gas' },
+    { key: 'brake', x: innerWidth - pad - r, y: y - r * 2 - 16, icon: 'brake' },
   ];
 }
-const BTN_R = 48;
 const pointers = new Map();   // ամեն մատ՝ իր տեղը
 
 function updateTouchKeys() {
   keys.gas = keys.brake = keys.left = keys.right = false;
+  const hit = btnR() + 8;     // մի քիչ մեծ «բռնելու» գոտի, որ հեշտ լինի
   for (const p of pointers.values()) {
     for (const b of buttons()) {
-      if (Math.hypot(p.x - b.x, p.y - b.y) < BTN_R + 15) keys[b.key] = true;
+      if (Math.hypot(p.x - b.x, p.y - b.y) < hit) keys[b.key] = true;
     }
   }
 }
 canvas.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   initAudio();
-  pointers.set(e.pointerId, { x: e.clientX / scale, y: e.clientY / scale });
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   updateTouchKeys();
 });
 canvas.addEventListener('pointermove', (e) => {
   if (!pointers.has(e.pointerId)) return;
-  pointers.set(e.pointerId, { x: e.clientX / scale, y: e.clientY / scale });
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   updateTouchKeys();
 });
 canvas.addEventListener('pointerup', (e) => { pointers.delete(e.pointerId); updateTouchKeys(); });
@@ -686,20 +696,54 @@ function drawHUD(camX, camY) {
     }
   }
 
-  // հեռախոսի կոճակները
+  // հեռախոսի կոճակները. նկարում ենք էկրանի պիքսելներով՝ խաղի մասշտաբից դուրս,
+  // իսկ նշանները ձեռքով ենք նկարում (ոչ էմոջի), որ ամեն հեռախոսում երևան
+  const r = btnR();
+  ctx.save();
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   for (const b of buttons()) {
-    ctx.fillStyle = 'rgba(20, 26, 34, 0.4)';
+    const pressed = keys[b.key];
+    ctx.fillStyle = pressed ? 'rgba(255,255,255,0.4)' : 'rgba(20, 26, 34, 0.45)';
     ctx.beginPath();
-    ctx.arc(b.x, b.y, BTN_R, 0, Math.PI * 2);
+    ctx.arc(b.x, b.y, r, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.strokeStyle = pressed ? '#ffffff' : 'rgba(255,255,255,0.6)';
     ctx.lineWidth = 3;
     ctx.stroke();
-    ctx.fillStyle = '#fff';
-    ctx.font = '30px Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(b.icon, b.x, b.y + 11);
+
+    ctx.fillStyle = pressed ? '#1c2230' : '#ffffff';
+    if (b.icon === 'left') {
+      ctx.beginPath();
+      ctx.moveTo(b.x - r * 0.38, b.y);
+      ctx.lineTo(b.x + r * 0.26, b.y - r * 0.4);
+      ctx.lineTo(b.x + r * 0.26, b.y + r * 0.4);
+      ctx.closePath(); ctx.fill();
+    } else if (b.icon === 'right') {
+      ctx.beginPath();
+      ctx.moveTo(b.x + r * 0.38, b.y);
+      ctx.lineTo(b.x - r * 0.26, b.y - r * 0.4);
+      ctx.lineTo(b.x - r * 0.26, b.y + r * 0.4);
+      ctx.closePath(); ctx.fill();
+    } else if (b.icon === 'gas') {
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y - r * 0.4);
+      ctx.lineTo(b.x + r * 0.42, b.y + r * 0.28);
+      ctx.lineTo(b.x - r * 0.42, b.y + r * 0.28);
+      ctx.closePath(); ctx.fill();
+    } else if (b.icon === 'brake') {
+      // կարմիր ութանկյուն՝ ինչպես STOP նշանը
+      ctx.fillStyle = '#e04040';
+      ctx.beginPath();
+      for (let k = 0; k < 8; k++) {
+        const a = Math.PI / 8 + (Math.PI / 4) * k;
+        ctx.lineTo(b.x + Math.cos(a) * r * 0.5, b.y + Math.sin(a) * r * 0.5);
+      }
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(b.x - r * 0.28, b.y - r * 0.07, r * 0.56, r * 0.14);
+    }
   }
+  ctx.restore();
 }
 
 update();
