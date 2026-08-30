@@ -22,8 +22,8 @@
 // ——————————————————————————————————————
 //  ԼԱԲԻՐԻՆԹՈՍ 🌀
 //  Ամեն անգամ ՆՈՐ լաբիրինթոս է ստեղծվում։
-//  Քսվիր (svayp) մատով՝ գնդակը սահում է մինչև պատը։
-//  Հասիր կանաչ ելքին որքան հնարավոր է արագ։
+//  Պահիր մատդ էկրանին՝ գնդակը գնում է մատիդ հետևից,
+//  բայց պատերի միջով անցնել ՉԻ կարող 😉
 // ——————————————————————————————————————
 
 const canvas = document.getElementById('game');
@@ -57,15 +57,14 @@ function beep(f1, f2, dur, type, vol, delay) {
   o.connect(g); g.connect(actx.destination);
   o.start(t); o.stop(t + dur);
 }
-const sSlide = () => beep(300, 380, 0.08, 'sine', 0.08);
-const sWall = () => beep(180, 120, 0.1, 'square', 0.08);
 const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => beep(f, f, 0.25, 'triangle', 0.2, k * 0.13));
 
 // ——— Լաբիրինթոսի ստեղծումը ———
 // Ամեն վանդակ 4 պատ ունի՝ [վերև, աջ, ներքև, ձախ]։
 // «Փորող» ալգորիթմը քայլում է ու քանդում պատերը, մինչև ամեն տեղ հասնի։
 const COLS = 9, ROWS = 13;
-let walls, player, exitCell, moving, startTime, finished, timerOn;
+let walls, exitCell, finished, timerOn, startTime, finishTime;
+const pos = { x: 0.5, y: 0.5 };   // գնդակի տեղը՝ վանդակի չափերով (0.5 = վանդակի կենտրոն)
 let best = 0;
 try { best = Number(localStorage.getItem('aren-maze-best') || 0); } catch (e) {}
 
@@ -93,12 +92,13 @@ function newMaze() {
     seen[nc][nr] = true;
     stack.push([nc, nr]);
   }
-  player = { c: 0, r: 0, x: 0, y: 0 };
+  pos.x = 0.5;
+  pos.y = 0.5;
   exitCell = { c: COLS - 1, r: ROWS - 1 };
-  moving = null;
   finished = false;
   timerOn = false;
   startTime = 0;
+  finishTime = 0;
 }
 newMaze();
 
@@ -110,82 +110,110 @@ function metrics() {
   return { cell, ox, oy };
 }
 
-// ——— Շարժվելը. գնդակը սահում է մինչև պատը ———
-function slide(dir) {   // 0 վերև, 1 աջ, 2 ներքև, 3 ձախ
-  if (moving || finished) return;
-  initAudio();
-  if (!timerOn) { timerOn = true; startTime = performance.now(); }
-  const D = [[0, -1], [1, 0], [0, 1], [-1, 0]][dir];
-  let c = player.c, r = player.r, steps = 0;
-  while (!walls[c][r][dir]) {
-    c += D[0]; r += D[1]; steps++;
-    if (c === exitCell.c && r === exitCell.r) break;   // ելքի վրա կանգնում ենք
-  }
-  if (steps === 0) { sWall(); return; }
-  sSlide();
-  moving = { c, r, t: 0, dur: Math.max(6, steps * 3) };
-}
-
-// Քսվելով (svayp)
-let touchStart = null;
+// ——— Մատին հետևելը ———
+let finger = null;    // մատի (կամ մկնիկի) տեղը էկրանին
 canvas.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   initAudio();
   if (finished) { newMaze(); return; }
-  touchStart = { x: e.clientX, y: e.clientY };
+  finger = { x: e.clientX, y: e.clientY };
 });
-canvas.addEventListener('pointerup', (e) => {
-  if (!touchStart) return;
-  const dx = e.clientX - touchStart.x;
-  const dy = e.clientY - touchStart.y;
-  touchStart = null;
-  if (Math.hypot(dx, dy) < 24) return;   // շատ կարճ էր՝ svayp չէ
-  if (Math.abs(dx) > Math.abs(dy)) slide(dx > 0 ? 1 : 3);
-  else slide(dy > 0 ? 2 : 0);
+canvas.addEventListener('pointermove', (e) => {
+  if (finger) finger = { x: e.clientX, y: e.clientY };
 });
+canvas.addEventListener('pointerup', () => { finger = null; });
+canvas.addEventListener('pointercancel', () => { finger = null; });
 canvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
 canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
-// Ստեղնաշարով
+// Ստեղնաշարով էլ կարելի է՝ սլաքները պահած
+const keys = {};
 document.addEventListener('keydown', (e) => {
-  const map = { ArrowUp: 0, ArrowRight: 1, ArrowDown: 2, ArrowLeft: 3 };
-  if (map[e.code] !== undefined) {
+  const map = { ArrowUp: 'u', ArrowRight: 'r', ArrowDown: 'd', ArrowLeft: 'l' };
+  if (map[e.code]) {
     e.preventDefault();
     if (finished) { newMaze(); return; }
-    slide(map[e.code]);
+    initAudio();
+    keys[map[e.code]] = true;
   }
   if (finished && (e.code === 'Space' || e.code === 'Enter')) newMaze();
 });
+document.addEventListener('keyup', (e) => {
+  const map = { ArrowUp: 'u', ArrowRight: 'r', ArrowDown: 'd', ArrowLeft: 'l' };
+  if (map[e.code]) keys[map[e.code]] = false;
+});
+
+// ——— Պատերի ֆիզիկան ———
+// Գնդակը վանդակի մեջ է. եթե պատ կա, կենտրոնը այդ կողմ չի անցնում
+const RAD = 0.30;    // գնդակի շառավիղը վանդակի չափերով
+const WT = 0.06;     // պատի հաստության կեսը
+function clampToWalls() {
+  const c = Math.max(0, Math.min(COLS - 1, Math.floor(pos.x)));
+  const r = Math.max(0, Math.min(ROWS - 1, Math.floor(pos.y)));
+  const w = walls[c][r];
+  const lo = RAD + WT, hi = 1 - RAD - WT;
+  if (w[0]) pos.y = Math.max(pos.y, r + lo);
+  if (w[2]) pos.y = Math.min(pos.y, r + hi);
+  if (w[3]) pos.x = Math.max(pos.x, c + lo);
+  if (w[1]) pos.x = Math.min(pos.x, c + hi);
+  // եզրերից դուրս էլ չգնաս
+  pos.x = Math.max(lo * 0.5, Math.min(COLS - lo * 0.5, pos.x));
+  pos.y = Math.max(lo * 0.5, Math.min(ROWS - lo * 0.5, pos.y));
+}
+
+// Շարժվում ենք փոքրիկ քայլերով՝ ամեն քայլից հետո պատերին «հարցնելով»
+function moveToward(tx, ty) {
+  let dx = tx - pos.x, dy = ty - pos.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist < 0.02) return false;
+  const speed = Math.min(0.17, dist);   // մեկ կադրում այսքան վանդակ
+  dx = dx / dist * speed;
+  dy = dy / dist * speed;
+  const steps = Math.ceil(speed / 0.05);
+  let moved = false;
+  for (let s = 0; s < steps; s++) {
+    const ox = pos.x, oy = pos.y;
+    pos.x += dx / steps; clampToWalls();
+    pos.y += dy / steps; clampToWalls();
+    if (Math.abs(pos.x - ox) > 0.001 || Math.abs(pos.y - oy) > 0.001) moved = true;
+  }
+  return moved;
+}
 
 // ——— Խաղի քայլը ———
 let frame = 0;
 function update() {
   frame++;
-  if (moving) {
-    moving.t++;
-    const p = moving.t / moving.dur;
-    player.x = (moving.c - player.c) * Math.min(1, p);
-    player.y = (moving.r - player.r) * Math.min(1, p);
-    if (p >= 1) {
-      player.c = moving.c;
-      player.r = moving.r;
-      player.x = player.y = 0;
-      moving = null;
-      if (player.c === exitCell.c && player.r === exitCell.r) {
-        finished = true;
-        const secs = (performance.now() - startTime) / 1000;
-        finishTime = secs;
-        sWin();
-        if (best === 0 || secs < best) {
-          best = Math.round(secs * 10) / 10;
-          try { localStorage.setItem('aren-maze-best', best); } catch (e) {}
-          confetti();
-        }
-      }
+  if (finished) return;
+
+  let moved = false;
+  if (finger) {
+    const { cell, ox, oy } = metrics();
+    moved = moveToward((finger.x - ox) / cell, (finger.y - oy) / cell);
+  } else {
+    let dx = 0, dy = 0;
+    if (keys.u) dy -= 1;
+    if (keys.d) dy += 1;
+    if (keys.l) dx -= 1;
+    if (keys.r) dx += 1;
+    if (dx || dy) moved = moveToward(pos.x + dx, pos.y + dy);
+  }
+
+  if (moved && !timerOn) { timerOn = true; startTime = performance.now(); }
+
+  // հասա՞ր ելքին
+  if (Math.floor(pos.x) === exitCell.c && Math.floor(pos.y) === exitCell.r) {
+    finished = true;
+    finger = null;
+    finishTime = (performance.now() - startTime) / 1000;
+    sWin();
+    if (best === 0 || finishTime < best) {
+      best = Math.round(finishTime * 10) / 10;
+      try { localStorage.setItem('aren-maze-best', best); } catch (e) {}
+      confetti();
     }
   }
 }
-let finishTime = 0;
 
 // ——— Նկարելը ———
 function draw() {
@@ -229,10 +257,19 @@ function draw() {
   }
   ctx.stroke();
 
+  // մատի նշանը՝ որտեղ ես բռնել
+  if (finger && !finished) {
+    ctx.strokeStyle = 'rgba(255, 209, 102, 0.5)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(finger.x, finger.y, 18 + Math.sin(frame * 0.2) * 3, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
   // գնդակը՝ դեղին, ժպտացող 😊 (դեմքը մենք ենք նկարում)
-  const px = ox + (player.c + player.x) * cell + cell / 2;
-  const py = oy + (player.r + player.y) * cell + cell / 2;
-  const pr = cell * 0.32;
+  const px = ox + pos.x * cell;
+  const py = oy + pos.y * cell;
+  const pr = cell * RAD;
   ctx.fillStyle = '#ffd166';
   ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = '#2e2410';
@@ -258,7 +295,7 @@ function draw() {
   if (!timerOn && !finished) {
     ctx.fillStyle = '#9a9ec7';
     ctx.font = Math.min(17, W * 0.042) + 'px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('Քսվիր մատով՝ գնդակը սահում է մինչև պատը', W / 2, H - 24);
+    ctx.fillText('Պահիր մատդ էկրանին՝ գնդակը կգա հետևից', W / 2, H - 24);
   }
 
   if (finished) {
