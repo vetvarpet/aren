@@ -1,0 +1,300 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Լաբիրինթոս 🌀</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: linear-gradient(#2a1e3f, #1a2a4a); touch-action: none; }
+  canvas { display: block; width: 100vw; height: 100dvh; touch-action: none; }
+  .confetti {
+    position: fixed;
+    top: -50px;
+    z-index: 9;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<canvas id="game"></canvas>
+
+<script>
+// ——————————————————————————————————————
+//  ԼԱԲԻՐԻՆԹՈՍ 🌀
+//  Ամեն անգամ ՆՈՐ լաբիրինթոս է ստեղծվում։
+//  Քսվիր (svayp) մատով՝ գնդակը սահում է մինչև պատը։
+//  Հասիր կանաչ ելքին որքան հնարավոր է արագ։
+// ——————————————————————————————————————
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let W, H, DPR;
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function beep(f1, f2, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.setValueAtTime(f1, t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(f2, 1), t + dur);
+  g.gain.setValueAtTime(vol || 0.12, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sSlide = () => beep(300, 380, 0.08, 'sine', 0.08);
+const sWall = () => beep(180, 120, 0.1, 'square', 0.08);
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => beep(f, f, 0.25, 'triangle', 0.2, k * 0.13));
+
+// ——— Լաբիրինթոսի ստեղծումը ———
+// Ամեն վանդակ 4 պատ ունի՝ [վերև, աջ, ներքև, ձախ]։
+// «Փորող» ալգորիթմը քայլում է ու քանդում պատերը, մինչև ամեն տեղ հասնի։
+const COLS = 9, ROWS = 13;
+let walls, player, exitCell, moving, startTime, finished, timerOn;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-maze-best') || 0); } catch (e) {}
+
+function newMaze() {
+  walls = [];
+  for (let c = 0; c < COLS; c++) {
+    walls[c] = [];
+    for (let r = 0; r < ROWS; r++) walls[c][r] = [true, true, true, true];
+  }
+  const seen = Array.from({ length: COLS }, () => Array(ROWS).fill(false));
+  const stack = [[0, 0]];
+  seen[0][0] = true;
+  const DIRS = [[0, -1, 0, 2], [1, 0, 1, 3], [0, 1, 2, 0], [-1, 0, 3, 1]];   // dx, dy, իմ պատը, հարևանի պատը
+  while (stack.length) {
+    const [c, r] = stack[stack.length - 1];
+    const options = DIRS.filter(([dx, dy]) => {
+      const nc = c + dx, nr = r + dy;
+      return nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS && !seen[nc][nr];
+    });
+    if (!options.length) { stack.pop(); continue; }
+    const [dx, dy, w1, w2] = options[Math.floor(Math.random() * options.length)];
+    const nc = c + dx, nr = r + dy;
+    walls[c][r][w1] = false;
+    walls[nc][nr][w2] = false;
+    seen[nc][nr] = true;
+    stack.push([nc, nr]);
+  }
+  player = { c: 0, r: 0, x: 0, y: 0 };
+  exitCell = { c: COLS - 1, r: ROWS - 1 };
+  moving = null;
+  finished = false;
+  timerOn = false;
+  startTime = 0;
+}
+newMaze();
+
+// ——— Չափերը էկրանին ———
+function metrics() {
+  const cell = Math.min((W - 24) / COLS, (H - 130) / ROWS);
+  const ox = (W - cell * COLS) / 2;
+  const oy = 70 + (H - 130 - cell * ROWS) / 2;
+  return { cell, ox, oy };
+}
+
+// ——— Շարժվելը. գնդակը սահում է մինչև պատը ———
+function slide(dir) {   // 0 վերև, 1 աջ, 2 ներքև, 3 ձախ
+  if (moving || finished) return;
+  initAudio();
+  if (!timerOn) { timerOn = true; startTime = performance.now(); }
+  const D = [[0, -1], [1, 0], [0, 1], [-1, 0]][dir];
+  let c = player.c, r = player.r, steps = 0;
+  while (!walls[c][r][dir]) {
+    c += D[0]; r += D[1]; steps++;
+    if (c === exitCell.c && r === exitCell.r) break;   // ելքի վրա կանգնում ենք
+  }
+  if (steps === 0) { sWall(); return; }
+  sSlide();
+  moving = { c, r, t: 0, dur: Math.max(6, steps * 3) };
+}
+
+// Քսվելով (svayp)
+let touchStart = null;
+canvas.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  initAudio();
+  if (finished) { newMaze(); return; }
+  touchStart = { x: e.clientX, y: e.clientY };
+});
+canvas.addEventListener('pointerup', (e) => {
+  if (!touchStart) return;
+  const dx = e.clientX - touchStart.x;
+  const dy = e.clientY - touchStart.y;
+  touchStart = null;
+  if (Math.hypot(dx, dy) < 24) return;   // շատ կարճ էր՝ svayp չէ
+  if (Math.abs(dx) > Math.abs(dy)) slide(dx > 0 ? 1 : 3);
+  else slide(dy > 0 ? 2 : 0);
+});
+canvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+// Ստեղնաշարով
+document.addEventListener('keydown', (e) => {
+  const map = { ArrowUp: 0, ArrowRight: 1, ArrowDown: 2, ArrowLeft: 3 };
+  if (map[e.code] !== undefined) {
+    e.preventDefault();
+    if (finished) { newMaze(); return; }
+    slide(map[e.code]);
+  }
+  if (finished && (e.code === 'Space' || e.code === 'Enter')) newMaze();
+});
+
+// ——— Խաղի քայլը ———
+let frame = 0;
+function update() {
+  frame++;
+  if (moving) {
+    moving.t++;
+    const p = moving.t / moving.dur;
+    player.x = (moving.c - player.c) * Math.min(1, p);
+    player.y = (moving.r - player.r) * Math.min(1, p);
+    if (p >= 1) {
+      player.c = moving.c;
+      player.r = moving.r;
+      player.x = player.y = 0;
+      moving = null;
+      if (player.c === exitCell.c && player.r === exitCell.r) {
+        finished = true;
+        const secs = (performance.now() - startTime) / 1000;
+        finishTime = secs;
+        sWin();
+        if (best === 0 || secs < best) {
+          best = Math.round(secs * 10) / 10;
+          try { localStorage.setItem('aren-maze-best', best); } catch (e) {}
+          confetti();
+        }
+      }
+    }
+  }
+}
+let finishTime = 0;
+
+// ——— Նկարելը ———
+function draw() {
+  ctx.fillStyle = '#1d1d3f';
+  ctx.fillRect(0, 0, W, H);
+
+  const { cell, ox, oy } = metrics();
+
+  // ելքը՝ կանաչ վանդակ դրոշիկով
+  const ex = ox + exitCell.c * cell, ey = oy + exitCell.r * cell;
+  ctx.fillStyle = '#2f855a';
+  ctx.fillRect(ex + 3, ey + 3, cell - 6, cell - 6);
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(ex + cell * 0.35, ey + cell * 0.75);
+  ctx.lineTo(ex + cell * 0.35, ey + cell * 0.25);
+  ctx.stroke();
+  ctx.fillStyle = '#ffd166';
+  ctx.beginPath();
+  ctx.moveTo(ex + cell * 0.35, ey + cell * 0.25);
+  ctx.lineTo(ex + cell * 0.68, ey + cell * 0.35);
+  ctx.lineTo(ex + cell * 0.35, ey + cell * 0.45);
+  ctx.closePath();
+  ctx.fill();
+
+  // պատերը
+  ctx.strokeStyle = '#8f7ae0';
+  ctx.lineWidth = Math.max(3, cell * 0.09);
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      const x = ox + c * cell, y = oy + r * cell;
+      const w = walls[c][r];
+      if (w[0]) { ctx.moveTo(x, y); ctx.lineTo(x + cell, y); }
+      if (w[1]) { ctx.moveTo(x + cell, y); ctx.lineTo(x + cell, y + cell); }
+      if (w[2]) { ctx.moveTo(x, y + cell); ctx.lineTo(x + cell, y + cell); }
+      if (w[3]) { ctx.moveTo(x, y); ctx.lineTo(x, y + cell); }
+    }
+  }
+  ctx.stroke();
+
+  // գնդակը՝ դեղին, ժպտացող 😊 (դեմքը մենք ենք նկարում)
+  const px = ox + (player.c + player.x) * cell + cell / 2;
+  const py = oy + (player.r + player.y) * cell + cell / 2;
+  const pr = cell * 0.32;
+  ctx.fillStyle = '#ffd166';
+  ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#2e2410';
+  ctx.beginPath(); ctx.arc(px - pr * 0.35, py - pr * 0.2, pr * 0.14, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(px + pr * 0.35, py - pr * 0.2, pr * 0.14, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#2e2410';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(px, py + pr * 0.15, pr * 0.4, 0.2, Math.PI - 0.2); ctx.stroke();
+
+  // ——— Վահանակը ———
+  ctx.fillStyle = '#ffd76e';
+  ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
+  ctx.textAlign = 'left';
+  const t = timerOn && !finished ? (performance.now() - startTime) / 1000 : (finished ? finishTime : 0);
+  ctx.fillText('Ժամանակ՝ ' + t.toFixed(1) + ' վրկ', 16, 40);
+  if (best > 0) {
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#6ee7b7';
+    ctx.fillText('Ռեկորդ՝ ' + best + ' վրկ', W - 16, 40);
+  }
+
+  ctx.textAlign = 'center';
+  if (!timerOn && !finished) {
+    ctx.fillStyle = '#9a9ec7';
+    ctx.font = Math.min(17, W * 0.042) + 'px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillText('Քսվիր մատով՝ գնդակը սահում է մինչև պատը', W / 2, H - 24);
+  }
+
+  if (finished) {
+    ctx.fillStyle = 'rgba(10,14,30,0.75)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#ffd166';
+    ctx.font = 'bold ' + Math.min(36, W * 0.08) + 'px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillText('Դուրս եկա՜ր', W / 2, H / 2 - 50);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 26px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillText(finishTime.toFixed(1) + ' վայրկյանում', W / 2, H / 2);
+    ctx.fillStyle = '#6ee7b7';
+    ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillText('Սեղմիր՝ նոր լաբիրինթոս', W / 2, H / 2 + 60);
+  }
+}
+
+function confetti() {
+  const stuff = ['🎉', '⭐', '🌀', '💛', '🎊', '✨'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>

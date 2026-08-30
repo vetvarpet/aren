@@ -1,0 +1,378 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ձկնորսություն 🎣</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: #7ec8e3; touch-action: none; }
+  canvas { display: block; width: 100vw; height: 100dvh; touch-action: none; }
+  .confetti {
+    position: fixed;
+    top: -50px;
+    z-index: 9;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<canvas id="game"></canvas>
+
+<script>
+// ——————————————————————————————————————
+//  ՁԿՆՈՐՍՈՒԹՅՈՒՆ 🎣
+//  Սեղմիր՝ կարթը գցելու։ Մատով ղեկավարիր, թե ուր է իջնում։
+//  Ոսկե ձուկը +5 է, հին կոշիկը՝ 0։ 60 վայրկյան ունես։
+// ——————————————————————————————————————
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let W, H, DPR, WATER;
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  WATER = H * 0.22;                    // այստեղից ներքև ջուրն է
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function beep(f1, f2, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.setValueAtTime(f1, t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(f2, 1), t + dur);
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sCast = () => beep(500, 250, 0.2, 'sine', 0.15);
+const sCatch = () => { beep(660, 660, 0.12, 'triangle', 0.25); beep(990, 990, 0.18, 'triangle', 0.25, 0.1); }
+const sGold = () => [660, 880, 1100, 1320].forEach((f, k) => beep(f, f, 0.15, 'triangle', 0.25, k * 0.09));
+const sBoot = () => beep(180, 70, 0.4, 'sawtooth', 0.2);
+const sEnd = () => [523, 659, 784, 1047].forEach((f, k) => beep(f, f, 0.22, 'triangle', 0.2, k * 0.12));
+
+// ——— Ձկները ———
+// type: small (+1), med (+2), gold (+5), boot (0)
+let fishes = [];
+function spawnFish(startInside) {
+  const roll = Math.random();
+  const type = roll < 0.5 ? 'small' : roll < 0.8 ? 'med' : roll < 0.92 ? 'boot' : 'gold';
+  const dir = Math.random() < 0.5 ? 1 : -1;
+  const size = type === 'small' ? 14 : type === 'med' ? 20 : type === 'gold' ? 16 : 18;
+  fishes.push({
+    type, dir,
+    r: size,
+    x: startInside ? Math.random() * W : (dir === 1 ? -40 : W + 40),
+    y: WATER + 60 + Math.random() * (H - WATER - 120),
+    spd: (type === 'gold' ? 2.6 : type === 'boot' ? 0.4 : 1 + Math.random() * 1.2) * dir,
+    wig: Math.random() * 6,
+  });
+}
+for (let i = 0; i < 10; i++) spawnFish(true);
+
+// ——— Կարթը ———
+const hook = { x: 0, y: 0, state: 'idle', caught: null };   // idle → drop → reel
+let boatX;
+let score = 0, timeLeft = 60 * 60, playing = false, over = false;
+let popups = [], frame = 0;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-fish-best') || 0); } catch (e) {}
+
+function startGame() {
+  score = 0;
+  timeLeft = 60 * 60;   // 60 վայրկյան (60 կադր/վրկ)
+  playing = true;
+  over = false;
+  hook.state = 'idle';
+  hook.caught = null;
+}
+
+// ——— Կառավարումը ———
+let aimX = null;
+canvas.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  initAudio();
+  if (!playing) { startGame(); return; }
+  aimX = e.clientX;
+  if (hook.state === 'idle') {
+    hook.x = boatX;
+    hook.y = WATER - 30;
+    hook.state = 'drop';
+    sCast();
+  }
+});
+canvas.addEventListener('pointermove', (e) => { aimX = e.clientX; });
+canvas.addEventListener('pointerup', () => { aimX = null; });
+canvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+// ——— Խաղի քայլը ———
+function update() {
+  frame++;
+  boatX = W / 2 + Math.sin(frame * 0.008) * W * 0.06;   // նավակը կամաց օրորվում է
+
+  // ձկները լողում են
+  for (const f of fishes) {
+    f.x += f.spd;
+    f.y += Math.sin(frame * 0.05 + f.wig) * 0.4;
+    if (f.x < -60 && f.spd < 0) { f.x = W + 40; }
+    if (f.x > W + 60 && f.spd > 0) { f.x = -40; }
+  }
+  while (fishes.length < 10) spawnFish(false);
+
+  if (!playing) return;
+
+  timeLeft--;
+  if (timeLeft <= 0) {
+    playing = false;
+    over = true;
+    hook.state = 'idle';
+    hook.caught = null;
+    sEnd();
+    if (score > best) {
+      best = score;
+      try { localStorage.setItem('aren-fish-best', best); } catch (e) {}
+      confetti();
+    }
+    return;
+  }
+
+  // կարթն իջնում է. մատով կարող ես ձախ-աջ տանել
+  if (hook.state === 'drop') {
+    hook.y += 3.6;
+    if (aimX !== null) hook.x += (aimX - hook.x) * 0.08;
+    // բռնեցի՞ր մի բան
+    for (let i = fishes.length - 1; i >= 0; i--) {
+      const f = fishes[i];
+      if (Math.hypot(f.x - hook.x, f.y - hook.y) < f.r + 10) {
+        hook.caught = f;
+        fishes.splice(i, 1);
+        hook.state = 'reel';
+        break;
+      }
+    }
+    if (hook.y > H - 20) hook.state = 'reel';   // հատակին հասար՝ քաշիր վերև
+  } else if (hook.state === 'reel') {
+    hook.y -= 5;
+    hook.x += (boatX - hook.x) * 0.06;
+    if (hook.caught) { hook.caught.x = hook.x; hook.caught.y = hook.y + 14; }
+    if (hook.y <= WATER - 30) {
+      // հասցրիր նավակ
+      if (hook.caught) {
+        const pts = { small: 1, med: 2, gold: 5, boot: 0 }[hook.caught.type];
+        score += pts;
+        if (hook.caught.type === 'gold') { sGold(); popups.push({ x: boatX, y: WATER - 60, life: 70, text: '+5 ՈՍԿԵ ՁՈՒԿ' }); }
+        else if (hook.caught.type === 'boot') { sBoot(); popups.push({ x: boatX, y: WATER - 60, life: 70, text: 'Կոշիկ… +0' }); }
+        else { sCatch(); popups.push({ x: boatX, y: WATER - 60, life: 60, text: '+' + pts }); }
+        hook.caught = null;
+      }
+      hook.state = 'idle';
+    }
+  }
+
+  for (const p of popups) { p.y -= 1; p.life--; }
+  popups = popups.filter(p => p.life > 0);
+}
+
+// ——— Նկարելը ———
+function drawFish(f) {
+  ctx.save();
+  ctx.translate(f.x, f.y);
+  if (f.spd < 0 || (f.spd === 0 && f.dir < 0)) ctx.scale(-1, 1);
+
+  if (f.type === 'boot') {
+    // հին կոշիկ 🥾 (նկարում ենք ձեռքով)
+    ctx.fillStyle = '#6b5a4a';
+    ctx.beginPath();
+    ctx.roundRect(-12, -16, 14, 26, 4);
+    ctx.roundRect(-12, 2, 26, 10, 4);
+    ctx.fill();
+    ctx.fillStyle = '#4a3d30';
+    ctx.fillRect(-12, 10, 28, 4);
+  } else {
+    const colors = { small: '#5bc0de', med: '#f0864a', gold: '#ffd700' };
+    ctx.fillStyle = colors[f.type];
+    // մարմինը
+    ctx.beginPath();
+    ctx.ellipse(0, 0, f.r * 1.3, f.r * 0.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // պոչը
+    ctx.beginPath();
+    ctx.moveTo(-f.r * 1.2, 0);
+    ctx.lineTo(-f.r * 2, -f.r * 0.7);
+    ctx.lineTo(-f.r * 2, f.r * 0.7);
+    ctx.closePath();
+    ctx.fill();
+    // աչքը
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(f.r * 0.6, -f.r * 0.2, f.r * 0.25, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#222';
+    ctx.beginPath(); ctx.arc(f.r * 0.68, -f.r * 0.2, f.r * 0.12, 0, Math.PI * 2); ctx.fill();
+    // ոսկե ձուկը փայլում է
+    if (f.type === 'gold') {
+      const tw = (Math.sin(frame * 0.3) + 1) / 2;
+      ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + tw * 0.5) + ')';
+      ctx.beginPath(); ctx.arc(0, -f.r * 1.3, 3 + tw * 2, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+function draw() {
+  // երկինքն ու ջուրը
+  ctx.fillStyle = '#aee3f5';
+  ctx.fillRect(0, 0, W, WATER);
+  const g = ctx.createLinearGradient(0, WATER, 0, H);
+  g.addColorStop(0, '#3f9dc4');
+  g.addColorStop(1, '#14506e');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, WATER, W, H - WATER);
+
+  // արևը
+  ctx.fillStyle = '#ffd166';
+  ctx.beginPath(); ctx.arc(W * 0.85, WATER * 0.4, 26, 0, Math.PI * 2); ctx.fill();
+
+  // ալիքները
+  ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let x = 0; x <= W; x += 8) {
+    const y = WATER + Math.sin((x + frame * 1.4) * 0.03) * 4;
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // նավակը
+  ctx.save();
+  ctx.translate(boatX || W / 2, WATER + 2 + Math.sin(frame * 0.05) * 2);
+  ctx.fillStyle = '#b3542e';
+  ctx.beginPath();
+  ctx.moveTo(-52, -8);
+  ctx.lineTo(52, -8);
+  ctx.lineTo(34, 16);
+  ctx.lineTo(-34, 16);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#7a3a1e';
+  ctx.fillRect(-52, -12, 104, 6);
+  // ձկնորսիկը
+  ctx.fillStyle = '#f4c50f';
+  ctx.beginPath(); ctx.arc(-10, -24, 9, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#e63946';
+  ctx.fillRect(-16, -20, 12, 4);
+  ctx.fillStyle = '#2b6cd4';
+  ctx.beginPath(); ctx.roundRect(-18, -16, 16, 14, 4); ctx.fill();
+  // կարթաձողը
+  ctx.strokeStyle = '#5a3a20';
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(-6, -16); ctx.lineTo(36, -44); ctx.stroke();
+  ctx.restore();
+
+  // թելն ու կարթը
+  if (hook.state !== 'idle') {
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo((boatX || W / 2) + 36, WATER - 42);
+    ctx.lineTo(hook.x, hook.y);
+    ctx.stroke();
+    ctx.strokeStyle = '#e8e8e8';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(hook.x, hook.y + 6, 6, -Math.PI * 0.2, Math.PI * 1.1);
+    ctx.stroke();
+    if (hook.caught) drawFish(hook.caught);
+  }
+
+  // ձկները
+  for (const f of fishes) drawFish(f);
+
+  // «+2» գրությունները
+  for (const p of popups) {
+    ctx.globalAlpha = Math.min(1, p.life / 40);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.text, p.x, p.y);
+    ctx.globalAlpha = 1;
+  }
+
+  // ——— Վահանակը ———
+  ctx.fillStyle = 'rgba(20,26,34,0.72)';
+  ctx.beginPath(); ctx.roundRect(12, 12, 200, 44, 12); ctx.fill();
+  ctx.fillStyle = '#ffd166';
+  ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
+  ctx.textAlign = 'left';
+  const secs = Math.ceil(timeLeft / 60);
+  ctx.fillText('Միավոր՝ ' + score, 26, 42);
+  if (playing) {
+    ctx.fillStyle = secs <= 10 && frame % 40 < 20 ? '#ff6b5e' : 'rgba(20,26,34,0.72)';
+    ctx.beginPath(); ctx.roundRect(W - 110, 12, 98, 44, 12); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'right';
+    ctx.fillText(secs + ' վրկ', W - 26, 42);
+  }
+
+  // ——— Էկրանները ———
+  if (!playing) {
+    ctx.fillStyle = 'rgba(10,20,30,0.65)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold ' + Math.min(38, W * 0.08) + 'px "Noto Sans Armenian", Arial, sans-serif';
+    if (over) {
+      ctx.fillText('Ժամանակը վերջացավ', W / 2, H / 2 - 70);
+      ctx.fillStyle = '#ffd166';
+      ctx.font = 'bold 28px "Noto Sans Armenian", Arial, sans-serif';
+      ctx.fillText('Միավոր՝ ' + score + '  ·  Ռեկորդ՝ ' + best, W / 2, H / 2 - 20);
+    } else {
+      ctx.fillText('Ձկնորսություն', W / 2, H / 2 - 70);
+      ctx.font = Math.min(19, W * 0.045) + 'px "Noto Sans Armenian", Arial, sans-serif';
+      ctx.fillStyle = '#cde7f5';
+      ctx.fillText('Սեղմիր՝ կարթը գցելու, մատով ուղղորդիր', W / 2, H / 2 - 28);
+      ctx.fillText('Ոսկե ձուկ = +5 · Կոշիկ = 0 · 60 վայրկյան', W / 2, H / 2);
+      if (best > 0) {
+        ctx.fillStyle = '#ffd166';
+        ctx.fillText('Ռեկորդդ՝ ' + best, W / 2, H / 2 + 30);
+      }
+    }
+    ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillStyle = '#6ee7b7';
+    ctx.fillText(over ? 'Սեղմիր՝ նորից ձկնորսելու' : 'Սեղմիր՝ սկսելու', W / 2, H / 2 + 90);
+  }
+}
+
+function confetti() {
+  const stuff = ['🎉', '⭐', '🐟', '💛', '🎊', '✨'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
