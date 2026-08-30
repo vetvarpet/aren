@@ -1,0 +1,253 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Հիշողության խաղ 🧠</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    height: 100dvh;
+    padding: 12px;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+  h1 { font-size: clamp(1.1rem, 4vw, 1.7rem); color: #ffd76e; }
+  .stats { display: flex; gap: 18px; font-size: 1rem; color: #9a9ec7; }
+  .stats b { color: #6ee7b7; }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    width: min(94vw, 62vh, 480px);
+  }
+  /* Քարտը քառակուսի ենք պահում հին ձևով (padding-ի հնարքով),
+     որ ամենահին հեռախոսներում էլ աշխատի */
+  .card {
+    position: relative;
+    perspective: 600px;
+    cursor: pointer;
+    touch-action: manipulation;   /* արագ սեղմելիս էկրանը չմեծանա */
+  }
+  .card::before { content: ''; display: block; padding-top: 100%; }
+  .inner {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    transform-style: preserve-3d;
+    transition: transform 0.4s;
+  }
+  .card.open .inner, .card.done .inner { transform: rotateY(180deg); }
+  .face {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    font-size: clamp(28px, 9vw, 54px);
+  }
+  .back {
+    background: linear-gradient(135deg, #3d3560, #2a2447);
+    border: 2px solid #6a5f9e;
+  }
+  .back::after { content: '❔'; font-size: clamp(22px, 6vw, 36px); opacity: 0.7; }
+  .front {
+    background: linear-gradient(135deg, #fffdf5, #ece5d3);
+    border: 2px solid #ffd76e;
+    transform: rotateY(180deg);
+  }
+  .card.done .front { background: linear-gradient(135deg, #d3f9e4, #9ff0c4); border-color: #2ecc71; }
+  .card.done { cursor: default; animation: pop 0.4s; }
+  @keyframes pop { 50% { transform: scale(1.08); } }
+
+  #restart {
+    border: 2px solid #6a5f9e;
+    border-radius: 999px;
+    padding: 10px 22px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #3d3560;
+    color: #f5eede;
+  }
+  #msg { font-size: 1.1rem; color: #ffd76e; min-height: 1.4em; text-align: center; }
+
+  .confetti {
+    position: fixed;
+    top: -50px;
+    z-index: 9;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;color:#f5eede;text-decoration:none;background:#3d3560;border:2px solid #6a5f9e;padding:6px 13px;border-radius:999px;font-size:0.85rem;">←</a>
+<h1>Զույգեր 🃏</h1>
+<div class="stats">Փորձեր՝ <b id="moves">0</b><span id="bestBox" hidden>Ռեկորդ՝ <b id="best"></b></span></div>
+<div class="board" id="board"></div>
+<div id="msg"></div>
+<button id="restart">🔄 Նոր խաղ</button>
+
+<script>
+// ——————————————————————————————————————
+//  ՀԻՇՈՂՈՒԹՅԱՆ ԽԱՂ 🧠
+//  16 քարտ, 8 զույգ։ Շուռ տուր երկուսը. եթե նույնն են՝ մնում են բաց։
+//  Փորձիր գտնել բոլորը ամենաքիչ փորձով։
+// ——————————————————————————————————————
+
+// Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// Զույգերի նկարները՝ Արենի սայտի հերոսները 😄
+const PICS = ['🐱', '🚗', '🎹', '🚀', '⭐', '🍕', '🐶', '⚽'];
+
+const board = document.getElementById('board');
+const movesEl = document.getElementById('moves');
+const msgEl = document.getElementById('msg');
+const bestEl = document.getElementById('best');
+const bestBox = document.getElementById('bestBox');
+
+let open = [];       // հիմա բաց քարտերը (ամենաշատը 2)
+let lock = false;    // երբ երկու քարտ բաց են՝ մի պահ սպասում ենք
+let moves = 0;
+let found = 0;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-memory-best') || 0); } catch (e) {}
+if (best > 0) { bestEl.textContent = best; bestBox.hidden = false; }
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, delay, vol) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sFlip = () => tone(500, 0.08);
+const sMatch = () => { tone(660, 0.12); tone(880, 0.15, 0.1); };          // զույգ գտար
+const sNope = () => tone(220, 0.2, 0, 0.1);                               // չէ, նույնը չեն
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.25, k * 0.13, 0.18));
+
+// ——— Խաղատախտակը ———
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function newGame() {
+  board.innerHTML = '';
+  open = []; lock = false; moves = 0; found = 0;
+  movesEl.textContent = 0;
+  msgEl.textContent = '';
+
+  const deck = shuffle([...PICS, ...PICS]);
+  deck.forEach(pic => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.pic = pic;
+    card.innerHTML = '<div class="inner"><div class="face back"></div><div class="face front">' + pic + '</div></div>';
+    card.addEventListener('pointerdown', () => flip(card));
+    board.appendChild(card);
+  });
+}
+
+function flip(card) {
+  initAudio();
+  if (lock || card.classList.contains('open') || card.classList.contains('done')) return;
+
+  card.classList.add('open');
+  sFlip();
+  open.push(card);
+  if (open.length < 2) return;
+
+  // Երկու քարտ բաց են — հաշվում ենք որպես մեկ փորձ
+  moves++;
+  movesEl.textContent = moves;
+  const [a, b] = open;
+
+  if (a.dataset.pic === b.dataset.pic) {
+    // Զու՜յգ 🎉
+    open = [];
+    setTimeout(() => {
+      a.classList.replace('open', 'done');
+      b.classList.replace('open', 'done');
+      sMatch();
+      found++;
+      if (found === PICS.length) win();
+    }, 350);
+  } else {
+    // Նույնը չեն — մի վայրկյանից փակվում են
+    lock = true;
+    setTimeout(() => {
+      sNope();
+      a.classList.remove('open');
+      b.classList.remove('open');
+      open = [];
+      lock = false;
+    }, 900);
+  }
+}
+
+function win() {
+  sWin();
+  confetti();
+  let text = '🏆 Գտար բոլորը ' + moves + ' փորձով';
+  if (best === 0 || moves < best) {
+    best = moves;
+    try { localStorage.setItem('aren-memory-best', best); } catch (e) {}
+    bestEl.textContent = best;
+    bestBox.hidden = false;
+    text += ' — ՆՈՐ ՌԵԿՈՐԴ 🎉';
+  }
+  msgEl.textContent = text;
+}
+
+function confetti() {
+  const stuff = ['🎉', '⭐', '🧠', '💛', '🎊', '✨'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+
+document.getElementById('restart').addEventListener('click', newGame);
+newGame();
+</script>
