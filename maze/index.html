@@ -69,8 +69,9 @@ let stepIdx = 0;
 let musicTimer = null;
 
 function musicStepMs() {
-  // 1-ին մակարդակում՝ 150 BPM, ամեն մակարդակ +6 BPM. ավելի խորն ես՝ ավելի արագ է 😈
-  const bpm = 150 + (level - 1) * 6;
+  // 1-ին մակարդակում՝ 150 BPM, ամեն մակարդակ մի քիչ ավելի արագ,
+  // բայց 230-ից արագ չի դառնում, թե չէ ականջներդ կպայթեն 😄
+  const bpm = Math.min(230, 150 + (level - 1) * 2);
   return 60000 / bpm / 2;   // ամեն քայլը կես բիթ է
 }
 function musicTick() {
@@ -92,23 +93,27 @@ function scheduleMusic() {
 }
 
 // ——— Մակարդակները ———
-// Ամեն մակարդակ՝ իր չափսը։ 10-ն անցար՝ չեմպիոն ես 🏆
-const LEVELS = [
-  [5, 7], [6, 9], [7, 10], [8, 12], [9, 13],
-  [10, 15], [11, 16], [12, 18], [13, 19], [14, 21],
-];
+// 100 մակարդակ։ Չափսը մեծանում է մինչև հսկան (16×24), հետո ամեն
+// մակարդակ նոր հսկա լաբիրինթոս է՝ մինչև 100-րդը։ Անցար՝ չեմպիոն ես 🏆
+const MAX_LEVEL = 100;
+function levelSize(lv) {
+  return [
+    Math.min(16, 5 + Math.floor((lv - 1) * 0.55)),
+    Math.min(24, 7 + Math.floor((lv - 1) * 0.8)),
+  ];
+}
 let level = 1;
 let maxLevel = 1;
 try {
-  level = Math.min(10, Number(localStorage.getItem('aren-maze-level') || 1) || 1);
-  maxLevel = Math.min(10, Number(localStorage.getItem('aren-maze-max') || 1) || 1);
+  level = Math.min(MAX_LEVEL, Number(localStorage.getItem('aren-maze-level') || 1) || 1);
+  maxLevel = Math.min(MAX_LEVEL, Number(localStorage.getItem('aren-maze-max') || 1) || 1);
 } catch (e) {}
 
 let COLS, ROWS, walls, exitCell, state, timerOn, startTime, finishTime;
 const pos = { x: 0.5, y: 0.5 };   // գնդակի տեղը՝ վանդակի չափերով
 
 function newMaze() {
-  [COLS, ROWS] = LEVELS[level - 1];
+  [COLS, ROWS] = levelSize(level);
   walls = [];
   for (let c = 0; c < COLS; c++) {
     walls[c] = [];
@@ -164,7 +169,7 @@ canvas.addEventListener('pointerdown', (e) => {
     musicOn = !musicOn;
     return;
   }
-  if (state === 'levelDone') { level = Math.min(10, level + 1); saveLevel(); newMaze(); return; }
+  if (state === 'levelDone') { level = Math.min(MAX_LEVEL, level + 1); saveLevel(); newMaze(); return; }
   if (state === 'champion') { level = 1; saveLevel(); newMaze(); return; }
   finger = { x: e.clientX, y: e.clientY };
 });
@@ -194,7 +199,7 @@ document.addEventListener('keydown', (e) => {
     if (state !== 'play') return;
     keys[map[e.code]] = true;
   }
-  if (state === 'levelDone' && (e.code === 'Space' || e.code === 'Enter')) { level = Math.min(10, level + 1); saveLevel(); newMaze(); }
+  if (state === 'levelDone' && (e.code === 'Space' || e.code === 'Enter')) { level = Math.min(MAX_LEVEL, level + 1); saveLevel(); newMaze(); }
   else if (state === 'champion' && (e.code === 'Space' || e.code === 'Enter')) { level = 1; saveLevel(); newMaze(); }
 });
 document.addEventListener('keyup', (e) => {
@@ -262,7 +267,7 @@ function update() {
     finger = null;
     finishTime = (performance.now() - startTime) / 1000;
     sWin();
-    if (level === 10) {
+    if (level === MAX_LEVEL) {
       state = 'champion';
       confetti();
       confetti();
@@ -343,7 +348,7 @@ function draw() {
   ctx.font = 'bold 21px "Noto Sans Armenian", Arial, sans-serif';
   ctx.textAlign = 'left';
   const t = timerOn && state === 'play' ? (performance.now() - startTime) / 1000 : finishTime;
-  ctx.fillText('Մակարդակ ' + level + '/10', 16, 40);
+  ctx.fillText('Մակարդակ ' + level + '/100', 16, 40);
   ctx.fillStyle = '#9a9ec7';
   ctx.fillText(t.toFixed(1) + ' վրկ', 16, H - 18);
 
@@ -400,7 +405,7 @@ function draw() {
     ctx.fillText('ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ', W / 2, H / 2 - 70);
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('Անցար բոլոր 10 մակարդակը', W / 2, H / 2 - 25);
+    ctx.fillText('Անցար բոլոր 100 մակարդակը', W / 2, H / 2 - 25);
     drawTrophy(W / 2, H / 2 + 45);
     ctx.fillStyle = '#6ee7b7';
     ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
