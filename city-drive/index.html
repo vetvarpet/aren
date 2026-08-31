@@ -3,754 +3,92 @@
 <title>Քաղաքի վարորդը 🚗</title>
 <style>
   * { margin: 0; box-sizing: border-box; }
-  html, body { height: 100%; overflow: hidden; }
+  html, body { height: 100%; }
   body {
-    background: #3e9e4f;
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
     font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    min-height: 100dvh;
+    padding: 18px;
     user-select: none;
     -webkit-user-select: none;
+    touch-action: manipulation;
   }
-  canvas {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-    touch-action: none;
+  nav { position: fixed; top: 14px; left: 14px; }
+  nav a {
+    color: #f5eede;
+    text-decoration: none;
+    background: #3d3560;
+    border: 2px solid #6a5f9e;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 0.9rem;
   }
+  h1 { font-size: clamp(1.3rem, 5vw, 2rem); color: #ffd76e; text-align: center; }
+  .sub { color: #9a9ec7; text-align: center; }
+
+  .games {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: min(92vw, 420px);
+  }
+  .g {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #1d1d3f;
+    border: 2px solid #33356b;
+    border-radius: 18px;
+    padding: 16px 18px;
+    text-decoration: none;
+    color: #f5eede;
+    transition: transform 0.12s, border-color 0.12s;
+  }
+  .g:hover { transform: translateY(-3px); border-color: #ffd76e; }
+  .g .ico {
+    width: 62px;
+    height: 62px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    flex-shrink: 0;
+  }
+  .g1 .ico { background: linear-gradient(135deg, #2f855a, #9ae6b4); }
+  .g2 .ico { background: linear-gradient(135deg, #7a1f1f, #e8e8e8); }
+  .g h2 { font-size: 1.05rem; }
+  .g p { color: #9a9ec7; font-size: 0.85rem; margin-top: 4px; line-height: 1.4; }
 </style>
 
-<canvas id="game"></canvas>
+<nav><a href="../">← Արեն Սայտ</a></nav>
+
+<h1>Քաղաքի վարորդը 🚗</h1>
+<p class="sub">Ընտրի՛ր՝ ինչ ես ուզում քշել այսօր։</p>
+
+<div class="games">
+  <a class="g g1" href="./city/">
+    <div class="ico">🍕</div>
+    <div><h2>Քաղաք</h2><p>Պիցցայի առաքումներ, ոստիկան, խանութ ու ոսկե մեքենա 👑</p></div>
+  </a>
+  <a class="g g2" href="./race/">
+    <div class="ico">🏁</div>
+    <div><h2>Մրցարշավ</h2><p>10 մակարդակ, դու ես գազ տալիս, յուղ ու պատնեշներ ճանապարհին</p></div>
+  </a>
+</div>
 
 <script>
-// ——————————————————————————————————————
-//  ՔԱՂԱՔԻ ՎԱՐՈՐԴԸ — Արենի երկրորդ խաղը
-//  Բաց քաղաք. վարիր ուր ուզում ես, առաքիր պիցցաներ 🍕
-// ——————————————————————————————————————
-
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-
-// ——— Քաղաքը ———
-const WORLD_W = 2500;         // քաղաքի լայնությունը
-const WORLD_H = 2000;         // երկարությունը
-const ROAD_HALF = 70;         // ճանապարհի կես լայնությունը
-const ROADS_V = [250, 750, 1250, 1750, 2250];   // ուղղահայաց փողոցները
-const ROADS_H = [250, 750, 1250, 1750];         // հորիզոնական փողոցները
-
-// ——— Էկրանը ———
-let VW = 900, VH = 600, scale = 1, DPR = 1;
-function resize() {
-  DPR = window.devicePixelRatio || 1;
-  canvas.width = innerWidth * DPR;
-  canvas.height = innerHeight * DPR;
-  scale = Math.min(innerHeight / 560, innerWidth / 860);
-  ctx.setTransform(DPR * scale, 0, 0, DPR * scale, 0, 0);
-  VW = innerWidth / scale;
-  VH = innerHeight / scale;
-}
-window.addEventListener('resize', resize);
-resize();
-
-// ——— Մեքենան ———
-const car = {
-  x: 1250, y: 1750,           // սկսում ես քաղաքի հարավային փողոցում
-  angle: -Math.PI / 2,        // դեմքով դեպի հյուսիս
-  speed: 0,
-};
-let maxSpeed = 7;             // սովորական մեքենայի առավելագույն արագությունը
-let accel = 0.14;             // ինչ արագ է թափ հավաքում
-let carLevel = 0;             // 0 = սովորական, 1 = սպորտային, 2 = ՈՍԿԵ 👑
-
-// ——— Մեքենաների խանութը ———
-// Երկու մակարդակ կա. սպորտայինը՝ 200֏, իսկ ՈՍԿԵՆ՝ 500֏ ու ամենաարագն է
-const SHOP = { x: 1750, y: 750 };
-const UPGRADES = [
-  { price: 200, maxSpeed: 9.2, accel: 0.2,  text: '🏎 Նոր մեքենա՜' },
-  { price: 500, maxSpeed: 11,  accel: 0.27, text: '👑 ՈՍԿԵ ՄԵՔԵՆԱ՜' },
-];
-
-// ——— Ոստիկանությունը ———
-// Շատ արագ ես քշում կամ մեքենաներ ես խփում → ոստիկանը կնկատի ու կհետապնդի
-const police = { x: 250, y: 250, angle: 0, speed: 0, chasing: false, giveUp: 0, wp: 1 };
-const PATROL = [ { x: 250, y: 250 }, { x: 2250, y: 250 }, { x: 2250, y: 1750 }, { x: 250, y: 1750 } ];
-let heat = 0;                 // ոստիկանի «ջղայնությունը». լցվեց՝ հետապնդում է
-
-// ——— Գիշեր-ցերեկ ———
-let dayClock = 0;             // ժամանակը հոսում է. ~45 վրկ ցերեկ, ~45 վրկ գիշեր
-let night = 0;                // 0 = ցերեկ, 1 = գիշեր
-
-// ——— Շենքերը ———
-// Ամեն թաղամասում 2×2 շենք. մեկ թաղամաս թողնում ենք որպես զբոսայգի
-const buildings = [];
-const trees = [];
-const PARK = { cx: 2, cy: 1 };   // զբոսայգու թաղամասը (3-րդ սյուն, 2-րդ շարք)
-const COLORS = ['#c96a4a', '#7a89b8', '#b8a06a', '#8fae72', '#a97ab8', '#6aacb8'];
-let colorIdx = 0;
-for (let cx = 0; cx < ROADS_V.length - 1; cx++) {
-  for (let cy = 0; cy < ROADS_H.length - 1; cy++) {
-    const x0 = ROADS_V[cx] + ROAD_HALF + 20;
-    const y0 = ROADS_H[cy] + ROAD_HALF + 20;
-    const x1 = ROADS_V[cx + 1] - ROAD_HALF - 20;
-    const y1 = ROADS_H[cy + 1] - ROAD_HALF - 20;
-    if (cx === PARK.cx && cy === PARK.cy) {
-      // զբոսայգի՝ ծառերով
-      for (let i = 0; i < 10; i++) {
-        trees.push({
-          x: x0 + 30 + ((i * 137) % (x1 - x0 - 60)),
-          y: y0 + 30 + ((i * 211) % (y1 - y0 - 60)),
-        });
-      }
-      continue;
-    }
-    const bw = (x1 - x0 - 40) / 2;
-    const bh = (y1 - y0 - 40) / 2;
-    for (let i = 0; i < 2; i++) {
-      for (let j = 0; j < 2; j++) {
-        buildings.push({
-          x: x0 + i * (bw + 40),
-          y: y0 + j * (bh + 40),
-          w: bw, h: bh,
-          color: COLORS[colorIdx++ % COLORS.length],
-        });
-      }
-    }
-  }
-}
-
-// ——— Երթևեկությունը ———
-// Ուրիշ մեքենաներ, որ պտտվում են քաղաքով. նրանց մի՛ խփիր
-const traffic = [];
-const CAR_COLORS = ['#d9534f', '#5bc0de', '#f0ad4e', '#5cb85c', '#9b8ac4', '#e8e8e8'];
-ROADS_H.forEach((ry, i) => {
-  for (let k = 0; k < 2; k++) {
-    traffic.push({ x: 300 + k * 1100 + i * 250, y: ry + 26, dir: 0, spd: 2.2, color: CAR_COLORS[(i * 2 + k) % 6] });          // դեպի արևելք
-    traffic.push({ x: 500 + k * 1100 + i * 250, y: ry - 26, dir: Math.PI, spd: 2.2, color: CAR_COLORS[(i * 2 + k + 3) % 6] }); // դեպի արևմուտք
-  }
-});
-ROADS_V.forEach((rx, i) => {
-  traffic.push({ x: rx - 26, y: 300 + i * 300, dir: -Math.PI / 2, spd: 2, color: CAR_COLORS[i % 6] });        // դեպի հյուսիս
-  traffic.push({ x: rx + 26, y: 600 + i * 300, dir: Math.PI / 2, spd: 2, color: CAR_COLORS[(i + 2) % 6] });   // դեպի հարավ
-});
-
-// ——— Առաքումը ———
-// Վերցրու պիցցան դեղին կետից, հասցրու կանաչ կետը
-let money = 0;
-let deliveries = 0;
-let mission = null;           // {x, y, stage: 'pickup' | 'deliver'}
-let popups = [];
-let frame = 0;
-let bumpCooldown = 0;
-
-function randomIntersection(avoidX, avoidY) {
-  let x, y;
-  do {
-    x = ROADS_V[Math.floor(Math.random() * ROADS_V.length)];
-    y = ROADS_H[Math.floor(Math.random() * ROADS_H.length)];
-  } while (Math.hypot(x - avoidX, y - avoidY) < 600);
-  return { x, y };
-}
-
-function newMission() {
-  const p = randomIntersection(car.x, car.y);
-  mission = { x: p.x, y: p.y, stage: 'pickup' };
-}
-newMission();
-
-// ——— Ձայները ———
-let audioCtx = null;
-let engineOsc = null, engineGain = null;
-
-function initAudio() {
-  if (audioCtx) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  // շարժիչի ձայնը՝ մեղմ, խուլ թրթռոց, որ արագության հետ մի քիչ բարձրանում է
-  engineOsc = audioCtx.createOscillator();
-  engineGain = audioCtx.createGain();
-  const muffler = audioCtx.createBiquadFilter();   // «խլացուցիչ»՝ սուր ձայները կտրում է
-  muffler.type = 'lowpass';
-  muffler.frequency.value = 220;
-  engineOsc.type = 'triangle';
-  engineOsc.frequency.value = 50;
-  engineGain.gain.value = 0.012;
-  engineOsc.connect(muffler);
-  muffler.connect(engineGain);
-  engineGain.connect(audioCtx.destination);
-  engineOsc.start();
-}
-
-function beep(freq, endFreq, type, duration, volume, delay) {
-  if (!audioCtx) return;
-  const t = audioCtx.currentTime + (delay || 0);
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, t);
-  osc.frequency.exponentialRampToValueAtTime(endFreq, t + duration);
-  gain.gain.setValueAtTime(volume, t);
-  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start(t);
-  osc.stop(t + duration);
-}
-
-function sound(name) {
-  if (!audioCtx) return;
-  if (name === 'pickup') { beep(660, 660, 'sine', 0.12, 0.3); beep(990, 990, 'sine', 0.18, 0.3, 0.1); }
-  if (name === 'deliver') { beep(523, 523, 'triangle', 0.14, 0.35); beep(659, 659, 'triangle', 0.14, 0.35, 0.12); beep(784, 784, 'triangle', 0.3, 0.4, 0.24); }
-  if (name === 'bump') { beep(140, 60, 'square', 0.2, 0.3); }
-  if (name === 'fine') { beep(500, 200, 'sawtooth', 0.4, 0.3); }
-  if (name === 'buy') { beep(523, 523, 'triangle', 0.12, 0.35); beep(784, 784, 'triangle', 0.12, 0.35, 0.1); beep(1047, 1047, 'triangle', 0.35, 0.4, 0.2); }
-}
-
-// ——— Կառավարումը ———
-const keys = { gas: false, brake: false, left: false, right: false };
-
-document.addEventListener('keydown', (e) => {
-  initAudio();
-  if (e.code === 'ArrowUp' || e.code === 'KeyW') { e.preventDefault(); keys.gas = true; }
-  if (e.code === 'ArrowDown' || e.code === 'KeyS') { e.preventDefault(); keys.brake = true; }
-  if (e.code === 'ArrowLeft' || e.code === 'KeyA') { e.preventDefault(); keys.left = true; }
-  if (e.code === 'ArrowRight' || e.code === 'KeyD') { e.preventDefault(); keys.right = true; }
-});
-document.addEventListener('keyup', (e) => {
-  if (e.code === 'ArrowUp' || e.code === 'KeyW') keys.gas = false;
-  if (e.code === 'ArrowDown' || e.code === 'KeyS') keys.brake = false;
-  if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
-  if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
-});
-
-// Հեռախոսի կոճակները. ձախում՝ ղեկը, աջում՝ գազ ու արգելակ
-// ԿԱՐԵՎՈՐ. չափսերն ու տեղերը հաշվում ենք էկրանի ԻՍԿԱԿԱՆ պիքսելներով,
-// որ փոքր հեռախոսում կոճակները մեծ ու սեղմելի մնան
-function btnR() {
-  return Math.max(42, Math.min(62, innerWidth * 0.085));
-}
-function buttons() {
-  const r = btnR();
-  const pad = 14;
-  const y = innerHeight - pad - r;
-  // Ղեկը՝ ձախից կողք-կողքի, իսկ գազն ու արգելակը՝ աջից իրար ՎՐԱ,
-  // որ նեղ էկրանին էլ իրար չկպչեն
-  return [
-    { key: 'left',  x: pad + r,              y, icon: 'left' },
-    { key: 'right', x: pad + r * 3 + 16,     y, icon: 'right' },
-    { key: 'gas',   x: innerWidth - pad - r, y, icon: 'gas' },
-    { key: 'brake', x: innerWidth - pad - r, y: y - r * 2 - 16, icon: 'brake' },
-  ];
-}
-const pointers = new Map();   // ամեն մատ՝ իր տեղը
-
-function updateTouchKeys() {
-  keys.gas = keys.brake = keys.left = keys.right = false;
-  const hit = btnR() + 8;     // մի քիչ մեծ «բռնելու» գոտի, որ հեշտ լինի
-  for (const p of pointers.values()) {
-    for (const b of buttons()) {
-      if (Math.hypot(p.x - b.x, p.y - b.y) < hit) keys[b.key] = true;
-    }
-  }
-}
-canvas.addEventListener('pointerdown', (e) => {
-  e.preventDefault();
-  initAudio();
-  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  updateTouchKeys();
-});
-canvas.addEventListener('pointermove', (e) => {
-  if (!pointers.has(e.pointerId)) return;
-  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  updateTouchKeys();
-});
-canvas.addEventListener('pointerup', (e) => { pointers.delete(e.pointerId); updateTouchKeys(); });
-canvas.addEventListener('pointercancel', (e) => { pointers.delete(e.pointerId); updateTouchKeys(); });
-
-// ——— Ճանապարհի՞ վրա ենք ———
-function onRoad(x, y) {
-  for (const rx of ROADS_V) if (Math.abs(x - rx) < ROAD_HALF) return true;
-  for (const ry of ROADS_H) if (Math.abs(y - ry) < ROAD_HALF) return true;
-  return false;
-}
-
-// ——— Խաղի քայլը ———
-function update() {
-  frame++;
-  if (bumpCooldown > 0) bumpCooldown--;
-
-  // ժամանակը հոսում է. գիշերն ու ցերեկը սահուն փոխվում են
-  dayClock++;
-  const cyc = (dayClock % 5400) / 5400;
-  night = (Math.sin(cyc * Math.PI * 2 - Math.PI / 2) + 1) / 2;
-
-  // գազ, արգելակ, ղեկ
-  if (keys.gas) car.speed += accel;
-  if (keys.brake) car.speed -= 0.22;
-  car.speed = Math.max(-2.5, Math.min(maxSpeed, car.speed));
-  car.speed *= 0.985;
-  if (!onRoad(car.x, car.y)) car.speed *= 0.96;   // խոտի վրա մեքենան դանդաղ է
-
-  const steer = 0.05 * Math.min(1, Math.abs(car.speed) / 3) * Math.sign(car.speed || 1);
-  if (keys.left) car.angle -= steer;
-  if (keys.right) car.angle += steer;
-
-  const prevX = car.x, prevY = car.y;
-  car.x += Math.cos(car.angle) * car.speed;
-  car.y += Math.sin(car.angle) * car.speed;
-
-  // քաղաքից դուրս չես գա
-  car.x = Math.max(30, Math.min(WORLD_W - 30, car.x));
-  car.y = Math.max(30, Math.min(WORLD_H - 30, car.y));
-
-  // շենքի մեջ չես մտնի. խփվեցիր՝ հետ ես ցատկում
-  for (const b of buildings) {
-    if (car.x > b.x - 16 && car.x < b.x + b.w + 16 && car.y > b.y - 16 && car.y < b.y + b.h + 16) {
-      car.x = prevX; car.y = prevY;
-      if (Math.abs(car.speed) > 1 && bumpCooldown === 0) { sound('bump'); bumpCooldown = 20; }
-      car.speed *= -0.3;
-      break;
-    }
-  }
-
-  // երթևեկությունը գնում է իր ճանապարհով
-  for (const t of traffic) {
-    t.x += Math.cos(t.dir) * t.spd;
-    t.y += Math.sin(t.dir) * t.spd;
-    // քաղաքի ծայրից դուրս եկավ՝ մյուս ծայրից է մտնում
-    if (t.x > WORLD_W + 40) t.x = -40;
-    if (t.x < -40) t.x = WORLD_W + 40;
-    if (t.y > WORLD_H + 40) t.y = -40;
-    if (t.y < -40) t.y = WORLD_H + 40;
-
-    // բախվեցի՞ր մեքենայի. ոստիկանը սա ՇԱՏ չի սիրում
-    if (Math.hypot(t.x - car.x, t.y - car.y) < 38) {
-      if (bumpCooldown === 0) { sound('bump'); bumpCooldown = 20; heat += 40; }
-      car.speed *= -0.4;
-      car.x = prevX; car.y = prevY;
-    }
-  }
-
-  // ——— Ոստիկանը ———
-  // Արագ քշելը ջղայնացնում է նրան, հանգիստ քշելը՝ հանգստացնում
-  if (Math.abs(car.speed) > 6.3) heat += 2;
-  else heat = Math.max(0, heat - 1);
-
-  if (!police.chasing && heat > 120) {
-    police.chasing = true;
-    police.giveUp = 0;
-  }
-
-  if (police.chasing) {
-    // սիրենը՝ վի՛-վու, վի՛-վու
-    if (frame % 30 === 0) beep(frame % 60 === 0 ? 720 : 540, frame % 60 === 0 ? 720 : 540, 'square', 0.25, 0.12);
-
-    // թեքվում է դեպի քեզ ու գազ տալիս
-    const target = Math.atan2(car.y - police.y, car.x - police.x);
-    let da = target - police.angle;
-    while (da > Math.PI) da -= Math.PI * 2;
-    while (da < -Math.PI) da += Math.PI * 2;
-    police.angle += Math.max(-0.06, Math.min(0.06, da));
-    police.speed = Math.min(6.9, police.speed + 0.15);
-
-    const dist = Math.hypot(police.x - car.x, police.y - car.y);
-    if (dist < 42) {
-      // բռնեց → տուգանք
-      sound('fine');
-      money = Math.max(0, money - 30);
-      popups.push({ x: car.x, y: car.y - 40, life: 80, text: '🚓 Տուգանք −30֏' });
-      police.chasing = false;
-      police.speed = 0;
-      heat = 0;
-    } else if (dist > 900) {
-      // փախար → մի քիչ հետո հանձնվում է
-      police.giveUp++;
-      if (police.giveUp > 240) { police.chasing = false; heat = 0; }
-    } else {
-      police.giveUp = 0;
-    }
-  } else {
-    // հանգիստ պարեկություն է անում քաղաքի եզրով
-    const wp = PATROL[police.wp];
-    const target = Math.atan2(wp.y - police.y, wp.x - police.x);
-    let da = target - police.angle;
-    while (da > Math.PI) da -= Math.PI * 2;
-    while (da < -Math.PI) da += Math.PI * 2;
-    police.angle += Math.max(-0.05, Math.min(0.05, da));
-    police.speed = 2.4;
-    if (Math.hypot(wp.x - police.x, wp.y - police.y) < 60) police.wp = (police.wp + 1) % PATROL.length;
-  }
-  police.x += Math.cos(police.angle) * police.speed;
-  police.y += Math.sin(police.angle) * police.speed;
-
-  // ——— Խանութը ———
-  // Փողդ հերիքո՞ւմ է հաջորդ մեքենային ու եկար խանութ → գնում ես
-  const nextCar = UPGRADES[carLevel];
-  if (nextCar && money >= nextCar.price && Math.hypot(SHOP.x - car.x, SHOP.y - car.y) < 80) {
-    money -= nextCar.price;
-    carLevel++;
-    maxSpeed = nextCar.maxSpeed;
-    accel = nextCar.accel;
-    sound('buy');
-    popups.push({ x: car.x, y: car.y - 40, life: 90, text: nextCar.text });
-  }
-
-  // հասա՞ր նշանակետին
-  if (mission && Math.hypot(mission.x - car.x, mission.y - car.y) < 60) {
-    if (mission.stage === 'pickup') {
-      sound('pickup');
-      popups.push({ x: car.x, y: car.y - 40, life: 60, text: '🍕 Վերցրիր' });
-      const p = randomIntersection(car.x, car.y);
-      mission = { x: p.x, y: p.y, stage: 'deliver' };
-    } else {
-      sound('deliver');
-      money += 50;
-      deliveries++;
-      popups.push({ x: car.x, y: car.y - 40, life: 60, text: '+50֏' });
-      newMission();
-    }
-  }
-
-  for (const p of popups) { p.y -= 1; p.life--; }
-  popups = popups.filter(p => p.life > 0);
-
-  // շարժիչի ձայնը հետևում է արագությանը՝ մեղմ ու առանց ջղայնացնելու
-  if (engineOsc) {
-    engineOsc.frequency.value = 45 + Math.abs(car.speed) * 12;
-    engineGain.gain.value = 0.008 + Math.abs(car.speed) * 0.002;
-  }
-
-  draw();
-  requestAnimationFrame(update);
-}
-
-// ——— Նկարում ենք ———
-function draw() {
-  // տեսախցիկը հետևում է մեքենային
-  const camX = Math.max(0, Math.min(WORLD_W - VW, car.x - VW / 2));
-  const camY = Math.max(0, Math.min(WORLD_H - VH, car.y - VH / 2));
-
-  // խոտը
-  ctx.fillStyle = '#3e9e4f';
-  ctx.fillRect(0, 0, VW, VH);
-
-  ctx.save();
-  ctx.translate(-camX, -camY);
-
-  // ճանապարհները
-  ctx.fillStyle = '#3d4148';
-  for (const rx of ROADS_V) ctx.fillRect(rx - ROAD_HALF, 0, ROAD_HALF * 2, WORLD_H);
-  for (const ry of ROADS_H) ctx.fillRect(0, ry - ROAD_HALF, WORLD_W, ROAD_HALF * 2);
-
-  // մեջտեղի գծիկները
-  ctx.strokeStyle = '#f4d13b';
-  ctx.lineWidth = 4;
-  ctx.setLineDash([30, 30]);
-  for (const rx of ROADS_V) { ctx.beginPath(); ctx.moveTo(rx, 0); ctx.lineTo(rx, WORLD_H); ctx.stroke(); }
-  for (const ry of ROADS_H) { ctx.beginPath(); ctx.moveTo(0, ry); ctx.lineTo(WORLD_W, ry); ctx.stroke(); }
-  ctx.setLineDash([]);
-
-  // շենքերը
-  for (const b of buildings) {
-    ctx.fillStyle = b.color;
-    ctx.fillRect(b.x, b.y, b.w, b.h);
-    ctx.fillStyle = 'rgba(0,0,0,0.18)';
-    ctx.fillRect(b.x, b.y + b.h - 12, b.w, 12);
-    // պատուհանները
-    ctx.fillStyle = 'rgba(255,244,180,0.8)';
-    for (let wx = b.x + 18; wx < b.x + b.w - 18; wx += 38) {
-      for (let wy = b.y + 16; wy < b.y + b.h - 24; wy += 34) {
-        ctx.fillRect(wx, wy, 14, 14);
-      }
-    }
-  }
-
-  // զբոսայգու ծառերը
-  for (const t of trees) {
-    ctx.fillStyle = '#6b4a2b';
-    ctx.fillRect(t.x - 4, t.y, 8, 16);
-    ctx.fillStyle = '#2c7a3a';
-    ctx.beginPath();
-    ctx.arc(t.x, t.y - 8, 20, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // նշանակետը՝ պուլսացող շրջան. դեղին՝ վերցնել, կանաչ՝ հասցնել
-  if (mission) {
-    const pulse = 40 + Math.sin(frame * 0.12) * 10;
-    ctx.strokeStyle = mission.stage === 'pickup' ? '#f4d13b' : '#4be06a';
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.arc(mission.x, mission.y, pulse, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.font = '30px Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(mission.stage === 'pickup' ? '🍕' : '🏠', mission.x, mission.y + 10);
-  }
-
-  // մեքենաների խանութը (մինչև բոլոր մեքենաները գնելը)
-  // Կապույտ շրջան՝ սպորտայինի հերթն է, ոսկեգույն՝ ՈՍԿԵ մեքենայի 👑
-  if (carLevel < UPGRADES.length) {
-    ctx.strokeStyle = carLevel === 1 ? '#ffd700' : '#5bc0de';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.arc(SHOP.x, SHOP.y, 46 + Math.sin(frame * 0.1) * 6, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.font = '34px Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('🏪', SHOP.x, SHOP.y + 12);
-  }
-
-  // երթևեկությունը
-  for (const t of traffic) drawCar(t.x, t.y, t.dir, t.color);
-
-  // ոստիկանական մեքենան
-  drawCar(police.x, police.y, police.angle, '#f2f4f8', false, true);
-
-  // քո մեքենան. կարմիր՝ սովորական, սպիտակ՝ սպորտային, փայլուն ոսկե՝ 👑
-  const myColor = carLevel === 2 ? '#ffd700' : carLevel === 1 ? '#f7f9fc' : '#e63946';
-  drawCar(car.x, car.y, car.angle, myColor, true);
-  if (carLevel === 2) {
-    drawSparkles(car.x, car.y);        // փայլիկները պտտվում են մեքենայի շուրջ
-    drawCrown(car.x, car.y - 34);      // թագը լողում է մեքենայի վրայում
-  }
-
-  // ——— Գիշերը ———
-  if (night > 0.03) {
-    // մութն իջնում է քաղաքի վրա
-    ctx.fillStyle = 'rgba(8, 12, 35, ' + (0.5 * night) + ')';
-    ctx.fillRect(camX, camY, VW, VH);
-
-    // պատուհանները վառվում են
-    ctx.fillStyle = 'rgba(255, 228, 130, ' + (0.85 * night) + ')';
-    for (const b of buildings) {
-      for (let wx = b.x + 18; wx < b.x + b.w - 18; wx += 38) {
-        for (let wy = b.y + 16; wy < b.y + b.h - 24; wy += 34) {
-          ctx.fillRect(wx, wy, 14, 14);
-        }
-      }
-    }
-
-    // լուսարձակների ճառագայթները
-    drawHeadlights(car.x, car.y, car.angle, night);
-    drawHeadlights(police.x, police.y, police.angle, night * 0.7);
-    for (const t of traffic) drawHeadlights(t.x, t.y, t.dir, night * 0.5);
-  }
-
-  // «+50֏» գրությունները
-  for (const p of popups) {
-    ctx.globalAlpha = p.life / 60;
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 26px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(p.text, p.x, p.y);
-    ctx.globalAlpha = 1;
-  }
-
-  ctx.restore();
-
-  drawHUD(camX, camY);
-}
-
-// Լուսարձակի դեղին ճառագայթը մեքենայի առջևից
-function drawHeadlights(x, y, angle, strength) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-  ctx.fillStyle = 'rgba(255, 240, 170, ' + (0.22 * strength) + ')';
-  ctx.beginPath();
-  ctx.moveTo(14, -6);
-  ctx.lineTo(120, -34);
-  ctx.lineTo(120, 34);
-  ctx.lineTo(14, 6);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-}
-
-function drawCar(x, y, angle, color, isPlayer, isPolice) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-  // անիվները
-  ctx.fillStyle = '#222';
-  ctx.fillRect(-14, -12, 9, 5);
-  ctx.fillRect(5, -12, 9, 5);
-  ctx.fillRect(-14, 7, 9, 5);
-  ctx.fillRect(5, 7, 9, 5);
-  // թափքը
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.roundRect(-17, -9, 34, 18, 5);
-  ctx.fill();
-  // սպիտակ սպորտայինը կապույտ մրցարշավային շերտեր ունի (Արենի դիզայնը),
-  // իսկ ոսկեն՝ սպիտակ
-  if (isPlayer && carLevel === 1) {
-    ctx.fillStyle = '#2b6cd4';
-    ctx.fillRect(-17, -6, 34, 2.5);
-    ctx.fillRect(-17, 3.5, 34, 2.5);
-  }
-  if (isPlayer && carLevel === 2) {
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.fillRect(-17, -6, 34, 2.5);
-    ctx.fillRect(-17, 3.5, 34, 2.5);
-  }
-  // ապակիները
-  ctx.fillStyle = 'rgba(40,60,80,0.85)';
-  ctx.beginPath();
-  ctx.roundRect(-4, -6, 12, 12, 3);
-  ctx.fill();
-  // լուսարձակները
-  ctx.fillStyle = '#ffe9a8';
-  ctx.fillRect(14, -7, 3, 4);
-  ctx.fillRect(14, 3, 3, 4);
-  // ոստիկանի կապույտ շերտն ու թարթող փարոսիկը
-  if (isPolice) {
-    ctx.fillStyle = '#2b4a9b';
-    ctx.fillRect(-17, -2, 34, 4);
-    ctx.fillStyle = Math.floor(frame / 10) % 2 === 0 ? '#ff4040' : '#4060ff';
-    ctx.fillRect(-4, -4, 8, 8);
-  }
-  ctx.restore();
-}
-
-// Ոսկե թագը՝ միշտ ուղիղ, լողում է մեքենայի վրայում 👑
-function drawCrown(x, y) {
-  const bob = Math.sin(frame * 0.08) * 3;   // կամաց վեր-վար է շնչում
-  ctx.save();
-  ctx.translate(x, y + bob);
-  ctx.fillStyle = '#ffd700';
-  ctx.strokeStyle = '#a8760b';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(-11, 6);
-  ctx.lineTo(-11, -3); ctx.lineTo(-5.5, 2);
-  ctx.lineTo(0, -7);   ctx.lineTo(5.5, 2);
-  ctx.lineTo(11, -3);  ctx.lineTo(11, 6);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  // թագի կարմիր քարիկը
-  ctx.fillStyle = '#e63946';
-  ctx.beginPath();
-  ctx.arc(0, 2, 2.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
-// Փայլիկներ, որ թարթում են ոսկե մեքենայի շուրջը ✨
-function drawSparkles(x, y) {
-  for (let k = 0; k < 4; k++) {
-    const a = frame * 0.06 + k * 1.6;
-    const sx = x + Math.cos(a) * (30 + k * 4);
-    const sy = y + Math.sin(a * 1.3 + k * 5) * (24 + k * 3);
-    const tw = (Math.sin(frame * 0.3 + k * 2) + 1) / 2;   // թարթելը
-    const s = 2.5 + tw * 3;
-    ctx.fillStyle = 'rgba(255, 240, 150, ' + (0.35 + tw * 0.65) + ')';
-    ctx.beginPath();
-    ctx.moveTo(sx, sy - s);
-    ctx.lineTo(sx + s * 0.35, sy - s * 0.35);
-    ctx.lineTo(sx + s, sy);
-    ctx.lineTo(sx + s * 0.35, sy + s * 0.35);
-    ctx.lineTo(sx, sy + s);
-    ctx.lineTo(sx - s * 0.35, sy + s * 0.35);
-    ctx.lineTo(sx - s, sy);
-    ctx.lineTo(sx - s * 0.35, sy - s * 0.35);
-    ctx.closePath();
-    ctx.fill();
-  }
-}
-
-// ——— Էկրանի գրությունները ———
-function drawHUD(camX, camY) {
-  // վերևի վահանակը
-  ctx.fillStyle = 'rgba(20, 26, 34, 0.72)';
-  ctx.beginPath();
-  ctx.roundRect(VW / 2 - 220, 12, 440, 46, 12);
-  ctx.fill();
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 20px "Noto Sans Armenian", Arial, sans-serif';
-  ctx.textAlign = 'center';
-  const task = mission.stage === 'pickup' ? 'Վերցրու պիցցան 🍕' : 'Հասցրու տուն 🏠';
-  ctx.fillText(task + '   ·   ' + money + '֏   ·   Առաքում՝ ' + deliveries, VW / 2, 42);
-
-  // ոստիկանը հետապնդում է → կարմիր զգուշացում
-  if (police.chasing) {
-    ctx.fillStyle = Math.floor(frame / 15) % 2 === 0 ? '#ff5050' : '#ffffff';
-    ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('🚓 ՓԱԽԻ՛Ր ՈՍՏԻԿԱՆԻՑ', VW / 2, 130);
-  } else if (carLevel < UPGRADES.length && money >= UPGRADES[carLevel].price) {
-    // փողը հերիքում է հաջորդ մեքենային → հուշում ենք խանութի մասին
-    ctx.fillStyle = carLevel === 1 ? '#ffe066' : '#aef1ff';
-    ctx.font = 'bold 18px "Noto Sans Armenian", Arial, sans-serif';
-    const carName = carLevel === 1 ? 'ՈՍԿԵ մեքենային 👑' : 'սպորտայինին';
-    ctx.fillText('🏪 Փողդ հերիքում է ' + carName + '. գնա խանութ', VW / 2, 130);
-  }
-
-  // սլաքը, որ ցույց է տալիս նշանակետի ուղղությունը
-  if (mission) {
-    const dx = mission.x - car.x, dy = mission.y - car.y;
-    if (Math.hypot(dx, dy) > 250) {
-      const a = Math.atan2(dy, dx);
-      ctx.save();
-      ctx.translate(VW / 2, 92);
-      ctx.rotate(a);
-      ctx.fillStyle = mission.stage === 'pickup' ? '#f4d13b' : '#4be06a';
-      ctx.beginPath();
-      ctx.moveTo(18, 0); ctx.lineTo(-10, -11); ctx.lineTo(-4, 0); ctx.lineTo(-10, 11);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-    }
-  }
-
-  // հեռախոսի կոճակները. նկարում ենք էկրանի պիքսելներով՝ խաղի մասշտաբից դուրս,
-  // իսկ նշանները ձեռքով ենք նկարում (ոչ էմոջի), որ ամեն հեռախոսում երևան
-  const r = btnR();
-  ctx.save();
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  for (const b of buttons()) {
-    const pressed = keys[b.key];
-    ctx.fillStyle = pressed ? 'rgba(255,255,255,0.4)' : 'rgba(20, 26, 34, 0.45)';
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = pressed ? '#ffffff' : 'rgba(255,255,255,0.6)';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    ctx.fillStyle = pressed ? '#1c2230' : '#ffffff';
-    if (b.icon === 'left') {
-      ctx.beginPath();
-      ctx.moveTo(b.x - r * 0.38, b.y);
-      ctx.lineTo(b.x + r * 0.26, b.y - r * 0.4);
-      ctx.lineTo(b.x + r * 0.26, b.y + r * 0.4);
-      ctx.closePath(); ctx.fill();
-    } else if (b.icon === 'right') {
-      ctx.beginPath();
-      ctx.moveTo(b.x + r * 0.38, b.y);
-      ctx.lineTo(b.x - r * 0.26, b.y - r * 0.4);
-      ctx.lineTo(b.x - r * 0.26, b.y + r * 0.4);
-      ctx.closePath(); ctx.fill();
-    } else if (b.icon === 'gas') {
-      ctx.beginPath();
-      ctx.moveTo(b.x, b.y - r * 0.4);
-      ctx.lineTo(b.x + r * 0.42, b.y + r * 0.28);
-      ctx.lineTo(b.x - r * 0.42, b.y + r * 0.28);
-      ctx.closePath(); ctx.fill();
-    } else if (b.icon === 'brake') {
-      // կարմիր ութանկյուն՝ ինչպես STOP նշանը
-      ctx.fillStyle = '#e04040';
-      ctx.beginPath();
-      for (let k = 0; k < 8; k++) {
-        const a = Math.PI / 8 + (Math.PI / 4) * k;
-        ctx.lineTo(b.x + Math.cos(a) * r * 0.5, b.y + Math.sin(a) * r * 0.5);
-      }
-      ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(b.x - r * 0.28, b.y - r * 0.07, r * 0.56, r * 0.14);
-    }
-  }
-  ctx.restore();
-}
-
-update();
+// Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
 </script>
