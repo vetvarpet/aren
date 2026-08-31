@@ -9,7 +9,7 @@ and iterating on the code together with Claude, one change at a time.
 
 | Folder | Project | What it is |
 |--------|---------|------------|
-| [`cat-jump`](./cat-jump/) | 🐱 Կատվիկ | Runner: jump over boxes, catch fish, duck under giant night crows, win the trophy at 100 points |
+| [`cat-jump`](./cat-jump/) | 🐱 Կատվիկ | Runner: jump over boxes, catch fish, stay low when night crows fly over, win the trophy at 100 points |
 | [`city-drive`](./city-drive/) | 🚗 Քաղաքի վարորդը | Open city: pizza deliveries, traffic, a police chase, a day/night cycle and a car shop |
 | [`piano`](./piano/) | 🎹 Դաշնամուր | Playable piano with recording, built-in songs and a learn mode with glowing keys |
 | [`rocket`](./rocket/) | 🚀 Հրթիռը տիեզերքում | Space flyer: catch stars, dodge spinning asteroids, 3 lives, best score saved |
