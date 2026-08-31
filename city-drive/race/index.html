@@ -84,13 +84,12 @@ const RIVALS = [
 let rivals = [];
 let obstacles = [];                    // յուղի բծեր ու արգելապատնեշներ
 let state = 'ready';                   // ready → count → race → done
-let countT = 0, frame = 0, finishPlace = 0, skid = 0;
+let countT = 0, frame = 0, finishPlace = 0;
 
 function reset() {
   player.x = laneX(2);
   player.progress = 0;
   player.speed = 0;
-  skid = 0;
   rivals = RIVALS.map(r => ({
     color: r.color,
     lane: r.lane,
@@ -185,14 +184,8 @@ function update() {
   if (keys.gas) player.speed = Math.min(9.5, player.speed + 0.14);
   else player.speed = Math.max(0, player.speed - 0.12);
 
-  // յուղի վրա ես՝ մեքենան սահում է, ղեկը խառնվել է 😵
-  if (skid > 0) {
-    skid--;
-    player.x += Math.sin(frame * 0.5) * 5;
-  } else {
-    if (keys.left) player.x -= 4.6;
-    if (keys.right) player.x += 4.6;
-  }
+  if (keys.left) player.x -= 4.6;
+  if (keys.right) player.x += 4.6;
   const rw = roadW();
   player.x = Math.max(W / 2 - rw / 2 + 20, Math.min(W / 2 + rw / 2 - 20, player.x));
   player.progress += player.speed;
@@ -201,8 +194,9 @@ function update() {
   for (const o of obstacles) {
     const dy = o.progress - player.progress;
     if (Math.abs(dy) < 30 && Math.abs(o.x - player.x) < 34) {
-      if (o.type === 'oil' && skid === 0) {
-        skid = 45;                       // մի պահ սահում ես
+      if (o.type === 'oil' && !o.hitDone) {
+        o.hitDone = true;                // ամեն բիծ միայն մեկ անգամ է դանդաղեցնում
+        player.speed *= 0.55;            // յուղը ՄԻԱՅՆ դանդաղեցնում է, ղեկը քոնն է
         beep(500, 200, 0.3, 'sine', 0.15);
       } else if (o.type === 'barrier') {
         if (frame % 10 === 0) sBump();
