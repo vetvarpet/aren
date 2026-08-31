@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Խաղա՛ Արենի խաղերը 📱</title>
+<style>
+  :root {
+    --bg: #12122b;
+    --ink: #eef0ff;
+    --accent: #ffd166;
+    --accent2: #6ee7b7;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    background:
+      radial-gradient(circle at 15% 10%, rgba(110, 231, 183, 0.1), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(255, 209, 102, 0.09), transparent 45%),
+      var(--bg);
+    color: var(--ink);
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    padding: 24px;
+    text-align: center;
+  }
+  .joy { font-size: 56px; animation: bounce 1.6s infinite; }
+  @keyframes bounce { 50% { transform: translateY(-10px) rotate(-6deg); } }
+  h1 { color: var(--accent); font-size: clamp(1.5rem, 6vw, 2.4rem); }
+  .sub { color: #9a9ec7; font-size: clamp(1rem, 3.5vw, 1.2rem); }
+
+  .qr {
+    background: #fff;
+    padding: 22px;
+    border-radius: 24px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+    width: min(78vw, 46vh, 380px);
+  }
+  .qr svg { display: block; width: 100%; height: auto; }
+
+  .url {
+    font-size: clamp(1.05rem, 4vw, 1.5rem);
+    font-weight: bold;
+    color: var(--accent2);
+    letter-spacing: 0.02em;
+  }
+  .hint { color: #9a9ec7; font-size: 0.95rem; }
+  .back { margin-top: 6px; }
+  .back a { color: var(--accent); }
+
+  /* Տպելիս՝ սպիտակ ֆոն, մաքուր պաստառ */
+  @media print {
+    body { background: #fff; color: #12122b; }
+    .sub, .hint { color: #444; }
+    .qr { box-shadow: none; border: 3px solid #12122b; }
+    .url { color: #12122b; }
+    .back { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="joy">🕹️</div>
+<h1>Խաղա՛ Արենի խաղերը</h1>
+<p class="sub">9 խաղ՝ սարքած 10 տարեկան Արենի կողմից 😼</p>
+
+<div class="qr">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 31 31" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h31v31H0z"/><path stroke="#12122b" d="M1 1.5h7m1 0h3m4 0h2m1 0h3m1 0h7M1 2.5h1m5 0h1m1 0h1m1 0h1m1 0h1m1 0h2m4 0h1m1 0h1m5 0h1M1 3.5h1m1 0h3m1 0h1m2 0h1m3 0h3m2 0h1m3 0h1m1 0h3m1 0h1M1 4.5h1m1 0h3m1 0h1m1 0h3m1 0h1m3 0h2m2 0h1m1 0h1m1 0h3m1 0h1M1 5.5h1m1 0h3m1 0h1m2 0h3m1 0h1m3 0h1m1 0h1m2 0h1m1 0h3m1 0h1M1 6.5h1m5 0h1m5 0h1m1 0h1m3 0h3m1 0h1m5 0h1M1 7.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M9 8.5h1m3 0h3m2 0h2M1 9.5h1m1 0h2m1 0h3m3 0h4m1 0h4m2 0h1m2 0h1m1 0h2M2 10.5h1m8 0h1m1 0h1m2 0h8m1 0h1m3 0h1M1 11.5h1m1 0h1m1 0h3m1 0h1m1 0h2m2 0h2m1 0h2m1 0h5m1 0h2M1 12.5h3m5 0h8m4 0h5m3 0h1M1 13.5h2m1 0h1m2 0h3m1 0h1m5 0h3m1 0h1m4 0h2M4 14.5h1m1 0h1m3 0h5m5 0h1m2 0h1m3 0h3M1 15.5h1m5 0h3m5 0h1m2 0h3m2 0h2m2 0h3M1 16.5h5m3 0h2m3 0h1m1 0h1m2 0h3m2 0h2m2 0h1M1 17.5h1m2 0h1m1 0h3m1 0h2m1 0h1m5 0h4m1 0h3m1 0h1M4 18.5h1m4 0h1m2 0h1m1 0h1m9 0h1m1 0h3M1 19.5h1m3 0h1m1 0h1m1 0h2m8 0h1m1 0h1m1 0h1m3 0h1M3 20.5h2m1 0h1m1 0h1m3 0h2m2 0h4m1 0h1m2 0h1m2 0h1M2 21.5h1m1 0h1m1 0h9m1 0h1m1 0h10M9 22.5h4m1 0h3m4 0h1m3 0h5M1 23.5h7m1 0h1m3 0h2m2 0h2m1 0h2m1 0h1m1 0h2m1 0h1M1 24.5h1m5 0h1m1 0h5m3 0h1m3 0h1m3 0h2m1 0h2M1 25.5h1m1 0h3m1 0h1m4 0h1m2 0h2m1 0h1m2 0h5m1 0h1m1 0h1M1 26.5h1m1 0h3m1 0h1m1 0h4m1 0h2m1 0h3m1 0h2m2 0h2m1 0h1M1 27.5h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m2 0h2m2 0h3m1 0h1m2 0h1m1 0h1M1 28.5h1m5 0h1m4 0h1m2 0h1m1 0h1m1 0h1m1 0h2m1 0h3m1 0h1M1 29.5h7m1 0h1m3 0h4m1 0h1m1 0h2m2 0h1m3 0h1"/></svg>
+</div>
+
+<p class="url">aren-alpha.vercel.app</p>
+<p class="hint">Ուղղիր հեռախոսիդ տեսախցիկը QR կոդին ու սեղմիր հղումը 📸</p>
+
+<p class="back"><a href="./index.html">← Արեն Սայտ</a></p>
+
+</body>
+</html>
