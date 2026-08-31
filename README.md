@@ -14,7 +14,7 @@ and iterating on the code together with Claude, one change at a time.
 | [`piano`](./piano/) | 🎹 Դաշնամուր | Playable piano with recording, built-in songs and a learn mode with glowing keys |
 | [`rocket`](./rocket/) | 🚀 Հրթիռը տիեզերքում | Space flyer: catch stars, dodge spinning asteroids, 3 lives, best score saved |
 | [`memory`](./memory/) | 🧠 Հիշողության խաղեր | Three memory games in one: pairs, Simon-style repeat-after-me, and number hunter |
-| [`racing`](./racing/) | 🏁 Մրցարշավ | Race your white sports car against 3 rivals to the finish line |
+| [`racing`](./racing/) | 🏁 Մրցարշավ | 10 levels of racing: you control the gas, dodge oil slicks and barriers, beat 3 rivals |
 | [`fishing`](./fishing/) | 🎣 Ձկնորսություն | 60 seconds of fishing: golden fish +5, old boot 0 |
 | [`maze`](./maze/) | 🌀 Լաբիրինթոս | 100 levels of mazes — the ball follows your finger, chiptune music speeds up as you go |
 

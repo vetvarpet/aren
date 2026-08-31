@@ -59,8 +59,14 @@ function beep(f1, f2, dur, type, vol, delay) {
 const sBump = () => beep(150, 60, 0.25, 'sawtooth', 0.2);
 const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => beep(f, f, 0.25, 'triangle', 0.2, k * 0.13));
 
-// ——— Ուղին ———
-const RACE_LEN = 9000;                 // ֆինիշը այսքան «մետրի» վրա է
+// ——— Մակարդակներն ու ուղին ———
+// 10 մակարդակ. ամեն մեկում մրցակիցներն ավելի արագ են, ուղին՝ ավելի երկար,
+// իսկ ճանապարհին ավելի շատ յուղ ու արգելապատնեշ կա 🚧
+const MAX_LEVEL = 10;
+let level = 1;
+try { level = Math.min(MAX_LEVEL, Number(localStorage.getItem('aren-race-level') || 1) || 1); } catch (e) {}
+function raceLen() { return 7000 + level * 900; }
+function rivalBase() { return 6.7 + level * 0.24; }
 function roadW() { return Math.min(W * 0.86, 440); }
 function laneX(i) {                    // 4 գոտի. 0-ն ձախն է
   const rw = roadW();
@@ -75,53 +81,66 @@ const RIVALS = [
   { color: '#9b59b6', lane: 3 },
 ];
 let rivals = [];
+let obstacles = [];                    // յուղի բծեր ու արգելապատնեշներ
 let state = 'ready';                   // ready → count → race → done
-let countT = 0, frame = 0, finishPlace = 0;
-let best = 0;
-try { best = Number(localStorage.getItem('aren-race-best') || 0); } catch (e) {}
+let countT = 0, frame = 0, finishPlace = 0, skid = 0;
 
 function reset() {
   player.x = laneX(2);
   player.progress = 0;
   player.speed = 0;
+  skid = 0;
   rivals = RIVALS.map(r => ({
     color: r.color,
     lane: r.lane,
     x: laneX(r.lane),
     progress: 60 + Math.random() * 40,   // մի քիչ առջևից են սկսում, հասի՛ր
-    speed: 7.2 + Math.random() * 0.5,
+    speed: rivalBase() + Math.random() * 0.4,
     turn: 0,
   }));
+  // խոչընդոտները շաղ ենք տալիս ուղու վրայով. ինչ մակարդակ, այնքան շատ
+  obstacles = [];
+  for (let i = 0; i < 6 + level * 2; i++) {
+    obstacles.push({
+      progress: 500 + Math.random() * (raceLen() - 1000),
+      x: laneX(Math.floor(Math.random() * 4)),
+      type: Math.random() < 0.55 ? 'oil' : 'barrier',
+    });
+  }
 }
 reset();
 
 // ——— Կառավարումը ———
-const keys = { left: false, right: false };
+const keys = { left: false, right: false, gas: false };
 document.addEventListener('keydown', (e) => {
   if (e.code === 'ArrowLeft') { e.preventDefault(); keys.left = true; }
   if (e.code === 'ArrowRight') { e.preventDefault(); keys.right = true; }
+  if (e.code === 'ArrowUp') { e.preventDefault(); keys.gas = true; }
   if ((state === 'ready' || state === 'done') && (e.code === 'Space' || e.code === 'Enter')) start();
 });
 document.addEventListener('keyup', (e) => {
   if (e.code === 'ArrowLeft') keys.left = false;
   if (e.code === 'ArrowRight') keys.right = false;
+  if (e.code === 'ArrowUp') keys.gas = false;
 });
 
 // Մեծ կոճակներ՝ էկրանի իսկական պիքսելներով (փոքր հեռախոսում էլ մեծ են)
 function btnR() { return Math.max(44, Math.min(64, W * 0.09)); }
 function buttons() {
   const r = btnR(), pad = 16, y = H - pad - r;
+  // ձախում՝ ղեկը (◀ ▶), աջում՝ ԳԱԶԸ՝ մեծ կանաչ կոճակ
   return [
-    { key: 'left',  x: pad + r,     y },
-    { key: 'right', x: W - pad - r, y },
+    { key: 'left',  x: pad + r,             y },
+    { key: 'right', x: pad + r * 3 + 16,    y },
+    { key: 'gas',   x: W - pad - r * 1.2,   y: H - pad - r * 1.2, big: true },
   ];
 }
 const pointers = new Map();
 function updateTouch() {
-  keys.left = keys.right = false;
-  const hit = btnR() + 14;
+  keys.left = keys.right = keys.gas = false;
   for (const p of pointers.values()) {
     for (const b of buttons()) {
+      const hit = (b.big ? btnR() * 1.35 : btnR()) + 12;
       if (Math.hypot(p.x - b.x, p.y - b.y) < hit) keys[b.key] = true;
     }
   }
@@ -161,13 +180,36 @@ function update() {
 
   if (state !== 'race') return;
 
-  // գազը ինքն է սեղմված. ղեկում ես միայն դու
-  player.speed = Math.min(8, player.speed + 0.08);
-  if (keys.left) player.x -= 4.6;
-  if (keys.right) player.x += 4.6;
+  // ԳԱԶԸ ՔՈ ՁԵՌՔԻՆ Է. սեղմած ես՝ արագանում ես, թողեցիր՝ դանդաղում
+  if (keys.gas) player.speed = Math.min(9.5, player.speed + 0.14);
+  else player.speed = Math.max(0, player.speed - 0.12);
+
+  // յուղի վրա ես՝ մեքենան սահում է, ղեկը խառնվել է 😵
+  if (skid > 0) {
+    skid--;
+    player.x += Math.sin(frame * 0.5) * 5;
+  } else {
+    if (keys.left) player.x -= 4.6;
+    if (keys.right) player.x += 4.6;
+  }
   const rw = roadW();
   player.x = Math.max(W / 2 - rw / 2 + 20, Math.min(W / 2 + rw / 2 - 20, player.x));
   player.progress += player.speed;
+
+  // ——— Խոչընդոտները ———
+  for (const o of obstacles) {
+    const dy = o.progress - player.progress;
+    if (Math.abs(dy) < 30 && Math.abs(o.x - player.x) < 34) {
+      if (o.type === 'oil' && skid === 0) {
+        skid = 45;                       // մի պահ սահում ես
+        beep(500, 200, 0.3, 'sine', 0.15);
+      } else if (o.type === 'barrier') {
+        if (frame % 10 === 0) sBump();
+        player.speed *= 0.4;             // ուժեղ հարված՝ կտրուկ դանդաղում
+        o.progress -= 60;                // պատնեշը «ետ է թռչում», որ նորից չկպնես
+      }
+    }
+  }
 
   // մրցակիցները. մի քիչ խելացի են՝ ետ մնացին՝ արագանում են
   for (const r of rivals) {
@@ -193,17 +235,27 @@ function update() {
   }
 
   // ֆինի՜շ
-  if (player.progress >= RACE_LEN) {
+  if (player.progress >= raceLen()) {
     finishPlace = 1 + rivals.filter(r => r.progress > player.progress).length;
     state = 'done';
-    if (finishPlace === 1) { sWin(); confetti(); }
-    else beep(300, 150, 0.5, 'triangle', 0.2);
-    if (best === 0 || finishPlace < best) {
-      best = finishPlace;
-      try { localStorage.setItem('aren-race-best', best); } catch (e) {}
+    if (finishPlace === 1) {
+      sWin();
+      confetti();
+      // հաղթեցիր → հաջորդ մակարդակը բացվում է
+      if (level < MAX_LEVEL) {
+        level++;
+        try { localStorage.setItem('aren-race-level', level); } catch (e) {}
+        wonLevel = true;
+      } else {
+        wonLevel = 'champion';
+      }
+    } else {
+      wonLevel = false;
+      beep(300, 150, 0.5, 'triangle', 0.2);
     }
   }
 }
+let wonLevel = false;
 
 // ——— Նկարելը ———
 function drawCar(x, y, color, stripes) {
@@ -254,13 +306,34 @@ function draw() {
   const py = H * 0.72;
 
   // ֆինիշի շախմատե գիծը երևում է, երբ մոտենում ես
-  const fy = py - (RACE_LEN - player.progress);
+  const fy = py - (raceLen() - player.progress);
   if (fy > -60 && fy < H + 60) {
     for (let i = 0; i < Math.ceil(rw / 24); i++) {
       for (let j = 0; j < 2; j++) {
         ctx.fillStyle = (i + j) % 2 === 0 ? '#fff' : '#111';
         ctx.fillRect(W / 2 - rw / 2 + i * 24, fy - 24 + j * 12, 24, 12);
       }
+    }
+  }
+
+  // խոչընդոտները՝ յուղի բծեր ու արգելապատնեշներ
+  for (const o of obstacles) {
+    const y = py - (o.progress - player.progress);
+    if (y < -60 || y > H + 60) continue;
+    if (o.type === 'oil') {
+      ctx.fillStyle = '#1c1f24';
+      ctx.beginPath(); ctx.ellipse(o.x, y, 26, 16, 0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(120,160,200,0.35)';
+      ctx.beginPath(); ctx.ellipse(o.x - 6, y - 4, 9, 5, 0.3, 0, Math.PI * 2); ctx.fill();
+    } else {
+      // կարմիր-սպիտակ գծավոր պատնեշ
+      for (let k = 0; k < 4; k++) {
+        ctx.fillStyle = k % 2 === 0 ? '#e63946' : '#f4f6f8';
+        ctx.fillRect(o.x - 30 + k * 15, y - 7, 15, 14);
+      }
+      ctx.fillStyle = '#8a8f98';
+      ctx.fillRect(o.x - 30, y + 7, 5, 6);
+      ctx.fillRect(o.x + 25, y + 7, 5, 6);
     }
   }
 
@@ -277,11 +350,11 @@ function draw() {
   // տեղը
   const place = 1 + rivals.filter(r => r.progress > player.progress).length;
   ctx.fillStyle = 'rgba(20,26,34,0.72)';
-  ctx.beginPath(); ctx.roundRect(12, 12, 130, 44, 12); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(12, 12, 260, 44, 12); ctx.fill();
   ctx.fillStyle = '#ffd166';
-  ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
+  ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText('Տեղ՝ ' + place + '/4', 26, 42);
+  ctx.fillText('Տեղ՝ ' + place + '/4  ·  Մակ. ' + level + '/10', 26, 42);
 
   // առաջընթացի ձողիկը՝ աջ եզրին
   const bx = W - 26, bh = H * 0.5, by = H * 0.12;
@@ -290,7 +363,7 @@ function draw() {
   ctx.fillStyle = '#fff';
   ctx.fillRect(bx - 8, by, 16, 3);
   const dot = (p, color, rr) => {
-    const yy = by + bh - bh * Math.min(1, p / RACE_LEN);
+    const yy = by + bh - bh * Math.min(1, p / raceLen());
     ctx.fillStyle = color;
     ctx.beginPath(); ctx.arc(bx, yy, rr, 0, Math.PI * 2); ctx.fill();
   };
@@ -299,20 +372,34 @@ function draw() {
 
   // կոճակները
   if (state === 'race' || state === 'count') {
-    const r = btnR();
     for (const b of buttons()) {
+      const r = b.big ? btnR() * 1.35 : btnR();
       const pressed = keys[b.key];
-      ctx.fillStyle = pressed ? 'rgba(255,255,255,0.4)' : 'rgba(20,26,34,0.45)';
-      ctx.beginPath(); ctx.arc(b.x, b.y, r, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = pressed ? '#fff' : 'rgba(255,255,255,0.6)';
-      ctx.lineWidth = 3; ctx.stroke();
-      ctx.fillStyle = pressed ? '#1c2230' : '#fff';
-      const s = b.key === 'left' ? -1 : 1;
-      ctx.beginPath();
-      ctx.moveTo(b.x + s * r * 0.38, b.y);
-      ctx.lineTo(b.x - s * r * 0.26, b.y - r * 0.4);
-      ctx.lineTo(b.x - s * r * 0.26, b.y + r * 0.4);
-      ctx.closePath(); ctx.fill();
+      if (b.key === 'gas') {
+        // ԳԱԶԸ՝ մեծ կանաչ կոճակ
+        ctx.fillStyle = pressed ? '#6ee7b7' : 'rgba(30,90,60,0.75)';
+        ctx.beginPath(); ctx.arc(b.x, b.y, r, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = pressed ? '#fff' : 'rgba(160,255,210,0.7)';
+        ctx.lineWidth = 4; ctx.stroke();
+        ctx.fillStyle = pressed ? '#0c3524' : '#eafff5';
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y - r * 0.4);
+        ctx.lineTo(b.x + r * 0.42, b.y + r * 0.28);
+        ctx.lineTo(b.x - r * 0.42, b.y + r * 0.28);
+        ctx.closePath(); ctx.fill();
+      } else {
+        ctx.fillStyle = pressed ? 'rgba(255,255,255,0.4)' : 'rgba(20,26,34,0.45)';
+        ctx.beginPath(); ctx.arc(b.x, b.y, r, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = pressed ? '#fff' : 'rgba(255,255,255,0.6)';
+        ctx.lineWidth = 3; ctx.stroke();
+        ctx.fillStyle = pressed ? '#1c2230' : '#fff';
+        const s = b.key === 'left' ? -1 : 1;
+        ctx.beginPath();
+        ctx.moveTo(b.x + s * r * 0.38, b.y);
+        ctx.lineTo(b.x - s * r * 0.26, b.y - r * 0.4);
+        ctx.lineTo(b.x - s * r * 0.26, b.y + r * 0.4);
+        ctx.closePath(); ctx.fill();
+      }
     }
   }
 
@@ -326,17 +413,27 @@ function draw() {
     if (state === 'done') {
       const words = ['', 'ԱՌԱՋԻՆ ՏԵՂ', 'Երկրորդ տեղ', 'Երրորդ տեղ', 'Չորրորդ տեղ'];
       ctx.fillStyle = finishPlace === 1 ? '#ffd166' : '#fff';
-      ctx.fillText(words[finishPlace], W / 2, H / 2 - 60);
-      if (finishPlace === 1) {
-        // գավաթը նկարում ենք մենք
-        drawTrophy(W / 2, H / 2 + 10);
+      ctx.fillText(words[finishPlace], W / 2, H / 2 - 70);
+      if (wonLevel === 'champion') {
+        ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
+        ctx.fillText('ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ — 10 մակարդակ 🚗', W / 2, H / 2 - 30);
+        drawTrophy(W / 2, H / 2 + 30);
+      } else if (wonLevel) {
+        ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
+        ctx.fillStyle = '#6ee7b7';
+        ctx.fillText('Բացվեց մակարդակ ' + level + '-ը', W / 2, H / 2 - 30);
+        drawTrophy(W / 2, H / 2 + 30);
+      } else {
+        ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
+        ctx.fillStyle = '#c8cede';
+        ctx.fillText('Առաջինը պիտի գաս, որ մակարդակն անցնես', W / 2, H / 2 - 30);
       }
     } else {
-      ctx.fillText('Մրցարշավ', W / 2, H / 2 - 60);
+      ctx.fillText('Մրցարշավ — մակարդակ ' + level, W / 2, H / 2 - 60);
       ctx.font = Math.min(20, W * 0.05) + 'px "Noto Sans Armenian", Arial, sans-serif';
       ctx.fillStyle = '#c8cede';
-      ctx.fillText('Հասիր ֆինիշ առաջինը՝', W / 2, H / 2 - 20);
-      ctx.fillText('3 մրցակից քեզ են սպասում', W / 2, H / 2 + 8);
+      ctx.fillText('Գազը դու ես տալիս (կանաչ կոճակը)', W / 2, H / 2 - 20);
+      ctx.fillText('Զգույշ յուղից ու պատնեշներից 🚧', W / 2, H / 2 + 8);
     }
     ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
     ctx.fillStyle = '#6ee7b7';
