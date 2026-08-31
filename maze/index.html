@@ -20,10 +20,9 @@
 
 <script>
 // ——————————————————————————————————————
-//  ԼԱԲԻՐԻՆԹՈՍ 🌀
-//  Ամեն անգամ ՆՈՐ լաբիրինթոս է ստեղծվում։
-//  Պահիր մատդ էկրանին՝ գնդակը գնում է մատիդ հետևից,
-//  բայց պատերի միջով անցնել ՉԻ կարող 😉
+//  ԼԱԲԻՐԻՆԹՈՍ 🌀 — 10 ՄԱԿԱՐԴԱԿ
+//  Պահիր մատդ էկրանին՝ գնդակը գնում է հետևից։
+//  Ամեն մակարդակ ավելի մեծ է, երաժշտությունն էլ՝ ավելի արագ 🎵
 // ——————————————————————————————————————
 
 const canvas = document.getElementById('game');
@@ -38,11 +37,12 @@ function resize() {
 resize();
 window.addEventListener('resize', resize);
 
-// ——— Ձայները ———
+// ——— Ձայներն ու ԵՐԱԺՇՏՈՒԹՅՈՒՆԸ ———
 let actx = null;
 function initAudio() {
   if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
   if (actx.state === 'suspended') actx.resume();
+  startMusic();
 }
 function beep(f1, f2, dur, type, vol, delay) {
   if (!actx) return;
@@ -59,16 +59,56 @@ function beep(f1, f2, dur, type, vol, delay) {
 }
 const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => beep(f, f, 0.25, 'triangle', 0.2, k * 0.13));
 
-// ——— Լաբիրինթոսի ստեղծումը ———
-// Ամեն վանդակ 4 պատ ունի՝ [վերև, աջ, ներքև, ձախ]։
-// «Փորող» ալգորիթմը քայլում է ու քանդում պատերը, մինչև ամեն տեղ հասնի։
-const COLS = 9, ROWS = 13;
-let walls, exitCell, finished, timerOn, startTime, finishTime;
-const pos = { x: 0.5, y: 0.5 };   // գնդակի տեղը՝ վանդակի չափերով (0.5 = վանդակի կենտրոն)
-let best = 0;
-try { best = Number(localStorage.getItem('aren-maze-best') || 0); } catch (e) {}
+// Արագ չիպթյուն մեղեդի, որ պտտվում է անվերջ։
+// Թվերը կիսատոներ են․ ինչքան մեծ, այնքան բարձր նոտա։ -1 = դադար։
+const MELODY = [0, 3, 7, 12, 7, 3, 5, 7, 10, 7, 5, 3, 2, 3, 5, -1];
+const BASS   = [0, -1, 0, -1, 5, -1, 5, -1, 3, -1, 3, -1, 2, -1, 2, -1];
+let musicOn = true;
+let musicStarted = false;
+let stepIdx = 0;
+let musicTimer = null;
+
+function musicStepMs() {
+  // 1-ին մակարդակում՝ 150 BPM, ամեն մակարդակ +6 BPM. ավելի խորն ես՝ ավելի արագ է 😈
+  const bpm = 150 + (level - 1) * 6;
+  return 60000 / bpm / 2;   // ամեն քայլը կես բիթ է
+}
+function musicTick() {
+  if (!musicOn || !actx) return;
+  const m = MELODY[stepIdx % 16];
+  const b = BASS[stepIdx % 16];
+  if (m >= 0) beep(330 * Math.pow(2, m / 12), 330 * Math.pow(2, m / 12), 0.11, 'square', 0.045);
+  if (b >= 0) beep(83 * Math.pow(2, b / 12), 83 * Math.pow(2, b / 12), 0.18, 'triangle', 0.09);
+  stepIdx++;
+}
+function startMusic() {
+  if (musicStarted) return;
+  musicStarted = true;
+  scheduleMusic();
+}
+function scheduleMusic() {
+  clearInterval(musicTimer);
+  musicTimer = setInterval(musicTick, musicStepMs());
+}
+
+// ——— Մակարդակները ———
+// Ամեն մակարդակ՝ իր չափսը։ 10-ն անցար՝ չեմպիոն ես 🏆
+const LEVELS = [
+  [5, 7], [6, 9], [7, 10], [8, 12], [9, 13],
+  [10, 15], [11, 16], [12, 18], [13, 19], [14, 21],
+];
+let level = 1;
+let maxLevel = 1;
+try {
+  level = Math.min(10, Number(localStorage.getItem('aren-maze-level') || 1) || 1);
+  maxLevel = Math.min(10, Number(localStorage.getItem('aren-maze-max') || 1) || 1);
+} catch (e) {}
+
+let COLS, ROWS, walls, exitCell, state, timerOn, startTime, finishTime;
+const pos = { x: 0.5, y: 0.5 };   // գնդակի տեղը՝ վանդակի չափերով
 
 function newMaze() {
+  [COLS, ROWS] = LEVELS[level - 1];
   walls = [];
   for (let c = 0; c < COLS; c++) {
     walls[c] = [];
@@ -77,7 +117,7 @@ function newMaze() {
   const seen = Array.from({ length: COLS }, () => Array(ROWS).fill(false));
   const stack = [[0, 0]];
   seen[0][0] = true;
-  const DIRS = [[0, -1, 0, 2], [1, 0, 1, 3], [0, 1, 2, 0], [-1, 0, 3, 1]];   // dx, dy, իմ պատը, հարևանի պատը
+  const DIRS = [[0, -1, 0, 2], [1, 0, 1, 3], [0, 1, 2, 0], [-1, 0, 3, 1]];
   while (stack.length) {
     const [c, r] = stack[stack.length - 1];
     const options = DIRS.filter(([dx, dy]) => {
@@ -95,10 +135,11 @@ function newMaze() {
   pos.x = 0.5;
   pos.y = 0.5;
   exitCell = { c: COLS - 1, r: ROWS - 1 };
-  finished = false;
+  state = 'play';           // play → levelDone → champion
   timerOn = false;
   startTime = 0;
   finishTime = 0;
+  scheduleMusic();          // տեմպը թարմացվում է մակարդակի հետ
 }
 newMaze();
 
@@ -110,12 +151,21 @@ function metrics() {
   return { cell, ox, oy };
 }
 
+// ——— Ձայնի կոճակը (վերևի աջ անկյունում) ———
+function speakerBox() { return { x: W - 46, y: 58, r: 22 }; }
+
 // ——— Մատին հետևելը ———
-let finger = null;    // մատի (կամ մկնիկի) տեղը էկրանին
+let finger = null;
 canvas.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   initAudio();
-  if (finished) { newMaze(); return; }
+  const sp = speakerBox();
+  if (Math.hypot(e.clientX - sp.x, e.clientY - sp.y) < sp.r + 8) {
+    musicOn = !musicOn;
+    return;
+  }
+  if (state === 'levelDone') { level = Math.min(10, level + 1); saveLevel(); newMaze(); return; }
+  if (state === 'champion') { level = 1; saveLevel(); newMaze(); return; }
   finger = { x: e.clientX, y: e.clientY };
 });
 canvas.addEventListener('pointermove', (e) => {
@@ -126,17 +176,26 @@ canvas.addEventListener('pointercancel', () => { finger = null; });
 canvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
 canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
-// Ստեղնաշարով էլ կարելի է՝ սլաքները պահած
+function saveLevel() {
+  try {
+    localStorage.setItem('aren-maze-level', level);
+    if (level > maxLevel) maxLevel = level;
+    localStorage.setItem('aren-maze-max', maxLevel);
+  } catch (e) {}
+}
+
+// Ստեղնաշարով էլ կարելի է
 const keys = {};
 document.addEventListener('keydown', (e) => {
   const map = { ArrowUp: 'u', ArrowRight: 'r', ArrowDown: 'd', ArrowLeft: 'l' };
   if (map[e.code]) {
     e.preventDefault();
-    if (finished) { newMaze(); return; }
     initAudio();
+    if (state !== 'play') return;
     keys[map[e.code]] = true;
   }
-  if (finished && (e.code === 'Space' || e.code === 'Enter')) newMaze();
+  if (state === 'levelDone' && (e.code === 'Space' || e.code === 'Enter')) { level = Math.min(10, level + 1); saveLevel(); newMaze(); }
+  else if (state === 'champion' && (e.code === 'Space' || e.code === 'Enter')) { level = 1; saveLevel(); newMaze(); }
 });
 document.addEventListener('keyup', (e) => {
   const map = { ArrowUp: 'u', ArrowRight: 'r', ArrowDown: 'd', ArrowLeft: 'l' };
@@ -144,9 +203,8 @@ document.addEventListener('keyup', (e) => {
 });
 
 // ——— Պատերի ֆիզիկան ———
-// Գնդակը վանդակի մեջ է. եթե պատ կա, կենտրոնը այդ կողմ չի անցնում
-const RAD = 0.30;    // գնդակի շառավիղը վանդակի չափերով
-const WT = 0.06;     // պատի հաստության կեսը
+const RAD = 0.30;
+const WT = 0.06;
 function clampToWalls() {
   const c = Math.max(0, Math.min(COLS - 1, Math.floor(pos.x)));
   const r = Math.max(0, Math.min(ROWS - 1, Math.floor(pos.y)));
@@ -156,17 +214,15 @@ function clampToWalls() {
   if (w[2]) pos.y = Math.min(pos.y, r + hi);
   if (w[3]) pos.x = Math.max(pos.x, c + lo);
   if (w[1]) pos.x = Math.min(pos.x, c + hi);
-  // եզրերից դուրս էլ չգնաս
   pos.x = Math.max(lo * 0.5, Math.min(COLS - lo * 0.5, pos.x));
   pos.y = Math.max(lo * 0.5, Math.min(ROWS - lo * 0.5, pos.y));
 }
 
-// Շարժվում ենք փոքրիկ քայլերով՝ ամեն քայլից հետո պատերին «հարցնելով»
 function moveToward(tx, ty) {
   let dx = tx - pos.x, dy = ty - pos.y;
   const dist = Math.hypot(dx, dy);
   if (dist < 0.02) return false;
-  const speed = Math.min(0.17, dist);   // մեկ կադրում այսքան վանդակ
+  const speed = Math.min(0.17, dist);
   dx = dx / dist * speed;
   dy = dy / dist * speed;
   const steps = Math.ceil(speed / 0.05);
@@ -184,7 +240,7 @@ function moveToward(tx, ty) {
 let frame = 0;
 function update() {
   frame++;
-  if (finished) return;
+  if (state !== 'play') return;
 
   let moved = false;
   if (finger) {
@@ -203,14 +259,17 @@ function update() {
 
   // հասա՞ր ելքին
   if (Math.floor(pos.x) === exitCell.c && Math.floor(pos.y) === exitCell.r) {
-    finished = true;
     finger = null;
     finishTime = (performance.now() - startTime) / 1000;
     sWin();
-    if (best === 0 || finishTime < best) {
-      best = Math.round(finishTime * 10) / 10;
-      try { localStorage.setItem('aren-maze-best', best); } catch (e) {}
+    if (level === 10) {
+      state = 'champion';
       confetti();
+      confetti();
+    } else {
+      state = 'levelDone';
+      if (level + 1 > maxLevel) confetti();
+      saveLevel();
     }
   }
 }
@@ -225,7 +284,7 @@ function draw() {
   // ելքը՝ կանաչ վանդակ դրոշիկով
   const ex = ox + exitCell.c * cell, ey = oy + exitCell.r * cell;
   ctx.fillStyle = '#2f855a';
-  ctx.fillRect(ex + 3, ey + 3, cell - 6, cell - 6);
+  ctx.fillRect(ex + 2, ey + 2, cell - 4, cell - 4);
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -242,7 +301,7 @@ function draw() {
 
   // պատերը
   ctx.strokeStyle = '#8f7ae0';
-  ctx.lineWidth = Math.max(3, cell * 0.09);
+  ctx.lineWidth = Math.max(2.5, cell * 0.09);
   ctx.lineCap = 'round';
   ctx.beginPath();
   for (let c = 0; c < COLS; c++) {
@@ -257,8 +316,8 @@ function draw() {
   }
   ctx.stroke();
 
-  // մատի նշանը՝ որտեղ ես բռնել
-  if (finger && !finished) {
+  // մատի նշանը
+  if (finger && state === 'play') {
     ctx.strokeStyle = 'rgba(255, 209, 102, 0.5)';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -266,7 +325,7 @@ function draw() {
     ctx.stroke();
   }
 
-  // գնդակը՝ դեղին, ժպտացող 😊 (դեմքը մենք ենք նկարում)
+  // գնդակը՝ դեղին, ժպտացող
   const px = ox + pos.x * cell;
   const py = oy + pos.y * cell;
   const pr = cell * RAD;
@@ -281,36 +340,90 @@ function draw() {
 
   // ——— Վահանակը ———
   ctx.fillStyle = '#ffd76e';
-  ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
+  ctx.font = 'bold 21px "Noto Sans Armenian", Arial, sans-serif';
   ctx.textAlign = 'left';
-  const t = timerOn && !finished ? (performance.now() - startTime) / 1000 : (finished ? finishTime : 0);
-  ctx.fillText('Ժամանակ՝ ' + t.toFixed(1) + ' վրկ', 16, 40);
-  if (best > 0) {
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#6ee7b7';
-    ctx.fillText('Ռեկորդ՝ ' + best + ' վրկ', W - 16, 40);
+  const t = timerOn && state === 'play' ? (performance.now() - startTime) / 1000 : finishTime;
+  ctx.fillText('Մակարդակ ' + level + '/10', 16, 40);
+  ctx.fillStyle = '#9a9ec7';
+  ctx.fillText(t.toFixed(1) + ' վրկ', 16, H - 18);
+
+  // ձայնի կոճակը՝ բարձրախոսը մենք ենք նկարում
+  const sp = speakerBox();
+  ctx.fillStyle = 'rgba(61,53,96,0.9)';
+  ctx.beginPath(); ctx.arc(sp.x, sp.y, sp.r, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#6a5f9e';
+  ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#f5eede';
+  ctx.beginPath();
+  ctx.moveTo(sp.x - 9, sp.y - 4); ctx.lineTo(sp.x - 3, sp.y - 4);
+  ctx.lineTo(sp.x + 3, sp.y - 9); ctx.lineTo(sp.x + 3, sp.y + 9);
+  ctx.lineTo(sp.x - 3, sp.y + 4); ctx.lineTo(sp.x - 9, sp.y + 4);
+  ctx.closePath(); ctx.fill();
+  if (musicOn) {
+    ctx.strokeStyle = '#f5eede';
+    ctx.beginPath(); ctx.arc(sp.x + 6, sp.y, 5, -0.9, 0.9); ctx.stroke();
+    ctx.beginPath(); ctx.arc(sp.x + 6, sp.y, 9, -0.9, 0.9); ctx.stroke();
+  } else {
+    ctx.strokeStyle = '#ff6b5e';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(sp.x + 5, sp.y - 6); ctx.lineTo(sp.x + 13, sp.y + 6);
+    ctx.moveTo(sp.x + 13, sp.y - 6); ctx.lineTo(sp.x + 5, sp.y + 6);
+    ctx.stroke();
   }
 
   ctx.textAlign = 'center';
-  if (!timerOn && !finished) {
+  if (!timerOn && state === 'play' && level === 1) {
     ctx.fillStyle = '#9a9ec7';
     ctx.font = Math.min(17, W * 0.042) + 'px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('Պահիր մատդ էկրանին՝ գնդակը կգա հետևից', W / 2, H - 24);
+    ctx.fillText('Պահիր մատդ էկրանին՝ գնդակը կգա հետևից', W / 2, H - 18);
   }
 
-  if (finished) {
-    ctx.fillStyle = 'rgba(10,14,30,0.75)';
+  // ——— Էկրանները ———
+  if (state === 'levelDone') {
+    ctx.fillStyle = 'rgba(10,14,30,0.78)';
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = '#ffd166';
-    ctx.font = 'bold ' + Math.min(36, W * 0.08) + 'px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('Դուրս եկա՜ր', W / 2, H / 2 - 50);
+    ctx.font = 'bold ' + Math.min(34, W * 0.075) + 'px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillText('Մակարդակ ' + level + ' անցա՜ր', W / 2, H / 2 - 60);
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 26px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText(finishTime.toFixed(1) + ' վայրկյանում', W / 2, H / 2);
+    ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillText(finishTime.toFixed(1) + ' վայրկյանում', W / 2, H / 2 - 15);
     ctx.fillStyle = '#6ee7b7';
     ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('Սեղմիր՝ նոր լաբիրինթոս', W / 2, H / 2 + 60);
+    ctx.fillText('Սեղմիր՝ մակարդակ ' + (level + 1), W / 2, H / 2 + 50);
+  } else if (state === 'champion') {
+    ctx.fillStyle = 'rgba(10,14,30,0.82)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#ffd166';
+    ctx.font = 'bold ' + Math.min(38, W * 0.08) + 'px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillText('ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ', W / 2, H / 2 - 70);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillText('Անցար բոլոր 10 մակարդակը', W / 2, H / 2 - 25);
+    drawTrophy(W / 2, H / 2 + 45);
+    ctx.fillStyle = '#6ee7b7';
+    ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillText('Սեղմիր՝ նորից սկզբից', W / 2, H / 2 + 120);
   }
+}
+
+// Ոսկե գավաթ 🏆 (նկարում ենք ձեռքով)
+function drawTrophy(x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = '#ffd166';
+  ctx.beginPath();
+  ctx.moveTo(-24, -28); ctx.lineTo(24, -28);
+  ctx.quadraticCurveTo(20, 6, 0, 12);
+  ctx.quadraticCurveTo(-20, 6, -24, -28);
+  ctx.fill();
+  ctx.strokeStyle = '#ffd166'; ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.arc(-28, -15, 9, Math.PI * 0.5, Math.PI * 1.5); ctx.stroke();
+  ctx.beginPath(); ctx.arc(28, -15, 9, -Math.PI * 0.5, Math.PI * 0.5); ctx.stroke();
+  ctx.fillRect(-4, 12, 8, 10);
+  ctx.fillRect(-16, 22, 32, 7);
+  ctx.restore();
 }
 
 function confetti() {
