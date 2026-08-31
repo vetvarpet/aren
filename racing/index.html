@@ -349,12 +349,15 @@ function draw() {
   // ——— Վահանակը (էմոջի չկա՝ ամեն ինչ նկարած է) ———
   // տեղը
   const place = 1 + rivals.filter(r => r.progress > player.progress).length;
+  const hudFont = Math.min(20, W * 0.046);
+  ctx.font = 'bold ' + hudFont + 'px "Noto Sans Armenian", Arial, sans-serif';
+  const hudText = 'Տեղ՝ ' + place + '/4 · Մակ. ' + level + '/10';
+  const hudW = ctx.measureText(hudText).width + 28;
   ctx.fillStyle = 'rgba(20,26,34,0.72)';
-  ctx.beginPath(); ctx.roundRect(12, 12, 260, 44, 12); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(12, 12, hudW, hudFont * 2, 12); ctx.fill();
   ctx.fillStyle = '#ffd166';
-  ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText('Տեղ՝ ' + place + '/4  ·  Մակ. ' + level + '/10', 26, 42);
+  ctx.fillText(hudText, 26, 12 + hudFont * 1.35);
 
   // առաջընթացի ձողիկը՝ աջ եզրին
   const bx = W - 26, bh = H * 0.5, by = H * 0.12;
@@ -414,28 +417,33 @@ function draw() {
       const words = ['', 'ԱՌԱՋԻՆ ՏԵՂ', 'Երկրորդ տեղ', 'Երրորդ տեղ', 'Չորրորդ տեղ'];
       ctx.fillStyle = finishPlace === 1 ? '#ffd166' : '#fff';
       ctx.fillText(words[finishPlace], W / 2, H / 2 - 70);
+      const midFont = Math.min(20, W * 0.048);
       if (wonLevel === 'champion') {
-        ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
-        ctx.fillText('ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ — 10 մակարդակ 🚗', W / 2, H / 2 - 30);
+        ctx.font = 'bold ' + midFont + 'px "Noto Sans Armenian", Arial, sans-serif';
+        ctx.fillText('ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ — 10 մակարդակ', W / 2, H / 2 - 30);
         drawTrophy(W / 2, H / 2 + 30);
       } else if (wonLevel) {
-        ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
+        ctx.font = 'bold ' + midFont + 'px "Noto Sans Armenian", Arial, sans-serif';
         ctx.fillStyle = '#6ee7b7';
         ctx.fillText('Բացվեց մակարդակ ' + level + '-ը', W / 2, H / 2 - 30);
         drawTrophy(W / 2, H / 2 + 30);
       } else {
-        ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
+        ctx.font = 'bold ' + midFont + 'px "Noto Sans Armenian", Arial, sans-serif';
         ctx.fillStyle = '#c8cede';
-        ctx.fillText('Առաջինը պիտի գաս, որ մակարդակն անցնես', W / 2, H / 2 - 30);
+        ctx.fillText('Առաջինը պիտի գաս,', W / 2, H / 2 - 34);
+        ctx.fillText('որ մակարդակն անցնես', W / 2, H / 2 - 6);
       }
     } else {
-      ctx.fillText('Մրցարշավ — մակարդակ ' + level, W / 2, H / 2 - 60);
-      ctx.font = Math.min(20, W * 0.05) + 'px "Noto Sans Armenian", Arial, sans-serif';
+      ctx.font = 'bold ' + Math.min(32, W * 0.072) + 'px "Noto Sans Armenian", Arial, sans-serif';
+      ctx.fillText('Մրցարշավ', W / 2, H / 2 - 90);
+      ctx.font = Math.min(19, W * 0.046) + 'px "Noto Sans Armenian", Arial, sans-serif';
+      ctx.fillStyle = '#ffd166';
+      ctx.fillText('Մակարդակ ' + level + '/10', W / 2, H / 2 - 52);
       ctx.fillStyle = '#c8cede';
-      ctx.fillText('Գազը դու ես տալիս (կանաչ կոճակը)', W / 2, H / 2 - 20);
-      ctx.fillText('Զգույշ յուղից ու պատնեշներից 🚧', W / 2, H / 2 + 8);
+      ctx.fillText('Գազը դու ես տալիս՝ կանաչ կոճակը', W / 2, H / 2 - 20);
+      ctx.fillText('Զգույշ յուղից ու պատնեշներից', W / 2, H / 2 + 8);
     }
-    ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.font = 'bold ' + Math.min(22, W * 0.052) + 'px "Noto Sans Armenian", Arial, sans-serif';
     ctx.fillStyle = '#6ee7b7';
     ctx.fillText('Սեղմիր՝ մեկնարկելու', W / 2, H / 2 + 110);
   } else if (state === 'count') {
