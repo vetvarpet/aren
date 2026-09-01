@@ -16,6 +16,7 @@ and iterating on the code together with Claude, one change at a time.
 | [`memory`](./memory/) | 🧠 Հիշողության խաղեր | Three memory games in one: pairs, Simon-style repeat-after-me, and number hunter |
 | [`fishing`](./fishing/) | 🎣 Ձկնորսություն | 60 seconds of fishing: golden fish +5, old boot 0 |
 | [`maze`](./maze/) | 🌀 Լաբիրինթոս | 100 levels of mazes — the ball follows your finger, chiptune music speeds up as you go |
+| [`duel`](./duel/) | ⚡ Մենամարտ | Two players, one phone: tap first when the screen turns green |
 
 Every project is a single self-contained `index.html` — no frameworks, no
 build step. Open any folder's `index.html` in a browser and play. Sounds and
