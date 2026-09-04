@@ -1,278 +1,121 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Մենամարտ ⚡</title>
+<title>Երկուսով խաղեր 👥</title>
 <style>
   * { margin: 0; box-sizing: border-box; }
-  html, body { height: 100%; overflow: hidden; }
+  html, body { height: 100%; }
   body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
     font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-    display: flex;
-    flex-direction: column;
-    height: 100dvh;
-    background: #12122b;
-  }
-
-  /* Երկու խաղադաշտ. վերևինը շրջված է, որ դիմացի ընկերը կարդա */
-  .half {
-    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    transition: background 0.15s;
-    padding: 20px;
-    text-align: center;
+    gap: 18px;
+    min-height: 100dvh;
+    padding: 18px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
   }
-  #top { background: #8f2d36; transform: rotate(180deg); }
-  #bottom { background: #1e5a9e; }
-  body.go #top, body.go #bottom { background: #1f9d55; }
+  nav { position: fixed; top: 14px; left: 14px; }
+  nav a {
+    color: #f5eede;
+    text-decoration: none;
+    background: #3d3560;
+    border: 2px solid #6a5f9e;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+  }
+  h1 { font-size: clamp(1.3rem, 5vw, 2rem); color: #ffd76e; text-align: center; }
+  .sub { color: #9a9ec7; text-align: center; }
 
-  .score { font-size: clamp(2rem, 9vw, 3.4rem); font-weight: bold; color: #fff; }
-  .msg { font-size: clamp(1rem, 4.5vw, 1.4rem); color: rgba(255,255,255,0.92); min-height: 2.6em; line-height: 1.3; }
-
-  .divider {
-    height: 8px;
-    background: #12122b;
+  .games {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    width: min(92vw, 420px);
+  }
+  .g {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #1d1d3f;
+    border: 2px solid #33356b;
+    border-radius: 18px;
+    padding: 15px 18px;
+    text-decoration: none;
+    color: #f5eede;
+    transition: transform 0.12s, border-color 0.12s;
+  }
+  .g:hover { transform: translateY(-3px); border-color: #ffd76e; }
+  .g .ico {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
     flex-shrink: 0;
   }
-
-  .confetti {
-    position: fixed;
-    top: -50px;
-    z-index: 9;
-    pointer-events: none;
-    animation: fall linear forwards;
-  }
-  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+  .g1 .ico { background: linear-gradient(135deg, #8f2d36, #1e5a9e); }
+  .g2 .ico { background: linear-gradient(135deg, #6b21a8, #f2a7d8); }
+  .g3 .ico { background: linear-gradient(135deg, #14532d, #6ee7b7); }
+  .g4 .ico { background: linear-gradient(135deg, #92400e, #fcd34d); }
+  .g h2 { font-size: 1.05rem; }
+  .g p { color: #9a9ec7; font-size: 0.85rem; margin-top: 4px; line-height: 1.4; }
 </style>
 
-<a href="../" style="position:fixed;top:50%;left:10px;transform:translateY(-50%);z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
-<div class="half" id="top">
-  <div class="score" id="scoreT">0</div>
-  <div class="msg" id="msgT"></div>
-</div>
-<div class="divider"></div>
-<div class="half" id="bottom">
-  <div class="score" id="scoreB">0</div>
-  <div class="msg" id="msgB"></div>
+<nav><a href="../">← Golden Games</a></nav>
+
+<h1>Երկուսով խաղեր 👥</h1>
+<p class="sub">Մեկ հեռախոս, երկու խաղացող։ Ո՞վ ում 😏</p>
+
+<div class="games">
+  <a class="g g1" href="./tap/">
+    <div class="ico">⚡</div>
+    <div><h2>Մենամարտ</h2><p>Ազդանշանից հետո 15 վայրկյան՝ ո՞վ ավելի շատ կսեղմի</p></div>
+  </a>
+  <a class="g g2" href="./ching/">
+    <div class="ico">✊</div>
+    <div><h2>Չինգաչունգ</h2><p>Քար, մկրատ, թուղթ․ ընտրիր գաղտնի ու բացիր միասին</p></div>
+  </a>
+  <a class="g g3" href="./pong/">
+    <div class="ico">🏓</div>
+    <div><h2>Պինգ-պոնգ</h2><p>Երկու ռակետկա, մեկ գնդակ․ բաց մի թող քո կողմը</p></div>
+  </a>
+  <a class="g g4" href="./math/">
+    <div class="ico">➗</div>
+    <div><h2>Մաթ-մրցավազք</h2><p>Նույն խնդիրը երկուսիդ․ ո՞վ կհաշվի առաջինը</p></div>
+  </a>
 </div>
 
 <script>
-// ——————————————————————————————————————
-//  ՄԵՆԱՄԱՐՏ ⚡ — խաղ երկու հոգու համար՝ ՄԵԿ հեռախոսով (Արենի կանոններով)
-//  Ազդանշանը հնչեց → 15 վայրկյան ունեք։
-//  Ով ավելի ՇԱՏ սեղմի՝ նա հաղթում է։
-//  Ով շտապի ազդանշանից առաջ՝ միանգամից պարտվում է 😈
-// ——————————————————————————————————————
-
-const RACE_SECONDS = 15;   // սեղմելու մրցավազքի ժամանակը
-
 // Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
-const TR = {
-  hy: {
-    menu: 'Ազդանշանից հետո ' + RACE_SECONDS + ' վայրկյան՝ ո՞վ ավելի ՇԱՏ կսեղմի։ Շուտ սեղմողը պարտվում է 😈 Սեղմեք՝ սկսելու',
-    wait: 'Սպասե՛ք ազդանշանին… 🤫',
-    tap: n => 'ՍԵՂՄԻ՛Ր, ՍԵՂՄԻ՛Ր ⚡ ' + n + ' վրկ',
-    red: 'Կարմիրը', blue: 'Կապույտը', RED: 'ԿԱՐՄԻՐԸ', BLUE: 'ԿԱՊՈՒՅՏԸ',
-    foul: n => n + ' շտապե՜ց ազդանշանից առաջ ու ՊԱՐՏՎԵՑ 😅 Սեղմեք՝ նոր մենամարտ',
-    draw: sc => 'Ոչ-ոքի՜ ' + sc + ' 😄 Սեղմեք՝ ռևանշ',
-    tieNote: 'հավասար էր, բայց նա առաջինն էր սեղմել',
-    win: (n, sc, note) => '🏆 ' + n + ' ՀԱՂԹԵՑ ' + sc + (note ? ' (' + note + ')' : '') + '։ Սեղմեք՝ ռևանշ',
-  },
-  ru: {
-    menu: 'После сигнала ' + RACE_SECONDS + ' секунд: кто нажмёт БОЛЬШЕ? Поспешишь — проиграешь 😈 Нажмите, чтобы начать',
-    wait: 'Ждите сигнала… 🤫',
-    tap: n => 'ЖМИ, ЖМИ ⚡ ' + n + ' сек',
-    red: 'Красный', blue: 'Синий', RED: 'КРАСНЫЙ', BLUE: 'СИНИЙ',
-    foul: n => n + ' поспешил до сигнала и ПРОИГРАЛ 😅 Нажмите — новая дуэль',
-    draw: sc => 'Ничья! ' + sc + ' 😄 Нажмите — реванш',
-    tieNote: 'было поровну, но он нажал первым',
-    win: (n, sc, note) => '🏆 ' + n + ' ПОБЕДИЛ ' + sc + (note ? ' (' + note + ')' : '') + '! Нажмите — реванш',
-  },
-  en: {
-    menu: 'After the signal you get ' + RACE_SECONDS + ' seconds: who taps MORE? Tap early and you lose 😈 Tap to start',
-    wait: 'Wait for the signal… 🤫',
-    tap: n => 'TAP, TAP ⚡ ' + n + ' s',
-    red: 'Red', blue: 'Blue', RED: 'RED', BLUE: 'BLUE',
-    foul: n => n + ' jumped the signal and LOST 😅 Tap for a new duel',
-    draw: sc => 'It’s a draw! ' + sc + ' 😄 Tap for a rematch',
-    tieNote: 'it was even, but they tapped first',
-    win: (n, sc, note) => '🏆 ' + n + ' WINS ' + sc + (note ? ' (' + note + ')' : '') + '! Tap for a rematch',
-  },
+const TRL = {
+  ru: { h1: 'Игры вдвоём 👥', sub: 'Один телефон, два игрока. Кто кого? 😏', g1: ['Дуэль', 'После сигнала 15 секунд: кто нажмёт больше'], g2: ['Чин-га-чунг', 'Камень, ножницы, бумага: выбери тайно, откройте вместе'], g3: ['Пинг-понг', 'Две ракетки, один мяч: не пропусти на своей стороне'], g4: ['Матч по математике', 'Одна задача на двоих: кто решит первым?'] },
+  en: { h1: 'Two-Player Games 👥', sub: 'One phone, two players. Who wins? 😏', g1: ['Duel', 'After the signal, 15 seconds: who taps more'], g2: ['Ching-ga-chung', 'Rock, paper, scissors: pick in secret, reveal together'], g3: ['Ping-Pong', 'Two paddles, one ball: don’t let it past your side'], g4: ['Math Race', 'Same problem for both: who solves it first?'] },
 };
-const T = TR[ggLang] || TR.hy;
-
-const topEl = document.getElementById('top');
-const botEl = document.getElementById('bottom');
-const scoreT = document.getElementById('scoreT');
-const scoreB = document.getElementById('scoreB');
-const msgT = document.getElementById('msgT');
-const msgB = document.getElementById('msgB');
-
-let state = 'menu';   // menu → wait → race → end
-let sT = 0, sB = 0;   // քանի անգամ է սեղմել ամեն մեկը
-let firstT = 0, firstB = 0;   // ով երբ է սեղմել առաջին անգամ (հավասարի դեպքում սա է որոշում)
-let goTime = 0;
-let goTimer = null;
-let raceTimer = null;
-
-// ——— Ձայները ———
-let actx = null;
-function initAudio() {
-  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
-  if (actx.state === 'suspended') actx.resume();
-}
-function tone(freq, dur, type, vol, delay) {
-  if (!actx) return;
-  const t = actx.currentTime + (delay || 0);
-  const o = actx.createOscillator();
-  const g = actx.createGain();
-  o.type = type || 'triangle';
-  o.frequency.value = freq;
-  g.gain.setValueAtTime(vol || 0.2, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-  o.connect(g); g.connect(actx.destination);
-  o.start(t); o.stop(t + dur);
-}
-const sGo = () => tone(880, 0.2, 'square', 0.25);
-const sPoint = () => { tone(660, 0.12); tone(990, 0.18, 'triangle', 0.2, 0.1); };
-const sFoul = () => tone(140, 0.5, 'sawtooth', 0.25);
-const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.25, 'triangle', 0.2, k * 0.13));
-
-// Երկու էկրանին միաժամանակ գրելը
-function say(text) {
-  msgT.textContent = text;
-  msgB.textContent = text;
-}
-function updateScores() {
-  scoreT.textContent = sT;
-  scoreB.textContent = sB;
+const T = TRL[ggLang];
+if (T) {
+  document.querySelector('h1').textContent = T.h1;
+  document.querySelector('.sub').textContent = T.sub;
+  [['g1', '.g1'], ['g2', '.g2'], ['g3', '.g3'], ['g4', '.g4']].forEach(([k, sel]) => {
+    document.querySelector(sel + ' h2').textContent = T[k][0];
+    document.querySelector(sel + ' p').textContent = T[k][1];
+  });
 }
 
-function menu() {
-  state = 'menu';
-  sT = 0; sB = 0; firstT = 0; firstB = 0;
-  updateScores();
-  say(T.menu);
-}
-
-function startMatch() {
-  state = 'wait';
-  sT = 0; sB = 0; firstT = 0; firstB = 0;
-  updateScores();
-  document.body.classList.remove('go');
-  say(T.wait);
-  clearTimeout(goTimer);
-  // 1.5-4 վայրկյան անկանխատեսելի սպասում. մի՛ շտապիր
-  goTimer = setTimeout(() => {
-    state = 'race';
-    goTime = performance.now();
-    document.body.classList.add('go');
-    sGo();
-    tickClock();
-  }, 1500 + Math.random() * 2500);
-}
-
-// Ժամացույցը. ամեն 0.1 վրկ թարմացնում ենք մնացած ժամանակը
-function tickClock() {
-  clearInterval(raceTimer);
-  raceTimer = setInterval(() => {
-    const left = RACE_SECONDS - (performance.now() - goTime) / 1000;
-    if (left <= 0) {
-      clearInterval(raceTimer);
-      timeUp();
-    } else {
-      say(T.tap(Math.ceil(left)));
-    }
-  }, 100);
-}
-
-function timeUp() {
-  document.body.classList.remove('go');
-  if (sT === sB) {
-    // հավասար է՝ հաղթում է նա, ով ազդանշանից հետո ԱՌԱՋԻՆՆ էր սեղմել
-    if (firstT && firstB && firstT !== firstB) {
-      finish(firstT < firstB ? 'top' : 'bottom', T.tieNote);
-    } else {
-      state = 'end';
-      say(T.draw(sT + ':' + sB));
-      sPoint();
-    }
-  } else {
-    finish(sT > sB ? 'top' : 'bottom');
-  }
-}
-
-function foul(who) {
-  // շտապեցիր՝ միանգամից պարտվեցիր
-  sFoul();
-  clearTimeout(goTimer);
-  document.body.classList.remove('go');
-  const name = who === 'top' ? T.red : T.blue;
-  state = 'end';
-  say(T.foul(name));
-  confetti();
-}
-
-function finish(winner, note) {
-  state = 'end';
-  clearInterval(raceTimer);
-  const name = winner === 'top' ? T.RED : T.BLUE;
-  say(T.win(name, sT + ':' + sB, note));
-  sWin();
-  confetti();
-}
-
-function press(who) {
-  initAudio();
-  if (state === 'menu' || state === 'end') { startMatch(); return; }
-  if (state === 'wait') { foul(who); return; }
-  if (state === 'race') {
-    // ամեն սեղմումը հաշվում ենք
-    if (who === 'top') {
-      sT++;
-      if (!firstT) firstT = performance.now();
-      if (sT % 10 === 0) tone(700, 0.06, 'square', 0.08);   // ամեն 10-րդին՝ փոքրիկ ծիկ
-    } else {
-      sB++;
-      if (!firstB) firstB = performance.now();
-      if (sB % 10 === 0) tone(500, 0.06, 'square', 0.08);
-    }
-    updateScores();
-  }
-}
-
-topEl.addEventListener('pointerdown', (e) => { e.preventDefault(); press('top'); });
-botEl.addEventListener('pointerdown', (e) => { e.preventDefault(); press('bottom'); });
-
-// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+// Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
 let lastTap = 0;
 document.addEventListener('touchend', (e) => {
   const now = Date.now();
   if (now - lastTap < 350) e.preventDefault();
   lastTap = now;
 }, { passive: false });
-
-function confetti() {
-  const stuff = ['🎉', '⭐', '⚡', '💛', '🎊', '✨'];
-  for (let k = 0; k < 40; k++) {
-    const s = document.createElement('span');
-    s.className = 'confetti';
-    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
-    s.style.left = Math.random() * 100 + 'vw';
-    s.style.fontSize = (16 + Math.random() * 22) + 'px';
-    s.style.animationDuration = (2 + Math.random() * 2) + 's';
-    s.style.animationDelay = (Math.random() * 0.8) + 's';
-    document.body.appendChild(s);
-    s.addEventListener('animationend', () => s.remove());
-  }
-}
-
-menu();
 </script>

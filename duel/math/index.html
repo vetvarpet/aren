@@ -1,0 +1,262 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Մաթ-մրցավազք ➗</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    background: #12122b;
+  }
+
+  .half {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+  #top { background: #8f2d36; transform: rotate(180deg); }
+  #bottom { background: #1e5a9e; }
+
+  .score { font-size: clamp(1.4rem, 6vw, 2.2rem); font-weight: bold; color: #fff; }
+  .q { font-size: clamp(1.8rem, 9vw, 3rem); font-weight: bold; color: #ffd166; min-height: 1.2em; }
+  .msg { font-size: clamp(0.9rem, 3.8vw, 1.1rem); color: rgba(255,255,255,0.92); min-height: 1.5em; }
+
+  .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ans {
+    min-width: clamp(64px, 20vw, 96px);
+    padding: 12px 8px;
+    border-radius: 14px;
+    border: 3px solid rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.12);
+    font-size: clamp(20px, 6vw, 28px);
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+    color: #fff;
+    transition: transform 0.08s;
+  }
+  .ans:active { transform: scale(0.94); }
+  .half.locked .ans { opacity: 0.3; pointer-events: none; }
+
+  .divider { height: 8px; background: #12122b; flex-shrink: 0; }
+
+  .confetti {
+    position: fixed;
+    top: -50px;
+    z-index: 9;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<a href="../../" style="position:fixed;top:50%;left:10px;transform:translateY(-50%);z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<div class="half" id="top">
+  <div class="score" id="scoreT">0</div>
+  <div class="q" id="qT"></div>
+  <div class="msg" id="msgT"></div>
+  <div class="answers" id="ansT"></div>
+</div>
+<div class="divider"></div>
+<div class="half" id="bottom">
+  <div class="score" id="scoreB">0</div>
+  <div class="q" id="qB"></div>
+  <div class="msg" id="msgB"></div>
+  <div class="answers" id="ansB"></div>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՄԱԹ-ՄՐՑԱՎԱԶՔ ➗ — նույն խնդիրը երկուսիդ համար
+//  Ով ԱՌԱՋԻՆԸ ճիշտ պատասխանի՝ միավորը նրանն է։
+//  Սխալվեցիր՝ այս խնդրի վրա այլևս չես կարող պատասխանել 😬
+// ——————————————————————————————————————
+
+const WIN_AT = 5;
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: {
+    go: 'Ո՞վ կհաշվի առաջինը 🧠', got: 'Ճի՛շտ է +1', slow: 'Ուշացար…', wrong: 'Սխա՜լ, սպասիր հաջորդին',
+    bothWrong: 'Երկուսդ էլ սխալվեցիք 😅', champ: n => '🏆 ' + n + ' ՀԱՂԹԵՑ։ Սեղմեք՝ ռևանշ',
+    RED: 'ԿԱՐՄԻՐԸ', BLUE: 'ԿԱՊՈՒՅՏԸ',
+  },
+  ru: {
+    go: 'Кто решит первым? 🧠', got: 'Верно! +1', slow: 'Опоздал…', wrong: 'Неверно! Жди следующую',
+    bothWrong: 'Оба ошиблись 😅', champ: n => '🏆 ' + n + ' ПОБЕДИЛ! Нажмите — реванш',
+    RED: 'КРАСНЫЙ', BLUE: 'СИНИЙ',
+  },
+  en: {
+    go: 'Who solves it first? 🧠', got: 'Correct! +1', slow: 'Too slow…', wrong: 'Wrong! Wait for the next one',
+    bothWrong: 'You both missed 😅', champ: n => '🏆 ' + n + ' WINS! Tap for a rematch',
+    RED: 'RED', BLUE: 'BLUE',
+  },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const el = id => document.getElementById(id);
+const halves = { top: el('top'), bottom: el('bottom') };
+
+let sT = 0, sB = 0;
+let answer = 0;
+let lockedT = false, lockedB = false;
+let state = 'play';   // play → between → end
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.2, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sGood = () => { tone(660, 0.12); tone(990, 0.18, 'triangle', 0.2, 0.1); };
+const sBad = () => tone(150, 0.4, 'sawtooth', 0.2);
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.25, 'triangle', 0.2, k * 0.13));
+
+function updateScores() {
+  el('scoreT').textContent = sT;
+  el('scoreB').textContent = sB;
+}
+
+// ——— Խնդիր ենք հորինում ———
+function rnd(n) { return Math.floor(Math.random() * n); }
+function newProblem() {
+  const kind = rnd(3);
+  let a, b, text;
+  if (kind === 0) { a = 2 + rnd(19); b = 2 + rnd(19); answer = a + b; text = a + ' + ' + b + ' = ?'; }
+  else if (kind === 1) { a = 5 + rnd(16); b = 1 + rnd(a - 1); answer = a - b; text = a + ' − ' + b + ' = ?'; }
+  else { a = 2 + rnd(8); b = 2 + rnd(8); answer = a * b; text = a + ' × ' + b + ' = ?'; }
+
+  // 4 պատասխան՝ մեկը ճիշտ, երեքը՝ խորամանկ սխալներ
+  const opts = new Set([answer]);
+  while (opts.size < 4) {
+    const d = answer + (rnd(2) ? 1 : -1) * (1 + rnd(4));
+    if (d >= 0) opts.add(d);
+  }
+  const arr = [...opts].sort(() => Math.random() - 0.5);
+
+  lockedT = lockedB = false;
+  state = 'play';
+  for (const h of ['top', 'bottom']) halves[h].classList.remove('locked');
+  el('qT').textContent = text;
+  el('qB').textContent = text;
+  el('msgT').textContent = T.go;
+  el('msgB').textContent = T.go;
+  for (const [id, who] of [['ansT', 'top'], ['ansB', 'bottom']]) {
+    const box = el(id);
+    box.innerHTML = '';
+    arr.forEach(v => {
+      const b = document.createElement('button');
+      b.className = 'ans';
+      b.textContent = v;
+      b.addEventListener('pointerdown', (e) => { e.preventDefault(); tap(who, v); });
+      box.appendChild(b);
+    });
+  }
+}
+
+function tap(who, val) {
+  initAudio();
+  if (state === 'end') { rematch(); return; }
+  if (state !== 'play') return;
+  if ((who === 'top' && lockedT) || (who === 'bottom' && lockedB)) return;
+
+  if (val === answer) {
+    // Ճիշտ պատասխան — միավորը քոնն է
+    state = 'between';
+    if (who === 'top') sT++; else sB++;
+    updateScores();
+    sGood();
+    el(who === 'top' ? 'msgT' : 'msgB').textContent = T.got;
+    el(who === 'top' ? 'msgB' : 'msgT').textContent = T.slow;
+    halves.top.classList.add('locked');
+    halves.bottom.classList.add('locked');
+
+    if (sT >= WIN_AT || sB >= WIN_AT) {
+      setTimeout(() => {
+        state = 'end';
+        const name = sT >= WIN_AT ? T.RED : T.BLUE;
+        el('msgT').textContent = T.champ(name);
+        el('msgB').textContent = T.champ(name);
+        sWin();
+        confetti();
+      }, 1100);
+    } else {
+      setTimeout(newProblem, 1500);
+    }
+  } else {
+    // Սխալ — այս խնդրի վրա այլևս չես խաղում
+    sBad();
+    if (who === 'top') { lockedT = true; halves.top.classList.add('locked'); el('msgT').textContent = T.wrong; }
+    else { lockedB = true; halves.bottom.classList.add('locked'); el('msgB').textContent = T.wrong; }
+    if (lockedT && lockedB) {
+      state = 'between';
+      el('msgT').textContent = T.bothWrong;
+      el('msgB').textContent = T.bothWrong;
+      setTimeout(newProblem, 1400);
+    }
+  }
+}
+
+function rematch() {
+  sT = 0; sB = 0;
+  updateScores();
+  newProblem();
+}
+
+// Խաղն ավարտվել է՝ ցանկացած սեղմումով ռևանշ
+document.querySelectorAll('.half').forEach(h => {
+  h.addEventListener('pointerdown', () => { if (state === 'end') rematch(); });
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+function confetti() {
+  const stuff = ['🎉', '⭐', '➗', '💛', '🎊', '✨'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+
+updateScores();
+newProblem();
+</script>
