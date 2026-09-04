@@ -89,6 +89,24 @@
 </div>
 
 <script>
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  ru: { h1: 'Игры на память 🧠', sub: 'Три игры для тренировки мозга. Выбирай!', g1: ['Пары', '16 карт, 8 пар: найди все за меньшее число попыток'], g2: ['Повтори за мной', '4 цвета, 4 звука: повторяй растущую цепочку'], g3: ['Охотник за числами', 'Числа прячутся: нажимай по порядку 1, 2, 3…'] },
+  en: { h1: 'Memory Games 🧠', sub: 'Three games to train your brain. Pick one!', g1: ['Pairs', '16 cards, 8 pairs: find them all in the fewest tries'], g2: ['Repeat After Me', '4 colors, 4 sounds: repeat the growing sequence'], g3: ['Number Hunter', 'The numbers hide: tap them in order 1, 2, 3…'] },
+};
+const T = TRL[ggLang];
+if (T) {
+  document.querySelector('h1').textContent = T.h1;
+  document.querySelector('.sub').textContent = T.sub;
+  [['g1', '.g1'], ['g2', '.g2'], ['g3', '.g3']].forEach(([k, sel]) => {
+    document.querySelector(sel + ' h2').textContent = T[k][0];
+    document.querySelector(sel + ' p').textContent = T[k][1];
+  });
+}
+
 // Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
 let lastTap = 0;
 document.addEventListener('touchend', (e) => {

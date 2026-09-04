@@ -26,6 +26,16 @@
 //  Ղեկը՝ ձախ/աջ կոճակներով կամ սլաքներով։ Գազը ինքն է սեղմված։
 // ——————————————————————————————————————
 
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { hud: (p, l) => 'Տեղ՝ ' + p + '/4 · Մակ. ' + l + '/10', words: ['', 'ԱՌԱՋԻՆ ՏԵՂ', 'Երկրորդ տեղ', 'Երրորդ տեղ', 'Չորրորդ տեղ'], champ: 'ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ — 10 մակարդակ', unlocked: l => 'Բացվեց մակարդակ ' + l + '-ը', must1: 'Առաջինը պիտի գաս,', must2: 'որ մակարդակն անցնես', title: 'Մրցարշավ', lvl: l => 'Մակարդակ ' + l + '/10', gas: 'Գազը դու ես տալիս՝ կանաչ կոճակը', careful: 'Զգույշ յուղից ու պատնեշներից', tapStart: 'Սեղմիր՝ մեկնարկելու' },
+  ru: { hud: (p, l) => 'Место ' + p + '/4 · Ур. ' + l + '/10', words: ['', 'ПЕРВОЕ МЕСТО', 'Второе место', 'Третье место', 'Четвёртое место'], champ: 'ТЫ ЧЕМПИОН — 10 уровней', unlocked: l => 'Открыт уровень ' + l, must1: 'Нужно прийти первым,', must2: 'чтобы пройти уровень', title: 'Гонка', lvl: l => 'Уровень ' + l + '/10', gas: 'Газ жмёшь ты — зелёная кнопка', careful: 'Осторожно: масло и барьеры', tapStart: 'Нажми — старт' },
+  en: { hud: (p, l) => 'Place ' + p + '/4 · Lv. ' + l + '/10', words: ['', 'FIRST PLACE', 'Second place', 'Third place', 'Fourth place'], champ: 'YOU ARE THE CHAMPION — 10 levels', unlocked: l => 'Level ' + l + ' unlocked', must1: 'You must finish first', must2: 'to pass the level', title: 'Race', lvl: l => 'Level ' + l + '/10', gas: 'You control the gas — the green button', careful: 'Watch out for oil and barriers', tapStart: 'Tap to start' },
+};
+const T = TRL[ggLang] || TRL.hy;
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 let W, H, DPR;
@@ -346,7 +356,7 @@ function draw() {
   const place = 1 + rivals.filter(r => r.progress > player.progress).length;
   const hudFont = Math.min(20, W * 0.046);
   ctx.font = 'bold ' + hudFont + 'px "Noto Sans Armenian", Arial, sans-serif';
-  const hudText = 'Տեղ՝ ' + place + '/4 · Մակ. ' + level + '/10';
+  const hudText = T.hud(place, level);
   const hudW = ctx.measureText(hudText).width + 28;
   ctx.fillStyle = 'rgba(20,26,34,0.72)';
   ctx.beginPath(); ctx.roundRect(12, 12, hudW, hudFont * 2, 12); ctx.fill();
@@ -409,38 +419,38 @@ function draw() {
     ctx.fillStyle = '#fff';
     ctx.font = 'bold ' + Math.min(40, W * 0.08) + 'px "Noto Sans Armenian", Arial, sans-serif';
     if (state === 'done') {
-      const words = ['', 'ԱՌԱՋԻՆ ՏԵՂ', 'Երկրորդ տեղ', 'Երրորդ տեղ', 'Չորրորդ տեղ'];
+      const words = T.words;
       ctx.fillStyle = finishPlace === 1 ? '#ffd166' : '#fff';
       ctx.fillText(words[finishPlace], W / 2, H / 2 - 70);
       const midFont = Math.min(20, W * 0.048);
       if (wonLevel === 'champion') {
         ctx.font = 'bold ' + midFont + 'px "Noto Sans Armenian", Arial, sans-serif';
-        ctx.fillText('ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ — 10 մակարդակ', W / 2, H / 2 - 30);
+        ctx.fillText(T.champ, W / 2, H / 2 - 30);
         drawTrophy(W / 2, H / 2 + 30);
       } else if (wonLevel) {
         ctx.font = 'bold ' + midFont + 'px "Noto Sans Armenian", Arial, sans-serif';
         ctx.fillStyle = '#6ee7b7';
-        ctx.fillText('Բացվեց մակարդակ ' + level + '-ը', W / 2, H / 2 - 30);
+        ctx.fillText(T.unlocked(level), W / 2, H / 2 - 30);
         drawTrophy(W / 2, H / 2 + 30);
       } else {
         ctx.font = 'bold ' + midFont + 'px "Noto Sans Armenian", Arial, sans-serif';
         ctx.fillStyle = '#c8cede';
-        ctx.fillText('Առաջինը պիտի գաս,', W / 2, H / 2 - 34);
-        ctx.fillText('որ մակարդակն անցնես', W / 2, H / 2 - 6);
+        ctx.fillText(T.must1, W / 2, H / 2 - 34);
+        ctx.fillText(T.must2, W / 2, H / 2 - 6);
       }
     } else {
       ctx.font = 'bold ' + Math.min(32, W * 0.072) + 'px "Noto Sans Armenian", Arial, sans-serif';
-      ctx.fillText('Մրցարշավ', W / 2, H / 2 - 90);
+      ctx.fillText(T.title, W / 2, H / 2 - 90);
       ctx.font = Math.min(19, W * 0.046) + 'px "Noto Sans Armenian", Arial, sans-serif';
       ctx.fillStyle = '#ffd166';
-      ctx.fillText('Մակարդակ ' + level + '/10', W / 2, H / 2 - 52);
+      ctx.fillText(T.lvl(level), W / 2, H / 2 - 52);
       ctx.fillStyle = '#c8cede';
-      ctx.fillText('Գազը դու ես տալիս՝ կանաչ կոճակը', W / 2, H / 2 - 20);
-      ctx.fillText('Զգույշ յուղից ու պատնեշներից', W / 2, H / 2 + 8);
+      ctx.fillText(T.gas, W / 2, H / 2 - 20);
+      ctx.fillText(T.careful, W / 2, H / 2 + 8);
     }
     ctx.font = 'bold ' + Math.min(22, W * 0.052) + 'px "Noto Sans Armenian", Arial, sans-serif';
     ctx.fillStyle = '#6ee7b7';
-    ctx.fillText('Սեղմիր՝ մեկնարկելու', W / 2, H / 2 + 110);
+    ctx.fillText(T.tapStart, W / 2, H / 2 + 110);
   } else if (state === 'count') {
     const n = 3 - Math.floor(countT / 55);
     ctx.fillStyle = '#ffd166';

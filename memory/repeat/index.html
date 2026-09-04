@@ -92,6 +92,23 @@
 //  Ամեն շրջան շղթան մեկով երկարում է։ Ինչքա՞ն կհիշես։
 // ——————————————————————————————————————
 
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { h1: 'Կրկնիր ինձ 💡', chain: 'Շղթա՝', rec: 'Ռեկորդ՝', pressStart: 'Սեղմիր «Սկսել»-ը 👇', watch: 'Նայի՛ր ուշադիր 👀', yourTurn: 'Քո հերթն է 👆', nice: 'Ապրե՛ս 🎉', result: n => 'Դու հիշեցիր ' + n + ' քայլանոց շղթա', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ 🏆', start: '▶ Սկսել', again: '🔄 Նորից' },
+  ru: { h1: 'Повтори за мной 💡', chain: 'Цепочка:', rec: 'Рекорд:', pressStart: 'Нажми «Старт» 👇', watch: 'Смотри внимательно 👀', yourTurn: 'Твоя очередь 👆', nice: 'Молодец! 🎉', result: n => 'Ты запомнил цепочку из ' + n + ' шагов', newRec: ' — НОВЫЙ РЕКОРД 🏆', start: '▶ Старт', again: '🔄 Ещё раз' },
+  en: { h1: 'Repeat After Me 💡', chain: 'Chain:', rec: 'Best:', pressStart: 'Press “Start” 👇', watch: 'Watch closely 👀', yourTurn: 'Your turn 👆', nice: 'Nice! 🎉', result: n => 'You remembered a chain of ' + n + ' steps', newRec: ' — NEW RECORD 🏆', start: '▶ Start', again: '🔄 Again' },
+};
+const T = TRL[ggLang] || TRL.hy;
+if (ggLang !== 'hy') {
+  document.querySelector('h1').textContent = T.h1;
+  document.querySelector('.stats').innerHTML = T.chain + ' <b id="round">0</b><span>' + T.rec + ' <b id="best">0</b></span>';
+  document.getElementById('status').textContent = T.pressStart;
+  document.getElementById('startBtn').textContent = T.start;
+}
+
 // Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
 let lastTap = 0;
 document.addEventListener('touchend', (e) => {
@@ -160,7 +177,7 @@ function nextRound() {
   roundEl.textContent = seq.length - 1;      // քանի շրջան ես ԱՐԴԵՆ անցել
   step = 0;
   showing = true;
-  statusEl.textContent = 'Նայի՛ր ուշադիր 👀';
+  statusEl.textContent = T.watch;
 
   // ինչքան երկար է շղթան, այնքան արագ է ցույց տալիս — ավելի բարդ է
   const speed = Math.max(280, 550 - seq.length * 22);
@@ -169,7 +186,7 @@ function nextRound() {
   });
   setTimeout(() => {
     showing = false;
-    statusEl.textContent = 'Քո հերթն է 👆';
+    statusEl.textContent = T.yourTurn;
   }, 600 + seq.length * speed);
 }
 
@@ -183,7 +200,7 @@ function press(i) {
     if (step === seq.length) {
       // ամբողջ շղթան ճիշտ կրկնեցիր
       showing = true;   // որ արագ սեղմողը «Ապրե՛ս»-ի պահին սխալմամբ չտուժի
-      statusEl.textContent = 'Ապրե՛ս 🎉';
+      statusEl.textContent = T.nice;
       setTimeout(nextRound, 900);
     }
   } else {
@@ -191,17 +208,17 @@ function press(i) {
     playing = false;
     sBuzz();
     const score = seq.length - 1;
-    let text = 'Դու հիշեցիր ' + score + ' քայլանոց շղթա';
+    let text = T.result(score);
     if (score > best) {
       best = score;
       try { localStorage.setItem('aren-repeat-best', best); } catch (e) {}
       bestEl.textContent = best;
-      text += ' — ՆՈՐ ՌԵԿՈՐԴ 🏆';
+      text += T.newRec;
       sWin();
       confetti();
     }
     statusEl.textContent = text;
-    startBtn.textContent = '🔄 Նորից';
+    startBtn.textContent = T.again;
     startBtn.hidden = false;
   }
 }

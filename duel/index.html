@@ -70,6 +70,43 @@
 
 const RACE_SECONDS = 15;   // սեղմելու մրցավազքի ժամանակը
 
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TR = {
+  hy: {
+    menu: 'Ազդանշանից հետո ' + RACE_SECONDS + ' վայրկյան՝ ո՞վ ավելի ՇԱՏ կսեղմի։ Շուտ սեղմողը պարտվում է 😈 Սեղմեք՝ սկսելու',
+    wait: 'Սպասե՛ք ազդանշանին… 🤫',
+    tap: n => 'ՍԵՂՄԻ՛Ր, ՍԵՂՄԻ՛Ր ⚡ ' + n + ' վրկ',
+    red: 'Կարմիրը', blue: 'Կապույտը', RED: 'ԿԱՐՄԻՐԸ', BLUE: 'ԿԱՊՈՒՅՏԸ',
+    foul: n => n + ' շտապե՜ց ազդանշանից առաջ ու ՊԱՐՏՎԵՑ 😅 Սեղմեք՝ նոր մենամարտ',
+    draw: sc => 'Ոչ-ոքի՜ ' + sc + ' 😄 Սեղմեք՝ ռևանշ',
+    tieNote: 'հավասար էր, բայց նա առաջինն էր սեղմել',
+    win: (n, sc, note) => '🏆 ' + n + ' ՀԱՂԹԵՑ ' + sc + (note ? ' (' + note + ')' : '') + '։ Սեղմեք՝ ռևանշ',
+  },
+  ru: {
+    menu: 'После сигнала ' + RACE_SECONDS + ' секунд: кто нажмёт БОЛЬШЕ? Поспешишь — проиграешь 😈 Нажмите, чтобы начать',
+    wait: 'Ждите сигнала… 🤫',
+    tap: n => 'ЖМИ, ЖМИ ⚡ ' + n + ' сек',
+    red: 'Красный', blue: 'Синий', RED: 'КРАСНЫЙ', BLUE: 'СИНИЙ',
+    foul: n => n + ' поспешил до сигнала и ПРОИГРАЛ 😅 Нажмите — новая дуэль',
+    draw: sc => 'Ничья! ' + sc + ' 😄 Нажмите — реванш',
+    tieNote: 'было поровну, но он нажал первым',
+    win: (n, sc, note) => '🏆 ' + n + ' ПОБЕДИЛ ' + sc + (note ? ' (' + note + ')' : '') + '! Нажмите — реванш',
+  },
+  en: {
+    menu: 'After the signal you get ' + RACE_SECONDS + ' seconds: who taps MORE? Tap early and you lose 😈 Tap to start',
+    wait: 'Wait for the signal… 🤫',
+    tap: n => 'TAP, TAP ⚡ ' + n + ' s',
+    red: 'Red', blue: 'Blue', RED: 'RED', BLUE: 'BLUE',
+    foul: n => n + ' jumped the signal and LOST 😅 Tap for a new duel',
+    draw: sc => 'It’s a draw! ' + sc + ' 😄 Tap for a rematch',
+    tieNote: 'it was even, but they tapped first',
+    win: (n, sc, note) => '🏆 ' + n + ' WINS ' + sc + (note ? ' (' + note + ')' : '') + '! Tap for a rematch',
+  },
+};
+const T = TR[ggLang] || TR.hy;
+
 const topEl = document.getElementById('top');
 const botEl = document.getElementById('bottom');
 const scoreT = document.getElementById('scoreT');
@@ -121,7 +158,7 @@ function menu() {
   state = 'menu';
   sT = 0; sB = 0; firstT = 0; firstB = 0;
   updateScores();
-  say('Ազդանշանից հետո ' + RACE_SECONDS + ' վայրկյան՝ ո՞վ ավելի ՇԱՏ կսեղմի։ Շուտ սեղմողը պարտվում է 😈 Սեղմեք՝ սկսելու');
+  say(T.menu);
 }
 
 function startMatch() {
@@ -129,7 +166,7 @@ function startMatch() {
   sT = 0; sB = 0; firstT = 0; firstB = 0;
   updateScores();
   document.body.classList.remove('go');
-  say('Սպասե՛ք ազդանշանին… 🤫');
+  say(T.wait);
   clearTimeout(goTimer);
   // 1.5-4 վայրկյան անկանխատեսելի սպասում. մի՛ շտապիր
   goTimer = setTimeout(() => {
@@ -150,7 +187,7 @@ function tickClock() {
       clearInterval(raceTimer);
       timeUp();
     } else {
-      say('ՍԵՂՄԻ՛Ր, ՍԵՂՄԻ՛Ր ⚡ ' + Math.ceil(left) + ' վրկ');
+      say(T.tap(Math.ceil(left)));
     }
   }, 100);
 }
@@ -160,10 +197,10 @@ function timeUp() {
   if (sT === sB) {
     // հավասար է՝ հաղթում է նա, ով ազդանշանից հետո ԱՌԱՋԻՆՆ էր սեղմել
     if (firstT && firstB && firstT !== firstB) {
-      finish(firstT < firstB ? 'top' : 'bottom', 'հավասար էր, բայց նա առաջինն էր սեղմել');
+      finish(firstT < firstB ? 'top' : 'bottom', T.tieNote);
     } else {
       state = 'end';
-      say('Ոչ-ոքի՜ ' + sT + ':' + sB + ' 😄 Սեղմեք՝ ռևանշ');
+      say(T.draw(sT + ':' + sB));
       sPoint();
     }
   } else {
@@ -176,17 +213,17 @@ function foul(who) {
   sFoul();
   clearTimeout(goTimer);
   document.body.classList.remove('go');
-  const name = who === 'top' ? 'Կարմիրը' : 'Կապույտը';
+  const name = who === 'top' ? T.red : T.blue;
   state = 'end';
-  say(name + ' շտապե՜ց ազդանշանից առաջ ու ՊԱՐՏՎԵՑ 😅 Սեղմեք՝ նոր մենամարտ');
+  say(T.foul(name));
   confetti();
 }
 
 function finish(winner, note) {
   state = 'end';
   clearInterval(raceTimer);
-  const name = winner === 'top' ? 'ԿԱՐՄԻՐԸ' : 'ԿԱՊՈՒՅՏԸ';
-  say('🏆 ' + name + ' ՀԱՂԹԵՑ ' + sT + ':' + sB + (note ? ' (' + note + ')' : '') + '։ Սեղմեք՝ ռևանշ');
+  const name = winner === 'top' ? T.RED : T.BLUE;
+  say(T.win(name, sT + ':' + sB, note));
   sWin();
   confetti();
 }

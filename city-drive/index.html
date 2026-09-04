@@ -84,6 +84,24 @@
 </div>
 
 <script>
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  ru: { h1: 'Городской водитель 🚗', sub: 'Выбери, что хочешь водить сегодня.', g1: ['Город', 'Доставка пиццы, полиция, магазин и золотая машина 👑'], g2: ['Гонка', '10 уровней, газ жмёшь ты, на дороге масло и барьеры'] },
+  en: { h1: 'City Driver 🚗', sub: 'Choose what you want to drive today.', g1: ['City', 'Pizza deliveries, police, the shop and the golden car 👑'], g2: ['Race', '10 levels, you control the gas, oil and barriers on the road'] },
+};
+const T = TRL[ggLang];
+if (T) {
+  document.querySelector('h1').textContent = T.h1;
+  document.querySelector('.sub').textContent = T.sub;
+  [['g1', '.g1'], ['g2', '.g2']].forEach(([k, sel]) => {
+    document.querySelector(sel + ' h2').textContent = T[k][0];
+    document.querySelector(sel + ' p').textContent = T[k][1];
+  });
+}
+
 // Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
 let lastTap = 0;
 document.addEventListener('touchend', (e) => {

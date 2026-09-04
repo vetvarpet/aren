@@ -176,6 +176,28 @@ document.addEventListener('touchend', (e) => {
   lastTap = now;
 }, { passive: false });
 
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { h1: 'Արենի դաշնամուրը 🎹', rec: '⏺ Ձայնագրել', stop: '⏹ Կանգնեցնել', playMine: '▶ Լսել իմ մեղեդին', learnBtn: '🎓 Սովորել', listen: '👂 Լսել', choose: '🎓 Ընտրիր երգը վերևից 👆', prog: (t, i, n) => t + ' — նոտա ' + i + '/' + n, bravo: t => '🏆 Բրավո՜։ Դու սովորեցիր «' + t + '»', hint: 'Նվագիր մատով կամ ստեղնաշարով՝ A S D F G H J K L ; — սևերը՝ W E T Y U O P', songs: { star: '🌟 Աստղիկը', birthday: '🎂 Ծնունդդ շնորհավոր', jingle: '🔔 Զանգակները', tango: '💃 Արենի տանգոն' }, notes: null },
+  ru: { h1: 'Пианино Арена 🎹', rec: '⏺ Записать', stop: '⏹ Стоп', playMine: '▶ Моя мелодия', learnBtn: '🎓 Учиться', listen: '👂 Послушать', choose: '🎓 Выбери песню сверху 👆', prog: (t, i, n) => t + ' — нота ' + i + '/' + n, bravo: t => '🏆 Браво! Ты выучил «' + t + '»', hint: 'Играй пальцем или клавишами: A S D F G H J K L ; — чёрные: W E T Y U O P', songs: { star: '🌟 Звёздочка', birthday: '🎂 С днём рождения', jingle: '🔔 Бубенцы', tango: '💃 Танго Арена' }, notes: ['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си','До²','До#²','Ре²','Ре#²','Ми²'] },
+  en: { h1: 'Aren’s Piano 🎹', rec: '⏺ Record', stop: '⏹ Stop', playMine: '▶ Play my melody', learnBtn: '🎓 Learn', listen: '👂 Listen', choose: '🎓 Pick a song above 👆', prog: (t, i, n) => t + ' — note ' + i + '/' + n, bravo: t => '🏆 Bravo! You learned “' + t + '”', hint: 'Play with fingers or keys: A S D F G H J K L ; — black keys: W E T Y U O P', songs: { star: '🌟 Twinkle', birthday: '🎂 Happy Birthday', jingle: '🔔 Jingle Bells', tango: '💃 Aren’s Tango' }, notes: ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Re²','Re#²','Mi²'] },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+// Էջի գրածները դարձնում ենք ընտրված լեզվով
+document.querySelector('h1').textContent = T.h1;
+document.querySelector('.hint').textContent = T.hint;
+document.getElementById('recBtn').textContent = T.rec;
+document.getElementById('playBtn').textContent = T.playMine;
+document.getElementById('learnBtn').textContent = T.learnBtn;
+document.getElementById('learnListen').textContent = T.listen;
+document.querySelectorAll('#songs button').forEach(b => {
+  if (T.songs[b.dataset.song]) b.textContent = T.songs[b.dataset.song];
+});
+
 // ——— Նոտաները ———
 // semi = քանի «կիսատոն» է Դո-ից բարձր։ Ինչքան մեծ թիվը, այնքան բարձր ձայնը։
 const NOTES = [
@@ -197,6 +219,9 @@ const NOTES = [
   { name: 'Ռե#²',semi: 15, key: 'KeyP', black: true },
   { name: 'Մի²', semi: 16, key: 'Semicolon' },
 ];
+
+// Նոտաների անունները ընտրված լեզվով
+if (T.notes) NOTES.forEach((n, i) => { n.name = T.notes[i]; });
 
 // ——— Ստեղները էկրանին ———
 const keysBox = document.getElementById('keys');
@@ -300,11 +325,11 @@ recBtn.addEventListener('click', () => {
     recording = true;
     recorded = [];
     recStart = performance.now();
-    recBtn.textContent = '⏹ Կանգնեցնել';
+    recBtn.textContent = T.stop;
     recBtn.classList.add('recording');
   } else {
     recording = false;
-    recBtn.textContent = '⏺ Ձայնագրել';
+    recBtn.textContent = T.rec;
     recBtn.classList.remove('recording');
     playBtn.disabled = recorded.length === 0;
   }
@@ -404,7 +429,7 @@ learnBtn.addEventListener('click', () => {
   learnBtn.classList.add('active');
   learnBar.hidden = false;
   learnListen.hidden = true;
-  learnText.textContent = '🎓 Ընտրիր երգը վերևից 👆';
+  learnText.textContent = T.choose;
 });
 
 function exitLearn() {
@@ -433,7 +458,7 @@ function startLesson(btn) {
 function showTarget() {
   clearGlow();
   keyEls[learn.seq[learn.idx]].classList.add('learn-target');
-  learnText.textContent = `${learn.title} — նոտա ${learn.idx + 1}/${learn.seq.length}`;
+  learnText.textContent = T.prog(learn.title, learn.idx + 1, learn.seq.length);
 }
 
 function checkLearn(i) {
@@ -451,7 +476,7 @@ function checkLearn(i) {
 
 function finishLesson() {
   clearGlow();
-  learnText.textContent = `🏆 Բրավո՜։ Դու սովորեցիր «${learn.title.slice(2).trim()}»`;
+  learnText.textContent = T.bravo(learn.title.slice(2).trim());
   learn.seq = null;   // դասը վերջացավ, կարող ես նոր երգ ընտրել
   learnListen.hidden = true;
   fanfare();

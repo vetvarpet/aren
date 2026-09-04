@@ -38,6 +38,16 @@
 //  Հիմա աշխատում է և՛ հեռախոսով, և՛ համակարգչով
 // ——————————————————————————————————————
 
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { score: 'Միավոր՝ ', best: 'Ռեկորդ՝ ', title: 'Կատուն թռչում է 🐱', sub: 'Դիպչիր՝ թռչելու · Ագռավ տեսար՝ ՄԻ՛ թռչիր', ouch: 'Ա՜խ, բախվեցիր 😿', overSub: n => 'Հավաքեցիր ' + n + ' միավոր · Դիպչիր՝ նորից խաղալու' },
+  ru: { score: 'Очки: ', best: 'Рекорд: ', title: 'Котик прыгает 🐱', sub: 'Нажми — прыжок · Увидел ворону — НЕ прыгай', ouch: 'Ой, столкнулся 😿', overSub: n => 'Набрал ' + n + ' очков · Нажми, чтобы играть снова' },
+  en: { score: 'Score: ', best: 'Best: ', title: 'The Cat Jumps 🐱', sub: 'Tap to jump · See a crow — DON’T jump', ouch: 'Ouch, you crashed 😿', overSub: n => 'You got ' + n + ' points · Tap to play again' },
+};
+const T = TRL[ggLang] || TRL.hy;
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
@@ -551,9 +561,9 @@ function drawScore() {
   ctx.fillStyle = mixColor([35, 64, 92], [234, 243, 255], night);
   ctx.font = 'bold 22px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText('Միավոր՝ ' + score, 20, 36);
+  ctx.fillText(T.score + score, 20, 36);
   ctx.textAlign = 'right';
-  ctx.fillText('Ռեկորդ՝ ' + best, W - 20, 36);
+  ctx.fillText(T.best + best, W - 20, 36);
 
   // սրտերը՝ վերևի մեջտեղում. կարմիրը՝ ողջ կյանք, սևը՝ կորցրած
   ctx.textAlign = 'center';
@@ -740,10 +750,10 @@ function update() {
   drawScore();
 
   if (!running && !gameOver && !won) {
-    drawCenterText('Կատուն թռչում է 🐱', 'Դիպչիր՝ թռչելու · Ագռավ տեսար՝ ՄԻ՛ թռչիր');
+    drawCenterText(T.title, T.sub);
   }
   if (gameOver) {
-    drawCenterText('Ա՜խ, բախվեցիր 😿', 'Հավաքեցիր ' + score + ' միավոր · Դիպչիր՝ նորից խաղալու');
+    drawCenterText(T.ouch, T.overSub(score));
   }
   if (won) {
     // կոնֆետիների անձրևը

@@ -25,6 +25,46 @@
 //  Ամեն մակարդակ ավելի մեծ է, երաժշտությունն էլ՝ ավելի արագ 🎵
 // ——————————————————————————————————————
 
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TR = {
+  hy: {
+    level: (l, m) => 'Մակարդակ ' + l + '/' + m,
+    sec: t => t + ' վրկ',
+    hint: 'Պահիր մատդ էկրանին՝ գնդակը կգա հետևից',
+    passed: l => 'Մակարդակ ' + l + ' անցա՜ր',
+    inTime: t => t + ' վայրկյանում',
+    next: l => 'Սեղմիր՝ մակարդակ ' + l,
+    champ: 'ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ',
+    champSub: m => 'Անցար բոլոր ' + m + ' մակարդակը',
+    again: 'Սեղմիր՝ նորից սկզբից',
+  },
+  ru: {
+    level: (l, m) => 'Уровень ' + l + '/' + m,
+    sec: t => t + ' сек',
+    hint: 'Держи палец на экране — шарик пойдёт за ним',
+    passed: l => 'Уровень ' + l + ' пройден!',
+    inTime: t => 'за ' + t + ' секунд',
+    next: l => 'Нажми — уровень ' + l,
+    champ: 'ТЫ ЧЕМПИОН',
+    champSub: m => 'Пройдены все ' + m + ' уровней',
+    again: 'Нажми — начать заново',
+  },
+  en: {
+    level: (l, m) => 'Level ' + l + '/' + m,
+    sec: t => t + ' s',
+    hint: 'Hold your finger on the screen — the ball follows it',
+    passed: l => 'Level ' + l + ' complete!',
+    inTime: t => 'in ' + t + ' seconds',
+    next: l => 'Tap for level ' + l,
+    champ: 'YOU ARE THE CHAMPION',
+    champSub: m => 'All ' + m + ' levels complete',
+    again: 'Tap to start over',
+  },
+};
+const T = TR[ggLang] || TR.hy;
+
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 let W, H, DPR;
@@ -348,9 +388,9 @@ function draw() {
   ctx.font = 'bold 21px "Noto Sans Armenian", Arial, sans-serif';
   ctx.textAlign = 'left';
   const t = timerOn && state === 'play' ? (performance.now() - startTime) / 1000 : finishTime;
-  ctx.fillText('Մակարդակ ' + level + '/100', 16, 40);
+  ctx.fillText(T.level(level, MAX_LEVEL), 16, 40);
   ctx.fillStyle = '#9a9ec7';
-  ctx.fillText(t.toFixed(1) + ' վրկ', 16, H - 18);
+  ctx.fillText(T.sec(t.toFixed(1)), 16, H - 18);
 
   // ձայնի կոճակը՝ բարձրախոսը մենք ենք նկարում
   const sp = speakerBox();
@@ -381,7 +421,7 @@ function draw() {
   if (!timerOn && state === 'play' && level === 1) {
     ctx.fillStyle = '#9a9ec7';
     ctx.font = Math.min(17, W * 0.042) + 'px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('Պահիր մատդ էկրանին՝ գնդակը կգա հետևից', W / 2, H - 18);
+    ctx.fillText(T.hint, W / 2, H - 18);
   }
 
   // ——— Էկրանները ———
@@ -390,26 +430,26 @@ function draw() {
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = '#ffd166';
     ctx.font = 'bold ' + Math.min(34, W * 0.075) + 'px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('Մակարդակ ' + level + ' անցա՜ր', W / 2, H / 2 - 60);
+    ctx.fillText(T.passed(level), W / 2, H / 2 - 60);
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText(finishTime.toFixed(1) + ' վայրկյանում', W / 2, H / 2 - 15);
+    ctx.fillText(T.inTime(finishTime.toFixed(1)), W / 2, H / 2 - 15);
     ctx.fillStyle = '#6ee7b7';
     ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('Սեղմիր՝ մակարդակ ' + (level + 1), W / 2, H / 2 + 50);
+    ctx.fillText(T.next(level + 1), W / 2, H / 2 + 50);
   } else if (state === 'champion') {
     ctx.fillStyle = 'rgba(10,14,30,0.82)';
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = '#ffd166';
     ctx.font = 'bold ' + Math.min(38, W * 0.08) + 'px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ', W / 2, H / 2 - 70);
+    ctx.fillText(T.champ, W / 2, H / 2 - 70);
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('Անցար բոլոր 100 մակարդակը', W / 2, H / 2 - 25);
+    ctx.fillText(T.champSub(MAX_LEVEL), W / 2, H / 2 - 25);
     drawTrophy(W / 2, H / 2 + 45);
     ctx.fillStyle = '#6ee7b7';
     ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('Սեղմիր՝ նորից սկզբից', W / 2, H / 2 + 120);
+    ctx.fillText(T.again, W / 2, H / 2 + 120);
   }
 }
 

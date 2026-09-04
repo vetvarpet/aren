@@ -25,6 +25,16 @@
 //  Ոսկե ձուկը +5 է, հին կոշիկը՝ 0։ 60 վայրկյան ունես։
 // ——————————————————————————————————————
 
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { gold: '+5 ՈՍԿԵ ՁՈՒԿ', bootTxt: 'Կոշիկ… +0', scoreLbl: 'Միավոր՝ ', secLbl: ' վրկ', timeup: 'Ժամանակը վերջացավ', rec: '  ·  Ռեկորդ՝ ', title: 'Ձկնորսություն', h1: 'Սեղմիր՝ կարթը գցելու, մատով ուղղորդիր', h2: 'Ոսկե ձուկ = +5 · Կոշիկ = 0 · 60 վայրկյան', yourBest: 'Ռեկորդդ՝ ', tapAgain: 'Սեղմիր՝ նորից ձկնորսելու', tapStart: 'Սեղմիր՝ սկսելու' },
+  ru: { gold: '+5 ЗОЛОТАЯ РЫБКА', bootTxt: 'Ботинок… +0', scoreLbl: 'Очки: ', secLbl: ' сек', timeup: 'Время вышло', rec: '  ·  Рекорд: ', title: 'Рыбалка', h1: 'Нажми, чтобы закинуть крючок, веди пальцем', h2: 'Золотая рыбка = +5 · Ботинок = 0 · 60 секунд', yourBest: 'Твой рекорд: ', tapAgain: 'Нажми — рыбачить снова', tapStart: 'Нажми — начать' },
+  en: { gold: '+5 GOLDEN FISH', bootTxt: 'Boot… +0', scoreLbl: 'Score: ', secLbl: ' s', timeup: 'Time is up', rec: '  ·  Best: ', title: 'Fishing', h1: 'Tap to cast the hook, steer it with your finger', h2: 'Golden fish = +5 · Boot = 0 · 60 seconds', yourBest: 'Your best: ', tapAgain: 'Tap to fish again', tapStart: 'Tap to start' },
+};
+const T = TRL[ggLang] || TRL.hy;
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 let W, H, DPR, WATER;
@@ -173,8 +183,8 @@ function update() {
       if (hook.caught) {
         const pts = { small: 1, med: 2, gold: 5, boot: 0 }[hook.caught.type];
         score += pts;
-        if (hook.caught.type === 'gold') { sGold(); popups.push({ x: boatX, y: WATER - 60, life: 70, text: '+5 ՈՍԿԵ ՁՈՒԿ' }); }
-        else if (hook.caught.type === 'boot') { sBoot(); popups.push({ x: boatX, y: WATER - 60, life: 70, text: 'Կոշիկ… +0' }); }
+        if (hook.caught.type === 'gold') { sGold(); popups.push({ x: boatX, y: WATER - 60, life: 70, text: T.gold }); }
+        else if (hook.caught.type === 'boot') { sBoot(); popups.push({ x: boatX, y: WATER - 60, life: 70, text: T.bootTxt }); }
         else { sCatch(); popups.push({ x: boatX, y: WATER - 60, life: 60, text: '+' + pts }); }
         hook.caught = null;
       }
@@ -316,13 +326,13 @@ function draw() {
   ctx.font = 'bold 22px "Noto Sans Armenian", Arial, sans-serif';
   ctx.textAlign = 'left';
   const secs = Math.ceil(timeLeft / 60);
-  ctx.fillText('Միավոր՝ ' + score, 26, 42);
+  ctx.fillText(T.scoreLbl + score, 26, 42);
   if (playing) {
     ctx.fillStyle = secs <= 10 && frame % 40 < 20 ? '#ff6b5e' : 'rgba(20,26,34,0.72)';
     ctx.beginPath(); ctx.roundRect(W - 110, 12, 98, 44, 12); ctx.fill();
     ctx.fillStyle = '#fff';
     ctx.textAlign = 'right';
-    ctx.fillText(secs + ' վրկ', W - 26, 42);
+    ctx.fillText(secs + T.secLbl, W - 26, 42);
   }
 
   // ——— Էկրանները ———
@@ -333,24 +343,24 @@ function draw() {
     ctx.fillStyle = '#fff';
     ctx.font = 'bold ' + Math.min(38, W * 0.08) + 'px "Noto Sans Armenian", Arial, sans-serif';
     if (over) {
-      ctx.fillText('Ժամանակը վերջացավ', W / 2, H / 2 - 70);
+      ctx.fillText(T.timeup, W / 2, H / 2 - 70);
       ctx.fillStyle = '#ffd166';
       ctx.font = 'bold 28px "Noto Sans Armenian", Arial, sans-serif';
-      ctx.fillText('Միավոր՝ ' + score + '  ·  Ռեկորդ՝ ' + best, W / 2, H / 2 - 20);
+      ctx.fillText(T.scoreLbl + score + T.rec + best, W / 2, H / 2 - 20);
     } else {
-      ctx.fillText('Ձկնորսություն', W / 2, H / 2 - 70);
+      ctx.fillText(T.title, W / 2, H / 2 - 70);
       ctx.font = Math.min(19, W * 0.045) + 'px "Noto Sans Armenian", Arial, sans-serif';
       ctx.fillStyle = '#cde7f5';
-      ctx.fillText('Սեղմիր՝ կարթը գցելու, մատով ուղղորդիր', W / 2, H / 2 - 28);
-      ctx.fillText('Ոսկե ձուկ = +5 · Կոշիկ = 0 · 60 վայրկյան', W / 2, H / 2);
+      ctx.fillText(T.h1, W / 2, H / 2 - 28);
+      ctx.fillText(T.h2, W / 2, H / 2);
       if (best > 0) {
         ctx.fillStyle = '#ffd166';
-        ctx.fillText('Ռեկորդդ՝ ' + best, W / 2, H / 2 + 30);
+        ctx.fillText(T.yourBest + best, W / 2, H / 2 + 30);
       }
     }
     ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
     ctx.fillStyle = '#6ee7b7';
-    ctx.fillText(over ? 'Սեղմիր՝ նորից ձկնորսելու' : 'Սեղմիր՝ սկսելու', W / 2, H / 2 + 90);
+    ctx.fillText(over ? T.tapAgain : T.tapStart, W / 2, H / 2 + 90);
   }
 }
 

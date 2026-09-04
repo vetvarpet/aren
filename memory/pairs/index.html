@@ -108,6 +108,23 @@
 //  Փորձիր գտնել բոլորը ամենաքիչ փորձով։
 // ——————————————————————————————————————
 
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { h1: 'Զույգեր 🃏', tries: 'Փորձեր՝', rec: 'Ռեկորդ՝', win: n => '🏆 Գտար բոլորը ' + n + ' փորձով', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ 🎉', again: '🔄 Նոր խաղ' },
+  ru: { h1: 'Пары 🃏', tries: 'Попытки:', rec: 'Рекорд:', win: n => '🏆 Нашёл все за ' + n + ' попыток', newRec: ' — НОВЫЙ РЕКОРД 🎉', again: '🔄 Новая игра' },
+  en: { h1: 'Pairs 🃏', tries: 'Tries:', rec: 'Best:', win: n => '🏆 You found them all in ' + n + ' tries', newRec: ' — NEW RECORD 🎉', again: '🔄 New game' },
+};
+const T = TRL[ggLang] || TRL.hy;
+if (ggLang !== 'hy') {
+  document.querySelector('h1').textContent = T.h1;
+  const st = document.querySelector('.stats');
+  st.innerHTML = T.tries + ' <b id="moves">0</b><span id="bestBox" hidden>' + T.rec + ' <b id="best"></b></span>';
+  document.getElementById('restart').textContent = T.again;
+}
+
 // Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
 let lastTap = 0;
 document.addEventListener('touchend', (e) => {
@@ -222,13 +239,13 @@ function flip(card) {
 function win() {
   sWin();
   confetti();
-  let text = '🏆 Գտար բոլորը ' + moves + ' փորձով';
+  let text = T.win(moves);
   if (best === 0 || moves < best) {
     best = moves;
     try { localStorage.setItem('aren-memory-best', best); } catch (e) {}
     bestEl.textContent = best;
     bestBox.hidden = false;
-    text += ' — ՆՈՐ ՌԵԿՈՐԴ 🎉';
+    text += T.newRec;
   }
   msgEl.textContent = text;
 }

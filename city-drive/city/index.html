@@ -29,6 +29,16 @@
 //  Բաց քաղաք. վարիր ուր ուզում ես, առաքիր պիցցաներ 🍕
 // ——————————————————————————————————————
 
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { pickup: 'Վերցրու պիցցան 🍕', deliver: 'Հասցրու տուն 🏠', deliveries: 'Առաքում՝ ', run: '🚓 ՓԱԽԻ՛Ր ՈՍՏԻԿԱՆԻՑ', shopHint: n => '🏪 Փողդ հերիքում է ' + n + '. գնա խանութ', goldName: 'ՈՍԿԵ մեքենային 👑', sportName: 'սպորտայինին', fine: '🚓 Տուգանք −30֏', took: '🍕 Վերցրիր', newCar: '🏎 Նոր մեքենա՜', goldCar: '👑 ՈՍԿԵ ՄԵՔԵՆԱ՜' },
+  ru: { pickup: 'Забери пиццу 🍕', deliver: 'Доставь домой 🏠', deliveries: 'Доставки: ', run: '🚓 УБЕГАЙ ОТ ПОЛИЦИИ', shopHint: n => '🏪 Денег хватает ' + n + '. Езжай в магазин', goldName: 'на ЗОЛОТУЮ машину 👑', sportName: 'на спортивную', fine: '🚓 Штраф −30֏', took: '🍕 Взял', newCar: '🏎 Новая машина!', goldCar: '👑 ЗОЛОТАЯ МАШИНА!' },
+  en: { pickup: 'Pick up the pizza 🍕', deliver: 'Deliver it home 🏠', deliveries: 'Deliveries: ', run: '🚓 RUN FROM THE POLICE', shopHint: n => '🏪 You can afford ' + n + '. Go to the shop', goldName: 'the GOLDEN car 👑', sportName: 'the sports car', fine: '🚓 Fine −30֏', took: '🍕 Got it', newCar: '🏎 New car!', goldCar: '👑 GOLDEN CAR!' },
+};
+const T = TRL[ggLang] || TRL.hy;
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
@@ -67,8 +77,8 @@ let carLevel = 0;             // 0 = սովորական, 1 = սպորտային,
 // Երկու մակարդակ կա. սպորտայինը՝ 200֏, իսկ ՈՍԿԵՆ՝ 500֏ ու ամենաարագն է
 const SHOP = { x: 1750, y: 750 };
 const UPGRADES = [
-  { price: 200, maxSpeed: 9.2, accel: 0.2,  text: '🏎 Նոր մեքենա՜' },
-  { price: 500, maxSpeed: 11,  accel: 0.27, text: '👑 ՈՍԿԵ ՄԵՔԵՆԱ՜' },
+  { price: 200, maxSpeed: 9.2, accel: 0.2 },
+  { price: 500, maxSpeed: 11,  accel: 0.27 },
 ];
 
 // ——— Ոստիկանությունը ———
@@ -357,7 +367,7 @@ function update() {
       // բռնեց → տուգանք
       sound('fine');
       money = Math.max(0, money - 30);
-      popups.push({ x: car.x, y: car.y - 40, life: 80, text: '🚓 Տուգանք −30֏' });
+      popups.push({ x: car.x, y: car.y - 40, life: 80, text: T.fine });
       police.chasing = false;
       police.speed = 0;
       heat = 0;
@@ -391,14 +401,14 @@ function update() {
     maxSpeed = nextCar.maxSpeed;
     accel = nextCar.accel;
     sound('buy');
-    popups.push({ x: car.x, y: car.y - 40, life: 90, text: nextCar.text });
+    popups.push({ x: car.x, y: car.y - 40, life: 90, text: carLevel === 2 ? T.goldCar : T.newCar });
   }
 
   // հասա՞ր նշանակետին
   if (mission && Math.hypot(mission.x - car.x, mission.y - car.y) < 60) {
     if (mission.stage === 'pickup') {
       sound('pickup');
-      popups.push({ x: car.x, y: car.y - 40, life: 60, text: '🍕 Վերցրիր' });
+      popups.push({ x: car.x, y: car.y - 40, life: 60, text: T.took });
       const p = randomIntersection(car.x, car.y);
       mission = { x: p.x, y: p.y, stage: 'deliver' };
     } else {
@@ -670,20 +680,20 @@ function drawHUD(camX, camY) {
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 20px "Noto Sans Armenian", Arial, sans-serif';
   ctx.textAlign = 'center';
-  const task = mission.stage === 'pickup' ? 'Վերցրու պիցցան 🍕' : 'Հասցրու տուն 🏠';
-  ctx.fillText(task + '   ·   ' + money + '֏   ·   Առաքում՝ ' + deliveries, VW / 2, 42);
+  const task = mission.stage === 'pickup' ? T.pickup : T.deliver;
+  ctx.fillText(task + '   ·   ' + money + '֏   ·   ' + T.deliveries + deliveries, VW / 2, 42);
 
   // ոստիկանը հետապնդում է → կարմիր զգուշացում
   if (police.chasing) {
     ctx.fillStyle = Math.floor(frame / 15) % 2 === 0 ? '#ff5050' : '#ffffff';
     ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
-    ctx.fillText('🚓 ՓԱԽԻ՛Ր ՈՍՏԻԿԱՆԻՑ', VW / 2, 130);
+    ctx.fillText(T.run, VW / 2, 130);
   } else if (carLevel < UPGRADES.length && money >= UPGRADES[carLevel].price) {
     // փողը հերիքում է հաջորդ մեքենային → հուշում ենք խանութի մասին
     ctx.fillStyle = carLevel === 1 ? '#ffe066' : '#aef1ff';
     ctx.font = 'bold 18px "Noto Sans Armenian", Arial, sans-serif';
-    const carName = carLevel === 1 ? 'ՈՍԿԵ մեքենային 👑' : 'սպորտայինին';
-    ctx.fillText('🏪 Փողդ հերիքում է ' + carName + '. գնա խանութ', VW / 2, 130);
+    const carName = carLevel === 1 ? T.goldName : T.sportName;
+    ctx.fillText(T.shopHint(carName), VW / 2, 130);
   }
 
   // սլաքը, որ ցույց է տալիս նշանակետի ուղղությունը

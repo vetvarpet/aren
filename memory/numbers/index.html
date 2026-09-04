@@ -92,6 +92,23 @@
 //  Սեղմիր հերթով՝ 1, 2, 3… եթե հիշում ես, թե որն որտեղ էր։
 // ——————————————————————————————————————
 
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { h1: 'Թվերի որսորդ 🔢', lvl: 'Մակարդակ՝', rec: 'Ռեկորդ՝', intro: 'Հիշիր թվերի տեղերը, հետո սեղմիր հերթով՝ 1, 2, 3…', nums: n => n + ' թիվ', remember: 'Հիշի՛ր տեղերը 👀', order: 'Սեղմիր հերթով՝ 1, 2, 3… 👆', nice: n => 'Ապրե՛ս 🎉 Հիմա ' + n + ' թիվ', champ: '🏆 ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ — 9 թիվ հիշեցիր', result: n => 'Դու հիշեցիր ' + n + ' թիվ', tryAgain: 'Ոչինչ, նորից փորձիր', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ 🎉', start: '▶ Սկսել', again: '🔄 Նորից' },
+  ru: { h1: 'Охотник за числами 🔢', lvl: 'Уровень:', rec: 'Рекорд:', intro: 'Запомни, где числа, потом нажимай по порядку: 1, 2, 3…', nums: n => n + ' чисел', remember: 'Запоминай места 👀', order: 'Нажимай по порядку: 1, 2, 3… 👆', nice: n => 'Молодец! 🎉 Теперь ' + n + ' чисел', champ: '🏆 ТЫ ЧЕМПИОН — запомнил 9 чисел', result: n => 'Ты запомнил ' + n + ' чисел', tryAgain: 'Ничего, попробуй ещё раз', newRec: ' — НОВЫЙ РЕКОРД 🎉', start: '▶ Старт', again: '🔄 Ещё раз' },
+  en: { h1: 'Number Hunter 🔢', lvl: 'Level:', rec: 'Best:', intro: 'Remember where the numbers are, then tap them in order: 1, 2, 3…', nums: n => n + ' numbers', remember: 'Memorize the spots 👀', order: 'Tap in order: 1, 2, 3… 👆', nice: n => 'Nice! 🎉 Now ' + n + ' numbers', champ: '🏆 YOU ARE THE CHAMPION — 9 numbers', result: n => 'You remembered ' + n + ' numbers', tryAgain: 'No worries, try again', newRec: ' — NEW RECORD 🎉', start: '▶ Start', again: '🔄 Again' },
+};
+const T = TRL[ggLang] || TRL.hy;
+if (ggLang !== 'hy') {
+  document.querySelector('h1').textContent = T.h1;
+  document.querySelector('.stats').innerHTML = T.lvl + ' <b id="level">–</b><span>' + T.rec + ' <b id="best">0</b></span>';
+  document.getElementById('status').textContent = T.intro;
+  document.getElementById('startBtn').textContent = T.start;
+}
+
 // Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
 let lastTap = 0;
 document.addEventListener('touchend', (e) => {
@@ -174,18 +191,18 @@ function startGame() {
 }
 
 function newLevel() {
-  levelEl.textContent = count + ' թիվ';
+  levelEl.textContent = T.nums(count);
   expect = 1;
   waiting = true;
   placeNumbers();
-  statusEl.textContent = 'Հիշի՛ր տեղերը 👀';
+  statusEl.textContent = T.remember;
 
   // ինչքան շատ թիվ, այնքան մի քիչ ավելի ժամանակ ենք տալիս հիշելու
   clearTimeout(hideTimer);
   hideTimer = setTimeout(() => {
     document.querySelectorAll('.num').forEach(el => el.classList.add('hidden2'));
     waiting = false;
-    statusEl.textContent = 'Սեղմիր հերթով՝ 1, 2, 3… 👆';
+    statusEl.textContent = T.order;
   }, 1500 + count * 500);
 }
 
@@ -209,7 +226,7 @@ function tap(el) {
         finish(true);
         return;
       }
-      statusEl.textContent = 'Ապրե՛ս 🎉 Հիմա ' + count + ' թիվ';
+      statusEl.textContent = T.nice(count);
       setTimeout(newLevel, 1000);
     }
   } else {
@@ -226,8 +243,8 @@ function finish(champion) {
   const score = champion ? 9 : count - 1;   // վերջին ԱՆՑԱԾ մակարդակը
 
   let text = champion
-    ? '🏆 ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ — 9 թիվ հիշեցիր'
-    : (score >= 3 ? 'Դու հիշեցիր ' + score + ' թիվ' : 'Ոչինչ, նորից փորձիր');
+    ? T.champ
+    : (score >= 3 ? T.result(score) : T.tryAgain);
 
   if (champion) { sWin(); confetti(); }
   else sBuzz();
@@ -236,10 +253,10 @@ function finish(champion) {
     best = score;
     try { localStorage.setItem('aren-numbers-best', best); } catch (e) {}
     bestEl.textContent = best;
-    if (!champion) { text += ' — ՆՈՐ ՌԵԿՈՐԴ 🎉'; sWin(); confetti(); }
+    if (!champion) { text += T.newRec; sWin(); confetti(); }
   }
   statusEl.textContent = text;
-  startBtn.textContent = '🔄 Նորից';
+  startBtn.textContent = T.again;
   startBtn.hidden = false;
 }
 

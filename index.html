@@ -125,9 +125,60 @@
     line-height: 1.8;
   }
   footer a { color: var(--accent); text-decoration: none; }
+
+  /* ——— Լեզվի ընտրության էկրանը ——— */
+  #langPick[hidden] { display: none; }   /* թաքնվածը իսկապես թաքնված է */
+  #langPick {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background:
+      radial-gradient(circle at 20% 15%, rgba(110, 231, 183, 0.1), transparent 40%),
+      radial-gradient(circle at 80% 75%, rgba(255, 209, 102, 0.1), transparent 45%),
+      var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 24px;
+    text-align: center;
+  }
+  #langPick .joy2 { font-size: 60px; }
+  #langPick h2 { color: var(--accent); font-size: clamp(1.4rem, 6vw, 2rem); }
+  #langPick .ask { color: var(--dim); margin-bottom: 10px; line-height: 1.6; }
+  .langbtn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: min(86vw, 320px);
+    background: var(--card);
+    border: 2px solid #33356b;
+    border-radius: 16px;
+    padding: 14px 20px;
+    font-family: inherit;
+    font-size: 1.15rem;
+    font-weight: bold;
+    color: var(--ink);
+    cursor: pointer;
+    transition: transform 0.12s, border-color 0.12s;
+  }
+  .langbtn:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .langbtn .flag { font-size: 1.6rem; }
 </style>
 </head>
 <body>
+
+<!-- Առաջին այցին նախ լեզուն ես ընտրում -->
+<div id="langPick" hidden>
+  <div class="joy2">🕹️</div>
+  <h2>Golden Games</h2>
+  <p class="ask">Ընտրի՛ր լեզուն · Выбери язык · Choose language</p>
+  <button class="langbtn" data-lang="hy"><span class="flag">🇦🇲</span> Հայերեն</button>
+  <button class="langbtn" data-lang="ru"><span class="flag">🇷🇺</span> Русский</button>
+  <button class="langbtn" data-lang="en"><span class="flag">🇬🇧</span> English</button>
+</div>
+
 <div class="wrap">
 
   <header>
@@ -139,9 +190,10 @@
       </div>
     </div>
     <nav>
-      <a href="./about.html">😼 Մեր մասին</a>
+      <a href="./about.html" id="navAbout">😼 Մեր մասին</a>
       <a href="./qr.html">📱 QR</a>
       <a href="https://github.com/vetvarpet/aren">⭐ GitHub</a>
+      <a href="#" id="langBtn" title="Լեզու / Язык / Language">🌐</a>
     </nav>
   </header>
 
@@ -237,6 +289,81 @@ document.addEventListener('touchend', (e) => {
   if (now - lastTap < 350) e.preventDefault();
   lastTap = now;
 }, { passive: false });
+
+// ——————————————————————————————————————
+//  ԼԵԶՈՒՆԵՐԸ 🌐 — հայերեն, ռուսերեն, անգլերեն
+//  Ընտրածդ հիշվում է, ու բոլոր խաղերը խոսում են այդ լեզվով
+// ——————————————————————————————————————
+const DICT = {
+  ru: {
+    about: '😼 О нас',
+    newTag: 'NEW',
+    cards: {
+      './cat-jump/': ['Котик', 'Прыгай через ящики, лови рыбок. Ночью летят вороны — проходи под ними, не прыгай. 100 очков — кубок.', '▶ Играть'],
+      './city-drive/': ['Городской водитель', 'Две игры в одной: открытый город с доставкой пиццы и полицией, и Гонка 🏁 с 10 уровнями.', '▶ Играть'],
+      './piano/': ['Пианино', 'Играй клавишами или пальцем, записывай свою мелодию, учи песни по светящимся клавишам.', '▶ Играть'],
+      './rocket/': ['Ракета в космосе', 'Лети среди звёзд, собирай ⭐, уворачивайся от астероидов. У тебя 3 жизни.', '▶ Лететь'],
+      './memory/': ['Игры на память', 'Три игры в одном месте: Пары 🃏, Повтори за мной 💡 и Охотник за числами 🔢.', '▶ Играть'],
+      './fishing/': ['Рыбалка', '60 секунд, море рыбы. Золотая рыбка +5, старый ботинок 0. Сколько наберёшь?', '▶ Рыбачить'],
+      './duel/': ['Дуэль', 'Вдвоём на одном телефоне. После сигнала 15 секунд: кто больше нажмёт? Поспешишь — проиграешь.', '▶ 1 на 1'],
+      './maze/': ['Лабиринт', '100 уровней: от маленького до гигантского. Шарик идёт за пальцем, музыка ускоряется.', '▶ Войти'],
+    },
+    footer: 'Сделал Арен, 10 лет 😼<br>Все игры написаны на JavaScript, созданы вместе с Claude · <a href="https://github.com/vetvarpet/aren">Код на GitHub</a>',
+  },
+  en: {
+    about: '😼 About',
+    newTag: 'NEW',
+    cards: {
+      './cat-jump/': ['Kitty', 'Jump over boxes and catch fish. At night crows fly over — pass under them, don’t jump. 100 points wins the trophy.', '▶ Play'],
+      './city-drive/': ['City Driver', 'Two games in one: an open city with pizza deliveries and police, and a 10-level Race 🏁.', '▶ Play'],
+      './piano/': ['Piano', 'Play with keys or fingers, record your melody, learn songs with glowing keys.', '▶ Play'],
+      './rocket/': ['Rocket in Space', 'Fly through the stars, collect ⭐, dodge spinning asteroids. You have 3 lives.', '▶ Fly'],
+      './memory/': ['Memory Games', 'Three games in one place: Pairs 🃏, Repeat After Me 💡 and Number Hunter 🔢.', '▶ Play'],
+      './fishing/': ['Fishing', '60 seconds, a sea full of fish. Golden fish +5, old boot 0. How many points can you get?', '▶ Fish'],
+      './duel/': ['Duel', 'Two players, one phone. After the signal — 15 seconds: who taps more? Jump early and you lose.', '▶ 1 vs 1'],
+      './maze/': ['Maze', '100 levels from tiny to giant. The ball follows your finger, the music speeds up.', '▶ Enter'],
+    },
+    footer: 'Built by Aren, age 10 😼<br>All games written in JavaScript, created together with Claude · <a href="https://github.com/vetvarpet/aren">Code on GitHub</a>',
+  },
+};
+
+const langPick = document.getElementById('langPick');
+
+function applyLang(lang) {
+  const d = DICT[lang];
+  if (!d) return;   // հայերենը արդեն էջի մեջ է
+  document.getElementById('navAbout').textContent = d.about;
+  document.querySelectorAll('.game').forEach(card => {
+    const c = d.cards[card.getAttribute('href')];
+    if (!c) return;
+    card.querySelector('h2').textContent = c[0];
+    card.querySelector('.info p').textContent = c[1];
+    card.querySelector('.play').textContent = c[2];
+  });
+  document.querySelectorAll('.new-tag').forEach(t => { t.textContent = d.newTag; });
+  document.querySelector('footer').innerHTML = d.footer;
+}
+
+function chooseLang(lang) {
+  try { localStorage.setItem('gg-lang', lang); } catch (e) {}
+  applyLang(lang);
+  langPick.hidden = true;
+}
+
+document.querySelectorAll('.langbtn').forEach(b => {
+  b.addEventListener('click', () => chooseLang(b.dataset.lang));
+});
+document.getElementById('langBtn').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  langPick.hidden = false;
+});
+document.getElementById('langBtn').addEventListener('click', (e) => e.preventDefault());
+
+// Առաջին այցին հարցնում ենք, հետո հիշում ենք
+let saved = null;
+try { saved = localStorage.getItem('gg-lang'); } catch (e) {}
+if (saved) applyLang(saved);
+else langPick.hidden = false;
 </script>
 </body>
 </html>
