@@ -1,0 +1,232 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Չորսը շարքով 🔴🟡</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    height: 100dvh;
+    padding: 12px;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+  h1 { font-size: clamp(1.05rem, 4vw, 1.5rem); color: #ffd76e; }
+  .scores { display: flex; gap: 20px; font-size: 1rem; }
+  #status { font-size: 1.05rem; color: #ffd76e; min-height: 1.4em; text-align: center; }
+
+  .frame {
+    background: #2b4a9b;
+    border: 4px solid #1d346e;
+    border-radius: 18px;
+    padding: 8px;
+  }
+  .board {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    width: min(92vw, 52vh, 440px);
+  }
+  .slot {
+    position: relative;
+    border-radius: 50%;
+    background: #12122b;
+    cursor: pointer;
+  }
+  .slot::before { content: ''; display: block; padding-top: 100%; }
+  .slot .disc {
+    position: absolute;
+    inset: 8%;
+    border-radius: 50%;
+    animation: drop 0.25s ease-in;
+  }
+  @keyframes drop { from { transform: translateY(-300%); } }
+  .disc.r { background: radial-gradient(circle at 35% 30%, #ff8a78, #e63946 70%); }
+  .disc.y { background: radial-gradient(circle at 35% 30%, #ffe9a8, #f4c50f 70%); }
+  .slot.winline { box-shadow: 0 0 0 4px #6ee7b7; }
+
+  #restart {
+    border: 2px solid #6a5f9e;
+    border-radius: 999px;
+    padding: 9px 20px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #3d3560;
+    color: #f5eede;
+  }
+
+  .confetti {
+    position: fixed;
+    top: -50px;
+    z-index: 9;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<a href="../../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<h1>Չորսը շարքով 🔴🟡</h1>
+<div class="scores"><span>🔴 <b id="sr">0</b></span><span>🟡 <b id="sy">0</b></span></div>
+<div class="frame"><div class="board" id="board"></div></div>
+<div id="status"></div>
+<button id="restart">🔄 Նոր խաղ</button>
+
+<script>
+// ——————————————————————————————————————
+//  ՉՈՐՍԸ ՇԱՐՔՈՎ 🔴🟡 — իքս-զրոյի մեծ եղբայրը
+//  Սեղմիր սյան վրա՝ խաղաքարը ընկնում է ներքև։
+//  Ով առաջինը 4-ը շարի (ցանկացած ուղղությամբ)՝ հաղթեց։
+// ——————————————————————————————————————
+
+const COLS = 7, ROWS = 6;
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { h1: 'Չորսը շարքով 🔴🟡', turn: s => 'Հերթը՝ ' + s, win: s => s + ' ՀԱՂԹԵՑ 🎉', draw: 'Ոչ-ոքի՜ Դաշտը լցվեց 🤝', again: '🔄 Նոր խաղ' },
+  ru: { h1: 'Четыре в ряд 🔴🟡', turn: s => 'Ход: ' + s, win: s => s + ' ПОБЕДИЛ 🎉', draw: 'Ничья! Поле заполнено 🤝', again: '🔄 Новая игра' },
+  en: { h1: 'Connect Four 🔴🟡', turn: s => 'Turn: ' + s, win: s => s + ' WINS 🎉', draw: 'Draw! The board is full 🤝', again: '🔄 New game' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.querySelector('h1').textContent = T.h1;
+document.getElementById('restart').textContent = T.again;
+
+const board = document.getElementById('board');
+const statusEl = document.getElementById('status');
+let grid = [];        // grid[col][row]. row 0-ը ՆԵՐՔԵՎՆ է
+let turn = 'r';
+let over = false;
+let sr = 0, sy = 0;
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.18, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sDrop = () => tone(300, 0.12, 'square', 0.14);
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.25, 'triangle', 0.2, k * 0.13));
+
+// Էկրանի վանդակը՝ ըստ սյան ու տողի (տող 0-ը ներքևն է, էկրանին՝ ամենավերջինը)
+function slotEl(c, r) {
+  return board.children[(ROWS - 1 - r) * COLS + c];
+}
+
+function newGame() {
+  grid = Array.from({ length: COLS }, () => []);
+  turn = 'r';
+  over = false;
+  board.innerHTML = '';
+  for (let i = 0; i < COLS * ROWS; i++) {
+    const s = document.createElement('div');
+    s.className = 'slot';
+    const col = i % COLS;
+    s.addEventListener('pointerdown', (e) => { e.preventDefault(); drop(col); });
+    board.appendChild(s);
+  }
+  statusEl.textContent = T.turn('🔴');
+}
+
+function drop(c) {
+  initAudio();
+  if (over || grid[c].length >= ROWS) return;
+  const r = grid[c].length;
+  grid[c].push(turn);
+  const d = document.createElement('div');
+  d.className = 'disc ' + turn;
+  slotEl(c, r).appendChild(d);
+  sDrop();
+
+  const line = winLine(c, r);
+  if (line) {
+    over = true;
+    line.forEach(([cc, rr]) => slotEl(cc, rr).classList.add('winline'));
+    if (turn === 'r') sr++; else sy++;
+    document.getElementById('sr').textContent = sr;
+    document.getElementById('sy').textContent = sy;
+    statusEl.textContent = T.win(turn === 'r' ? '🔴' : '🟡');
+    sWin();
+    confetti();
+    return;
+  }
+  if (grid.every(col => col.length >= ROWS)) {
+    over = true;
+    statusEl.textContent = T.draw;
+    tone(300, 0.3, 'sine', 0.15);
+    return;
+  }
+  turn = turn === 'r' ? 'y' : 'r';
+  statusEl.textContent = T.turn(turn === 'r' ? '🔴' : '🟡');
+}
+
+// Ստուգում ենք 4 ուղղություն՝ նոր դրված քարից երկու կողմ հաշվելով
+function winLine(c, r) {
+  const me = grid[c][r];
+  const DIRS = [[1, 0], [0, 1], [1, 1], [1, -1]];
+  for (const [dc, dr] of DIRS) {
+    const line = [[c, r]];
+    for (const sgn of [1, -1]) {
+      let cc = c + dc * sgn, rr = r + dr * sgn;
+      while (cc >= 0 && cc < COLS && rr >= 0 && rr < ROWS && grid[cc][rr] === me) {
+        line.push([cc, rr]);
+        cc += dc * sgn; rr += dr * sgn;
+      }
+    }
+    if (line.length >= 4) return line;
+  }
+  return null;
+}
+
+document.getElementById('restart').addEventListener('click', newGame);
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+function confetti() {
+  const stuff = ['🎉', '⭐', '🔴', '🟡', '🎊', '✨'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+
+newGame();
+</script>

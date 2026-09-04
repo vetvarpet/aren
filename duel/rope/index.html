@@ -1,0 +1,197 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Պարան քաշել 🪢</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    height: 100dvh;
+    background: #12122b;
+    position: relative;
+  }
+
+  .half {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+  }
+  #top { top: 0; background: #8f2d36; transform: rotate(180deg); }
+  #bottom { bottom: 0; background: #1e5a9e; }
+  .msg { font-size: clamp(1.1rem, 5vw, 1.6rem); font-weight: bold; color: rgba(255,255,255,0.95); padding: 0 60px; }
+
+  /* Պարանը՝ մեջտեղով, հանգույցը սահում է վեր-վար */
+  #ropeLine {
+    position: absolute;
+    left: 50%;
+    top: 10%;
+    height: 80%;
+    width: 10px;
+    transform: translateX(-50%);
+    background: repeating-linear-gradient(#c9a227 0 14px, #a87f18 14px 28px);
+    border-radius: 5px;
+    z-index: 3;
+    pointer-events: none;
+  }
+  #knot {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 44px;
+    z-index: 4;
+    pointer-events: none;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+  }
+
+  .confetti {
+    position: fixed;
+    top: -50px;
+    z-index: 9;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<a href="../../" style="position:fixed;top:50%;left:10px;transform:translateY(-50%);z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<div class="half" id="top"><div class="msg" id="msgT"></div></div>
+<div class="half" id="bottom"><div class="msg" id="msgB"></div></div>
+<div id="ropeLine"></div>
+<div id="knot">🪢</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՊԱՐԱՆ ՔԱՇԵԼ 🪢 — երկու հոգու համար
+//  Խելագար սեղմիր քո կեսը՝ հանգույցը քաշելու քո կողմը։
+//  Ում կողմը հասավ՝ նա հաղթեց 💪
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { tap: 'Սեղմեք՝ սկսելու', count: n => n > 0 ? String(n) : 'ՔԱՇԻ՛Ր 💪', pull: 'ՍԵՂՄԻ՛Ր, ՍԵՂՄԻ՛Ր', winner: 'ՀԱՂԹԵՑԻ՜Ր 🏆', loser: 'Պարտվեցիր…', again: 'Սեղմեք՝ ռևանշ' },
+  ru: { tap: 'Нажмите, чтобы начать', count: n => n > 0 ? String(n) : 'ТЯНИ! 💪', pull: 'ЖМИ, ЖМИ!', winner: 'ПОБЕДА! 🏆', loser: 'Проиграл…', again: 'Нажмите — реванш' },
+  en: { tap: 'Tap to start', count: n => n > 0 ? String(n) : 'PULL! 💪', pull: 'TAP, TAP!', winner: 'YOU WIN! 🏆', loser: 'You lost…', again: 'Tap for a rematch' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const msgT = document.getElementById('msgT');
+const msgB = document.getElementById('msgB');
+const knot = document.getElementById('knot');
+
+let pos = 0;          // 0 = մեջտեղ, -100 = կարմիրի հաղթանակ (վերև), +100 = կապույտի
+let endedAt = 0;      // որ վերջին խելագար սեղմումները նոր խաղ չսկսեն
+let state = 'ready';  // ready → count → pull → end
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.2, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.25, 'triangle', 0.2, k * 0.13));
+
+// Հանգույցի տեղը էկրանին. pos -100..100 → 15%..85%
+function drawKnot() {
+  const pct = 50 + pos * 0.35;
+  knot.style.top = pct + '%';
+}
+drawKnot();
+
+function say(t, b) {
+  msgT.textContent = t;
+  msgB.textContent = b === undefined ? t : b;
+}
+say(T.tap);
+
+function startCount() {
+  state = 'count';
+  pos = 0;
+  drawKnot();
+  let n = 3;
+  const iv = setInterval(() => {
+    say(T.count(n));
+    tone(n > 0 ? 440 : 880, 0.2, 'square', 0.2);
+    if (n === 0) {
+      clearInterval(iv);
+      state = 'pull';
+      setTimeout(() => { if (state === 'pull') say(T.pull); }, 900);
+    }
+    n--;
+  }, 700);
+}
+
+function pull(who) {
+  if (state !== 'pull') return;
+  pos += who === 'top' ? -2.4 : 2.4;
+  tone(who === 'top' ? 500 : 380, 0.04, 'square', 0.06);
+  drawKnot();
+  if (pos <= -100 || pos >= 100) {
+    state = 'end';
+    endedAt = Date.now();
+    const topWon = pos <= -100;
+    msgT.textContent = topWon ? T.winner : T.loser;
+    msgB.textContent = topWon ? T.loser : T.winner;
+    sWin();
+    confetti();
+    setTimeout(() => { if (state === 'end') say(T.again); }, 2200);
+  }
+}
+
+for (const id of ['top', 'bottom']) {
+  document.getElementById(id).addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    initAudio();
+    if (state === 'end' && Date.now() - endedAt < 1500) return;   // մի պահ շունչ քաշեք
+    if (state === 'ready' || state === 'end') { startCount(); return; }
+    pull(id);
+  });
+}
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+function confetti() {
+  const stuff = ['🎉', '⭐', '🪢', '💛', '🎊', '💪'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+</script>

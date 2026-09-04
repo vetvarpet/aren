@@ -119,6 +119,7 @@ let state = 'menu';   // menu → wait → race → end
 let sT = 0, sB = 0;   // քանի անգամ է սեղմել ամեն մեկը
 let firstT = 0, firstB = 0;   // ով երբ է սեղմել առաջին անգամ (հավասարի դեպքում սա է որոշում)
 let goTime = 0;
+let endedAt = 0;      // որ վերջին խելագար սեղմումները նոր խաղ չսկսեն
 let goTimer = null;
 let raceTimer = null;
 
@@ -201,6 +202,7 @@ function timeUp() {
       finish(firstT < firstB ? 'top' : 'bottom', T.tieNote);
     } else {
       state = 'end';
+      endedAt = Date.now();
       say(T.draw(sT + ':' + sB));
       sPoint();
     }
@@ -216,12 +218,14 @@ function foul(who) {
   document.body.classList.remove('go');
   const name = who === 'top' ? T.red : T.blue;
   state = 'end';
+  endedAt = Date.now();
   say(T.foul(name));
   confetti();
 }
 
 function finish(winner, note) {
   state = 'end';
+  endedAt = Date.now();
   clearInterval(raceTimer);
   const name = winner === 'top' ? T.RED : T.BLUE;
   say(T.win(name, sT + ':' + sB, note));
@@ -231,6 +235,7 @@ function finish(winner, note) {
 
 function press(who) {
   initAudio();
+  if (state === 'end' && Date.now() - endedAt < 1500) return;   // մի պահ շունչ քաշեք
   if (state === 'menu' || state === 'end') { startMatch(); return; }
   if (state === 'wait') { foul(who); return; }
   if (state === 'race') {

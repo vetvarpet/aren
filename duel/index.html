@@ -65,6 +65,10 @@
   .g2 .ico { background: linear-gradient(135deg, #6b21a8, #f2a7d8); }
   .g3 .ico { background: linear-gradient(135deg, #14532d, #6ee7b7); }
   .g4 .ico { background: linear-gradient(135deg, #92400e, #fcd34d); }
+  .g5 .ico { background: linear-gradient(135deg, #7a1f1f, #6ec5ff); }
+  .g6 .ico { background: linear-gradient(135deg, #713f12, #c9a227); }
+  .g7 .ico { background: linear-gradient(135deg, #1d346e, #f4c50f); }
+  .g8 .ico { background: linear-gradient(135deg, #7f1d1d, #fecaca); }
   .g h2 { font-size: 1.05rem; }
   .g p { color: #9a9ec7; font-size: 0.85rem; margin-top: 4px; line-height: 1.4; }
 </style>
@@ -87,6 +91,22 @@
     <div class="ico">➗</div>
     <div><h2>Մաթ-մրցավազք</h2><p>Նույն խնդիրը երկուսիդ․ ո՞վ կհաշվի առաջինը</p></div>
   </a>
+  <a class="g g5" href="./tictac/">
+    <div class="ico">❌</div>
+    <div><h2>Իքս-զրո</h2><p>Դասականը․ ո՛վ երեքը շարի՝ հաղթեց</p></div>
+  </a>
+  <a class="g g6" href="./rope/">
+    <div class="ico">🪢</div>
+    <div><h2>Պարան քաշել</h2><p>Խելագար սեղմիր՝ հանգույցը քո կողմը քաշելու</p></div>
+  </a>
+  <a class="g g7" href="./four/">
+    <div class="ico">🔴</div>
+    <div><h2>Չորսը շարքով</h2><p>Գցիր խաղաքարերը սյուների մեջ, շարիր 4-ը</p></div>
+  </a>
+  <a class="g g8" href="./targets/">
+    <div class="ico">🎯</div>
+    <div><h2>Թիրախների որս</h2><p>30 վայրկյան, փախչող թիրախներ․ ո՞վ ավելի դիպուկ է</p></div>
+  </a>
 </div>
 
 <script>
@@ -94,14 +114,14 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  ru: { h1: 'Игры вдвоём 👥', sub: 'Один телефон, два игрока. Кто кого? 😏', g1: ['Дуэль', 'После сигнала 15 секунд: кто нажмёт больше'], g3: ['Пинг-понг', 'Две ракетки, один мяч: не пропусти на своей стороне'], g4: ['Матч по математике', 'Одна задача на двоих: кто решит первым?'] },
-  en: { h1: 'Two-Player Games 👥', sub: 'One phone, two players. Who wins? 😏', g1: ['Duel', 'After the signal, 15 seconds: who taps more'], g3: ['Ping-Pong', 'Two paddles, one ball: don’t let it past your side'], g4: ['Math Race', 'Same problem for both: who solves it first?'] },
+  ru: { h1: 'Игры вдвоём 👥', sub: 'Один телефон, два игрока. Кто кого? 😏', g1: ['Дуэль', 'После сигнала 15 секунд: кто нажмёт больше'], g3: ['Пинг-понг', 'Две ракетки, один мяч: не пропусти на своей стороне'], g4: ['Матч по математике', 'Одна задача на двоих: кто решит первым?'], g5: ['Крестики-нолики', 'Классика: собери три в ряд'], g6: ['Перетяни канат', 'Жми как сумасшедший — тяни узел на свою сторону'], g7: ['Четыре в ряд', 'Бросай фишки в столбцы, собери четыре'], g8: ['Охота на мишени', '30 секунд, убегающие мишени: кто точнее?'] },
+  en: { h1: 'Two-Player Games 👥', sub: 'One phone, two players. Who wins? 😏', g1: ['Duel', 'After the signal, 15 seconds: who taps more'], g3: ['Ping-Pong', 'Two paddles, one ball: don’t let it past your side'], g4: ['Math Race', 'Same problem for both: who solves it first?'], g5: ['Tic-Tac-Toe', 'The classic: get three in a row'], g6: ['Tug of War', 'Tap like crazy — pull the knot to your side'], g7: ['Connect Four', 'Drop discs into columns, line up four'], g8: ['Target Hunt', '30 seconds, escaping targets: who is sharper?'] },
 };
 const T = TRL[ggLang];
 if (T) {
   document.querySelector('h1').textContent = T.h1;
   document.querySelector('.sub').textContent = T.sub;
-  [['g1', '.g1'], ['g3', '.g3'], ['g4', '.g4']].forEach(([k, sel]) => {
+  [['g1', '.g1'], ['g3', '.g3'], ['g4', '.g4'], ['g5', '.g5'], ['g6', '.g6'], ['g7', '.g7'], ['g8', '.g8']].forEach(([k, sel]) => {
     document.querySelector(sel + ' h2').textContent = T[k][0];
     document.querySelector(sel + ' p').textContent = T[k][1];
   });

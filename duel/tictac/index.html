@@ -1,0 +1,214 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Իքս-զրո ❌⭕</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    height: 100dvh;
+    padding: 14px;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+  h1 { font-size: clamp(1.1rem, 4vw, 1.6rem); color: #ffd76e; }
+  .scores { display: flex; gap: 20px; font-size: 1.05rem; }
+  .scores b.x { color: #ff7b6b; }
+  .scores b.o { color: #6ec5ff; }
+  #status { font-size: 1.1rem; color: #ffd76e; min-height: 1.5em; text-align: center; }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: min(86vw, 48vh, 380px);
+  }
+  .cell {
+    position: relative;
+    background: #1d1d3f;
+    border: 3px solid #33356b;
+    border-radius: 16px;
+    font-size: clamp(38px, 13vw, 64px);
+    font-weight: bold;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s;
+  }
+  .cell::before { content: ''; display: block; padding-top: 100%; grid-area: 1/1; }
+  .cell:active { transform: scale(0.95); }
+  .cell.x { color: #ff7b6b; }
+  .cell.o { color: #6ec5ff; }
+  .cell.winline { background: #2f855a; border-color: #6ee7b7; animation: pop 0.4s; }
+  @keyframes pop { 50% { transform: scale(1.1); } }
+
+  #restart {
+    border: 2px solid #6a5f9e;
+    border-radius: 999px;
+    padding: 10px 22px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #3d3560;
+    color: #f5eede;
+  }
+
+  .confetti {
+    position: fixed;
+    top: -50px;
+    z-index: 9;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<a href="../../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<h1>Իքս-զրո ❌⭕</h1>
+<div class="scores"><span>❌ <b class="x" id="sx">0</b></span><span>⭕ <b class="o" id="so">0</b></span></div>
+<div class="board" id="board"></div>
+<div id="status"></div>
+<button id="restart">🔄 Նոր խաղ</button>
+
+<script>
+// ——————————————————————————————————————
+//  ԻՔՍ-ԶՐՈ ❌⭕ — դասականը երկու հոգու համար
+//  Հերթով դնում եք նշաններ. ով երեքը շարի՝ հաղթեց։
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { h1: 'Իքս-զրո ❌⭕', turn: s => 'Հերթը՝ ' + s, win: s => s + ' ՀԱՂԹԵՑ 🎉', draw: 'Ոչ-ոքի՜ 🤝', again: '🔄 Նոր խաղ' },
+  ru: { h1: 'Крестики-нолики ❌⭕', turn: s => 'Ход: ' + s, win: s => s + ' ПОБЕДИЛ 🎉', draw: 'Ничья! 🤝', again: '🔄 Новая игра' },
+  en: { h1: 'Tic-Tac-Toe ❌⭕', turn: s => 'Turn: ' + s, win: s => s + ' WINS 🎉', draw: 'It’s a draw! 🤝', again: '🔄 New game' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.querySelector('h1').textContent = T.h1;
+document.getElementById('restart').textContent = T.again;
+
+const board = document.getElementById('board');
+const statusEl = document.getElementById('status');
+let cells = [];       // 9 վանդակ. '', 'x' կամ 'o'
+let turn = 'x';
+let over = false;
+let sx = 0, so = 0;
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.18, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sX = () => tone(440, 0.1, 'square', 0.12);
+const sO = () => tone(330, 0.1, 'sine', 0.18);
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.25, 'triangle', 0.2, k * 0.13));
+
+// Հաղթող եռյակները՝ տողեր, սյուներ, անկյունագծեր
+const LINES = [
+  [0, 1, 2], [3, 4, 5], [6, 7, 8],
+  [0, 3, 6], [1, 4, 7], [2, 5, 8],
+  [0, 4, 8], [2, 4, 6],
+];
+
+function newGame() {
+  cells = ['', '', '', '', '', '', '', '', ''];
+  turn = 'x';
+  over = false;
+  board.innerHTML = '';
+  for (let i = 0; i < 9; i++) {
+    const c = document.createElement('button');
+    c.className = 'cell';
+    c.addEventListener('pointerdown', (e) => { e.preventDefault(); tap(i, c); });
+    board.appendChild(c);
+  }
+  statusEl.textContent = T.turn('❌');
+}
+
+function tap(i, el) {
+  initAudio();
+  if (over || cells[i]) return;
+  cells[i] = turn;
+  el.textContent = turn === 'x' ? '❌' : '⭕';
+  el.classList.add(turn);
+  (turn === 'x' ? sX : sO)();
+
+  // հաղթո՞ղ կա
+  for (const line of LINES) {
+    if (line.every(k => cells[k] === turn)) {
+      over = true;
+      line.forEach(k => board.children[k].classList.add('winline'));
+      if (turn === 'x') sx++; else so++;
+      document.getElementById('sx').textContent = sx;
+      document.getElementById('so').textContent = so;
+      statusEl.textContent = T.win(turn === 'x' ? '❌' : '⭕');
+      sWin();
+      confetti();
+      return;
+    }
+  }
+  // լցվե՞ց առանց հաղթողի
+  if (cells.every(c => c)) {
+    over = true;
+    statusEl.textContent = T.draw;
+    tone(300, 0.3, 'sine', 0.15);
+    return;
+  }
+  turn = turn === 'x' ? 'o' : 'x';
+  statusEl.textContent = T.turn(turn === 'x' ? '❌' : '⭕');
+}
+
+document.getElementById('restart').addEventListener('click', newGame);
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+function confetti() {
+  const stuff = ['🎉', '⭐', '❌', '⭕', '🎊', '✨'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+
+newGame();
+</script>
