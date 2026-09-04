@@ -157,5 +157,21 @@ for (let i = 0; i < 26; i++) {
   document.body.appendChild(s);
 }
 </script>
+
+<script>
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+// (կարգախոսը միշտ Արենի բառերով է մնում՝ բոլոր լեզուներում ✵)
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  ru: { badge: '🎮 Разные игры — в одном месте', scan: '📸 Сканируй и играй!' },
+  en: { badge: '🎮 All kinds of games in one place', scan: '📸 Scan and play!' },
+};
+const TQ = TRL[ggLang];
+if (TQ) {
+  document.querySelector('.badge').textContent = TQ.badge;
+  document.querySelector('.scanme').textContent = TQ.scan;
+}
+</script>
 </body>
 </html>
