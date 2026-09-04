@@ -79,10 +79,6 @@
     <div class="ico">⚡</div>
     <div><h2>Մենամարտ</h2><p>Ազդանշանից հետո 15 վայրկյան՝ ո՞վ ավելի շատ կսեղմի</p></div>
   </a>
-  <a class="g g2" href="./ching/">
-    <div class="ico">✊</div>
-    <div><h2>Չինգաչունգ</h2><p>Քար, մկրատ, թուղթ․ ընտրիր գաղտնի ու բացիր միասին</p></div>
-  </a>
   <a class="g g3" href="./pong/">
     <div class="ico">🏓</div>
     <div><h2>Պինգ-պոնգ</h2><p>Երկու ռակետկա, մեկ գնդակ․ բաց մի թող քո կողմը</p></div>
@@ -98,14 +94,14 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  ru: { h1: 'Игры вдвоём 👥', sub: 'Один телефон, два игрока. Кто кого? 😏', g1: ['Дуэль', 'После сигнала 15 секунд: кто нажмёт больше'], g2: ['Чин-га-чунг', 'Камень, ножницы, бумага: выбери тайно, откройте вместе'], g3: ['Пинг-понг', 'Две ракетки, один мяч: не пропусти на своей стороне'], g4: ['Матч по математике', 'Одна задача на двоих: кто решит первым?'] },
-  en: { h1: 'Two-Player Games 👥', sub: 'One phone, two players. Who wins? 😏', g1: ['Duel', 'After the signal, 15 seconds: who taps more'], g2: ['Ching-ga-chung', 'Rock, paper, scissors: pick in secret, reveal together'], g3: ['Ping-Pong', 'Two paddles, one ball: don’t let it past your side'], g4: ['Math Race', 'Same problem for both: who solves it first?'] },
+  ru: { h1: 'Игры вдвоём 👥', sub: 'Один телефон, два игрока. Кто кого? 😏', g1: ['Дуэль', 'После сигнала 15 секунд: кто нажмёт больше'], g3: ['Пинг-понг', 'Две ракетки, один мяч: не пропусти на своей стороне'], g4: ['Матч по математике', 'Одна задача на двоих: кто решит первым?'] },
+  en: { h1: 'Two-Player Games 👥', sub: 'One phone, two players. Who wins? 😏', g1: ['Duel', 'After the signal, 15 seconds: who taps more'], g3: ['Ping-Pong', 'Two paddles, one ball: don’t let it past your side'], g4: ['Math Race', 'Same problem for both: who solves it first?'] },
 };
 const T = TRL[ggLang];
 if (T) {
   document.querySelector('h1').textContent = T.h1;
   document.querySelector('.sub').textContent = T.sub;
-  [['g1', '.g1'], ['g2', '.g2'], ['g3', '.g3'], ['g4', '.g4']].forEach(([k, sel]) => {
+  [['g1', '.g1'], ['g3', '.g3'], ['g4', '.g4']].forEach(([k, sel]) => {
     document.querySelector(sel + ' h2').textContent = T[k][0];
     document.querySelector(sel + ' p').textContent = T[k][1];
   });
