@@ -62,13 +62,13 @@
 
 <script>
 // ——————————————————————————————————————
-//  ՄԵՆԱՄԱՐՏ ⚡ — խաղ երկու հոգու համար՝ ՄԵԿ հեռախոսով
-//  Դիր հեռախոսը սեղանին. մեկը կարմիրն է, մյուսը՝ կապույտը։
-//  Երբ էկրանը ԿԱՆԱՉԻ՝ սեղմիր քո կեսը։ Ով առաջինը՝ նա միավոր։
-//  Ով շտապի կանաչից առաջ՝ միավորը հակառակորդինն է 😈
+//  ՄԵՆԱՄԱՐՏ ⚡ — խաղ երկու հոգու համար՝ ՄԵԿ հեռախոսով (Արենի կանոններով)
+//  Ազդանշանը հնչեց → 15 վայրկյան ունեք։
+//  Ով ավելի ՇԱՏ սեղմի՝ նա հաղթում է։
+//  Ով շտապի ազդանշանից առաջ՝ միանգամից պարտվում է 😈
 // ——————————————————————————————————————
 
-const WIN_AT = 5;   // այսքան միավոր հավաքողը հաղթում է
+const RACE_SECONDS = 15;   // սեղմելու մրցավազքի ժամանակը
 
 const topEl = document.getElementById('top');
 const botEl = document.getElementById('bottom');
@@ -77,10 +77,12 @@ const scoreB = document.getElementById('scoreB');
 const msgT = document.getElementById('msgT');
 const msgB = document.getElementById('msgB');
 
-let state = 'menu';   // menu → wait → go → pause → end
-let sT = 0, sB = 0;   // միավորները
+let state = 'menu';   // menu → wait → race → end
+let sT = 0, sB = 0;   // քանի անգամ է սեղմել ամեն մեկը
+let firstT = 0, firstB = 0;   // ով երբ է սեղմել առաջին անգամ (հավասարի դեպքում սա է որոշում)
 let goTime = 0;
 let goTimer = null;
+let raceTimer = null;
 
 // ——— Ձայները ———
 let actx = null;
@@ -117,77 +119,95 @@ function updateScores() {
 
 function menu() {
   state = 'menu';
-  sT = 0; sB = 0;
+  sT = 0; sB = 0; firstT = 0; firstB = 0;
   updateScores();
-  say('Կարմիր ընդդեմ կապույտի․ ո՞վ է ավելի արագ։ Սեղմեք՝ սկսելու');
+  say('Ազդանշանից հետո ' + RACE_SECONDS + ' վայրկյան՝ ո՞վ ավելի ՇԱՏ կսեղմի։ Շուտ սեղմողը պարտվում է 😈 Սեղմեք՝ սկսելու');
 }
 
-function startRound() {
+function startMatch() {
   state = 'wait';
+  sT = 0; sB = 0; firstT = 0; firstB = 0;
+  updateScores();
   document.body.classList.remove('go');
-  say('Սպասե՛ք կանաչին… 🤫');
+  say('Սպասե՛ք ազդանշանին… 🤫');
   clearTimeout(goTimer);
   // 1.5-4 վայրկյան անկանխատեսելի սպասում. մի՛ շտապիր
   goTimer = setTimeout(() => {
-    state = 'go';
+    state = 'race';
     goTime = performance.now();
     document.body.classList.add('go');
-    say('ՀԻՄԱ՛ ⚡');
     sGo();
+    tickClock();
   }, 1500 + Math.random() * 2500);
 }
 
-function roundWon(who, reactionMs) {
-  if (who === 'top') sT++; else sB++;
-  updateScores();
+// Ժամացույցը. ամեն 0.1 վրկ թարմացնում ենք մնացած ժամանակը
+function tickClock() {
+  clearInterval(raceTimer);
+  raceTimer = setInterval(() => {
+    const left = RACE_SECONDS - (performance.now() - goTime) / 1000;
+    if (left <= 0) {
+      clearInterval(raceTimer);
+      timeUp();
+    } else {
+      say('ՍԵՂՄԻ՛Ր, ՍԵՂՄԻ՛Ր ⚡ ' + Math.ceil(left) + ' վրկ');
+    }
+  }, 100);
+}
+
+function timeUp() {
   document.body.classList.remove('go');
-  state = 'pause';
-
-  const name = who === 'top' ? 'Կարմիրը' : 'Կապույտը';
-  if (reactionMs !== undefined) {
-    say(name + ' վերցրեց միավորը՝ ' + (reactionMs / 1000).toFixed(3) + ' վրկ ⚡');
-    sPoint();
-  }
-
-  if (sT >= WIN_AT || sB >= WIN_AT) {
-    setTimeout(() => finish(sT >= WIN_AT ? 'top' : 'bottom'), 900);
+  if (sT === sB) {
+    // հավասար է՝ հաղթում է նա, ով ազդանշանից հետո ԱՌԱՋԻՆՆ էր սեղմել
+    if (firstT && firstB && firstT !== firstB) {
+      finish(firstT < firstB ? 'top' : 'bottom', 'հավասար էր, բայց նա առաջինն էր սեղմել');
+    } else {
+      state = 'end';
+      say('Ոչ-ոքի՜ ' + sT + ':' + sB + ' 😄 Սեղմեք՝ ռևանշ');
+      sPoint();
+    }
   } else {
-    setTimeout(startRound, 1600);
+    finish(sT > sB ? 'top' : 'bottom');
   }
 }
 
 function foul(who) {
-  // շտապեցիր՝ միավորը հակառակորդինն է
+  // շտապեցիր՝ միանգամից պարտվեցիր
   sFoul();
-  const name = who === 'top' ? 'Կարմիրը' : 'Կապույտը';
   clearTimeout(goTimer);
   document.body.classList.remove('go');
-  state = 'pause';
-  if (who === 'top') sB++; else sT++;
-  updateScores();
-  say(name + ' շտապե՜ց 😅 Միավորը՝ մյուսին');
-
-  if (sT >= WIN_AT || sB >= WIN_AT) {
-    setTimeout(() => finish(sT >= WIN_AT ? 'top' : 'bottom'), 900);
-  } else {
-    setTimeout(startRound, 1600);
-  }
+  const name = who === 'top' ? 'Կարմիրը' : 'Կապույտը';
+  state = 'end';
+  say(name + ' շտապե՜ց ազդանշանից առաջ ու ՊԱՐՏՎԵՑ 😅 Սեղմեք՝ նոր մենամարտ');
+  confetti();
 }
 
-function finish(winner) {
+function finish(winner, note) {
   state = 'end';
+  clearInterval(raceTimer);
   const name = winner === 'top' ? 'ԿԱՐՄԻՐԸ' : 'ԿԱՊՈՒՅՏԸ';
-  say('🏆 ' + name + ' ՀԱՂԹԵՑ ' + sT + ':' + sB + '։ Սեղմեք՝ նոր մենամարտ');
+  say('🏆 ' + name + ' ՀԱՂԹԵՑ ' + sT + ':' + sB + (note ? ' (' + note + ')' : '') + '։ Սեղմեք՝ ռևանշ');
   sWin();
   confetti();
 }
 
 function press(who) {
   initAudio();
-  if (state === 'menu' || state === 'end') { menu(); startRound(); return; }
+  if (state === 'menu' || state === 'end') { startMatch(); return; }
   if (state === 'wait') { foul(who); return; }
-  if (state === 'go') { roundWon(who, performance.now() - goTime); return; }
-  // pause՝ ոչինչ չենք անում, հանգիստ շունչ քաշեք
+  if (state === 'race') {
+    // ամեն սեղմումը հաշվում ենք
+    if (who === 'top') {
+      sT++;
+      if (!firstT) firstT = performance.now();
+      if (sT % 10 === 0) tone(700, 0.06, 'square', 0.08);   // ամեն 10-րդին՝ փոքրիկ ծիկ
+    } else {
+      sB++;
+      if (!firstB) firstB = performance.now();
+      if (sB % 10 === 0) tone(500, 0.06, 'square', 0.08);
+    }
+    updateScores();
+  }
 }
 
 topEl.addEventListener('pointerdown', (e) => { e.preventDefault(); press('top'); });
