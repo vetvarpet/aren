@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Պինգ-պոնգ 🏓</title>
+<title>Պինգ-պոնգ</title>
 <style>
   * { margin: 0; box-sizing: border-box; }
   html, body { height: 100%; overflow: hidden; }
@@ -21,7 +21,7 @@
 
 <script>
 // ——————————————————————————————————————
-//  ՊԻՆԳ-ՊՈՆԳ 🏓 — երկու հոգու համար՝ ՄԵԿ հեռախոսով
+//  ՊԻՆԳ-ՊՈՆԳ — երկու հոգու համար՝ ՄԵԿ հեռախոսով
 //  Ամեն մեկը մատով շարժում է ԻՐ ռակետկան (վերևինը՝ կարմիր, ներքևինը՝ կապույտ)։
 //  Գնդակը քո կողմից անցա՞վ — միավորը մյուսինն է։ 5 միավոր = հաղթանակ։
 // ——————————————————————————————————————
@@ -240,13 +240,16 @@ function draw() {
 }
 
 function confetti() {
-  const stuff = ['🎉', '⭐', '🏓', '💛', '🎊', '✨'];
+  const confColors = ['#ffd166', '#ff7b6b', '#6ee7b7', '#6ec5ff', '#f2a7d8', '#fdfdff'];
   for (let k = 0; k < 40; k++) {
     const s = document.createElement('span');
     s.className = 'confetti';
-    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.background = confColors[Math.floor(Math.random() * confColors.length)];
+    const cw = 6 + Math.random() * 8;   // մերթ շրջանակ, մերթ թղթի կտոր
+    s.style.width = cw + 'px';
+    s.style.height = (Math.random() < 0.4 ? cw : cw * 1.7) + 'px';
+    s.style.borderRadius = Math.random() < 0.4 ? '50%' : '2px';
     s.style.left = Math.random() * 100 + 'vw';
-    s.style.fontSize = (16 + Math.random() * 22) + 'px';
     s.style.animationDuration = (2 + Math.random() * 2) + 's';
     s.style.animationDelay = (Math.random() * 0.8) + 's';
     document.body.appendChild(s);

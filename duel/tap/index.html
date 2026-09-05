@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Մենամարտ ⚡</title>
+<title>Մենամարտ</title>
 <style>
   * { margin: 0; box-sizing: border-box; }
   html, body { height: 100%; overflow: hidden; }
@@ -63,10 +63,10 @@
 
 <script>
 // ——————————————————————————————————————
-//  ՄԵՆԱՄԱՐՏ ⚡ — խաղ երկու հոգու համար՝ ՄԵԿ հեռախոսով (Արենի կանոններով)
+//  ՄԵՆԱՄԱՐՏ — խաղ երկու հոգու համար՝ ՄԵԿ հեռախոսով (Արենի կանոններով)
 //  Ազդանշանը հնչեց → 15 վայրկյան ունեք։
 //  Ով ավելի ՇԱՏ սեղմի՝ նա հաղթում է։
-//  Ով շտապի ազդանշանից առաջ՝ միանգամից պարտվում է 😈
+//  Ով շտապի ազդանշանից առաջ՝ միանգամից պարտվում է
 // ——————————————————————————————————————
 
 const RACE_SECONDS = 15;   // սեղմելու մրցավազքի ժամանակը
@@ -76,34 +76,34 @@ let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TR = {
   hy: {
-    menu: 'Ազդանշանից հետո ' + RACE_SECONDS + ' վայրկյան՝ ո՞վ ավելի ՇԱՏ կսեղմի։ Շուտ սեղմողը պարտվում է 😈 Սեղմեք՝ սկսելու',
-    wait: 'Սպասե՛ք ազդանշանին… 🤫',
-    tap: n => 'ՍԵՂՄԻ՛Ր, ՍԵՂՄԻ՛Ր ⚡ ' + n + ' վրկ',
+    menu: 'Ազդանշանից հետո ' + RACE_SECONDS + ' վայրկյան՝ ո՞վ ավելի ՇԱՏ կսեղմի։ Շուտ սեղմողը պարտվում է Սեղմեք՝ սկսելու',
+    wait: 'Սպասե՛ք ազդանշանին…',
+    tap: n => 'ՍԵՂՄԻ՛Ր, ՍԵՂՄԻ՛Ր ' + n + ' վրկ',
     red: 'Կարմիրը', blue: 'Կապույտը', RED: 'ԿԱՐՄԻՐԸ', BLUE: 'ԿԱՊՈՒՅՏԸ',
-    foul: n => n + ' շտապե՜ց ազդանշանից առաջ ու ՊԱՐՏՎԵՑ 😅 Սեղմեք՝ նոր մենամարտ',
-    draw: sc => 'Ոչ-ոքի՜ ' + sc + ' 😄 Սեղմեք՝ ռևանշ',
+    foul: n => n + ' շտապե՜ց ազդանշանից առաջ ու ՊԱՐՏՎԵՑ Սեղմեք՝ նոր մենամարտ',
+    draw: sc => 'Ոչ-ոքի՜ ' + sc + ' Սեղմեք՝ ռևանշ',
     tieNote: 'հավասար էր, բայց նա առաջինն էր սեղմել',
-    win: (n, sc, note) => '🏆 ' + n + ' ՀԱՂԹԵՑ ' + sc + (note ? ' (' + note + ')' : '') + '։ Սեղմեք՝ ռևանշ',
+    win: (n, sc, note) => '' + n + ' ՀԱՂԹԵՑ ' + sc + (note ? ' (' + note + ')' : '') + '։ Սեղմեք՝ ռևանշ',
   },
   ru: {
-    menu: 'После сигнала ' + RACE_SECONDS + ' секунд: кто нажмёт БОЛЬШЕ? Поспешишь — проиграешь 😈 Нажмите, чтобы начать',
-    wait: 'Ждите сигнала… 🤫',
-    tap: n => 'ЖМИ, ЖМИ ⚡ ' + n + ' сек',
+    menu: 'После сигнала ' + RACE_SECONDS + ' секунд: кто нажмёт БОЛЬШЕ? Поспешишь — проиграешь Нажмите, чтобы начать',
+    wait: 'Ждите сигнала…',
+    tap: n => 'ЖМИ, ЖМИ ' + n + ' сек',
     red: 'Красный', blue: 'Синий', RED: 'КРАСНЫЙ', BLUE: 'СИНИЙ',
-    foul: n => n + ' поспешил до сигнала и ПРОИГРАЛ 😅 Нажмите — новая дуэль',
-    draw: sc => 'Ничья! ' + sc + ' 😄 Нажмите — реванш',
+    foul: n => n + ' поспешил до сигнала и ПРОИГРАЛ Нажмите — новая дуэль',
+    draw: sc => 'Ничья! ' + sc + ' Нажмите — реванш',
     tieNote: 'было поровну, но он нажал первым',
-    win: (n, sc, note) => '🏆 ' + n + ' ПОБЕДИЛ ' + sc + (note ? ' (' + note + ')' : '') + '! Нажмите — реванш',
+    win: (n, sc, note) => '' + n + ' ПОБЕДИЛ ' + sc + (note ? ' (' + note + ')' : '') + '! Нажмите — реванш',
   },
   en: {
-    menu: 'After the signal you get ' + RACE_SECONDS + ' seconds: who taps MORE? Tap early and you lose 😈 Tap to start',
-    wait: 'Wait for the signal… 🤫',
-    tap: n => 'TAP, TAP ⚡ ' + n + ' s',
+    menu: 'After the signal you get ' + RACE_SECONDS + ' seconds: who taps MORE? Tap early and you lose Tap to start',
+    wait: 'Wait for the signal…',
+    tap: n => 'TAP, TAP ' + n + ' s',
     red: 'Red', blue: 'Blue', RED: 'RED', BLUE: 'BLUE',
-    foul: n => n + ' jumped the signal and LOST 😅 Tap for a new duel',
-    draw: sc => 'It’s a draw! ' + sc + ' 😄 Tap for a rematch',
+    foul: n => n + ' jumped the signal and LOST Tap for a new duel',
+    draw: sc => 'It’s a draw! ' + sc + ' Tap for a rematch',
     tieNote: 'it was even, but they tapped first',
-    win: (n, sc, note) => '🏆 ' + n + ' WINS ' + sc + (note ? ' (' + note + ')' : '') + '! Tap for a rematch',
+    win: (n, sc, note) => '' + n + ' WINS ' + sc + (note ? ' (' + note + ')' : '') + '! Tap for a rematch',
   },
 };
 const T = TR[ggLang] || TR.hy;
@@ -265,13 +265,16 @@ document.addEventListener('touchend', (e) => {
 }, { passive: false });
 
 function confetti() {
-  const stuff = ['🎉', '⭐', '⚡', '💛', '🎊', '✨'];
+  const confColors = ['#ffd166', '#ff7b6b', '#6ee7b7', '#6ec5ff', '#f2a7d8', '#fdfdff'];
   for (let k = 0; k < 40; k++) {
     const s = document.createElement('span');
     s.className = 'confetti';
-    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.background = confColors[Math.floor(Math.random() * confColors.length)];
+    const cw = 6 + Math.random() * 8;   // մերթ շրջանակ, մերթ թղթի կտոր
+    s.style.width = cw + 'px';
+    s.style.height = (Math.random() < 0.4 ? cw : cw * 1.7) + 'px';
+    s.style.borderRadius = Math.random() < 0.4 ? '50%' : '2px';
     s.style.left = Math.random() * 100 + 'vw';
-    s.style.fontSize = (16 + Math.random() * 22) + 'px';
     s.style.animationDuration = (2 + Math.random() * 2) + 's';
     s.style.animationDelay = (Math.random() * 0.8) + 's';
     document.body.appendChild(s);

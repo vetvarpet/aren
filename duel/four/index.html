@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Չորսը շարքով 🔴🟡</title>
+<title>Չորսը շարքով</title>
 <style>
   * { margin: 0; box-sizing: border-box; }
   html, body { height: 100%; }
@@ -22,6 +22,16 @@
   }
   h1 { font-size: clamp(1.05rem, 4vw, 1.5rem); color: #ffd76e; }
   .scores { display: flex; gap: 20px; font-size: 1rem; }
+  /* Խաղաքարի փոքրիկ կետը՝ գրառումների համար (էմոջիի փոխարեն) */
+  .dot {
+    display: inline-block;
+    width: 0.85em;
+    height: 0.85em;
+    border-radius: 50%;
+    vertical-align: -0.08em;
+  }
+  .dot.r { background: radial-gradient(circle at 35% 30%, #ff8a78, #e63946 70%); }
+  .dot.y { background: radial-gradient(circle at 35% 30%, #ffe9a8, #f4c50f 70%); }
   #status { font-size: 1.05rem; color: #ffd76e; min-height: 1.4em; text-align: center; }
 
   .frame {
@@ -78,15 +88,15 @@
 
 <a href="../../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
 
-<h1>Չորսը շարքով 🔴🟡</h1>
-<div class="scores"><span>🔴 <b id="sr">0</b></span><span>🟡 <b id="sy">0</b></span></div>
+<h1>Չորսը շարքով</h1>
+<div class="scores"><span><span class="dot r"></span> <b id="sr">0</b></span><span><span class="dot y"></span> <b id="sy">0</b></span></div>
 <div class="frame"><div class="board" id="board"></div></div>
 <div id="status"></div>
-<button id="restart">🔄 Նոր խաղ</button>
+<button id="restart">Նոր խաղ</button>
 
 <script>
 // ——————————————————————————————————————
-//  ՉՈՐՍԸ ՇԱՐՔՈՎ 🔴🟡 — իքս-զրոյի մեծ եղբայրը
+//  ՉՈՐՍԸ ՇԱՐՔՈՎ— իքս-զրոյի մեծ եղբայրը
 //  Սեղմիր սյան վրա՝ խաղաքարը ընկնում է ներքև։
 //  Ով առաջինը 4-ը շարի (ցանկացած ուղղությամբ)՝ հաղթեց։
 // ——————————————————————————————————————
@@ -97,13 +107,17 @@ const COLS = 7, ROWS = 6;
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { h1: 'Չորսը շարքով 🔴🟡', turn: s => 'Հերթը՝ ' + s, win: s => s + ' ՀԱՂԹԵՑ 🎉', draw: 'Ոչ-ոքի՜ Դաշտը լցվեց 🤝', again: '🔄 Նոր խաղ' },
-  ru: { h1: 'Четыре в ряд 🔴🟡', turn: s => 'Ход: ' + s, win: s => s + ' ПОБЕДИЛ 🎉', draw: 'Ничья! Поле заполнено 🤝', again: '🔄 Новая игра' },
-  en: { h1: 'Connect Four 🔴🟡', turn: s => 'Turn: ' + s, win: s => s + ' WINS 🎉', draw: 'Draw! The board is full 🤝', again: '🔄 New game' },
+  hy: { h1: 'Չորսը շարքով', turn: s => 'Հերթը՝ ' + s, win: s => s + ' ՀԱՂԹԵՑ', draw: 'Ոչ-ոքի՜ Դաշտը լցվեց', again: 'Նոր խաղ' },
+  ru: { h1: 'Четыре в ряд', turn: s => 'Ход: ' + s, win: s => s + ' ПОБЕДИЛ', draw: 'Ничья! Поле заполнено', again: 'Новая игра' },
+  en: { h1: 'Connect Four', turn: s => 'Turn: ' + s, win: s => s + ' WINS', draw: 'Draw! The board is full', again: 'New game' },
 };
 const T = TRL[ggLang] || TRL.hy;
 document.querySelector('h1').textContent = T.h1;
 document.getElementById('restart').textContent = T.again;
+
+// Կարմիր ու դեղին կետերը՝ «հերթը» գրառումների համար
+const DOT_R = '<span class="dot r"></span>';
+const DOT_Y = '<span class="dot y"></span>';
 
 const board = document.getElementById('board');
 const statusEl = document.getElementById('status');
@@ -150,7 +164,7 @@ function newGame() {
     s.addEventListener('pointerdown', (e) => { e.preventDefault(); drop(col); });
     board.appendChild(s);
   }
-  statusEl.textContent = T.turn('🔴');
+  statusEl.innerHTML = T.turn(DOT_R);
 }
 
 function drop(c) {
@@ -170,7 +184,7 @@ function drop(c) {
     if (turn === 'r') sr++; else sy++;
     document.getElementById('sr').textContent = sr;
     document.getElementById('sy').textContent = sy;
-    statusEl.textContent = T.win(turn === 'r' ? '🔴' : '🟡');
+    statusEl.innerHTML = T.win(turn === 'r' ? DOT_R : DOT_Y);
     sWin();
     confetti();
     return;
@@ -182,7 +196,7 @@ function drop(c) {
     return;
   }
   turn = turn === 'r' ? 'y' : 'r';
-  statusEl.textContent = T.turn(turn === 'r' ? '🔴' : '🟡');
+  statusEl.innerHTML = T.turn(turn === 'r' ? DOT_R : DOT_Y);
 }
 
 // Ստուգում ենք 4 ուղղություն՝ նոր դրված քարից երկու կողմ հաշվելով
@@ -214,13 +228,16 @@ document.addEventListener('touchend', (e) => {
 }, { passive: false });
 
 function confetti() {
-  const stuff = ['🎉', '⭐', '🔴', '🟡', '🎊', '✨'];
+  const confColors = ['#ffd166', '#ff7b6b', '#6ee7b7', '#6ec5ff', '#f2a7d8', '#fdfdff'];
   for (let k = 0; k < 40; k++) {
     const s = document.createElement('span');
     s.className = 'confetti';
-    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.background = confColors[Math.floor(Math.random() * confColors.length)];
+    const cw = 6 + Math.random() * 8;   // մերթ շրջանակ, մերթ թղթի կտոր
+    s.style.width = cw + 'px';
+    s.style.height = (Math.random() < 0.4 ? cw : cw * 1.7) + 'px';
+    s.style.borderRadius = Math.random() < 0.4 ? '50%' : '2px';
     s.style.left = Math.random() * 100 + 'vw';
-    s.style.fontSize = (16 + Math.random() * 22) + 'px';
     s.style.animationDuration = (2 + Math.random() * 2) + 's';
     s.style.animationDelay = (Math.random() * 0.8) + 's';
     document.body.appendChild(s);

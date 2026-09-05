@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Հիշողության խաղ 🧠</title>
+<title>Հիշողության խաղ</title>
 <style>
   * { margin: 0; box-sizing: border-box; }
   html, body { height: 100%; }
@@ -102,15 +102,15 @@
 </style>
 
 <a href="../../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
-<h1>Զույգեր 🃏</h1>
+<h1>Զույգեր</h1>
 <div class="stats">Փորձեր՝ <b id="moves">0</b><span id="bestBox" hidden>Ռեկորդ՝ <b id="best"></b></span></div>
 <div class="board" id="board"></div>
 <div id="msg"></div>
-<button id="restart">🔄 Նոր խաղ</button>
+<button id="restart">Նոր խաղ</button>
 
 <script>
 // ——————————————————————————————————————
-//  ՀԻՇՈՂՈՒԹՅԱՆ ԽԱՂ 🧠
+//  ՀԻՇՈՂՈՒԹՅԱՆ ԽԱՂ
 //  16 քարտ, 8 զույգ։ Շուռ տուր երկուսը. եթե նույնն են՝ մնում են բաց։
 //  Փորձիր գտնել բոլորը ամենաքիչ փորձով։
 // ——————————————————————————————————————
@@ -120,9 +120,9 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { h1: 'Զույգեր 🃏', tries: 'Փորձեր՝', rec: 'Ռեկորդ՝', win: n => '🏆 Գտար բոլորը ' + n + ' փորձով', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ 🎉', again: '🔄 Նոր խաղ' },
-  ru: { h1: 'Пары 🃏', tries: 'Попытки:', rec: 'Рекорд:', win: n => '🏆 Нашёл все за ' + n + ' попыток', newRec: ' — НОВЫЙ РЕКОРД 🎉', again: '🔄 Новая игра' },
-  en: { h1: 'Pairs 🃏', tries: 'Tries:', rec: 'Best:', win: n => '🏆 You found them all in ' + n + ' tries', newRec: ' — NEW RECORD 🎉', again: '🔄 New game' },
+  hy: { h1: 'Զույգեր', tries: 'Փորձեր՝', rec: 'Ռեկորդ՝', win: n => 'Գտար բոլորը ' + n + ' փորձով', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ', again: 'Նոր խաղ' },
+  ru: { h1: 'Пары', tries: 'Попытки:', rec: 'Рекорд:', win: n => 'Нашёл все за ' + n + ' попыток', newRec: ' — НОВЫЙ РЕКОРД', again: 'Новая игра' },
+  en: { h1: 'Pairs', tries: 'Tries:', rec: 'Best:', win: n => 'You found them all in ' + n + ' tries', newRec: ' — NEW RECORD', again: 'New game' },
 };
 const T = TRL[ggLang] || TRL.hy;
 if (ggLang !== 'hy') {
@@ -239,7 +239,7 @@ function flip(card) {
   const [a, b] = open;
 
   if (a.dataset.pic === b.dataset.pic) {
-    // Զու՜յգ 🎉
+    // Զու՜յգ
     open = [];
     setTimeout(() => {
       a.classList.replace('open', 'done');
@@ -276,13 +276,16 @@ function win() {
 }
 
 function confetti() {
-  const stuff = ['🎉', '⭐', '🧠', '💛', '🎊', '✨'];
+  const confColors = ['#ffd166', '#ff7b6b', '#6ee7b7', '#6ec5ff', '#f2a7d8', '#fdfdff'];
   for (let k = 0; k < 40; k++) {
     const s = document.createElement('span');
     s.className = 'confetti';
-    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.background = confColors[Math.floor(Math.random() * confColors.length)];
+    const cw = 6 + Math.random() * 8;   // մերթ շրջանակ, մերթ թղթի կտոր
+    s.style.width = cw + 'px';
+    s.style.height = (Math.random() < 0.4 ? cw : cw * 1.7) + 'px';
+    s.style.borderRadius = Math.random() < 0.4 ? '50%' : '2px';
     s.style.left = Math.random() * 100 + 'vw';
-    s.style.fontSize = (16 + Math.random() * 22) + 'px';
     s.style.animationDuration = (2 + Math.random() * 2) + 's';
     s.style.animationDelay = (Math.random() * 0.8) + 's';
     document.body.appendChild(s);

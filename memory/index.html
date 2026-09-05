@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Հիշողության խաղեր 🧠</title>
+<title>Հիշողության խաղեր</title>
 <style>
   * { margin: 0; box-sizing: border-box; }
   html, body { height: 100%; }
@@ -70,7 +70,7 @@
 
 <nav><a href="../">← Golden Games</a></nav>
 
-<h1>Հիշողության խաղեր 🧠</h1>
+<h1>Հիշողության խաղեր</h1>
 <p class="sub">Երեք խաղ՝ ուղեղդ մարզելու համար։ Ընտրի՛ր։</p>
 
 <div class="games">
@@ -110,8 +110,8 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  ru: { h1: 'Игры на память 🧠', sub: 'Три игры для тренировки мозга. Выбирай!', g1: ['Пары', '16 карт, 8 пар: найди все за меньшее число попыток'], g2: ['Повтори за мной', '4 цвета, 4 звука: повторяй растущую цепочку'], g3: ['Охотник за числами', 'Числа прячутся: нажимай по порядку 1, 2, 3…'] },
-  en: { h1: 'Memory Games 🧠', sub: 'Three games to train your brain. Pick one!', g1: ['Pairs', '16 cards, 8 pairs: find them all in the fewest tries'], g2: ['Repeat After Me', '4 colors, 4 sounds: repeat the growing sequence'], g3: ['Number Hunter', 'The numbers hide: tap them in order 1, 2, 3…'] },
+  ru: { h1: 'Игры на память', sub: 'Три игры для тренировки мозга. Выбирай!', g1: ['Пары', '16 карт, 8 пар: найди все за меньшее число попыток'], g2: ['Повтори за мной', '4 цвета, 4 звука: повторяй растущую цепочку'], g3: ['Охотник за числами', 'Числа прячутся: нажимай по порядку 1, 2, 3…'] },
+  en: { h1: 'Memory Games', sub: 'Three games to train your brain. Pick one!', g1: ['Pairs', '16 cards, 8 pairs: find them all in the fewest tries'], g2: ['Repeat After Me', '4 colors, 4 sounds: repeat the growing sequence'], g3: ['Number Hunter', 'The numbers hide: tap them in order 1, 2, 3…'] },
 };
 const T = TRL[ggLang];
 if (T) {

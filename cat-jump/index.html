@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Կատվիկ🐱</title>
+<title>Կատվիկ</title>
 <style>
   /* ——— Խաղի գույները ——— */
   :root {
@@ -44,9 +44,9 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { score: 'Միավոր՝ ', best: 'Ռեկորդ՝ ', title: 'Կատուն թռչում է 🐱', sub: 'Դիպչիր՝ թռչելու · Ագռավ տեսար՝ ՄԻ՛ թռչիր', ouch: 'Ա՜խ, բախվեցիր 😿', overSub: n => 'Հավաքեցիր ' + n + ' միավոր · Դիպչիր՝ նորից խաղալու' },
-  ru: { score: 'Очки: ', best: 'Рекорд: ', title: 'Котик прыгает 🐱', sub: 'Нажми — прыжок · Увидел ворону — НЕ прыгай', ouch: 'Ой, столкнулся 😿', overSub: n => 'Набрал ' + n + ' очков · Нажми, чтобы играть снова' },
-  en: { score: 'Score: ', best: 'Best: ', title: 'The Cat Jumps 🐱', sub: 'Tap to jump · See a crow — DON’T jump', ouch: 'Ouch, you crashed 😿', overSub: n => 'You got ' + n + ' points · Tap to play again' },
+  hy: { score: 'Միավոր՝ ', best: 'Ռեկորդ՝ ', title: 'Կատուն թռչում է', sub: 'Դիպչիր՝ թռչելու · Ագռավ տեսար՝ ՄԻ՛ թռչիր', ouch: 'Ա՜խ, բախվեցիր', overSub: n => 'Հավաքեցիր ' + n + ' միավոր · Դիպչիր՝ նորից խաղալու' },
+  ru: { score: 'Очки: ', best: 'Рекорд: ', title: 'Котик прыгает', sub: 'Нажми — прыжок · Увидел ворону — НЕ прыгай', ouch: 'Ой, столкнулся', overSub: n => 'Набрал ' + n + ' очков · Нажми, чтобы играть снова' },
+  en: { score: 'Score: ', best: 'Best: ', title: 'The Cat Jumps', sub: 'Tap to jump · See a crow — DON’T jump', ouch: 'Ouch, you crashed', overSub: n => 'You got ' + n + ' points · Tap to play again' },
 };
 const T = TRL[ggLang] || TRL.hy;
 const canvas = document.getElementById('game');
@@ -77,10 +77,10 @@ let best = Number(localStorage.getItem('cat-best') || 0);
 let speed = 5;                // ինչ արագ են գալիս արկղերը
 let running = false;          // խաղը գնո՞ւմ է
 let gameOver = false;
-let won = false;              // հասա՞ր 100-ի → հաղթանակ 🏆
+let won = false;              // հասա՞ր 100-ի → հաղթանակ
 let confetti = [];            // տոնական թղթիկները հաղթելիս
 const WIN_AT = 100;           // այսքան միավորից խաղը հաղթված է
-let lives = 3;                // ❤️❤️❤️ երեք կյանք
+let lives = 3;                //երեք կյանք
 let invincible = 0;           // հարվածից հետո մի պահ անխոցելի ես (թարթում ես)
 let frame = 0;
 
@@ -566,12 +566,42 @@ function drawScore() {
   ctx.textAlign = 'right';
   ctx.fillText(T.best + best, W - 20, 36);
 
-  // սրտերը՝ վերևի մեջտեղում. կարմիրը՝ ողջ կյանք, սևը՝ կորցրած
-  ctx.textAlign = 'center';
-  ctx.font = '22px Arial, sans-serif';
-  let hearts = '';
-  for (let i = 0; i < 3; i++) hearts += i < lives ? '❤️' : '🖤';
-  ctx.fillText(hearts, W / 2, 36);
+  // սրտերը՝ վերևի մեջտեղում. կարմիրը՝ ողջ կյանք, մուգը՝ կորցրած
+  // (նկարում ենք ձեռքով, էմոջի չենք ուզում)
+  for (let i = 0; i < 3; i++) {
+    drawHeart(W / 2 + (i - 1) * 30, 28, 10, i < lives ? '#e63946' : 'rgba(70, 70, 95, 0.5)');
+  }
+}
+
+// Սրտիկ՝ երկու կորով
+function drawHeart(x, y, r, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, r * 0.95);
+  ctx.bezierCurveTo(-r * 1.5, 0, -r * 0.9, -r * 1.05, 0, -r * 0.35);
+  ctx.bezierCurveTo(r * 0.9, -r * 1.05, r * 1.5, 0, 0, r * 0.95);
+  ctx.fill();
+  ctx.restore();
+}
+
+// Ոսկե գավաթ հաղթանակի համար (նկարում ենք ձեռքով)
+function drawTrophy(x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = '#ffd166';
+  ctx.beginPath();
+  ctx.moveTo(-26, -30); ctx.lineTo(26, -30);
+  ctx.quadraticCurveTo(22, 8, 0, 14);
+  ctx.quadraticCurveTo(-22, 8, -26, -30);
+  ctx.fill();
+  ctx.strokeStyle = '#ffd166'; ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.arc(-30, -16, 10, Math.PI * 0.5, Math.PI * 1.5); ctx.stroke();
+  ctx.beginPath(); ctx.arc(30, -16, 10, -Math.PI * 0.5, Math.PI * 0.5); ctx.stroke();
+  ctx.fillRect(-5, 14, 10, 12);
+  ctx.fillRect(-18, 26, 36, 8);
+  ctx.restore();
 }
 
 // Հաղորդագրության վահանակը էկրանի մեջտեղում
@@ -604,7 +634,7 @@ function update() {
   const nightTarget = isNightNow() ? 1 : 0;
   night += (nightTarget - night) * 0.02;
 
-  // Հասա՞ր 100-ի → ՀԱՂԹԱՆԱԿ 🏆
+  // Հասա՞ր 100-ի → ՀԱՂԹԱՆԱԿ
   if (!won && score >= WIN_AT) {
     won = true;
     running = false;
@@ -655,7 +685,7 @@ function update() {
     const last = boxes[boxes.length - 1];
     if (!last || last.x < W - 260 - Math.random() * 220) {
       // Ագռավները միայն ԳԻՇԵՐՆ են դուրս գալիս ու ԲԱՐՁՐԻՑ են թռչում.
-      // թռար՝ կխփվես նրան, տեղում մնացիր՝ կանցնի գլխիդ վրայով 😉
+      // թռար՝ կխփվես նրան, տեղում մնացիր՝ կանցնի գլխիդ վրայով
       if (night > 0.5 && Math.random() < 0.3) {
         boxes.push({ type: 'bird', x: W + 60, y: GROUND - 150, w: 60, h: 45, passed: false });
       } else {
@@ -686,7 +716,7 @@ function update() {
         const bonus = f.gold ? 6 : 3;
         score += bonus;
         sound(f.gold ? 'gold' : 'fish');
-        popups.push({ x: f.x, y: f.y - 15, life: 50, text: '+' + bonus + (f.gold ? ' 🌟' : ' 🐟') });
+        popups.push({ x: f.x, y: f.y - 15, life: 50, text: '+' + bonus + (f.gold ? '!' : '') });
         if (score > best) {
           best = score;
           localStorage.setItem('cat-best', best);
@@ -768,9 +798,7 @@ function update() {
     }
 
     // մրցանակը՝ մեծ գավաթ, որ վեր-վար է ցատկոտում. առանց որևէ գրության
-    ctx.font = (90 + Math.sin(frame * 0.1) * 8) + 'px Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('🏆', W / 2, H / 2 + 20);
+    drawTrophy(W / 2, H / 2 + Math.sin(frame * 0.1) * 8);
   }
 
   requestAnimationFrame(update);

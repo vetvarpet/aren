@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Քաղաքի վարորդը 🚗</title>
+<title>Քաղաքի վարորդը</title>
 <style>
   * { margin: 0; box-sizing: border-box; }
   html, body { height: 100%; }
@@ -62,22 +62,36 @@
   }
   .g1 .ico { background: linear-gradient(135deg, #2f855a, #9ae6b4); }
   .g2 .ico { background: linear-gradient(135deg, #7a1f1f, #e8e8e8); }
+  .g .ico svg { width: 78%; height: 78%; display: block; }
   .g h2 { font-size: 1.05rem; }
   .g p { color: #9a9ec7; font-size: 0.85rem; margin-top: 4px; line-height: 1.4; }
 </style>
 
 <nav><a href="../">← Golden Games</a></nav>
 
-<h1>Քաղաքի վարորդը 🚗</h1>
+<h1>Քաղաքի վարորդը</h1>
 <p class="sub">Ընտրի՛ր՝ ինչ ես ուզում քշել այսօր։</p>
 
 <div class="games">
   <a class="g g1" href="./city/">
-    <div class="ico">🍕</div>
-    <div><h2>Քաղաք</h2><p>Պիցցայի առաքումներ, ոստիկան, խանութ ու ոսկե մեքենա 👑</p></div>
+    <div class="ico"><svg viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M9 10 Q24 4 39 10 L37 17 Q24 12 11 17 Z" fill="#c96f2e"/>
+      <path d="M11 17 Q24 12 37 17 L24 43 Z" fill="#f6c453"/>
+      <circle cx="20" cy="22" r="3" fill="#e63946"/>
+      <circle cx="29" cy="23" r="3" fill="#e63946"/>
+      <circle cx="24" cy="31" r="3" fill="#e63946"/>
+    </svg></div>
+    <div><h2>Քաղաք</h2><p>Պիցցայի առաքումներ, ոստիկան, խանութ ու ոսկե մեքենա</p></div>
   </a>
   <a class="g g2" href="./race/">
-    <div class="ico">🏁</div>
+    <div class="ico"><svg viewBox="0 0 48 48" aria-hidden="true">
+      <rect x="11" y="5" width="3.5" height="38" rx="1.7" fill="#5a4632"/>
+      <path d="M14.5 7 Q22.5 4 30.5 7 T46.5 7 L44.5 23 Q36.5 20 28.5 23 T14.5 23 Z" fill="#ffffff" stroke="#232733" stroke-width="1.5"/>
+      <g fill="#232733">
+        <rect x="16" y="8.5" width="7" height="6.5"/><rect x="30" y="8.5" width="7" height="6.5"/>
+        <rect x="23" y="15" width="7" height="6.5"/><rect x="37" y="15" width="6" height="6.5"/>
+      </g>
+    </svg></div>
     <div><h2>Մրցարշավ</h2><p>10 մակարդակ, դու ես գազ տալիս, յուղ ու պատնեշներ ճանապարհին</p></div>
   </a>
 </div>
@@ -88,8 +102,8 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  ru: { h1: 'Городской водитель 🚗', sub: 'Выбери, что хочешь водить сегодня.', g1: ['Город', 'Доставка пиццы, полиция, магазин и золотая машина 👑'], g2: ['Гонка', '10 уровней, газ жмёшь ты, на дороге масло и барьеры'] },
-  en: { h1: 'City Driver 🚗', sub: 'Choose what you want to drive today.', g1: ['City', 'Pizza deliveries, police, the shop and the golden car 👑'], g2: ['Race', '10 levels, you control the gas, oil and barriers on the road'] },
+  ru: { h1: 'Городской водитель', sub: 'Выбери, что хочешь водить сегодня.', g1: ['Город', 'Доставка пиццы, полиция, магазин и золотая машина'], g2: ['Гонка', '10 уровней, газ жмёшь ты, на дороге масло и барьеры'] },
+  en: { h1: 'City Driver', sub: 'Choose what you want to drive today.', g1: ['City', 'Pizza deliveries, police, the shop and the golden car'], g2: ['Race', '10 levels, you control the gas, oil and barriers on the road'] },
 };
 const T = TRL[ggLang];
 if (T) {
