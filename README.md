@@ -17,7 +17,7 @@ and iterating on the code together with Claude, one change at a time.
 | [`fishing`](./fishing/) | 🎣 Ձկնորսություն | 60 seconds of fishing: golden fish +5, old boot 0 |
 | [`maze`](./maze/) | 🌀 Լաբիրինթոս | 100 levels of mazes — the ball follows your finger, chiptune music speeds up as you go |
 | [`duel`](./duel/) | 👥 Երկուսով խաղեր | Seven two-player games on one phone: tap duel, ping-pong, math race, tic-tac-toe, tug of war, connect four and target hunt |
-| [`tower`](./tower/) | 🏗️ Աշտարակ | Stack the swinging blocks: land off-center and the edge gets sliced off, the tower narrows |
+| [`tower`](./tower/) | 🏗️ Golden Tower | Stack the swinging blocks: land off-center and the edge gets sliced off, the tower narrows |
 | [`moles`](./moles/) | 🦔 Խլուրդներ | Whack-a-mole: gold moles are +3, dynamite moles are −5, 30 seconds on the clock |
 
 Every project is a single self-contained `index.html` — no frameworks, no
