@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Իքս-զրո ❌⭕</title>
+<title>Իքս-զրո</title>
 <style>
   * { margin: 0; box-sizing: border-box; }
   html, body { height: 100%; }
@@ -78,15 +78,15 @@
 
 <a href="../../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
 
-<h1>Իքս-զրո ❌⭕</h1>
-<div class="scores"><span>❌ <b class="x" id="sx">0</b></span><span>⭕ <b class="o" id="so">0</b></span></div>
+<h1>Իքս-զրո</h1>
+<div class="scores"><span><b class="x">X</b> <b class="x" id="sx">0</b></span><span><b class="o">O</b> <b class="o" id="so">0</b></span></div>
 <div class="board" id="board"></div>
 <div id="status"></div>
-<button id="restart">🔄 Նոր խաղ</button>
+<button id="restart">Նոր խաղ</button>
 
 <script>
 // ——————————————————————————————————————
-//  ԻՔՍ-ԶՐՈ ❌⭕ — դասականը երկու հոգու համար
+//  ԻՔՍ-ԶՐՈ— դասականը երկու հոգու համար
 //  Հերթով դնում եք նշաններ. ով երեքը շարի՝ հաղթեց։
 // ——————————————————————————————————————
 
@@ -94,9 +94,9 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { h1: 'Իքս-զրո ❌⭕', turn: s => 'Հերթը՝ ' + s, win: s => s + ' ՀԱՂԹԵՑ 🎉', draw: 'Ոչ-ոքի՜ 🤝', again: '🔄 Նոր խաղ' },
-  ru: { h1: 'Крестики-нолики ❌⭕', turn: s => 'Ход: ' + s, win: s => s + ' ПОБЕДИЛ 🎉', draw: 'Ничья! 🤝', again: '🔄 Новая игра' },
-  en: { h1: 'Tic-Tac-Toe ❌⭕', turn: s => 'Turn: ' + s, win: s => s + ' WINS 🎉', draw: 'It’s a draw! 🤝', again: '🔄 New game' },
+  hy: { h1: 'Իքս-զրո', turn: s => 'Հերթը՝ ' + s, win: s => s + ' ՀԱՂԹԵՑ', draw: 'Ոչ-ոքի՜', again: 'Նոր խաղ' },
+  ru: { h1: 'Крестики-нолики', turn: s => 'Ход: ' + s, win: s => s + ' ПОБЕДИЛ', draw: 'Ничья!', again: 'Новая игра' },
+  en: { h1: 'Tic-Tac-Toe', turn: s => 'Turn: ' + s, win: s => s + ' WINS', draw: 'It’s a draw!', again: 'New game' },
 };
 const T = TRL[ggLang] || TRL.hy;
 document.querySelector('h1').textContent = T.h1;
@@ -149,14 +149,14 @@ function newGame() {
     c.addEventListener('pointerdown', (e) => { e.preventDefault(); tap(i, c); });
     board.appendChild(c);
   }
-  statusEl.textContent = T.turn('❌');
+  statusEl.textContent = T.turn('X');
 }
 
 function tap(i, el) {
   initAudio();
   if (over || cells[i]) return;
   cells[i] = turn;
-  el.textContent = turn === 'x' ? '❌' : '⭕';
+  el.textContent = turn === 'x' ? 'X' : 'O';
   el.classList.add(turn);
   (turn === 'x' ? sX : sO)();
 
@@ -168,7 +168,7 @@ function tap(i, el) {
       if (turn === 'x') sx++; else so++;
       document.getElementById('sx').textContent = sx;
       document.getElementById('so').textContent = so;
-      statusEl.textContent = T.win(turn === 'x' ? '❌' : '⭕');
+      statusEl.textContent = T.win(turn === 'x' ? 'X' : 'O');
       sWin();
       confetti();
       return;
@@ -182,7 +182,7 @@ function tap(i, el) {
     return;
   }
   turn = turn === 'x' ? 'o' : 'x';
-  statusEl.textContent = T.turn(turn === 'x' ? '❌' : '⭕');
+  statusEl.textContent = T.turn(turn === 'x' ? 'X' : 'O');
 }
 
 document.getElementById('restart').addEventListener('click', newGame);
@@ -196,13 +196,16 @@ document.addEventListener('touchend', (e) => {
 }, { passive: false });
 
 function confetti() {
-  const stuff = ['🎉', '⭐', '❌', '⭕', '🎊', '✨'];
+  const confColors = ['#ffd166', '#ff7b6b', '#6ee7b7', '#6ec5ff', '#f2a7d8', '#fdfdff'];
   for (let k = 0; k < 40; k++) {
     const s = document.createElement('span');
     s.className = 'confetti';
-    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.background = confColors[Math.floor(Math.random() * confColors.length)];
+    const cw = 6 + Math.random() * 8;   // մերթ շրջանակ, մերթ թղթի կտոր
+    s.style.width = cw + 'px';
+    s.style.height = (Math.random() < 0.4 ? cw : cw * 1.7) + 'px';
+    s.style.borderRadius = Math.random() < 0.4 ? '50%' : '2px';
     s.style.left = Math.random() * 100 + 'vw';
-    s.style.fontSize = (16 + Math.random() * 22) + 'px';
     s.style.animationDuration = (2 + Math.random() * 2) + 's';
     s.style.animationDelay = (Math.random() * 0.8) + 's';
     document.body.appendChild(s);
