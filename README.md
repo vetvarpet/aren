@@ -15,7 +15,7 @@ and iterating on the code together with Claude, one change at a time.
 | [`rocket`](./rocket/) | 🚀 Հրթիռը տիեզերքում | Space flyer: catch stars, dodge spinning asteroids, 3 lives, best score saved |
 | [`memory`](./memory/) | 🧠 Հիշողության խաղեր | Three memory games in one: pairs, Simon-style repeat-after-me, and number hunter |
 | [`fishing`](./fishing/) | 🎣 Ձկնորսություն | 60 seconds of fishing: golden fish +5, old boot 0 |
-| [`maze`](./maze/) | 🌀 Լաբիրինթոս | 100 levels of mazes — the ball follows your finger, chiptune music speeds up as you go |
+| [`maze`](./maze/) | 🌀 Golden Maze | 100 levels of mazes — the ball follows your finger, chiptune music speeds up as you go |
 | [`duel`](./duel/) | 👥 Երկուսով խաղեր | Seven two-player games on one phone: tap duel, ping-pong, math race, tic-tac-toe, tug of war, connect four and target hunt |
 | [`tower`](./tower/) | 🏗️ Golden Tower | Stack the swinging blocks: land off-center and the edge gets sliced off, the tower narrows |
 | [`moles`](./moles/) | 🦔 Golden Moles | Whack-a-mole: gold moles are +3, dynamite moles are −5, 30 seconds on the clock |
