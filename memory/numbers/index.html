@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Թվերի որսորդ</title>
+<title>Թվերի որսորդ 🔢</title>
 <style>
   * { margin: 0; box-sizing: border-box; }
   html, body { height: 100%; }
@@ -79,7 +79,7 @@
 </style>
 
 <a href="../../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
-<h1>Թվերի որսորդ</h1>
+<h1>Թվերի որսորդ 🔢</h1>
 <div class="stats">Մակարդակ՝ <b id="level">–</b><span>Ռեկորդ՝ <b id="best">0</b></span></div>
 <div id="field"></div>
 <div id="status">Հիշիր թվերի տեղերը, հետո սեղմիր հերթով՝ 1, 2, 3…</div>
@@ -87,7 +87,7 @@
 
 <script>
 // ——————————————————————————————————————
-//  ԹՎԵՐԻ ՈՐՍՈՐԴ
+//  ԹՎԵՐԻ ՈՐՍՈՐԴ 🔢
 //  Թվերը մի պահ երևում են, հետո թաքնվում։
 //  Սեղմիր հերթով՝ 1, 2, 3… եթե հիշում ես, թե որն որտեղ էր։
 // ——————————————————————————————————————
@@ -97,9 +97,9 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { h1: 'Թվերի որսորդ', lvl: 'Մակարդակ՝', rec: 'Ռեկորդ՝', intro: 'Հիշիր թվերի տեղերը, հետո սեղմիր հերթով՝ 1, 2, 3…', nums: n => n + ' թիվ', remember: 'Հիշի՛ր տեղերը', order: 'Սեղմիր հերթով՝ 1, 2, 3…', nice: n => 'Ապրե՛ս Հիմա ' + n + ' թիվ', champ: 'ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ — 9 թիվ հիշեցիր', result: n => 'Դու հիշեցիր ' + n + ' թիվ', tryAgain: 'Ոչինչ, նորից փորձիր', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ', start: '▶ Սկսել', again: 'Նորից' },
-  ru: { h1: 'Охотник за числами', lvl: 'Уровень:', rec: 'Рекорд:', intro: 'Запомни, где числа, потом нажимай по порядку: 1, 2, 3…', nums: n => n + ' чисел', remember: 'Запоминай места', order: 'Нажимай по порядку: 1, 2, 3…', nice: n => 'Молодец! Теперь ' + n + ' чисел', champ: 'ТЫ ЧЕМПИОН — запомнил 9 чисел', result: n => 'Ты запомнил ' + n + ' чисел', tryAgain: 'Ничего, попробуй ещё раз', newRec: ' — НОВЫЙ РЕКОРД', start: '▶ Старт', again: 'Ещё раз' },
-  en: { h1: 'Number Hunter', lvl: 'Level:', rec: 'Best:', intro: 'Remember where the numbers are, then tap them in order: 1, 2, 3…', nums: n => n + ' numbers', remember: 'Memorize the spots', order: 'Tap in order: 1, 2, 3…', nice: n => 'Nice! Now ' + n + ' numbers', champ: 'YOU ARE THE CHAMPION — 9 numbers', result: n => 'You remembered ' + n + ' numbers', tryAgain: 'No worries, try again', newRec: ' — NEW RECORD', start: '▶ Start', again: 'Again' },
+  hy: { h1: 'Թվերի որսորդ 🔢', lvl: 'Մակարդակ՝', rec: 'Ռեկորդ՝', intro: 'Հիշիր թվերի տեղերը, հետո սեղմիր հերթով՝ 1, 2, 3…', nums: n => n + ' թիվ', remember: 'Հիշի՛ր տեղերը 👀', order: 'Սեղմիր հերթով՝ 1, 2, 3… 👆', nice: n => 'Ապրե՛ս 🎉 Հիմա ' + n + ' թիվ', champ: '🏆 ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ — 9 թիվ հիշեցիր', result: n => 'Դու հիշեցիր ' + n + ' թիվ', tryAgain: 'Ոչինչ, նորից փորձիր', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ 🎉', start: '▶ Սկսել', again: '🔄 Նորից' },
+  ru: { h1: 'Охотник за числами 🔢', lvl: 'Уровень:', rec: 'Рекорд:', intro: 'Запомни, где числа, потом нажимай по порядку: 1, 2, 3…', nums: n => n + ' чисел', remember: 'Запоминай места 👀', order: 'Нажимай по порядку: 1, 2, 3… 👆', nice: n => 'Молодец! 🎉 Теперь ' + n + ' чисел', champ: '🏆 ТЫ ЧЕМПИОН — запомнил 9 чисел', result: n => 'Ты запомнил ' + n + ' чисел', tryAgain: 'Ничего, попробуй ещё раз', newRec: ' — НОВЫЙ РЕКОРД 🎉', start: '▶ Старт', again: '🔄 Ещё раз' },
+  en: { h1: 'Number Hunter 🔢', lvl: 'Level:', rec: 'Best:', intro: 'Remember where the numbers are, then tap them in order: 1, 2, 3…', nums: n => n + ' numbers', remember: 'Memorize the spots 👀', order: 'Tap in order: 1, 2, 3… 👆', nice: n => 'Nice! 🎉 Now ' + n + ' numbers', champ: '🏆 YOU ARE THE CHAMPION — 9 numbers', result: n => 'You remembered ' + n + ' numbers', tryAgain: 'No worries, try again', newRec: ' — NEW RECORD 🎉', start: '▶ Start', again: '🔄 Again' },
 };
 const T = TRL[ggLang] || TRL.hy;
 if (ggLang !== 'hy') {
@@ -222,7 +222,7 @@ function tap(el) {
       sLevel();
       count++;
       if (count > 9) {
-        // 9 թիվ հիշեցիր — դու չեմպիոն ես
+        // 9 թիվ հիշեցիր — դու չեմպիոն ես 🏆
         finish(true);
         return;
       }
@@ -263,16 +263,13 @@ function finish(champion) {
 startBtn.addEventListener('click', startGame);
 
 function confetti() {
-  const confColors = ['#ffd166', '#ff7b6b', '#6ee7b7', '#6ec5ff', '#f2a7d8', '#fdfdff'];
+  const stuff = ['🎉', '⭐', '🔢', '💛', '🎊', '✨'];
   for (let k = 0; k < 40; k++) {
     const s = document.createElement('span');
     s.className = 'confetti';
-    s.style.background = confColors[Math.floor(Math.random() * confColors.length)];
-    const cw = 6 + Math.random() * 8;   // մերթ շրջանակ, մերթ թղթի կտոր
-    s.style.width = cw + 'px';
-    s.style.height = (Math.random() < 0.4 ? cw : cw * 1.7) + 'px';
-    s.style.borderRadius = Math.random() < 0.4 ? '50%' : '2px';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
     s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
     s.style.animationDuration = (2 + Math.random() * 2) + 's';
     s.style.animationDelay = (Math.random() * 0.8) + 's';
     document.body.appendChild(s);
