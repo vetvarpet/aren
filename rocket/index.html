@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Հրթիռը տիեզերքում 🚀</title>
+<title>Golden Rocket 🚀</title>
 <link rel="icon" type="image/png" href="../logo-icon.png">
 <style>
   * { margin: 0; box-sizing: border-box; }
@@ -24,14 +24,14 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { over: 'Խաղն ավարտվեց', rec: '  ·  Ռեկորդ՝ ', title: 'Հրթիռը տիեզերքում', sub1: 'Հավաքիր աստղերը,', sub2: 'խուսափիր ասթերոիդներից', yourBest: 'Ռեկորդդ՝ ', tapAgain: 'Սեղմիր՝ նորից թռչելու', tapFly: 'Սեղմիր՝ թռչելու' },
-  ru: { over: 'Игра окончена', rec: '  ·  Рекорд: ', title: 'Ракета в космосе', sub1: 'Собирай звёзды,', sub2: 'уворачивайся от астероидов', yourBest: 'Твой рекорд: ', tapAgain: 'Нажми — лететь снова', tapFly: 'Нажми — лететь' },
-  en: { over: 'Game over', rec: '  ·  Best: ', title: 'Rocket in Space', sub1: 'Collect the stars,', sub2: 'dodge the asteroids', yourBest: 'Your best: ', tapAgain: 'Tap to fly again', tapFly: 'Tap to fly' },
-  es: { over: 'Fin del juego', rec: '  ·  Récord: ', title: 'Cohete en el espacio', sub1: 'Recoge las estrellas,', sub2: 'esquiva los asteroides', yourBest: 'Tu récord: ', tapAgain: 'Toca para volar otra vez', tapFly: 'Toca para volar' },
-  fr: { over: 'Partie terminée', rec: '  ·  Record : ', title: 'Fusée dans l’espace', sub1: 'Attrape les étoiles,', sub2: 'évite les astéroïdes', yourBest: 'Ton record : ', tapAgain: 'Touche pour revoler', tapFly: 'Touche pour voler' },
-  de: { over: 'Spiel vorbei', rec: '  ·  Rekord: ', title: 'Rakete im Weltall', sub1: 'Sammle die Sterne,', sub2: 'weich den Asteroiden aus', yourBest: 'Dein Rekord: ', tapAgain: 'Tippe, um wieder zu fliegen', tapFly: 'Tippe zum Fliegen' },
-  ja: { over: 'ゲームオーバー', rec: '  ·  ベスト：', title: '宇宙ロケット', sub1: '星をあつめて、', sub2: 'いん石をよけよう', yourBest: 'ベスト記録：', tapAgain: 'タップでもう一回飛ぶ', tapFly: 'タップで飛ぶ' },
-  zh: { over: '游戏结束', rec: '  ·  纪录：', title: '太空火箭', sub1: '收集星星，', sub2: '躲开小行星', yourBest: '你的纪录：', tapAgain: '点一下再飞', tapFly: '点一下起飞' },
+  hy: { over: 'Խաղն ավարտվեց', rec: '  ·  Ռեկորդ՝ ', title: 'Golden Rocket', sub1: 'Հավաքիր աստղերը,', sub2: 'խուսափիր ասթերոիդներից', yourBest: 'Ռեկորդդ՝ ', tapAgain: 'Սեղմիր՝ նորից թռչելու', tapFly: 'Սեղմիր՝ թռչելու' },
+  ru: { over: 'Игра окончена', rec: '  ·  Рекорд: ', title: 'Golden Rocket', sub1: 'Собирай звёзды,', sub2: 'уворачивайся от астероидов', yourBest: 'Твой рекорд: ', tapAgain: 'Нажми — лететь снова', tapFly: 'Нажми — лететь' },
+  en: { over: 'Game over', rec: '  ·  Best: ', title: 'Golden Rocket', sub1: 'Collect the stars,', sub2: 'dodge the asteroids', yourBest: 'Your best: ', tapAgain: 'Tap to fly again', tapFly: 'Tap to fly' },
+  es: { over: 'Fin del juego', rec: '  ·  Récord: ', title: 'Golden Rocket', sub1: 'Recoge las estrellas,', sub2: 'esquiva los asteroides', yourBest: 'Tu récord: ', tapAgain: 'Toca para volar otra vez', tapFly: 'Toca para volar' },
+  fr: { over: 'Partie terminée', rec: '  ·  Record : ', title: 'Golden Rocket', sub1: 'Attrape les étoiles,', sub2: 'évite les astéroïdes', yourBest: 'Ton record : ', tapAgain: 'Touche pour revoler', tapFly: 'Touche pour voler' },
+  de: { over: 'Spiel vorbei', rec: '  ·  Rekord: ', title: 'Golden Rocket', sub1: 'Sammle die Sterne,', sub2: 'weich den Asteroiden aus', yourBest: 'Dein Rekord: ', tapAgain: 'Tippe, um wieder zu fliegen', tapFly: 'Tippe zum Fliegen' },
+  ja: { over: 'ゲームオーバー', rec: '  ·  ベスト：', title: 'Golden Rocket', sub1: '星をあつめて、', sub2: 'いん石をよけよう', yourBest: 'ベスト記録：', tapAgain: 'タップでもう一回飛ぶ', tapFly: 'タップで飛ぶ' },
+  zh: { over: '游戏结束', rec: '  ·  纪录：', title: 'Golden Rocket', sub1: '收集星星，', sub2: '躲开小行星', yourBest: '你的纪录：', tapAgain: '点一下再飞', tapFly: '点一下起飞' },
 };
 const T = TRL[ggLang] || TRL.hy;
 const canvas = document.getElementById('game');

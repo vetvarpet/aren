@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Ձկնորսություն 🎣</title>
+<title>Golden Fishing 🎣</title>
 <link rel="icon" type="image/png" href="../logo-icon.png">
 <style>
   * { margin: 0; box-sizing: border-box; }
@@ -32,14 +32,14 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { gold: '+5 ՈՍԿԵ ՁՈՒԿ', bootTxt: 'Կոշիկ… +0', scoreLbl: 'Միավոր՝ ', secLbl: ' վրկ', timeup: 'Ժամանակը վերջացավ', rec: '  ·  Ռեկորդ՝ ', title: 'Ձկնորսություն', h1: 'Սեղմիր՝ կարթը գցելու, մատով ուղղորդիր', h2: 'Ոսկե ձուկ = +5 · Կոշիկ = 0 · 60 վայրկյան', yourBest: 'Ռեկորդդ՝ ', tapAgain: 'Սեղմիր՝ նորից ձկնորսելու', tapStart: 'Սեղմիր՝ սկսելու' },
-  ru: { gold: '+5 ЗОЛОТАЯ РЫБКА', bootTxt: 'Ботинок… +0', scoreLbl: 'Очки: ', secLbl: ' сек', timeup: 'Время вышло', rec: '  ·  Рекорд: ', title: 'Рыбалка', h1: 'Нажми, чтобы закинуть крючок, веди пальцем', h2: 'Золотая рыбка = +5 · Ботинок = 0 · 60 секунд', yourBest: 'Твой рекорд: ', tapAgain: 'Нажми — рыбачить снова', tapStart: 'Нажми — начать' },
-  en: { gold: '+5 GOLDEN FISH', bootTxt: 'Boot… +0', scoreLbl: 'Score: ', secLbl: ' s', timeup: 'Time is up', rec: '  ·  Best: ', title: 'Fishing', h1: 'Tap to cast the hook, steer it with your finger', h2: 'Golden fish = +5 · Boot = 0 · 60 seconds', yourBest: 'Your best: ', tapAgain: 'Tap to fish again', tapStart: 'Tap to start' },
-  es: { gold: '+5 ¡PEZ DORADO!', bootTxt: 'Una bota… +0', scoreLbl: 'Puntos: ', secLbl: ' s', timeup: 'Se acabó el tiempo', rec: '  ·  Récord: ', title: 'Pesca', h1: 'Toca para lanzar el anzuelo y guíalo con el dedo', h2: 'Pez dorado = +5 · Bota = 0 · 60 segundos', yourBest: 'Tu récord: ', tapAgain: 'Toca para pescar otra vez', tapStart: 'Toca para empezar' },
-  fr: { gold: '+5 POISSON DORÉ !', bootTxt: 'Une botte… +0', scoreLbl: 'Points : ', secLbl: ' s', timeup: 'Temps écoulé', rec: '  ·  Record : ', title: 'Pêche', h1: 'Touche pour lancer l’hameçon, guide-le avec le doigt', h2: 'Poisson doré = +5 · Botte = 0 · 60 secondes', yourBest: 'Ton record : ', tapAgain: 'Touche pour repêcher', tapStart: 'Touche pour commencer' },
-  de: { gold: '+5 GOLDFISCH!', bootTxt: 'Ein Stiefel… +0', scoreLbl: 'Punkte: ', secLbl: ' s', timeup: 'Die Zeit ist um', rec: '  ·  Rekord: ', title: 'Angeln', h1: 'Tippe, um den Haken auszuwerfen, und lenke ihn mit dem Finger', h2: 'Goldfisch = +5 · Stiefel = 0 · 60 Sekunden', yourBest: 'Dein Rekord: ', tapAgain: 'Tippe, um weiterzuangeln', tapStart: 'Tippe zum Starten' },
-  ja: { gold: '+5 金の魚！', bootTxt: 'ながぐつ… +0', scoreLbl: 'スコア：', secLbl: '秒', timeup: '時間切れ', rec: '  ·  ベスト：', title: 'さかなつり', h1: 'タップで針を投げて、指で動かそう', h2: '金の魚 = +5 · ながぐつ = 0 · 60秒', yourBest: 'ベスト記録：', tapAgain: 'タップでもう一回つる', tapStart: 'タップでスタート' },
-  zh: { gold: '+5 金鱼！', bootTxt: '旧靴子… +0', scoreLbl: '得分：', secLbl: '秒', timeup: '时间到', rec: '  ·  纪录：', title: '钓鱼', h1: '点一下抛钩，用手指控制', h2: '金鱼 = +5 · 靴子 = 0 · 60秒', yourBest: '你的纪录：', tapAgain: '点一下再钓', tapStart: '点一下开始' },
+  hy: { gold: '+5 ՈՍԿԵ ՁՈՒԿ', bootTxt: 'Կոշիկ… +0', scoreLbl: 'Միավոր՝ ', secLbl: ' վրկ', timeup: 'Ժամանակը վերջացավ', rec: '  ·  Ռեկորդ՝ ', title: 'Golden Fishing', h1: 'Սեղմիր՝ կարթը գցելու, մատով ուղղորդիր', h2: 'Ոսկե ձուկ = +5 · Կոշիկ = 0 · 60 վայրկյան', yourBest: 'Ռեկորդդ՝ ', tapAgain: 'Սեղմիր՝ նորից ձկնորսելու', tapStart: 'Սեղմիր՝ սկսելու' },
+  ru: { gold: '+5 ЗОЛОТАЯ РЫБКА', bootTxt: 'Ботинок… +0', scoreLbl: 'Очки: ', secLbl: ' сек', timeup: 'Время вышло', rec: '  ·  Рекорд: ', title: 'Golden Fishing', h1: 'Нажми, чтобы закинуть крючок, веди пальцем', h2: 'Золотая рыбка = +5 · Ботинок = 0 · 60 секунд', yourBest: 'Твой рекорд: ', tapAgain: 'Нажми — рыбачить снова', tapStart: 'Нажми — начать' },
+  en: { gold: '+5 GOLDEN FISH', bootTxt: 'Boot… +0', scoreLbl: 'Score: ', secLbl: ' s', timeup: 'Time is up', rec: '  ·  Best: ', title: 'Golden Fishing', h1: 'Tap to cast the hook, steer it with your finger', h2: 'Golden fish = +5 · Boot = 0 · 60 seconds', yourBest: 'Your best: ', tapAgain: 'Tap to fish again', tapStart: 'Tap to start' },
+  es: { gold: '+5 ¡PEZ DORADO!', bootTxt: 'Una bota… +0', scoreLbl: 'Puntos: ', secLbl: ' s', timeup: 'Se acabó el tiempo', rec: '  ·  Récord: ', title: 'Golden Fishing', h1: 'Toca para lanzar el anzuelo y guíalo con el dedo', h2: 'Pez dorado = +5 · Bota = 0 · 60 segundos', yourBest: 'Tu récord: ', tapAgain: 'Toca para pescar otra vez', tapStart: 'Toca para empezar' },
+  fr: { gold: '+5 POISSON DORÉ !', bootTxt: 'Une botte… +0', scoreLbl: 'Points : ', secLbl: ' s', timeup: 'Temps écoulé', rec: '  ·  Record : ', title: 'Golden Fishing', h1: 'Touche pour lancer l’hameçon, guide-le avec le doigt', h2: 'Poisson doré = +5 · Botte = 0 · 60 secondes', yourBest: 'Ton record : ', tapAgain: 'Touche pour repêcher', tapStart: 'Touche pour commencer' },
+  de: { gold: '+5 GOLDFISCH!', bootTxt: 'Ein Stiefel… +0', scoreLbl: 'Punkte: ', secLbl: ' s', timeup: 'Die Zeit ist um', rec: '  ·  Rekord: ', title: 'Golden Fishing', h1: 'Tippe, um den Haken auszuwerfen, und lenke ihn mit dem Finger', h2: 'Goldfisch = +5 · Stiefel = 0 · 60 Sekunden', yourBest: 'Dein Rekord: ', tapAgain: 'Tippe, um weiterzuangeln', tapStart: 'Tippe zum Starten' },
+  ja: { gold: '+5 金の魚！', bootTxt: 'ながぐつ… +0', scoreLbl: 'スコア：', secLbl: '秒', timeup: '時間切れ', rec: '  ·  ベスト：', title: 'Golden Fishing', h1: 'タップで針を投げて、指で動かそう', h2: '金の魚 = +5 · ながぐつ = 0 · 60秒', yourBest: 'ベスト記録：', tapAgain: 'タップでもう一回つる', tapStart: 'タップでスタート' },
+  zh: { gold: '+5 金鱼！', bootTxt: '旧靴子… +0', scoreLbl: '得分：', secLbl: '秒', timeup: '时间到', rec: '  ·  纪录：', title: 'Golden Fishing', h1: '点一下抛钩，用手指控制', h2: '金鱼 = +5 · 靴子 = 0 · 60秒', yourBest: '你的纪录：', tapAgain: '点一下再钓', tapStart: '点一下开始' },
 };
 const T = TRL[ggLang] || TRL.hy;
 const canvas = document.getElementById('game');

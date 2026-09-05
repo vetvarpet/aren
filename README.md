@@ -9,16 +9,16 @@ and iterating on the code together with Claude, one change at a time.
 
 | Folder | Project | What it is |
 |--------|---------|------------|
-| [`cat-jump`](./cat-jump/) | 🐱 Կատվիկ | Runner: jump over boxes, catch fish, stay low when night crows fly over, win the trophy at 100 points |
-| [`city-drive`](./city-drive/) | 🚗 Քաղաքի վարորդը | Two driving games: the open city (pizza deliveries, police, car shop) and a 10-level race |
-| [`piano`](./piano/) | 🎹 Golden Piano | Playable piano with recording, built-in songs and a learn mode with glowing keys |
-| [`rocket`](./rocket/) | 🚀 Հրթիռը տիեզերքում | Space flyer: catch stars, dodge spinning asteroids, 3 lives, best score saved |
-| [`memory`](./memory/) | 🧠 Հիշողության խաղեր | Three memory games in one: pairs, Simon-style repeat-after-me, and number hunter |
-| [`fishing`](./fishing/) | 🎣 Ձկնորսություն | 60 seconds of fishing: golden fish +5, old boot 0 |
-| [`maze`](./maze/) | 🌀 Golden Maze | 100 levels of mazes — the ball follows your finger, chiptune music speeds up as you go |
-| [`duel`](./duel/) | 👥 Երկուսով խաղեր | Seven two-player games on one phone: tap duel, ping-pong, math race, tic-tac-toe, tug of war, connect four and target hunt |
-| [`tower`](./tower/) | 🏗️ Golden Tower | Stack the swinging blocks: land off-center and the edge gets sliced off, the tower narrows |
-| [`moles`](./moles/) | 🦔 Golden Moles | Whack-a-mole: gold moles are +3, dynamite moles are −5, 30 seconds on the clock |
+| [`cat-jump`](./cat-jump/) | 🐱 Golden Cat (Կատվիկ) | Runner: jump over boxes, catch fish, stay low when night crows fly over, win the trophy at 100 points |
+| [`city-drive`](./city-drive/) | 🚗 Golden Driver (Քաղաքի վարորդը) | Two driving games: the open city (pizza deliveries, police, car shop) and a 10-level race |
+| [`piano`](./piano/) | 🎹 Golden Piano (Դաշնամուր) | Playable piano with recording, built-in songs and a learn mode with glowing keys |
+| [`rocket`](./rocket/) | 🚀 Golden Rocket (Հրթիռը տիեզերքում) | Space flyer: catch stars, dodge spinning asteroids, 3 lives, best score saved |
+| [`memory`](./memory/) | 🧠 Golden Memory (Հիշողության խաղեր) | Three memory games in one: pairs, Simon-style repeat-after-me, and number hunter |
+| [`fishing`](./fishing/) | 🎣 Golden Fishing (Ձկնորսություն) | 60 seconds of fishing: golden fish +5, old boot 0 |
+| [`maze`](./maze/) | 🌀 Golden Maze (Լաբիրինթոս) | 100 levels of mazes — the ball follows your finger, chiptune music speeds up as you go |
+| [`duel`](./duel/) | 👥 Golden Duel (Երկուսով խաղեր) | Seven two-player games on one phone: tap duel, ping-pong, math race, tic-tac-toe, tug of war, connect four and target hunt |
+| [`tower`](./tower/) | 🏗️ Golden Tower (Աշտարակ) | Stack the swinging blocks: land off-center and the edge gets sliced off, the tower narrows |
+| [`moles`](./moles/) | 🦔 Golden Moles (Խլուրդներ) | Whack-a-mole: gold moles are +3, dynamite moles are −5, 30 seconds on the clock |
 
 Every project is a single self-contained `index.html` — no frameworks, no
 build step. Open any folder's `index.html` in a browser and play. Sounds and

@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Քաղաքի վարորդը 🚗</title>
+<title>Golden Driver 🚗</title>
 <link rel="icon" type="image/png" href="../logo-icon.png">
 <style>
   * { margin: 0; box-sizing: border-box; }
@@ -70,7 +70,7 @@
 
 <nav><a href="../">← Golden Games</a></nav>
 
-<h1>Քաղաքի վարորդը 🚗</h1>
+<h1>Golden Driver 🚗</h1>
 <p class="sub">Ընտրի՛ր՝ ինչ ես ուզում քշել այսօր։</p>
 
 <div class="games">
@@ -103,13 +103,13 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  ru: { h1: 'Городской водитель 🚗', sub: 'Выбери, что хочешь водить сегодня.', g1: ['Город', 'Доставка пиццы, полиция, магазин и золотая машина 👑'], g2: ['Гонка', '10 уровней, газ жмёшь ты, на дороге масло и барьеры'] },
-  en: { h1: 'City Driver 🚗', sub: 'Choose what you want to drive today.', g1: ['City', 'Pizza deliveries, police, the shop and the golden car 👑'], g2: ['Race', '10 levels, you control the gas, oil and barriers on the road'] },
-  es: { h1: 'Conductor urbano 🚗', sub: 'Elige qué quieres conducir hoy.', g1: ['Ciudad', 'Reparte pizzas, esquiva a la policía, visita la tienda y gana el coche dorado 👑'], g2: ['Carrera', '10 niveles, tú das el gas, aceite y barreras en el camino'] },
-  fr: { h1: 'Pilote de la ville 🚗', sub: 'Choisis ce que tu veux conduire aujourd’hui.', g1: ['Ville', 'Livraisons de pizza, police, magasin et voiture en or 👑'], g2: ['Course', '10 niveaux, c’est toi qui accélères, huile et barrières sur la route'] },
-  de: { h1: 'Stadtfahrer 🚗', sub: 'Wähle, was du heute fahren willst.', g1: ['Stadt', 'Pizza liefern, Polizei, Laden und das goldene Auto 👑'], g2: ['Rennen', '10 Level, du gibst Gas, Öl und Hindernisse auf der Strecke'] },
-  ja: { h1: 'シティドライバー 🚗', sub: '今日はどっちで走る？', g1: ['シティ', 'ピザ配達、パトカー、お店、金ピカの車 👑'], g2: ['レース', '10レベル、アクセルは自分で、オイルとバリアに注意'] },
-  zh: { h1: '城市司机 🚗', sub: '选一个今天想开的吧。', g1: ['城市', '送披萨、躲警车、逛商店、赢黄金跑车 👑'], g2: ['赛车', '10个关卡，油门自己踩，小心油渍和路障'] },
+  ru: { h1: 'Golden Driver 🚗', sub: 'Выбери, что хочешь водить сегодня.', g1: ['Город', 'Доставка пиццы, полиция, магазин и золотая машина 👑'], g2: ['Гонка', '10 уровней, газ жмёшь ты, на дороге масло и барьеры'] },
+  en: { h1: 'Golden Driver 🚗', sub: 'Choose what you want to drive today.', g1: ['City', 'Pizza deliveries, police, the shop and the golden car 👑'], g2: ['Race', '10 levels, you control the gas, oil and barriers on the road'] },
+  es: { h1: 'Golden Driver 🚗', sub: 'Elige qué quieres conducir hoy.', g1: ['Ciudad', 'Reparte pizzas, esquiva a la policía, visita la tienda y gana el coche dorado 👑'], g2: ['Carrera', '10 niveles, tú das el gas, aceite y barreras en el camino'] },
+  fr: { h1: 'Golden Driver 🚗', sub: 'Choisis ce que tu veux conduire aujourd’hui.', g1: ['Ville', 'Livraisons de pizza, police, magasin et voiture en or 👑'], g2: ['Course', '10 niveaux, c’est toi qui accélères, huile et barrières sur la route'] },
+  de: { h1: 'Golden Driver 🚗', sub: 'Wähle, was du heute fahren willst.', g1: ['Stadt', 'Pizza liefern, Polizei, Laden und das goldene Auto 👑'], g2: ['Rennen', '10 Level, du gibst Gas, Öl und Hindernisse auf der Strecke'] },
+  ja: { h1: 'Golden Driver 🚗', sub: '今日はどっちで走る？', g1: ['シティ', 'ピザ配達、パトカー、お店、金ピカの車 👑'], g2: ['レース', '10レベル、アクセルは自分で、オイルとバリアに注意'] },
+  zh: { h1: 'Golden Driver 🚗', sub: '选一个今天想开的吧。', g1: ['城市', '送披萨、躲警车、逛商店、赢黄金跑车 👑'], g2: ['赛车', '10个关卡，油门自己踩，小心油渍和路障'] },
 };
 const T = TRL[ggLang];
 if (T) {
