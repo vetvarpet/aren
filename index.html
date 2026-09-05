@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Golden Games 👑</title>
+<link rel="icon" type="image/png" href="./logo-icon.png">
 <meta name="description" content="Aren's Arcade — games and projects built by a 10-year-old maker">
 <style>
   :root {
@@ -36,7 +37,7 @@
     flex-wrap: wrap;
   }
   .logo { display: flex; align-items: center; gap: 12px; }
-  .logo .joy { display: block; flex-shrink: 0; }
+  .logo .joy { display: block; flex-shrink: 0; border-radius: 12px; }
   .logo h1 { font-size: clamp(1.3rem, 4vw, 1.9rem); color: var(--accent); letter-spacing: 0.01em; }
   .logo p { color: var(--dim); font-size: 0.85rem; }
   nav { display: flex; gap: 10px; }
@@ -152,7 +153,7 @@
     padding: 24px;
     text-align: center;
   }
-  #langPick .joy2 { display: block; }
+  #langPick .joy2 { display: block; width: min(66vw, 250px); height: auto; border-radius: 18px; }
   #langPick h2 { color: var(--accent); font-size: clamp(1.4rem, 6vw, 2rem); }
   #langPick .ask { color: var(--dim); margin-bottom: 10px; line-height: 1.6; }
   .langbtn {
@@ -179,20 +180,7 @@
 
 <!-- Առաջին այցին նախ լեզուն ես ընտրում -->
 <div id="langPick" hidden>
-  <svg class="joy2" width="76" height="76" viewBox="0 0 46 46" aria-hidden="true">
-    <defs>
-      <linearGradient id="lgGold2" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#f0b429"/>
-      </linearGradient>
-    </defs>
-    <circle cx="23" cy="23" r="21.5" fill="#1d1d3f" stroke="#ffd166" stroke-width="2.5"/>
-    <path d="M11 28 L9 15 L16.5 21 L23 11 L29.5 21 L37 15 L35 28 Z" fill="url(#lgGold2)" stroke="#c98a12" stroke-width="1.5" stroke-linejoin="round"/>
-    <rect x="10.5" y="29.5" width="25" height="4.5" rx="2.2" fill="url(#lgGold2)" stroke="#c98a12" stroke-width="1"/>
-    <circle cx="16.5" cy="24" r="1.7" fill="#e63946"/>
-    <circle cx="23" cy="21.5" r="1.7" fill="#2b6cd4"/>
-    <circle cx="29.5" cy="24" r="1.7" fill="#2f855a"/>
-  </svg>
-  <h2>Golden Games</h2>
+  <img class="joy2" src="./logo.png" alt="Golden Games">
   <p class="ask">Ընտրի՛ր լեզուն · Выбери язык · Choose language</p>
   <button class="langbtn" data-lang="hy"><span class="flag">🇦🇲</span> Հայերեն</button>
   <button class="langbtn" data-lang="ru"><span class="flag">🇷🇺</span> Русский</button>
@@ -203,19 +191,7 @@
 
   <header>
     <div class="logo">
-      <svg class="joy" width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
-        <defs>
-          <linearGradient id="lgGold" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#f0b429"/>
-          </linearGradient>
-        </defs>
-        <circle cx="23" cy="23" r="21.5" fill="#1d1d3f" stroke="#ffd166" stroke-width="2.5"/>
-        <path d="M11 28 L9 15 L16.5 21 L23 11 L29.5 21 L37 15 L35 28 Z" fill="url(#lgGold)" stroke="#c98a12" stroke-width="1.5" stroke-linejoin="round"/>
-        <rect x="10.5" y="29.5" width="25" height="4.5" rx="2.2" fill="url(#lgGold)" stroke="#c98a12" stroke-width="1"/>
-        <circle cx="16.5" cy="24" r="1.7" fill="#e63946"/>
-        <circle cx="23" cy="21.5" r="1.7" fill="#2b6cd4"/>
-        <circle cx="29.5" cy="24" r="1.7" fill="#2f855a"/>
-      </svg>
+      <img class="joy" src="./logo-icon.png" alt="Golden Games" width="52" height="52">
       <div>
         <h1>Golden Games</h1>
         <p>✵ թե ուզմես ուրեմն կրենալել դես․ լիլը կլի, տյու ուզող ասա ✵</p>
