@@ -36,7 +36,7 @@
     flex-wrap: wrap;
   }
   .logo { display: flex; align-items: center; gap: 12px; }
-  .logo .joy { font-size: 40px; }
+  .logo .joy { display: block; flex-shrink: 0; }
   .logo h1 { font-size: clamp(1.3rem, 4vw, 1.9rem); color: var(--accent); letter-spacing: 0.01em; }
   .logo p { color: var(--dim); font-size: 0.85rem; }
   nav { display: flex; gap: 10px; }
@@ -74,12 +74,20 @@
   }
   .cover {
     position: relative;
-    height: 130px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 64px;
+    height: 140px;
+    overflow: hidden;
   }
+  /* Ամեն խաղի շապիկը հիմա նկարած տեսարան է, ոչ թե էմոջի */
+  .cover svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    transition: transform 0.25s;
+  }
+  .game:hover .cover svg { transform: scale(1.07); }
   /* «ՆՈՐ» պիտակը ամենաթարմ խաղերի անկյունում */
   .new-tag {
     position: absolute;
@@ -144,7 +152,7 @@
     padding: 24px;
     text-align: center;
   }
-  #langPick .joy2 { font-size: 60px; }
+  #langPick .joy2 { display: block; }
   #langPick h2 { color: var(--accent); font-size: clamp(1.4rem, 6vw, 2rem); }
   #langPick .ask { color: var(--dim); margin-bottom: 10px; line-height: 1.6; }
   .langbtn {
@@ -171,7 +179,19 @@
 
 <!-- Առաջին այցին նախ լեզուն ես ընտրում -->
 <div id="langPick" hidden>
-  <div class="joy2">🕹️</div>
+  <svg class="joy2" width="76" height="76" viewBox="0 0 46 46" aria-hidden="true">
+    <defs>
+      <linearGradient id="lgGold2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#f0b429"/>
+      </linearGradient>
+    </defs>
+    <circle cx="23" cy="23" r="21.5" fill="#1d1d3f" stroke="#ffd166" stroke-width="2.5"/>
+    <path d="M11 28 L9 15 L16.5 21 L23 11 L29.5 21 L37 15 L35 28 Z" fill="url(#lgGold2)" stroke="#c98a12" stroke-width="1.5" stroke-linejoin="round"/>
+    <rect x="10.5" y="29.5" width="25" height="4.5" rx="2.2" fill="url(#lgGold2)" stroke="#c98a12" stroke-width="1"/>
+    <circle cx="16.5" cy="24" r="1.7" fill="#e63946"/>
+    <circle cx="23" cy="21.5" r="1.7" fill="#2b6cd4"/>
+    <circle cx="29.5" cy="24" r="1.7" fill="#2f855a"/>
+  </svg>
   <h2>Golden Games</h2>
   <p class="ask">Ընտրի՛ր լեզուն · Выбери язык · Choose language</p>
   <button class="langbtn" data-lang="hy"><span class="flag">🇦🇲</span> Հայերեն</button>
@@ -183,7 +203,19 @@
 
   <header>
     <div class="logo">
-      <div class="joy">🕹️</div>
+      <svg class="joy" width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
+        <defs>
+          <linearGradient id="lgGold" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#f0b429"/>
+          </linearGradient>
+        </defs>
+        <circle cx="23" cy="23" r="21.5" fill="#1d1d3f" stroke="#ffd166" stroke-width="2.5"/>
+        <path d="M11 28 L9 15 L16.5 21 L23 11 L29.5 21 L37 15 L35 28 Z" fill="url(#lgGold)" stroke="#c98a12" stroke-width="1.5" stroke-linejoin="round"/>
+        <rect x="10.5" y="29.5" width="25" height="4.5" rx="2.2" fill="url(#lgGold)" stroke="#c98a12" stroke-width="1"/>
+        <circle cx="16.5" cy="24" r="1.7" fill="#e63946"/>
+        <circle cx="23" cy="21.5" r="1.7" fill="#2b6cd4"/>
+        <circle cx="29.5" cy="24" r="1.7" fill="#2f855a"/>
+      </svg>
       <div>
         <h1>Golden Games</h1>
         <p>✵ թե ուզմես ուրեմն կրենալել դես․ լիլը կլի, տյու ուզող ասա ✵</p>
@@ -200,7 +232,51 @@
   <div class="grid">
 
     <a class="game" href="./cat-jump/">
-      <div class="cover c1">🐱</div>
+      <div class="cover c1">
+        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="cv1s" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#6db5ec"/><stop offset="1" stop-color="#cfe9fb"/>
+            </linearGradient>
+          </defs>
+          <rect width="300" height="140" fill="url(#cv1s)"/>
+          <circle cx="242" cy="30" r="24" fill="#ffd166" opacity="0.35"/>
+          <circle cx="242" cy="30" r="15" fill="#ffd166"/>
+          <g fill="#ffffff">
+            <ellipse cx="52" cy="30" rx="24" ry="9" opacity="0.9"/>
+            <ellipse cx="74" cy="36" rx="18" ry="7" opacity="0.75"/>
+            <ellipse cx="160" cy="18" rx="18" ry="6" opacity="0.55"/>
+          </g>
+          <rect y="114" width="300" height="26" fill="#7fb84e"/>
+          <rect y="114" width="300" height="5" fill="#6da53f"/>
+          <g transform="translate(170,80)">
+            <rect width="44" height="36" rx="4" fill="#c08945" stroke="#8a5a24" stroke-width="3"/>
+            <line x1="5" y1="5" x2="39" y2="31" stroke="#8a5a24" stroke-width="3" stroke-linecap="round"/>
+            <line x1="39" y1="5" x2="5" y2="31" stroke="#8a5a24" stroke-width="3" stroke-linecap="round"/>
+          </g>
+          <g transform="translate(118,54) rotate(-12)">
+            <path d="M-24 8 Q-42 4 -38 -14" fill="none" stroke="#e8873c" stroke-width="7" stroke-linecap="round"/>
+            <path d="M-14 12 L-24 22 M14 14 L26 20" stroke="#f5a04f" stroke-width="7" stroke-linecap="round"/>
+            <ellipse cx="0" cy="4" rx="25" ry="15" fill="#f5a04f"/>
+            <path d="M-8 -4 q5 -6 11 -4 M-3 4 q5 -4 10 -2" stroke="#d9772e" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <circle cx="24" cy="-9" r="14" fill="#f5a04f"/>
+            <path d="M14 -19 L12 -30 L22 -24 Z" fill="#f5a04f"/>
+            <path d="M33 -20 L37 -30 L27 -25 Z" fill="#f5a04f"/>
+            <path d="M15 -20 L14 -27 L20 -23 Z" fill="#e07a9a" opacity="0.75"/>
+            <circle cx="20" cy="-10" r="2.3" fill="#3a2a17"/>
+            <circle cx="30" cy="-10" r="2.3" fill="#3a2a17"/>
+            <path d="M23 -4 q3 3 6 0" fill="none" stroke="#3a2a17" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M12 -4 L4 -3 M12 -1 L5 2 M36 -5 L44 -4 M36 -2 L43 1" stroke="#3a2a17" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+          </g>
+          <g transform="translate(56,78) rotate(-18)">
+            <ellipse cx="0" cy="0" rx="13" ry="7.5" fill="#5aa7d6"/>
+            <path d="M11 0 L21 -7 L21 7 Z" fill="#5aa7d6"/>
+            <circle cx="-6" cy="-2" r="1.8" fill="#12324a"/>
+            <path d="M-2 6 q4 2 8 0" stroke="#3f7ea8" stroke-width="1.4" fill="none"/>
+          </g>
+          <path d="M40 56 l2.6 5.4 5.4 2.6 -5.4 2.6 -2.6 5.4 -2.6 -5.4 -5.4 -2.6 5.4 -2.6 Z" fill="#ffffff" opacity="0.8"/>
+        </svg>
+      </div>
       <div class="info">
         <h2>Կատվիկ</h2>
         <p>Թռիր արկղերի վրայով, բռնիր ձկներ։ Գիշերն ագռավներ են՝ նրանց տակով անցիր առանց թռնելու։ 100 միավոր՝ գավաթ։</p>
@@ -209,7 +285,57 @@
     </a>
 
     <a class="game" href="./city-drive/">
-      <div class="cover c2">🚗</div>
+      <div class="cover c2">
+        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="cv2s" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#8fd0f0"/><stop offset="1" stop-color="#d9effb"/>
+            </linearGradient>
+          </defs>
+          <rect width="300" height="140" fill="url(#cv2s)"/>
+          <circle cx="52" cy="22" r="13" fill="#ffd166"/>
+          <rect x="18" y="46" width="42" height="60" fill="#5b6ea8"/>
+          <rect x="70" y="30" width="50" height="76" fill="#7986bd"/>
+          <rect x="130" y="52" width="38" height="54" fill="#5b6ea8"/>
+          <rect x="178" y="38" width="46" height="68" fill="#8a97cc"/>
+          <rect x="234" y="56" width="48" height="50" fill="#6779b3"/>
+          <g fill="#ffe9a8">
+            <rect x="26" y="54" width="8" height="8"/><rect x="42" y="54" width="8" height="8"/>
+            <rect x="26" y="70" width="8" height="8"/><rect x="42" y="70" width="8" height="8"/>
+            <rect x="78" y="40" width="9" height="9"/><rect x="95" y="40" width="9" height="9"/>
+            <rect x="78" y="58" width="9" height="9"/><rect x="95" y="58" width="9" height="9"/>
+            <rect x="95" y="76" width="9" height="9"/>
+            <rect x="138" y="60" width="8" height="8"/><rect x="152" y="60" width="8" height="8"/>
+            <rect x="138" y="76" width="8" height="8"/>
+            <rect x="186" y="46" width="9" height="9"/><rect x="203" y="46" width="9" height="9"/>
+            <rect x="186" y="64" width="9" height="9"/><rect x="203" y="64" width="9" height="9"/>
+            <rect x="242" y="64" width="8" height="8"/><rect x="258" y="64" width="8" height="8"/>
+            <rect x="258" y="80" width="8" height="8"/>
+          </g>
+          <rect y="106" width="300" height="34" fill="#3a3f52"/>
+          <line x1="0" y1="122" x2="300" y2="122" stroke="#ffd166" stroke-width="4" stroke-dasharray="18 14"/>
+          <g transform="translate(226,72)">
+            <rect x="0" y="0" width="3" height="36" rx="1.5" fill="#5a4632"/>
+            <rect x="3" y="0" width="30" height="18" fill="#ffffff"/>
+            <g fill="#232733">
+              <rect x="3" y="0" width="7.5" height="6"/><rect x="18" y="0" width="7.5" height="6"/>
+              <rect x="10.5" y="6" width="7.5" height="6"/><rect x="25.5" y="6" width="7.5" height="6"/>
+              <rect x="3" y="12" width="7.5" height="6"/><rect x="18" y="12" width="7.5" height="6"/>
+            </g>
+            <rect x="3" y="0" width="30" height="18" fill="none" stroke="#232733" stroke-width="1.5"/>
+          </g>
+          <g transform="translate(90,94)">
+            <path d="M0 14 Q2 5 14 4 L26 -6 Q30 -9 38 -9 L64 -9 Q72 -9 76 -5 L88 4 Q100 5 102 13 L102 20 Q102 24 97 24 L5 24 Q0 24 0 20 Z" fill="#f7f9fc" stroke="#c7cede" stroke-width="2"/>
+            <path d="M31 -5 Q34 -7 40 -7 L60 -7 Q67 -7 71 -3 L75 2 L31 2 Z" fill="#9fd3f2" stroke="#7fb3d8" stroke-width="1.5"/>
+            <line x1="52" y1="-7" x2="52" y2="2" stroke="#7fb3d8" stroke-width="1.5"/>
+            <rect x="6" y="9" width="92" height="6" rx="3" fill="#2b6cd4"/>
+            <rect x="6" y="17" width="92" height="2.5" rx="1.2" fill="#2b6cd4" opacity="0.6"/>
+            <circle cx="24" cy="24" r="10" fill="#232733"/><circle cx="24" cy="24" r="4.5" fill="#aab3c7"/>
+            <circle cx="80" cy="24" r="10" fill="#232733"/><circle cx="80" cy="24" r="4.5" fill="#aab3c7"/>
+            <path d="M-8 6 L-20 6 M-6 12 L-24 12" stroke="#8fb6cf" stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
       <div class="info">
         <h2>Քաղաքի վարորդը</h2>
         <p>Երկու խաղ մեկում՝ բաց քաղաք առաքումներով ու ոստիկանով, և Մրցարշավ 🏁՝ 10 մակարդակով։</p>
@@ -218,7 +344,54 @@
     </a>
 
     <a class="game" href="./piano/">
-      <div class="cover c4">🎹</div>
+      <div class="cover c4">
+        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="cv3s" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#3b2a6b"/><stop offset="1" stop-color="#6b4fa8"/>
+            </linearGradient>
+          </defs>
+          <rect width="300" height="140" fill="url(#cv3s)"/>
+          <circle cx="78" cy="36" r="28" fill="#ffd166" opacity="0.14"/>
+          <circle cx="208" cy="30" r="30" fill="#6ee7b7" opacity="0.12"/>
+          <g fill="#ffd166" transform="translate(72,28) rotate(-10)">
+            <ellipse cx="0" cy="14" rx="7" ry="5"/>
+            <rect x="5" y="-14" width="3" height="28" rx="1.5"/>
+            <path d="M8 -14 q11 4 8 13 q-2 -6 -8 -7 Z"/>
+          </g>
+          <g fill="#eef0ff" opacity="0.92" transform="translate(196,22) rotate(8)">
+            <ellipse cx="0" cy="16" rx="6" ry="4.5"/>
+            <rect x="4.5" y="-10" width="3" height="26" rx="1.5"/>
+            <ellipse cx="22" cy="13" rx="6" ry="4.5"/>
+            <rect x="26.5" y="-13" width="3" height="26" rx="1.5"/>
+            <path d="M4.5 -13 L29.5 -16 L29.5 -10 L4.5 -7 Z"/>
+          </g>
+          <g fill="#6ee7b7" opacity="0.92" transform="translate(140,42) rotate(-6) scale(0.75)">
+            <ellipse cx="0" cy="14" rx="7" ry="5"/>
+            <rect x="5" y="-14" width="3" height="28" rx="1.5"/>
+            <path d="M8 -14 q11 4 8 13 q-2 -6 -8 -7 Z"/>
+          </g>
+          <rect x="0" y="70" width="300" height="8" fill="#241a45"/>
+          <rect x="112" y="78" width="38" height="62" fill="#ffd166" opacity="0.22"/>
+          <g>
+            <rect x="0" y="78" width="37.5" height="62" fill="#fdfdff" stroke="#c9c9dd" stroke-width="1.5"/>
+            <rect x="37.5" y="78" width="37.5" height="62" fill="#fdfdff" stroke="#c9c9dd" stroke-width="1.5"/>
+            <rect x="75" y="78" width="37.5" height="62" fill="#fdfdff" stroke="#c9c9dd" stroke-width="1.5"/>
+            <rect x="112.5" y="78" width="37.5" height="62" fill="#ffd166" stroke="#d9a92e" stroke-width="1.5"/>
+            <rect x="150" y="78" width="37.5" height="62" fill="#fdfdff" stroke="#c9c9dd" stroke-width="1.5"/>
+            <rect x="187.5" y="78" width="37.5" height="62" fill="#6ee7b7" stroke="#3fbf8b" stroke-width="1.5"/>
+            <rect x="225" y="78" width="37.5" height="62" fill="#fdfdff" stroke="#c9c9dd" stroke-width="1.5"/>
+            <rect x="262.5" y="78" width="37.5" height="62" fill="#fdfdff" stroke="#c9c9dd" stroke-width="1.5"/>
+          </g>
+          <g fill="#241a45">
+            <rect x="27" y="78" width="21" height="38" rx="2"/>
+            <rect x="64" y="78" width="21" height="38" rx="2"/>
+            <rect x="139" y="78" width="21" height="38" rx="2"/>
+            <rect x="177" y="78" width="21" height="38" rx="2"/>
+            <rect x="214" y="78" width="21" height="38" rx="2"/>
+          </g>
+        </svg>
+      </div>
       <div class="info">
         <h2>Դաշնամուր</h2>
         <p>Նվագիր ստեղնաշարով կամ մատով, ձայնագրիր քո մեղեդին, սովորիր երգեր փայլող ստեղներով։</p>
@@ -227,7 +400,49 @@
     </a>
 
     <a class="game" href="./rocket/">
-      <div class="cover c5">🚀</div>
+      <div class="cover c5">
+        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="cv4s" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#0b1030"/><stop offset="1" stop-color="#2c3e7a"/>
+            </linearGradient>
+            <linearGradient id="cv4f" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#ff7b3b"/>
+            </linearGradient>
+          </defs>
+          <rect width="300" height="140" fill="url(#cv4s)"/>
+          <g fill="#ffffff">
+            <circle cx="24" cy="24" r="1.8"/><circle cx="70" cy="12" r="1.2" opacity="0.7"/>
+            <circle cx="120" cy="30" r="1.5" opacity="0.8"/><circle cx="180" cy="14" r="1.3" opacity="0.6"/>
+            <circle cx="262" cy="86" r="1.8"/><circle cx="30" cy="96" r="1.4" opacity="0.7"/>
+            <circle cx="90" cy="120" r="1.6" opacity="0.8"/><circle cx="210" cy="120" r="1.2" opacity="0.6"/>
+            <circle cx="286" cy="30" r="1.5" opacity="0.8"/><circle cx="150" cy="8" r="1.1" opacity="0.5"/>
+          </g>
+          <path d="M52 52 l2.6 5.4 5.4 2.6 -5.4 2.6 -2.6 5.4 -2.6 -5.4 -5.4 -2.6 5.4 -2.6 Z" fill="#ffd166" opacity="0.9"/>
+          <path d="M234 44 l2 4.2 4.2 2 -4.2 2 -2 4.2 -2 -4.2 -4.2 -2 4.2 -2 Z" fill="#ffffff" opacity="0.7"/>
+          <g transform="translate(238,28)">
+            <circle r="16" fill="#e07a5f"/>
+            <circle cx="-5" cy="-4" r="3.5" fill="#c4573b" opacity="0.8"/>
+            <circle cx="6" cy="5" r="2.5" fill="#c4573b" opacity="0.8"/>
+            <ellipse rx="26" ry="7" fill="none" stroke="#ffd166" stroke-width="3" transform="rotate(-18)" opacity="0.9"/>
+          </g>
+          <g transform="translate(128,74) rotate(38)">
+            <path d="M-7 24 Q0 48 7 24 Z" fill="url(#cv4f)"/>
+            <path d="M-3 24 Q0 38 3 24 Z" fill="#fff3c4"/>
+            <path d="M-10 10 L-22 26 L-10 22 Z" fill="#e63946"/>
+            <path d="M10 10 L22 26 L10 22 Z" fill="#e63946"/>
+            <path d="M0 -36 Q15 -8 10 22 L-10 22 Q-15 -8 0 -36 Z" fill="#f2f5fa" stroke="#c7cede" stroke-width="2"/>
+            <path d="M0 -36 Q9 -22 11 -10 L-11 -10 Q-9 -22 0 -36 Z" fill="#e63946"/>
+            <circle cx="0" cy="0" r="6.5" fill="#9fd3f2" stroke="#5a7d9e" stroke-width="2.5"/>
+          </g>
+          <g transform="translate(226,108)">
+            <path d="M-16 2 Q-18 -12 -4 -15 Q10 -19 16 -7 Q20 4 10 11 Q-2 17 -12 10 Q-16 7 -16 2 Z" fill="#8d93a8"/>
+            <circle cx="-5" cy="-4" r="3.5" fill="#6b7188"/>
+            <circle cx="6" cy="4" r="2.6" fill="#6b7188"/>
+            <path d="M-30 -8 L-40 -10 M-28 0 L-42 0" stroke="#6b7188" stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
       <div class="info">
         <h2>Հրթիռը տիեզերքում</h2>
         <p>Թռիր աստղերի միջով, հավաքիր ⭐-երը, խուսափիր պտտվող ասթերոիդներից։ 3 կյանք ունես։</p>
@@ -236,7 +451,36 @@
     </a>
 
     <a class="game" href="./memory/">
-      <div class="cover c6">🧠</div>
+      <div class="cover c6">
+        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="cv5s" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#7a3e8f"/><stop offset="1" stop-color="#b05fbf"/>
+            </linearGradient>
+          </defs>
+          <rect width="300" height="140" fill="url(#cv5s)"/>
+          <g fill="#ffffff" opacity="0.7">
+            <path d="M36 26 l2.4 5 5 2.4 -5 2.4 -2.4 5 -2.4 -5 -5 -2.4 5 -2.4 Z"/>
+            <path d="M262 100 l2 4.2 4.2 2 -4.2 2 -2 4.2 -2 -4.2 -4.2 -2 4.2 -2 Z"/>
+            <circle cx="270" cy="28" r="2"/><circle cx="30" cy="110" r="2"/>
+          </g>
+          <g transform="translate(86,74) rotate(-14)">
+            <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#5b2f73" stroke="#e9c8f5" stroke-width="3"/>
+            <rect x="-18" y="-28" width="36" height="56" rx="5" fill="none" stroke="#a86cc0" stroke-width="2" stroke-dasharray="5 5"/>
+            <path d="M0 -12 L8 0 L0 12 L-8 0 Z" fill="#a86cc0"/>
+          </g>
+          <g transform="translate(214,74) rotate(14)">
+            <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#5b2f73" stroke="#e9c8f5" stroke-width="3"/>
+            <rect x="-18" y="-28" width="36" height="56" rx="5" fill="none" stroke="#a86cc0" stroke-width="2" stroke-dasharray="5 5"/>
+            <path d="M0 -12 L8 0 L0 12 L-8 0 Z" fill="#a86cc0"/>
+          </g>
+          <g transform="translate(150,70)">
+            <rect x="-28" y="-38" width="56" height="76" rx="8" fill="#fdf7ff" stroke="#e9c8f5" stroke-width="3"/>
+            <path d="M0 -21 L4.7 -7.7 L19 -7.4 L7.6 1.2 L11.8 15 L0 6.8 L-11.8 15 L-7.6 1.2 L-19 -7.4 L-4.7 -7.7 Z" fill="#ffd166" stroke="#d9a92e" stroke-width="2" stroke-linejoin="round"/>
+          </g>
+          <path d="M150 16 l3 6.2 6.2 3 -6.2 3 -3 6.2 -3 -6.2 -6.2 -3 6.2 -3 Z" fill="#ffd166" opacity="0.95"/>
+        </svg>
+      </div>
       <div class="info">
         <h2>Հիշողության խաղեր</h2>
         <p>Երեք խաղ մեկ տեղում՝ Զույգեր 🃏, Կրկնիր ինձ 💡 ու Թվերի որսորդ 🔢։ Մարզիր ուղեղդ։</p>
@@ -245,7 +489,51 @@
     </a>
 
     <a class="game" href="./fishing/">
-      <div class="cover c8">🎣<span class="new-tag">ՆՈՐ</span></div>
+      <div class="cover c8">
+        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="cv6a" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#a8dcf5"/><stop offset="1" stop-color="#dff2fc"/>
+            </linearGradient>
+            <linearGradient id="cv6b" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#2b86c4"/><stop offset="1" stop-color="#124f7e"/>
+            </linearGradient>
+          </defs>
+          <rect width="300" height="46" fill="url(#cv6a)"/>
+          <circle cx="246" cy="18" r="11" fill="#ffd166"/>
+          <ellipse cx="120" cy="16" rx="20" ry="7" fill="#ffffff" opacity="0.8"/>
+          <rect y="46" width="300" height="94" fill="url(#cv6b)"/>
+          <path d="M0 46 q15 -5 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0" fill="none" stroke="#ffffff" stroke-width="2.5" opacity="0.6"/>
+          <g transform="translate(70,40)">
+            <path d="M-34 0 L34 0 L22 15 L-22 15 Z" fill="#a15c2f" stroke="#7c421d" stroke-width="2"/>
+            <circle cx="-6" cy="-16" r="7" fill="#f5c396"/>
+            <path d="M-14 0 Q-14 -10 -6 -9 Q2 -10 2 0 Z" fill="#e63946"/>
+            <path d="M0 -14 L44 -34" stroke="#5a4632" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M44 -34 L74 62" stroke="#eef0ff" stroke-width="1.5" opacity="0.85"/>
+            <path d="M74 62 q1 7 -5 7 q-5 0 -4 -5" fill="none" stroke="#d7dbe8" stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+          <g transform="translate(162,110)">
+            <ellipse cx="0" cy="0" rx="17" ry="10" fill="#ffd166" stroke="#d9a92e" stroke-width="2"/>
+            <path d="M14 0 L27 -9 L27 9 Z" fill="#ffd166" stroke="#d9a92e" stroke-width="2" stroke-linejoin="round"/>
+            <circle cx="-8" cy="-3" r="2.2" fill="#5c4308"/>
+            <path d="M-3 -9 Q0 -13 4 -10" fill="none" stroke="#d9a92e" stroke-width="2" stroke-linecap="round"/>
+          </g>
+          <g transform="translate(58,84)">
+            <ellipse cx="0" cy="0" rx="13" ry="7.5" fill="#8fb3c9"/>
+            <path d="M11 0 L21 -7 L21 7 Z" fill="#8fb3c9"/>
+            <circle cx="-6" cy="-2" r="1.8" fill="#123047"/>
+          </g>
+          <g transform="translate(240,86)">
+            <ellipse cx="0" cy="0" rx="11" ry="6.5" fill="#8fb3c9" opacity="0.85"/>
+            <path d="M9 0 L18 -6 L18 6 Z" fill="#8fb3c9" opacity="0.85"/>
+            <circle cx="-5" cy="-1.6" r="1.6" fill="#123047"/>
+          </g>
+          <g fill="none" stroke="#ffffff" opacity="0.5">
+            <circle cx="120" cy="92" r="3"/><circle cx="128" cy="76" r="2"/>
+            <circle cx="220" cy="116" r="3"/><circle cx="40" cy="116" r="2.4"/>
+          </g>
+        </svg>
+      <span class="new-tag">ՆՈՐ</span></div>
       <div class="info">
         <h2>Ձկնորսություն</h2>
         <p>60 վայրկյան, մի ծով ձուկ։ Ոսկե ձուկը +5 է, հին կոշիկը՝ 0։ Ինչքա՞ն կհավաքես։</p>
@@ -254,7 +542,25 @@
     </a>
 
     <a class="game" href="./duel/">
-      <div class="cover c10">👥<span class="new-tag">ՆՈՐ</span></div>
+      <div class="cover c10">
+        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="300" height="140" fill="#8f2d36"/>
+          <path d="M300 0 L300 140 L0 140 Z" fill="#1e5a9e"/>
+          <g fill="#ffffff" opacity="0.92">
+            <circle cx="78" cy="34" r="13"/>
+            <path d="M52 66 Q78 40 104 66 L104 70 L52 70 Z"/>
+          </g>
+          <g fill="#ffffff" opacity="0.92">
+            <circle cx="222" cy="88" r="13"/>
+            <path d="M196 120 Q222 94 248 120 L248 124 L196 124 Z"/>
+          </g>
+          <g fill="none" stroke="#ffffff" opacity="0.55" stroke-width="2.5">
+            <circle cx="120" cy="36" r="7"/><circle cx="120" cy="36" r="13" opacity="0.5"/>
+            <circle cx="180" cy="104" r="7"/><circle cx="180" cy="104" r="13" opacity="0.5"/>
+          </g>
+          <path d="M168 -8 L128 62 L150 62 L116 148 L158 76 L136 76 Z" fill="#ffd166" stroke="#c98a12" stroke-width="2.5" stroke-linejoin="round"/>
+        </svg>
+      <span class="new-tag">ՆՈՐ</span></div>
       <div class="info">
         <h2>Երկուսով խաղեր</h2>
         <p>Յոթ խաղ մեկ հեռախոսով երկուսի համար՝ մենամարտից ու պինգ-պոնգից մինչև իքս-զրո ու պարան քաշել։</p>
@@ -263,7 +569,37 @@
     </a>
 
     <a class="game" href="./maze/">
-      <div class="cover c9">🌀<span class="new-tag">ՆՈՐ</span></div>
+      <div class="cover c9">
+        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="cv8s" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#241a45"/><stop offset="1" stop-color="#4a3a8f"/>
+            </linearGradient>
+            <radialGradient id="cv8b" cx="0.35" cy="0.3" r="1">
+              <stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#f0b429"/>
+            </radialGradient>
+          </defs>
+          <rect width="300" height="140" fill="url(#cv8s)"/>
+          <g fill="none" stroke="#a99be8" stroke-width="8" stroke-linecap="round">
+            <path d="M22 24 H166"/>
+            <path d="M206 24 H278 V64"/>
+            <path d="M22 24 V116 H96"/>
+            <path d="M62 64 H130 V96"/>
+            <path d="M166 64 H236"/>
+            <path d="M170 116 H278 V96"/>
+            <path d="M166 64 V24" opacity="0"/>
+          </g>
+          <circle cx="40" cy="60" r="4" fill="#ffd166" opacity="0.25"/>
+          <circle cx="46" cy="74" r="5" fill="#ffd166" opacity="0.45"/>
+          <circle cx="54" cy="88" r="6" fill="#ffd166" opacity="0.65"/>
+          <circle cx="66" cy="96" r="11" fill="url(#cv8b)" stroke="#c98a12" stroke-width="2"/>
+          <path d="M62 92 q3 -3 6 -1" fill="none" stroke="#fff3c4" stroke-width="2" stroke-linecap="round"/>
+          <g transform="translate(242,88)">
+            <circle r="17" fill="#ffd166" opacity="0.2"/>
+            <path d="M0 -12 L2.8 -4.4 L11 -4.2 L4.4 0.7 L6.8 8.6 L0 3.9 L-6.8 8.6 L-4.4 0.7 L-11 -4.2 L-2.8 -4.4 Z" fill="#ffd166" stroke="#d9a92e" stroke-width="1.6" stroke-linejoin="round"/>
+          </g>
+        </svg>
+      <span class="new-tag">ՆՈՐ</span></div>
       <div class="info">
         <h2>Լաբիրինթոս</h2>
         <p>100 մակարդակ՝ փոքրից մինչև հսկա։ Գնդակը գնում է մատիդ հետևից, երաժշտությունն էլ արագանում է։</p>
