@@ -44,7 +44,7 @@
     position: relative;
     z-index: 1;
     width: min(94vw, 460px);
-    background: #1d1d3f;
+    background: #0b0b10;   /* սև՝ լոգոյի ֆոնի հետ ձուլվելու համար */
     border: 4px solid var(--gold);
     border-radius: 26px;
     box-shadow: 0 0 0 6px #1d1d3f, 0 0 0 8px rgba(255, 209, 102, 0.35), 0 24px 60px rgba(0, 0, 0, 0.6);
@@ -52,17 +52,11 @@
     text-align: center;
   }
 
-  .crown { font-size: 46px; line-height: 1; animation: bob 1.8s infinite; display: inline-block; }
-  @keyframes bob { 50% { transform: translateY(-6px) rotate(-5deg); } }
-
-  h1 {
-    font-size: clamp(1.9rem, 8vw, 2.6rem);
-    letter-spacing: 0.03em;
-    margin-top: 4px;
-    background: linear-gradient(180deg, #ffe9a8, var(--gold) 55%, var(--gold2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  /* Ընկերոջ սարքած լոգոն՝ պաստառի գլխին */
+  .logoimg {
+    display: block;
+    width: min(66vw, 300px);
+    margin: -6px auto 0;
   }
   .slogan { color: #9a9ec7; font-size: 0.92rem; margin-top: 6px; }
 
@@ -115,18 +109,17 @@
     body { background: #fff; }
     .star { display: none; }
     .poster { background: #fff; color: #12122b; box-shadow: none; border-color: #b8860b; }
+    .logoimg { border-radius: 18px; }   /* սև քառակուսին սպիտակ թղթին սիրուն նստի */
     .slogan { color: #555; }
     .scanme { color: #12122b; }
     .back { display: none; }
-    h1 { color: #b8860b; background: none; -webkit-background-clip: initial; background-clip: initial; }
   }
 </style>
 </head>
 <body>
 
 <div class="poster">
-  <div class="crown">👑</div>
-  <h1>GOLDEN GAMES</h1>
+  <img class="logoimg" src="./logo.png" alt="Golden Games">
   <p class="slogan">✵ թե ուզմես ուրեմն կրենալել դես․ լիլը կլի, տյու ուզող ասա ✵</p>
 
   <div class="badge">🎮 Զանազան խաղեր՝ միայն մեկ տեղում</div>
