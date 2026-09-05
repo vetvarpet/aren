@@ -23,10 +23,8 @@
     font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
     min-height: 100dvh;
     display: flex;
-    align-items: center;
-    justify-content: center;
     padding: 18px;
-    overflow: hidden;
+    overflow-x: hidden;
   }
 
   /* Փայլող աստղիկները ֆոնին */
@@ -43,19 +41,20 @@
   .poster {
     position: relative;
     z-index: 1;
+    margin: auto;   /* կենտրոնում է, բայց երկար բովանդակությունը չի կտրվում */
     width: min(94vw, 460px);
     background: #0b0b10;   /* սև՝ լոգոյի ֆոնի հետ ձուլվելու համար */
     border: 4px solid var(--gold);
     border-radius: 26px;
     box-shadow: 0 0 0 6px #1d1d3f, 0 0 0 8px rgba(255, 209, 102, 0.35), 0 24px 60px rgba(0, 0, 0, 0.6);
-    padding: 26px 22px 22px;
+    padding: 20px 20px 18px;
     text-align: center;
   }
 
   /* Ընկերոջ սարքած լոգոն՝ պաստառի գլխին */
   .logoimg {
     display: block;
-    width: min(66vw, 300px);
+    width: min(54vw, 280px);
     margin: -6px auto 0;
   }
   .slogan { color: #9a9ec7; font-size: 0.92rem; margin-top: 6px; }
@@ -82,7 +81,7 @@
     padding: 16px;
     border-radius: 20px;
     border: 4px solid var(--gold);
-    width: min(72vw, 40vh, 300px);
+    width: min(60vw, 36vh, 280px);
     margin: 16px auto 0;
   }
   .qr svg { display: block; width: 100%; height: auto; }
