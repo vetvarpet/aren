@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Քաղաքի վարորդը</title>
+<title>Քաղաքի վարորդը 🚗</title>
 <style>
   * { margin: 0; box-sizing: border-box; }
   html, body { height: 100%; overflow: hidden; }
@@ -26,7 +26,7 @@
 <script>
 // ——————————————————————————————————————
 //  ՔԱՂԱՔԻ ՎԱՐՈՐԴԸ — Արենի երկրորդ խաղը
-//  Բաց քաղաք. վարիր ուր ուզում ես, առաքիր պիցցաներ
+//  Բաց քաղաք. վարիր ուր ուզում ես, առաքիր պիցցաներ 🍕
 // ——————————————————————————————————————
 
 
@@ -34,9 +34,9 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { pickup: 'Վերցրու պիցցան', deliver: 'Հասցրու տուն', deliveries: 'Առաքում՝ ', run: 'ՓԱԽԻ՛Ր ՈՍՏԻԿԱՆԻՑ', shopHint: n => 'Փողդ հերիքում է ' + n + '. գնա խանութ', goldName: 'ՈՍԿԵ մեքենային', sportName: 'սպորտայինին', fine: 'Տուգանք −30֏', took: 'Վերցրիր', newCar: 'Նոր մեքենա՜', goldCar: 'ՈՍԿԵ ՄԵՔԵՆԱ՜' },
-  ru: { pickup: 'Забери пиццу', deliver: 'Доставь домой', deliveries: 'Доставки: ', run: 'УБЕГАЙ ОТ ПОЛИЦИИ', shopHint: n => 'Денег хватает ' + n + '. Езжай в магазин', goldName: 'на ЗОЛОТУЮ машину', sportName: 'на спортивную', fine: 'Штраф −30֏', took: 'Взял', newCar: 'Новая машина!', goldCar: 'ЗОЛОТАЯ МАШИНА!' },
-  en: { pickup: 'Pick up the pizza', deliver: 'Deliver it home', deliveries: 'Deliveries: ', run: 'RUN FROM THE POLICE', shopHint: n => 'You can afford ' + n + '. Go to the shop', goldName: 'the GOLDEN car', sportName: 'the sports car', fine: 'Fine −30֏', took: 'Got it', newCar: 'New car!', goldCar: 'GOLDEN CAR!' },
+  hy: { pickup: 'Վերցրու պիցցան 🍕', deliver: 'Հասցրու տուն 🏠', deliveries: 'Առաքում՝ ', run: '🚓 ՓԱԽԻ՛Ր ՈՍՏԻԿԱՆԻՑ', shopHint: n => '🏪 Փողդ հերիքում է ' + n + '. գնա խանութ', goldName: 'ՈՍԿԵ մեքենային 👑', sportName: 'սպորտայինին', fine: '🚓 Տուգանք −30֏', took: '🍕 Վերցրիր', newCar: '🏎 Նոր մեքենա՜', goldCar: '👑 ՈՍԿԵ ՄԵՔԵՆԱ՜' },
+  ru: { pickup: 'Забери пиццу 🍕', deliver: 'Доставь домой 🏠', deliveries: 'Доставки: ', run: '🚓 УБЕГАЙ ОТ ПОЛИЦИИ', shopHint: n => '🏪 Денег хватает ' + n + '. Езжай в магазин', goldName: 'на ЗОЛОТУЮ машину 👑', sportName: 'на спортивную', fine: '🚓 Штраф −30֏', took: '🍕 Взял', newCar: '🏎 Новая машина!', goldCar: '👑 ЗОЛОТАЯ МАШИНА!' },
+  en: { pickup: 'Pick up the pizza 🍕', deliver: 'Deliver it home 🏠', deliveries: 'Deliveries: ', run: '🚓 RUN FROM THE POLICE', shopHint: n => '🏪 You can afford ' + n + '. Go to the shop', goldName: 'the GOLDEN car 👑', sportName: 'the sports car', fine: '🚓 Fine −30֏', took: '🍕 Got it', newCar: '🏎 New car!', goldCar: '👑 GOLDEN CAR!' },
 };
 const T = TRL[ggLang] || TRL.hy;
 const canvas = document.getElementById('game');
@@ -71,7 +71,7 @@ const car = {
 };
 let maxSpeed = 7;             // սովորական մեքենայի առավելագույն արագությունը
 let accel = 0.14;             // ինչ արագ է թափ հավաքում
-let carLevel = 0;             // 0 = սովորական, 1 = սպորտային, 2 = ՈՍԿԵ
+let carLevel = 0;             // 0 = սովորական, 1 = սպորտային, 2 = ՈՍԿԵ 👑
 
 // ——— Մեքենաների խանութը ———
 // Երկու մակարդակ կա. սպորտայինը՝ 200֏, իսկ ՈՍԿԵՆ՝ 500֏ ու ամենաարագն է
@@ -497,7 +497,7 @@ function draw() {
   }
 
   // մեքենաների խանութը (մինչև բոլոր մեքենաները գնելը)
-  // Կապույտ շրջան՝ սպորտայինի հերթն է, ոսկեգույն՝ ՈՍԿԵ մեքենայի
+  // Կապույտ շրջան՝ սպորտայինի հերթն է, ոսկեգույն՝ ՈՍԿԵ մեքենայի 👑
   if (carLevel < UPGRADES.length) {
     ctx.strokeStyle = carLevel === 1 ? '#ffd700' : '#5bc0de';
     ctx.lineWidth = 5;
@@ -513,7 +513,7 @@ function draw() {
   // ոստիկանական մեքենան
   drawCar(police.x, police.y, police.angle, '#f2f4f8', false, true);
 
-  // քո մեքենան. կարմիր՝ սովորական, սպիտակ՝ սպորտային, փայլուն ոսկե՝
+  // քո մեքենան. կարմիր՝ սովորական, սպիտակ՝ սպորտային, փայլուն ոսկե՝ 👑
   const myColor = carLevel === 2 ? '#ffd700' : carLevel === 1 ? '#f7f9fc' : '#e63946';
   drawCar(car.x, car.y, car.angle, myColor, true);
   if (carLevel === 2) {
@@ -620,7 +620,7 @@ function drawCar(x, y, angle, color, isPlayer, isPolice) {
   ctx.restore();
 }
 
-// ——— Նշանակետերի նկարած պատկերները (էմոջիների փոխարեն) ———
+// ——— Նշանակետերի նկարած պատկերները (որ բոլոր հեռախոսներում երևան) ———
 function drawPizzaIcon(x, y) {
   ctx.save();
   ctx.translate(x, y);
@@ -672,7 +672,7 @@ function drawShopIcon(x, y) {
   ctx.restore();
 }
 
-// Ոսկե թագը՝ միշտ ուղիղ, լողում է մեքենայի վրայում
+// Ոսկե թագը՝ միշտ ուղիղ, լողում է մեքենայի վրայում 👑
 function drawCrown(x, y) {
   const bob = Math.sin(frame * 0.08) * 3;   // կամաց վեր-վար է շնչում
   ctx.save();
@@ -696,7 +696,7 @@ function drawCrown(x, y) {
   ctx.restore();
 }
 
-// Փայլիկներ, որ թարթում են ոսկե մեքենայի շուրջը
+// Փայլիկներ, որ թարթում են ոսկե մեքենայի շուրջը ✨
 function drawSparkles(x, y) {
   for (let k = 0; k < 4; k++) {
     const a = frame * 0.06 + k * 1.6;

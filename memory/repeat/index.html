@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Կրկնիր ինձ</title>
+<title>Կրկնիր ինձ 💡</title>
 <style>
   * { margin: 0; box-sizing: border-box; }
   html, body { height: 100%; }
@@ -72,7 +72,7 @@
 </style>
 
 <a href="../../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
-<h1>Կրկնիր ինձ</h1>
+<h1>Կրկնիր ինձ 💡</h1>
 <div class="stats">Շղթա՝ <b id="round">0</b><span>Ռեկորդ՝ <b id="best">0</b></span></div>
 
 <div class="pad">
@@ -82,12 +82,12 @@
   <div class="pane" id="p3"></div>
 </div>
 
-<div id="status">Սեղմիր «Սկսել»-ը</div>
+<div id="status">Սեղմիր «Սկսել»-ը 👇</div>
 <button id="startBtn">▶ Սկսել</button>
 
 <script>
 // ——————————————————————————————————————
-//  ԿՐԿՆԻՐ ԻՆՁ
+//  ԿՐԿՆԻՐ ԻՆՁ 💡
 //  Խաղը վառում է կոճակները հերթով, դու կրկնում ես։
 //  Ամեն շրջան շղթան մեկով երկարում է։ Ինչքա՞ն կհիշես։
 // ——————————————————————————————————————
@@ -97,9 +97,9 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { h1: 'Կրկնիր ինձ', chain: 'Շղթա՝', rec: 'Ռեկորդ՝', pressStart: 'Սեղմիր «Սկսել»-ը', watch: 'Նայի՛ր ուշադիր', yourTurn: 'Քո հերթն է', nice: 'Ապրե՛ս', result: n => 'Դու հիշեցիր ' + n + ' քայլանոց շղթա', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ', start: '▶ Սկսել', again: 'Նորից' },
-  ru: { h1: 'Повтори за мной', chain: 'Цепочка:', rec: 'Рекорд:', pressStart: 'Нажми «Старт»', watch: 'Смотри внимательно', yourTurn: 'Твоя очередь', nice: 'Молодец!', result: n => 'Ты запомнил цепочку из ' + n + ' шагов', newRec: ' — НОВЫЙ РЕКОРД', start: '▶ Старт', again: 'Ещё раз' },
-  en: { h1: 'Repeat After Me', chain: 'Chain:', rec: 'Best:', pressStart: 'Press “Start”', watch: 'Watch closely', yourTurn: 'Your turn', nice: 'Nice!', result: n => 'You remembered a chain of ' + n + ' steps', newRec: ' — NEW RECORD', start: '▶ Start', again: 'Again' },
+  hy: { h1: 'Կրկնիր ինձ 💡', chain: 'Շղթա՝', rec: 'Ռեկորդ՝', pressStart: 'Սեղմիր «Սկսել»-ը 👇', watch: 'Նայի՛ր ուշադիր 👀', yourTurn: 'Քո հերթն է 👆', nice: 'Ապրե՛ս 🎉', result: n => 'Դու հիշեցիր ' + n + ' քայլանոց շղթա', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ 🏆', start: '▶ Սկսել', again: '🔄 Նորից' },
+  ru: { h1: 'Повтори за мной 💡', chain: 'Цепочка:', rec: 'Рекорд:', pressStart: 'Нажми «Старт» 👇', watch: 'Смотри внимательно 👀', yourTurn: 'Твоя очередь 👆', nice: 'Молодец! 🎉', result: n => 'Ты запомнил цепочку из ' + n + ' шагов', newRec: ' — НОВЫЙ РЕКОРД 🏆', start: '▶ Старт', again: '🔄 Ещё раз' },
+  en: { h1: 'Repeat After Me 💡', chain: 'Chain:', rec: 'Best:', pressStart: 'Press “Start” 👇', watch: 'Watch closely 👀', yourTurn: 'Your turn 👆', nice: 'Nice! 🎉', result: n => 'You remembered a chain of ' + n + ' steps', newRec: ' — NEW RECORD 🏆', start: '▶ Start', again: '🔄 Again' },
 };
 const T = TRL[ggLang] || TRL.hy;
 if (ggLang !== 'hy') {
@@ -227,16 +227,13 @@ panes.forEach((p, i) => p.addEventListener('pointerdown', () => press(i)));
 startBtn.addEventListener('click', startGame);
 
 function confetti() {
-  const confColors = ['#ffd166', '#ff7b6b', '#6ee7b7', '#6ec5ff', '#f2a7d8', '#fdfdff'];
+  const stuff = ['🎉', '⭐', '💡', '💛', '🎊', '✨'];
   for (let k = 0; k < 40; k++) {
     const s = document.createElement('span');
     s.className = 'confetti';
-    s.style.background = confColors[Math.floor(Math.random() * confColors.length)];
-    const cw = 6 + Math.random() * 8;   // մերթ շրջանակ, մերթ թղթի կտոր
-    s.style.width = cw + 'px';
-    s.style.height = (Math.random() < 0.4 ? cw : cw * 1.7) + 'px';
-    s.style.borderRadius = Math.random() < 0.4 ? '50%' : '2px';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
     s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
     s.style.animationDuration = (2 + Math.random() * 2) + 's';
     s.style.animationDelay = (Math.random() * 0.8) + 's';
     document.body.appendChild(s);
