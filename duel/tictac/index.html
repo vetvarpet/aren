@@ -156,7 +156,7 @@ function tap(i, el) {
   initAudio();
   if (over || cells[i]) return;
   cells[i] = turn;
-  el.textContent = turn === 'x' ? '❌' : '⭕';
+  el.textContent = turn === 'x' ? 'X' : 'O';
   el.classList.add(turn);
   (turn === 'x' ? sX : sO)();
 
