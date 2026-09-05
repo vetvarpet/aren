@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Կատվիկ🐱</title>
+<title>Golden Cat 🐱</title>
 <link rel="icon" type="image/png" href="../logo-icon.png">
 <style>
   /* ——— Խաղի գույները ——— */
@@ -45,14 +45,14 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { score: 'Միավոր՝ ', best: 'Ռեկորդ՝ ', title: 'Կատուն թռչում է 🐱', sub: 'Դիպչիր՝ թռչելու · Ագռավ տեսար՝ ՄԻ՛ թռչիր', ouch: 'Ա՜խ, բախվեցիր 😿', overSub: n => 'Հավաքեցիր ' + n + ' միավոր · Դիպչիր՝ նորից խաղալու' },
-  ru: { score: 'Очки: ', best: 'Рекорд: ', title: 'Котик прыгает 🐱', sub: 'Нажми — прыжок · Увидел ворону — НЕ прыгай', ouch: 'Ой, столкнулся 😿', overSub: n => 'Набрал ' + n + ' очков · Нажми, чтобы играть снова' },
-  en: { score: 'Score: ', best: 'Best: ', title: 'The Cat Jumps 🐱', sub: 'Tap to jump · See a crow — DON’T jump', ouch: 'Ouch, you crashed 😿', overSub: n => 'You got ' + n + ' points · Tap to play again' },
-  es: { score: 'Puntos: ', best: 'Récord: ', title: 'El gato salta 🐱', sub: 'Toca para saltar · ¿Un cuervo? NO saltes', ouch: 'Ay, chocaste 😿', overSub: n => 'Hiciste ' + n + ' puntos · Toca para jugar otra vez' },
-  fr: { score: 'Points : ', best: 'Record : ', title: 'Le chat saute 🐱', sub: 'Touche pour sauter · Un corbeau ? NE saute PAS', ouch: 'Aïe, tu t’es cogné 😿', overSub: n => 'Tu as fait ' + n + ' points · Touche pour rejouer' },
-  de: { score: 'Punkte: ', best: 'Rekord: ', title: 'Die Katze springt 🐱', sub: 'Tippe zum Springen · Krähe in Sicht? NICHT springen', ouch: 'Autsch, zusammengestoßen 😿', overSub: n => 'Du hast ' + n + ' Punkte · Tippe, um nochmal zu spielen' },
-  ja: { score: 'スコア：', best: 'ベスト：', title: 'ネコがジャンプ 🐱', sub: 'タップでジャンプ · カラスが来たらジャンプしない！', ouch: 'いたっ、ぶつかった 😿', overSub: n => n + 'ポイントだったよ · タップでもう一回' },
-  zh: { score: '得分：', best: '纪录：', title: '小猫跳跳 🐱', sub: '点一下就跳 · 看到乌鸦千万别跳', ouch: '哎呀，撞到了 😿', overSub: n => '你得了' + n + '分 · 点一下再玩一次' },
+  hy: { score: 'Միավոր՝ ', best: 'Ռեկորդ՝ ', title: 'Golden Cat 🐱', sub: 'Դիպչիր՝ թռչելու · Ագռավ տեսար՝ ՄԻ՛ թռչիր', ouch: 'Ա՜խ, բախվեցիր 😿', overSub: n => 'Հավաքեցիր ' + n + ' միավոր · Դիպչիր՝ նորից խաղալու' },
+  ru: { score: 'Очки: ', best: 'Рекорд: ', title: 'Golden Cat 🐱', sub: 'Нажми — прыжок · Увидел ворону — НЕ прыгай', ouch: 'Ой, столкнулся 😿', overSub: n => 'Набрал ' + n + ' очков · Нажми, чтобы играть снова' },
+  en: { score: 'Score: ', best: 'Best: ', title: 'Golden Cat 🐱', sub: 'Tap to jump · See a crow — DON’T jump', ouch: 'Ouch, you crashed 😿', overSub: n => 'You got ' + n + ' points · Tap to play again' },
+  es: { score: 'Puntos: ', best: 'Récord: ', title: 'Golden Cat 🐱', sub: 'Toca para saltar · ¿Un cuervo? NO saltes', ouch: 'Ay, chocaste 😿', overSub: n => 'Hiciste ' + n + ' puntos · Toca para jugar otra vez' },
+  fr: { score: 'Points : ', best: 'Record : ', title: 'Golden Cat 🐱', sub: 'Touche pour sauter · Un corbeau ? NE saute PAS', ouch: 'Aïe, tu t’es cogné 😿', overSub: n => 'Tu as fait ' + n + ' points · Touche pour rejouer' },
+  de: { score: 'Punkte: ', best: 'Rekord: ', title: 'Golden Cat 🐱', sub: 'Tippe zum Springen · Krähe in Sicht? NICHT springen', ouch: 'Autsch, zusammengestoßen 😿', overSub: n => 'Du hast ' + n + ' Punkte · Tippe, um nochmal zu spielen' },
+  ja: { score: 'スコア：', best: 'ベスト：', title: 'Golden Cat 🐱', sub: 'タップでジャンプ · カラスが来たらジャンプしない！', ouch: 'いたっ、ぶつかった 😿', overSub: n => n + 'ポイントだったよ · タップでもう一回' },
+  zh: { score: '得分：', best: '纪录：', title: 'Golden Cat 🐱', sub: '点一下就跳 · 看到乌鸦千万别跳', ouch: '哎呀，撞到了 😿', overSub: n => '你得了' + n + '分 · 点一下再玩一次' },
 };
 const T = TRL[ggLang] || TRL.hy;
 const canvas = document.getElementById('game');

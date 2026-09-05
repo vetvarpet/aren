@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Երկուսով խաղեր 👥</title>
+<title>Golden Duel 👥</title>
 <link rel="icon" type="image/png" href="../logo-icon.png">
 <style>
   * { margin: 0; box-sizing: border-box; }
@@ -76,7 +76,7 @@
 
 <nav><a href="../">← Golden Games</a></nav>
 
-<h1>Երկուսով խաղեր 👥</h1>
+<h1>Golden Duel 👥</h1>
 <p class="sub">Մեկ հեռախոս, երկու խաղացող։ Ո՞վ ում 😏</p>
 
 <div class="games">
@@ -147,13 +147,13 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  ru: { h1: 'Игры вдвоём 👥', sub: 'Один телефон, два игрока. Кто кого? 😏', g1: ['Дуэль', 'После сигнала 15 секунд: кто нажмёт больше'], g3: ['Пинг-понг', 'Две ракетки, один мяч: не пропусти на своей стороне'], g4: ['Матч по математике', 'Одна задача на двоих: кто решит первым?'], g5: ['Крестики-нолики', 'Классика: собери три в ряд'], g6: ['Перетяни канат', 'Жми как сумасшедший — тяни узел на свою сторону'], g7: ['Четыре в ряд', 'Бросай фишки в столбцы, собери четыре'], g8: ['Охота на мишени', '30 секунд, убегающие мишени: кто точнее?'] },
-  en: { h1: 'Two-Player Games 👥', sub: 'One phone, two players. Who wins? 😏', g1: ['Duel', 'After the signal, 15 seconds: who taps more'], g3: ['Ping-Pong', 'Two paddles, one ball: don’t let it past your side'], g4: ['Math Race', 'Same problem for both: who solves it first?'], g5: ['Tic-Tac-Toe', 'The classic: get three in a row'], g6: ['Tug of War', 'Tap like crazy — pull the knot to your side'], g7: ['Connect Four', 'Drop discs into columns, line up four'], g8: ['Target Hunt', '30 seconds, escaping targets: who is sharper?'] },
-  es: { h1: 'Juegos de a dos 👥', sub: 'Un teléfono, dos jugadores. ¿Quién gana? 😏', g1: ['Duelo', 'Tras la señal, 15 segundos: quién toca más veces'], g3: ['Ping-pong', 'Dos paletas, una pelota: que no pase por tu lado'], g4: ['Carrera de mates', 'El mismo problema para ambos: ¿quién lo resuelve antes?'], g5: ['Tres en raya', 'El clásico: haz tres en línea'], g6: ['Tira la cuerda', 'Toca como loco y arrastra el nudo a tu lado'], g7: ['Cuatro en raya', 'Suelta fichas en las columnas, junta cuatro'], g8: ['Caza de dianas', '30 segundos, dianas que huyen: ¿quién apunta mejor?'] },
-  fr: { h1: 'Jeux à deux 👥', sub: 'Un téléphone, deux joueurs. Qui va gagner ? 😏', g1: ['Duel', 'Après le signal, 15 secondes : qui tape le plus'], g3: ['Ping-pong', 'Deux raquettes, une balle : ne la laisse pas passer'], g4: ['Course de calcul', 'Le même calcul pour les deux : qui répond en premier ?'], g5: ['Morpion', 'Le classique : aligne trois symboles'], g6: ['Tir à la corde', 'Tape comme un fou pour tirer le nœud de ton côté'], g7: ['Puissance 4', 'Lâche les jetons dans les colonnes, aligne-en quatre'], g8: ['Chasse aux cibles', '30 secondes, des cibles qui fuient : qui vise le mieux ?'] },
-  de: { h1: 'Spiele zu zweit 👥', sub: 'Ein Handy, zwei Spieler. Wer gewinnt? 😏', g1: ['Duell', 'Nach dem Signal 15 Sekunden: Wer tippt öfter?'], g3: ['Ping-Pong', 'Zwei Schläger, ein Ball: lass ihn nicht durch'], g4: ['Mathe-Rennen', 'Dieselbe Aufgabe für beide: Wer rechnet schneller?'], g5: ['Tic-Tac-Toe', 'Der Klassiker: drei in eine Reihe'], g6: ['Tauziehen', 'Tippe wie verrückt und zieh den Knoten zu dir'], g7: ['Vier gewinnt', 'Wirf Steine in die Spalten, vier in eine Reihe'], g8: ['Zieljagd', '30 Sekunden, flüchtende Ziele: Wer trifft besser?'] },
-  ja: { h1: 'ふたりであそぶ 👥', sub: '1台のスマホで2人対戦。どっちが強い？😏', g1: ['連打バトル', '合図から15秒、たくさんタップした方のかち'], g3: ['ピンポン', 'ラケット2つ、ボール1つ。自分の側を守れ'], g4: ['計算レース', '同じ問題をどっちが早くとける？'], g5: ['まるばつ', '定番！3つならべたらかち'], g6: ['つなひき', '連打して結び目を自分の側へひっぱれ'], g7: ['四目ならべ', 'コマを落として4つならべよう'], g8: ['まと当て', '30秒、にげるまとをどっちが多く当てる？'] },
-  zh: { h1: '双人游戏 👥', sub: '一部手机，两个玩家，看谁厉害 😏', g1: ['对决', '信号响后15秒，看谁点得多'], g3: ['乒乓球', '两个球拍一个球，别让球过你这边'], g4: ['算术比赛', '同一道题，看谁先算出来'], g5: ['井字棋', '经典游戏：三个连成一线'], g6: ['拔河', '疯狂点击，把绳结拉到你这边'], g7: ['四子棋', '把棋子投进柱子，连成四个'], g8: ['打靶', '30秒，靶子会跑，看谁更准'] },
+  ru: { h1: 'Golden Duel 👥', sub: 'Один телефон, два игрока. Кто кого? 😏', g1: ['Дуэль', 'После сигнала 15 секунд: кто нажмёт больше'], g3: ['Пинг-понг', 'Две ракетки, один мяч: не пропусти на своей стороне'], g4: ['Матч по математике', 'Одна задача на двоих: кто решит первым?'], g5: ['Крестики-нолики', 'Классика: собери три в ряд'], g6: ['Перетяни канат', 'Жми как сумасшедший — тяни узел на свою сторону'], g7: ['Четыре в ряд', 'Бросай фишки в столбцы, собери четыре'], g8: ['Охота на мишени', '30 секунд, убегающие мишени: кто точнее?'] },
+  en: { h1: 'Golden Duel 👥', sub: 'One phone, two players. Who wins? 😏', g1: ['Duel', 'After the signal, 15 seconds: who taps more'], g3: ['Ping-Pong', 'Two paddles, one ball: don’t let it past your side'], g4: ['Math Race', 'Same problem for both: who solves it first?'], g5: ['Tic-Tac-Toe', 'The classic: get three in a row'], g6: ['Tug of War', 'Tap like crazy — pull the knot to your side'], g7: ['Connect Four', 'Drop discs into columns, line up four'], g8: ['Target Hunt', '30 seconds, escaping targets: who is sharper?'] },
+  es: { h1: 'Golden Duel 👥', sub: 'Un teléfono, dos jugadores. ¿Quién gana? 😏', g1: ['Duelo', 'Tras la señal, 15 segundos: quién toca más veces'], g3: ['Ping-pong', 'Dos paletas, una pelota: que no pase por tu lado'], g4: ['Carrera de mates', 'El mismo problema para ambos: ¿quién lo resuelve antes?'], g5: ['Tres en raya', 'El clásico: haz tres en línea'], g6: ['Tira la cuerda', 'Toca como loco y arrastra el nudo a tu lado'], g7: ['Cuatro en raya', 'Suelta fichas en las columnas, junta cuatro'], g8: ['Caza de dianas', '30 segundos, dianas que huyen: ¿quién apunta mejor?'] },
+  fr: { h1: 'Golden Duel 👥', sub: 'Un téléphone, deux joueurs. Qui va gagner ? 😏', g1: ['Duel', 'Après le signal, 15 secondes : qui tape le plus'], g3: ['Ping-pong', 'Deux raquettes, une balle : ne la laisse pas passer'], g4: ['Course de calcul', 'Le même calcul pour les deux : qui répond en premier ?'], g5: ['Morpion', 'Le classique : aligne trois symboles'], g6: ['Tir à la corde', 'Tape comme un fou pour tirer le nœud de ton côté'], g7: ['Puissance 4', 'Lâche les jetons dans les colonnes, aligne-en quatre'], g8: ['Chasse aux cibles', '30 secondes, des cibles qui fuient : qui vise le mieux ?'] },
+  de: { h1: 'Golden Duel 👥', sub: 'Ein Handy, zwei Spieler. Wer gewinnt? 😏', g1: ['Duell', 'Nach dem Signal 15 Sekunden: Wer tippt öfter?'], g3: ['Ping-Pong', 'Zwei Schläger, ein Ball: lass ihn nicht durch'], g4: ['Mathe-Rennen', 'Dieselbe Aufgabe für beide: Wer rechnet schneller?'], g5: ['Tic-Tac-Toe', 'Der Klassiker: drei in eine Reihe'], g6: ['Tauziehen', 'Tippe wie verrückt und zieh den Knoten zu dir'], g7: ['Vier gewinnt', 'Wirf Steine in die Spalten, vier in eine Reihe'], g8: ['Zieljagd', '30 Sekunden, flüchtende Ziele: Wer trifft besser?'] },
+  ja: { h1: 'Golden Duel 👥', sub: '1台のスマホで2人対戦。どっちが強い？😏', g1: ['連打バトル', '合図から15秒、たくさんタップした方のかち'], g3: ['ピンポン', 'ラケット2つ、ボール1つ。自分の側を守れ'], g4: ['計算レース', '同じ問題をどっちが早くとける？'], g5: ['まるばつ', '定番！3つならべたらかち'], g6: ['つなひき', '連打して結び目を自分の側へひっぱれ'], g7: ['四目ならべ', 'コマを落として4つならべよう'], g8: ['まと当て', '30秒、にげるまとをどっちが多く当てる？'] },
+  zh: { h1: 'Golden Duel 👥', sub: '一部手机，两个玩家，看谁厉害 😏', g1: ['对决', '信号响后15秒，看谁点得多'], g3: ['乒乓球', '两个球拍一个球，别让球过你这边'], g4: ['算术比赛', '同一道题，看谁先算出来'], g5: ['井字棋', '经典游戏：三个连成一线'], g6: ['拔河', '疯狂点击，把绳结拉到你这边'], g7: ['四子棋', '把棋子投进柱子，连成四个'], g8: ['打靶', '30秒，靶子会跑，看谁更准'] },
 };
 const T = TRL[ggLang];
 if (T) {
