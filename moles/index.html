@@ -132,6 +132,11 @@ const TRL = {
   hy: { h1: 'Խլուրդներ 🦔', score: 'Միավոր՝ ', time: ' վրկ', rec: 'Ռեկորդ՝ ', intro: 'Խփի՛ր խլուրդներին։ Ոսկեգույնը +3 է, դինամիտովը՝ −5 💥', result: n => 'Հավաքեցիր ' + n + ' միավոր', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ 🎉', start: '▶ Սկսել', again: '🔄 Նորից' },
   ru: { h1: 'Кроты 🦔', score: 'Очки: ', time: ' сек', rec: 'Рекорд: ', intro: 'Бей кротов! Золотой +3, а крот с динамитом −5 💥', result: n => 'Ты набрал ' + n + ' очков', newRec: ' — НОВЫЙ РЕКОРД 🎉', start: '▶ Старт', again: '🔄 Ещё раз' },
   en: { h1: 'Moles 🦔', score: 'Score: ', time: ' s', rec: 'Best: ', intro: 'Whack the moles! Gold is +3, the dynamite mole is −5 💥', result: n => 'You scored ' + n + ' points', newRec: ' — NEW RECORD 🎉', start: '▶ Start', again: '🔄 Again' },
+  es: { h1: 'Topos 🦔', score: 'Puntos: ', time: ' s', rec: 'Récord: ', intro: '¡Golpea a los topos! El dorado da +3, el de la dinamita −5 💥', result: n => 'Hiciste ' + n + ' puntos', newRec: ' — ¡NUEVO RÉCORD! 🎉', start: '▶ Empezar', again: '🔄 Otra vez' },
+  fr: { h1: 'Taupes 🦔', score: 'Points : ', time: ' s', rec: 'Record : ', intro: 'Tape sur les taupes ! La dorée fait +3, celle à la dynamite −5 💥', result: n => 'Tu as fait ' + n + ' points', newRec: ' — NOUVEAU RECORD 🎉', start: '▶ Commencer', again: '🔄 Encore' },
+  de: { h1: 'Maulwürfe 🦔', score: 'Punkte: ', time: ' s', rec: 'Rekord: ', intro: 'Hau die Maulwürfe! Der goldene gibt +3, der mit Dynamit −5 💥', result: n => 'Du hast ' + n + ' Punkte geholt', newRec: ' — NEUER REKORD 🎉', start: '▶ Start', again: '🔄 Nochmal' },
+  ja: { h1: 'モグラたたき 🦔', score: 'スコア：', time: '秒', rec: 'ベスト：', intro: 'モグラをたたけ！金は+3、ダイナマイトは−5 💥', result: n => n + 'ポイントとったよ', newRec: ' — 新記録 🎉', start: '▶ スタート', again: '🔄 もう一回' },
+  zh: { h1: '打地鼠 🦔', score: '得分：', time: '秒', rec: '纪录：', intro: '快打地鼠！金色+3，拿炸药的−5 💥', result: n => '你得了' + n + '分', newRec: ' — 新纪录 🎉', start: '▶ 开始', again: '🔄 再来' },
 };
 const T = TRL[ggLang] || TRL.hy;
 document.querySelector('h1').textContent = T.h1;

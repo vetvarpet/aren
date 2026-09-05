@@ -101,6 +101,11 @@ const TRL = {
   hy: { h1: 'Չորսը շարքով 🔴🟡', turn: s => 'Հերթը՝ ' + s, win: s => s + ' ՀԱՂԹԵՑ 🎉', draw: 'Ոչ-ոքի՜ Դաշտը լցվեց 🤝', again: '🔄 Նոր խաղ' },
   ru: { h1: 'Четыре в ряд 🔴🟡', turn: s => 'Ход: ' + s, win: s => s + ' ПОБЕДИЛ 🎉', draw: 'Ничья! Поле заполнено 🤝', again: '🔄 Новая игра' },
   en: { h1: 'Connect Four 🔴🟡', turn: s => 'Turn: ' + s, win: s => s + ' WINS 🎉', draw: 'Draw! The board is full 🤝', again: '🔄 New game' },
+  es: { h1: 'Cuatro en raya 🔴🟡', turn: s => 'Turno: ' + s, win: s => s + ' ¡GANA! 🎉', draw: '¡Empate! Tablero lleno 🤝', again: '🔄 Nueva partida' },
+  fr: { h1: 'Puissance 4 🔴🟡', turn: s => 'Au tour de ' + s, win: s => s + ' GAGNE 🎉', draw: 'Égalité ! La grille est pleine 🤝', again: '🔄 Nouvelle partie' },
+  de: { h1: 'Vier gewinnt 🔴🟡', turn: s => 'Am Zug: ' + s, win: s => s + ' GEWINNT 🎉', draw: 'Unentschieden! Das Brett ist voll 🤝', again: '🔄 Neues Spiel' },
+  ja: { h1: '四目ならべ 🔴🟡', turn: s => 'ばん：' + s, win: s => s + 'のかち！🎉', draw: 'ひきわけ！ばんがいっぱい 🤝', again: '🔄 もう一回' },
+  zh: { h1: '四子棋 🔴🟡', turn: s => '轮到：' + s, win: s => s + ' 赢了 🎉', draw: '平局！棋盘满了 🤝', again: '🔄 再来一局' },
 };
 const T = TRL[ggLang] || TRL.hy;
 document.querySelector('h1').textContent = T.h1;
