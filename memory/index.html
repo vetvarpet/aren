@@ -113,6 +113,11 @@ try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
   ru: { h1: 'Игры на память 🧠', sub: 'Три игры для тренировки мозга. Выбирай!', g1: ['Пары', '16 карт, 8 пар: найди все за меньшее число попыток'], g2: ['Повтори за мной', '4 цвета, 4 звука: повторяй растущую цепочку'], g3: ['Охотник за числами', 'Числа прячутся: нажимай по порядку 1, 2, 3…'] },
   en: { h1: 'Memory Games 🧠', sub: 'Three games to train your brain. Pick one!', g1: ['Pairs', '16 cards, 8 pairs: find them all in the fewest tries'], g2: ['Repeat After Me', '4 colors, 4 sounds: repeat the growing sequence'], g3: ['Number Hunter', 'The numbers hide: tap them in order 1, 2, 3…'] },
+  es: { h1: 'Juegos de memoria 🧠', sub: 'Tres juegos para entrenar tu cerebro. ¡Elige!', g1: ['Parejas', '16 cartas, 8 parejas: encuéntralas en el menor número de intentos'], g2: ['Repite conmigo', '4 colores, 4 sonidos: repite la cadena que crece'], g3: ['Cazanúmeros', 'Los números se esconden: tócalos en orden 1, 2, 3…'] },
+  fr: { h1: 'Jeux de mémoire 🧠', sub: 'Trois jeux pour muscler ton cerveau. Choisis !', g1: ['Paires', '16 cartes, 8 paires : trouve-les en un minimum d’essais'], g2: ['Répète après moi', '4 couleurs, 4 sons : répète la suite qui s’allonge'], g3: ['Chasseur de nombres', 'Les nombres se cachent : touche-les dans l’ordre 1, 2, 3…'] },
+  de: { h1: 'Gedächtnisspiele 🧠', sub: 'Drei Spiele für dein Gehirn. Such dir eins aus!', g1: ['Paare', '16 Karten, 8 Paare: finde alle mit möglichst wenigen Versuchen'], g2: ['Sprich mir nach', '4 Farben, 4 Töne: wiederhole die wachsende Kette'], g3: ['Zahlenjäger', 'Die Zahlen verstecken sich: tippe sie der Reihe nach 1, 2, 3…'] },
+  ja: { h1: 'きおくゲーム 🧠', sub: '頭をきたえる3つのゲーム。えらんでね！', g1: ['ペアさがし', 'カード16枚、8ペア。少ない回数で全部見つけよう'], g2: ['まねっこ', '4色4音。長くなる順番をおぼえてまねしよう'], g3: ['数字ハンター', '数字がかくれるよ。1、2、3…の順にタップ！'] },
+  zh: { h1: '记忆游戏 🧠', sub: '三个锻炼大脑的游戏，选一个吧！', g1: ['翻对对', '16张牌8对，用最少的次数全找到'], g2: ['跟我学', '4种颜色4种声音，跟着越来越长的顺序'], g3: ['数字猎人', '数字藏起来了，按1、2、3…的顺序点'] },
 };
 const T = TRL[ggLang];
 if (T) {
