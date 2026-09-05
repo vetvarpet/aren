@@ -103,6 +103,7 @@
   .black.learn-target { background: linear-gradient(#d9b35a, #8a6a1f); animation: glow 0.9s infinite; color: #2e2410; }
   #learnBtn.active { background: #ffd76e; color: #2e2410; border-color: #ffe9a8; }
 
+  #learnBar[hidden] { display: none; }   /* թաքնվածը իսկապես թաքնված է */
   #learnBar {
     display: flex;
     align-items: center;
@@ -183,9 +184,9 @@ document.addEventListener('touchend', (e) => {
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { h1: 'Արենի դաշնամուրը 🎹', rec: '⏺ Ձայնագրել', stop: '⏹ Կանգնեցնել', playMine: '▶ Լսել իմ մեղեդին', learnBtn: '🎓 Սովորել', listen: '👂 Լսել', choose: '🎓 Ընտրիր երգը վերևից 👆', prog: (t, i, n) => t + ' — նոտա ' + i + '/' + n, bravo: t => '🏆 Բրավո՜։ Դու սովորեցիր «' + t + '»', hint: 'Նվագիր մատով կամ ստեղնաշարով՝ A S D F G H J K L ; — սևերը՝ W E T Y U O P', songs: { star: '🌟 Աստղիկը', birthday: '🎂 Ծնունդդ շնորհավոր', jingle: '🔔 Զանգակները', tango: '💃 Արենի տանգոն' }, notes: null },
-  ru: { h1: 'Пианино Арена 🎹', rec: '⏺ Записать', stop: '⏹ Стоп', playMine: '▶ Моя мелодия', learnBtn: '🎓 Учиться', listen: '👂 Послушать', choose: '🎓 Выбери песню сверху 👆', prog: (t, i, n) => t + ' — нота ' + i + '/' + n, bravo: t => '🏆 Браво! Ты выучил «' + t + '»', hint: 'Играй пальцем или клавишами: A S D F G H J K L ; — чёрные: W E T Y U O P', songs: { star: '🌟 Звёздочка', birthday: '🎂 С днём рождения', jingle: '🔔 Бубенцы', tango: '💃 Танго Арена' }, notes: ['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си','До²','До#²','Ре²','Ре#²','Ми²'] },
-  en: { h1: 'Aren’s Piano 🎹', rec: '⏺ Record', stop: '⏹ Stop', playMine: '▶ Play my melody', learnBtn: '🎓 Learn', listen: '👂 Listen', choose: '🎓 Pick a song above 👆', prog: (t, i, n) => t + ' — note ' + i + '/' + n, bravo: t => '🏆 Bravo! You learned “' + t + '”', hint: 'Play with fingers or keys: A S D F G H J K L ; — black keys: W E T Y U O P', songs: { star: '🌟 Twinkle', birthday: '🎂 Happy Birthday', jingle: '🔔 Jingle Bells', tango: '💃 Aren’s Tango' }, notes: ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Re²','Re#²','Mi²'] },
+  hy: { h1: 'Արենի դաշնամուրը 🎹', rec: '⏺ Ձայնագրել', stop: '⏹ Կանգնեցնել', playMine: '▶ Լսել իմ մեղեդին', learnBtn: '🎓 Սովորել', listen: '👂 Լսել', prog: (t, i, n) => t + ' — նոտա ' + i + '/' + n, bravo: t => '🏆 Բրավո՜։ Դու սովորեցիր «' + t + '»', hint: 'Նվագիր մատով կամ ստեղնաշարով՝ A S D F G H J K L ; — սևերը՝ W E T Y U O P', songs: { star: '🌟 Աստղիկը', birthday: '🎂 Ծնունդդ շնորհավոր', jingle: '🔔 Զանգակները', tango: '💃 Արենի տանգոն' }, notes: null },
+  ru: { h1: 'Пианино Арена 🎹', rec: '⏺ Записать', stop: '⏹ Стоп', playMine: '▶ Моя мелодия', learnBtn: '🎓 Учиться', listen: '👂 Послушать', prog: (t, i, n) => t + ' — нота ' + i + '/' + n, bravo: t => '🏆 Браво! Ты выучил «' + t + '»', hint: 'Играй пальцем или клавишами: A S D F G H J K L ; — чёрные: W E T Y U O P', songs: { star: '🌟 Звёздочка', birthday: '🎂 С днём рождения', jingle: '🔔 Бубенцы', tango: '💃 Танго Арена' }, notes: ['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си','До²','До#²','Ре²','Ре#²','Ми²'] },
+  en: { h1: 'Aren’s Piano 🎹', rec: '⏺ Record', stop: '⏹ Stop', playMine: '▶ Play my melody', learnBtn: '🎓 Learn', listen: '👂 Listen', prog: (t, i, n) => t + ' — note ' + i + '/' + n, bravo: t => '🏆 Bravo! You learned “' + t + '”', hint: 'Play with fingers or keys: A S D F G H J K L ; — black keys: W E T Y U O P', songs: { star: '🌟 Twinkle', birthday: '🎂 Happy Birthday', jingle: '🔔 Jingle Bells', tango: '💃 Aren’s Tango' }, notes: ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Re²','Re#²','Mi²'] },
 };
 const T = TRL[ggLang] || TRL.hy;
 
@@ -429,9 +430,9 @@ learnBtn.addEventListener('click', () => {
   stopPlayback();
   learn = { seq: null, idx: 0, title: '' };
   learnBtn.classList.add('active');
-  learnBar.hidden = false;
+  // վահանակը կերևա միայն երգն ընտրելուց հետո՝ առաջընթացի հաշվիչով
+  learnBar.hidden = true;
   learnListen.hidden = true;
-  learnText.textContent = T.choose;
 });
 
 function exitLearn() {
@@ -452,6 +453,7 @@ function startLesson(btn) {
   learn.title = btn.textContent;
   learn.seq = song.notes.map(([i]) => i);   // միայն նոտաները, առանց ռիթմի
   learn.idx = 0;
+  learnBar.hidden = false;
   learnListen.hidden = false;
   showTarget();
 }
