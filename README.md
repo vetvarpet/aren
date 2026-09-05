@@ -11,7 +11,7 @@ and iterating on the code together with Claude, one change at a time.
 |--------|---------|------------|
 | [`cat-jump`](./cat-jump/) | 🐱 Կատվիկ | Runner: jump over boxes, catch fish, stay low when night crows fly over, win the trophy at 100 points |
 | [`city-drive`](./city-drive/) | 🚗 Քաղաքի վարորդը | Two driving games: the open city (pizza deliveries, police, car shop) and a 10-level race |
-| [`piano`](./piano/) | 🎹 Դաշնամուր | Playable piano with recording, built-in songs and a learn mode with glowing keys |
+| [`piano`](./piano/) | 🎹 Golden Piano | Playable piano with recording, built-in songs and a learn mode with glowing keys |
 | [`rocket`](./rocket/) | 🚀 Հրթիռը տիեզերքում | Space flyer: catch stars, dodge spinning asteroids, 3 lives, best score saved |
 | [`memory`](./memory/) | 🧠 Հիշողության խաղեր | Three memory games in one: pairs, Simon-style repeat-after-me, and number hunter |
 | [`fishing`](./fishing/) | 🎣 Ձկնորսություն | 60 seconds of fishing: golden fish +5, old boot 0 |
