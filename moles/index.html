@@ -1,0 +1,334 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Խլուրդներ 🦔</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    height: 100dvh;
+    padding: 12px;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+  h1 { font-size: clamp(1.1rem, 4vw, 1.7rem); color: #ffd76e; }
+  .hud { display: flex; gap: 18px; font-size: 1.05rem; color: #9a9ec7; }
+  .hud b { color: #6ee7b7; }
+  .hud .tm { color: #ffd76e; }
+
+  /* Խոտածածկ դաշտը՝ 3×3 փոս */
+  .field {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4vmin;
+    background: linear-gradient(#69a84f, #4e8a38);
+    border: 4px solid #3b6b2a;
+    border-radius: 22px;
+    padding: 5vmin;
+    width: min(94vw, 60vh, 460px);
+  }
+  .hole {
+    position: relative;
+    overflow: hidden;
+    border-radius: 50% 50% 46% 46%;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .hole::before { content: ''; display: block; padding-top: 92%; }
+  /* փոսի մուգ բերանը */
+  .hole::after {
+    content: '';
+    position: absolute;
+    left: 4%;
+    bottom: 0;
+    width: 92%;
+    height: 34%;
+    background: radial-gradient(ellipse at 50% 100%, #241505 0 62%, #3a2410 78%, #55381c 100%);
+    border-radius: 50%;
+    z-index: 0;
+  }
+  .mole {
+    position: absolute;
+    left: 10%;
+    bottom: 4%;
+    width: 80%;
+    transform: translateY(115%);
+    transition: transform 0.12s ease-out;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .hole.up .mole { transform: translateY(0); pointer-events: auto; }
+  .hole.bonk .mole { transform: translateY(30%) scaleY(0.6); transition: transform 0.1s; }
+  .mole svg { display: block; width: 100%; height: auto; }
+
+  /* պայթյունի կարմիր բռնկումը */
+  .flash {
+    position: fixed;
+    inset: 0;
+    background: rgba(230, 57, 70, 0.45);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 5;
+  }
+  .flash.on { animation: fl 0.35s; }
+  @keyframes fl { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+  #msg { font-size: 1.05rem; color: #ffd76e; min-height: 1.4em; text-align: center; }
+  #startBtn {
+    border: 2px solid #6a5f9e;
+    border-radius: 999px;
+    padding: 10px 26px;
+    font-size: 1.05rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #3d3560;
+    color: #f5eede;
+  }
+
+  .confetti {
+    position: fixed;
+    top: -50px;
+    z-index: 9;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<h1>Խլուրդներ 🦔</h1>
+<div class="hud"><span id="scoreBox"></span><span class="tm" id="timeBox"></span><span id="bestBox" hidden></span></div>
+<div class="field" id="field"></div>
+<div id="msg"></div>
+<button id="startBtn">▶ Սկսել</button>
+<div class="flash" id="flash"></div>
+
+<script>
+// ——————————————————————————————————————
+//  ԽԼՈՒՐԴՆԵՐ 🦔 — խփի՛ր, քանի դուրս են ցցվել
+//  Սովորականը +1 է, ոսկեգույնը +3, իսկ դինամիտով խլուրդը −5. զգո՛ւյշ։
+//  30 վայրկյան ունես. ինչքա՞ն կհավաքես։
+// ——————————————————————————————————————
+
+const GAME_SECONDS = 30;
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { h1: 'Խլուրդներ 🦔', score: 'Միավոր՝ ', time: ' վրկ', rec: 'Ռեկորդ՝ ', intro: 'Խփի՛ր խլուրդներին։ Ոսկեգույնը +3 է, դինամիտովը՝ −5 💥', result: n => 'Հավաքեցիր ' + n + ' միավոր', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ 🎉', start: '▶ Սկսել', again: '🔄 Նորից' },
+  ru: { h1: 'Кроты 🦔', score: 'Очки: ', time: ' сек', rec: 'Рекорд: ', intro: 'Бей кротов! Золотой +3, а крот с динамитом −5 💥', result: n => 'Ты набрал ' + n + ' очков', newRec: ' — НОВЫЙ РЕКОРД 🎉', start: '▶ Старт', again: '🔄 Ещё раз' },
+  en: { h1: 'Moles 🦔', score: 'Score: ', time: ' s', rec: 'Best: ', intro: 'Whack the moles! Gold is +3, the dynamite mole is −5 💥', result: n => 'You scored ' + n + ' points', newRec: ' — NEW RECORD 🎉', start: '▶ Start', again: '🔄 Again' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.querySelector('h1').textContent = T.h1;
+
+// ——— Խլուրդների նկարները (նկարած են, էմոջի չեն) ———
+// type: normal | gold | boom
+function moleSVG(type) {
+  const body = type === 'gold' ? '#f0b429' : '#8a5a30';
+  const belly = type === 'gold' ? '#ffe9a8' : '#c99662';
+  const dyn = type === 'boom'
+    ? '<g><rect x="20" y="2" width="8" height="16" rx="2.5" fill="#d62828"/><rect x="20" y="6" width="8" height="3" fill="#9c1c1c"/><path d="M24 2 Q27 -3 30 -1" stroke="#5a4632" stroke-width="2" fill="none"/><path d="M30 -1 l1.5 3 3 1.5 -3 1.5 -1.5 3 -1.5 -3 -3 -1.5 3 -1.5 Z" fill="#ff9f1c"/></g>'
+    : '';
+  return '<svg viewBox="0 -6 48 52">' + dyn +
+    '<path d="M8 46 Q6 20 24 18 Q42 20 40 46 Z" fill="' + body + '"/>' +
+    '<ellipse cx="24" cy="40" rx="10" ry="9" fill="' + belly + '"/>' +
+    '<circle cx="17" cy="28" r="2.4" fill="#241505"/>' +
+    '<circle cx="31" cy="28" r="2.4" fill="#241505"/>' +
+    '<ellipse cx="24" cy="33" rx="3.4" ry="2.6" fill="#e07a9a"/>' +
+    '<path d="M24 35 q-2.5 2.5 -5 1 M24 35 q2.5 2.5 5 1" stroke="#241505" stroke-width="1.4" fill="none" stroke-linecap="round"/>' +
+    '<path d="M13 31 L5 29 M13 34 L6 37 M35 31 L43 29 M35 34 L42 37" stroke="#241505" stroke-width="1.1" stroke-linecap="round" opacity="0.6"/>' +
+    '<path d="M12 45 q-2 -4 2 -5 M36 45 q2 -4 -2 -5" stroke="' + belly + '" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+    '</svg>';
+}
+
+const field = document.getElementById('field');
+const scoreBox = document.getElementById('scoreBox');
+const timeBox = document.getElementById('timeBox');
+const bestBox = document.getElementById('bestBox');
+const msgEl = document.getElementById('msg');
+const startBtn = document.getElementById('startBtn');
+const flash = document.getElementById('flash');
+
+let holes = [];
+let score = 0;
+let state = 'ready';   // ready → play → end
+let endAt = 0;
+let clockIv = null;
+let spawnTm = null;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-moles-best') || 0); } catch (e) {}
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.18, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sBop = () => { tone(300, 0.07, 'square', 0.16); tone(180, 0.1, 'square', 0.12, 0.04); };
+const sGold = () => [660, 880, 1100].forEach((f, k) => tone(f, 0.1, 'triangle', 0.18, k * 0.06));
+const sBoom = () => { tone(70, 0.4, 'sawtooth', 0.3); tone(50, 0.5, 'square', 0.2, 0.05); };
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.25, 'triangle', 0.2, k * 0.13));
+
+// ——— Դաշտը ———
+for (let i = 0; i < 9; i++) {
+  const h = document.createElement('div');
+  h.className = 'hole';
+  h.innerHTML = '<div class="mole"></div>';
+  h.addEventListener('pointerdown', (e) => { e.preventDefault(); hit(i); });
+  field.appendChild(h);
+  holes.push({ el: h, mole: h.querySelector('.mole'), type: null, hideTm: null, hit: false });
+}
+
+function hud() {
+  scoreBox.innerHTML = T.score + '<b>' + score + '</b>';
+  const left = state === 'play' ? Math.max(0, Math.ceil((endAt - Date.now()) / 1000)) : GAME_SECONDS;
+  timeBox.textContent = left + T.time;
+  if (best > 0) { bestBox.innerHTML = T.rec + '<b>' + best + '</b>'; bestBox.hidden = false; }
+}
+msgEl.textContent = T.intro;
+startBtn.textContent = T.start;
+hud();
+
+function hideMole(i) {
+  const h = holes[i];
+  clearTimeout(h.hideTm);
+  h.el.classList.remove('up', 'bonk');
+  h.type = null;
+  h.hit = false;
+}
+
+// Խլուրդ ենք հանում պատահական դատարկ փոսից
+function spawn() {
+  if (state !== 'play') return;
+  const empty = holes.map((h, i) => h.type ? -1 : i).filter(i => i >= 0);
+  if (empty.length) {
+    const i = empty[Math.floor(Math.random() * empty.length)];
+    const h = holes[i];
+    const r = Math.random();
+    h.type = r < 0.14 ? 'gold' : r < 0.3 ? 'boom' : 'normal';
+    h.hit = false;
+    h.mole.innerHTML = moleSVG(h.type);
+    h.el.classList.add('up');
+    // ոսկեգույնը ամենաարագն է փախչում
+    const elapsed = (GAME_SECONDS * 1000 - (endAt - Date.now())) / 1000;
+    const base = Math.max(520, 950 - elapsed * 14);
+    h.hideTm = setTimeout(() => hideMole(i), h.type === 'gold' ? base * 0.7 : base);
+  }
+  // հաջորդ խլուրդը՝ ավելի ու ավելի հաճախ
+  const elapsed2 = (GAME_SECONDS * 1000 - (endAt - Date.now())) / 1000;
+  spawnTm = setTimeout(spawn, Math.max(260, 620 - elapsed2 * 12) * (0.7 + Math.random() * 0.6));
+}
+
+function hit(i) {
+  initAudio();
+  if (state !== 'play') return;
+  const h = holes[i];
+  if (!h.type || h.hit || !h.el.classList.contains('up')) return;
+  h.hit = true;
+  h.el.classList.add('bonk');
+
+  if (h.type === 'gold') { score += 3; sGold(); }
+  else if (h.type === 'boom') {
+    score = Math.max(0, score - 5);
+    sBoom();
+    flash.classList.remove('on');
+    void flash.offsetWidth;   // անիմացիան նորից գործարկելու հնարքը
+    flash.classList.add('on');
+  }
+  else { score += 1; sBop(); }
+
+  hud();
+  clearTimeout(h.hideTm);
+  h.hideTm = setTimeout(() => hideMole(i), 130);
+}
+
+function start() {
+  initAudio();
+  score = 0;
+  state = 'play';
+  endAt = Date.now() + GAME_SECONDS * 1000;
+  msgEl.textContent = '';
+  startBtn.hidden = true;
+  hud();
+  tone(880, 0.2, 'square', 0.2);
+  spawn();
+  clearInterval(clockIv);
+  clockIv = setInterval(() => {
+    hud();
+    if (Date.now() >= endAt) finish();
+  }, 250);
+}
+
+function finish() {
+  state = 'end';
+  clearInterval(clockIv);
+  clearTimeout(spawnTm);
+  holes.forEach((h, i) => hideMole(i));
+  let txt = T.result(score);
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('aren-moles-best', best); } catch (e) {}
+    txt += T.newRec;
+    sWin();
+    confetti();
+  } else {
+    tone(400, 0.3, 'sine', 0.15);
+  }
+  msgEl.textContent = txt;
+  startBtn.textContent = T.again;
+  startBtn.hidden = false;
+  hud();
+}
+
+startBtn.addEventListener('click', start);
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+function confetti() {
+  const stuff = ['🎉', '⭐', '💛', '🎊', '✨'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+</script>

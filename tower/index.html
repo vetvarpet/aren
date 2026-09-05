@@ -1,0 +1,336 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Աշտարակ 🏗️</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: #12122b;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+  }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+<canvas id="game"></canvas>
+
+<script>
+// ——————————————————————————————————————
+//  ԱՇՏԱՐԱԿ 🏗️ — բլոկը ճոճվում է, դու ճիշտ պահին գցում ես
+//  Ծուռ դրեցիր՝ ավելցուկը կտրվում-ընկնում է, բլոկը նեղանում է։
+//  Բաց թողեցիր ամբողջովին՝ խաղն ավարտվեց։ Ինչքա՞ն բարձր կհասնես։
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { title: 'ԱՇՏԱՐԱԿ', sub: 'Դիպչիր՝ բլոկը գցելու', best: 'Ռեկորդ՝ ', floors: 'Հարկ՝ ', perfect: 'ՃՇԳՐԻ՜Տ', over: 'Աշտարակը պատրաստ է', overSub: n => n + ' հարկ · Դիպչիր՝ նորից խաղալու', newRec: 'ՆՈՐ ՌԵԿՈՐԴ 🏆' },
+  ru: { title: 'БАШНЯ', sub: 'Нажми, чтобы бросить блок', best: 'Рекорд: ', floors: 'Этаж: ', perfect: 'ИДЕАЛЬНО!', over: 'Башня готова', overSub: n => n + ' этажей · Нажми, чтобы играть снова', newRec: 'НОВЫЙ РЕКОРД 🏆' },
+  en: { title: 'TOWER', sub: 'Tap to drop the block', best: 'Best: ', floors: 'Floor: ', perfect: 'PERFECT!', over: 'The tower is done', overSub: n => n + ' floors · Tap to play again', newRec: 'NEW RECORD 🏆' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let W = 0, H = 0;
+function resize() {
+  const DPR = window.devicePixelRatio || 1;
+  canvas.width = innerWidth * DPR;
+  canvas.height = innerHeight * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  W = innerWidth;
+  H = innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ——— Խաղի վիճակը ———
+const BH = 34;                // մեկ հարկի բարձրությունը
+let state = 'menu';           // menu → play → over
+let stack = [];               // հարկերը՝ { x, w } (x-ը ձախ եզրն է)
+let phase = 0;                // ճոճվելու անկյունը
+let cam = 0, camTarget = 0;   // տեսախցիկը բարձրանում է աշտարակի հետ
+let falling = [];             // կտրված ու ընկնող կտորները
+let popups = [];              // «ՃՇԳՐԻՏ» գրությունները
+let combo = 0;
+let endedAt = 0;              // որ խաղի վերջում պատահական դիպչելը նորը չսկսի
+let frame = 0;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-tower-best') || 0); } catch (e) {}
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.18, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sDrop = () => tone(180, 0.12, 'square', 0.16);
+const sPerfect = () => { tone(880, 0.12, 'triangle', 0.2); tone(1320, 0.18, 'triangle', 0.18, 0.08); };
+const sCut = () => tone(120, 0.2, 'sawtooth', 0.1);
+const sOver = () => [392, 330, 262, 196].forEach((f, k) => tone(f, 0.22, 'triangle', 0.16, k * 0.14));
+
+// ——— Չափերն ու գույները ———
+function baseW() { return Math.min(W * 0.6, 280); }
+function floorColor(i) { return 'hsl(' + ((i * 24 + 200) % 360) + ', 62%, 55%)'; }
+function floorColorLight(i) { return 'hsl(' + ((i * 24 + 200) % 360) + ', 68%, 68%)'; }
+
+// Հարկի էկրանային y-ը (i = 0-ը ամենաներքևն է)
+function floorY(i) { return H - 70 - (i + 1) * BH + cam; }
+
+function newGame() {
+  stack = [{ x: W / 2 - baseW() / 2, w: baseW() }];
+  phase = 0;
+  cam = 0; camTarget = 0;
+  falling = [];
+  popups = [];
+  combo = 0;
+  state = 'play';
+}
+
+// Ճոճվող բլոկի դիրքը հիմա
+function swingBlock() {
+  const top = stack[stack.length - 1];
+  const w = top.w;
+  const amp = Math.max(20, W * 0.44 - w / 2);
+  const x = W / 2 + Math.sin(phase) * amp - w / 2;
+  return { x, w, y: floorY(stack.length) };
+}
+
+function drop() {
+  const b = swingBlock();
+  const top = stack[stack.length - 1];
+  const left = Math.max(b.x, top.x);
+  const right = Math.min(b.x + b.w, top.x + top.w);
+  const ov = right - left;
+
+  if (ov <= 4) {
+    // ամբողջովին վրիպեցիր — բլոկն ընկնում է, խաղն ավարտվում է
+    falling.push({ x: b.x, w: b.w, y: b.y, vy: 0, vr: (Math.random() - 0.5) * 0.2, rot: 0, color: floorColor(stack.length) });
+    gameOver();
+    return;
+  }
+
+  // Ծո՞ւռ դրեցիր — ավելցուկը կտրվում է ու ընկնում
+  const cut = b.w - ov;
+  if (cut < 7) {
+    // գրեթե անթերի՝ համարում ենք ՃՇԳՐԻՏ, բլոկը «նստում է» ուղիղ տեղը
+    stack.push({ x: top.x, w: top.w });
+    combo++;
+    popups.push({ x: W / 2, y: floorY(stack.length - 1), life: 45, text: T.perfect + (combo > 1 ? ' ×' + combo : '') });
+    sPerfect();
+  } else {
+    combo = 0;
+    if (b.x < top.x) {
+      falling.push({ x: b.x, w: top.x - b.x, y: b.y, vy: 0, vr: -0.08, rot: 0, color: floorColor(stack.length) });
+    } else {
+      falling.push({ x: right, w: b.x + b.w - right, y: b.y, vy: 0, vr: 0.08, rot: 0, color: floorColor(stack.length) });
+    }
+    stack.push({ x: left, w: ov });
+    sCut();
+  }
+  sDrop();
+
+  phase = 0;   // նոր բլոկը սկսում է ճոճվել մեջտեղից
+  // տեսախցիկը բարձրանում է, որ աշտարակի գագաթը միշտ երևա
+  camTarget = Math.max(0, (stack.length + 2) * BH - H * 0.62);
+}
+
+function gameOver() {
+  state = 'over';
+  endedAt = Date.now();
+  const score = stack.length - 1;
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('aren-tower-best', best); } catch (e) {}
+  }
+  sOver();
+}
+
+// ——— Հպումներ ———
+canvas.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  initAudio();
+  if (state === 'menu') { newGame(); return; }
+  if (state === 'over') {
+    if (Date.now() - endedAt < 1000) return;   // մի պահ շունչ քաշիր
+    newGame();
+    return;
+  }
+  drop();
+});
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') { initAudio(); state === 'play' ? drop() : (state === 'menu' || Date.now() - endedAt >= 1000) && newGame(); }
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// ——— Նկարելը ———
+function drawBlock(x, y, w, color, colorLight) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, w, BH);
+  ctx.fillStyle = colorLight;
+  ctx.fillRect(x, y, w, 7);
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x + 1, y + 1, w - 2, BH - 2);
+}
+
+function drawText(txt, x, y, size, color, align) {
+  ctx.fillStyle = color;
+  ctx.font = 'bold ' + size + 'px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+  ctx.textAlign = align || 'center';
+  ctx.fillText(txt, x, y);
+}
+
+function update() {
+  frame++;
+
+  // երկինքը կամաց-կամաց մթնում է, ինչքան բարձրանում ես
+  const hgt = Math.min(1, (stack.length - 1) / 60);
+  const topCol = [140 - 110 * hgt, 190 - 160 * hgt, 235 - 190 * hgt];
+  const botCol = [200 - 150 * hgt, 225 - 175 * hgt, 250 - 195 * hgt];
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, 'rgb(' + topCol.map(Math.round).join(',') + ')');
+  g.addColorStop(1, 'rgb(' + botCol.map(Math.round).join(',') + ')');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+
+  // աստղերը հայտնվում են բարձրության վրա
+  if (hgt > 0.4) {
+    ctx.fillStyle = 'rgba(255,255,255,' + ((hgt - 0.4) * 1.2) + ')';
+    for (let i = 0; i < 24; i++) {
+      const sx = (i * 137 + 40) % W;
+      const sy = ((i * 211 + frame * 0.05) % (H + 40)) - 20;
+      ctx.fillRect(sx, sy, 2, 2);
+    }
+  }
+
+  // ամպերը լողում են
+  ctx.fillStyle = 'rgba(255,255,255,' + (0.75 - hgt * 0.5) + ')';
+  for (let i = 0; i < 3; i++) {
+    const cx = ((frame * (0.2 + i * 0.08) + i * 400) % (W + 240)) - 120;
+    const cy = 90 + i * 110 + cam * 0.15 % 40;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 46, 15, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx + 30, cy + 6, 30, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // տեսախցիկը սահուն է շարժվում
+  cam += (camTarget - cam) * 0.08;
+
+  // գետինը
+  const groundY = H - 70 + cam;
+  if (groundY < H + 40) {
+    ctx.fillStyle = '#7fb84e';
+    ctx.fillRect(0, groundY, W, H - groundY + 40);
+    ctx.fillStyle = '#6da53f';
+    ctx.fillRect(0, groundY, W, 6);
+  }
+
+  // աշտարակը
+  for (let i = 0; i < stack.length; i++) {
+    const y = floorY(i);
+    if (y > -BH && y < H + BH) drawBlock(stack[i].x, y, stack[i].w, floorColor(i), floorColorLight(i));
+  }
+
+  // ընկնող կտորները
+  for (const f of falling) {
+    f.vy += 0.5;
+    f.y += f.vy;
+    f.rot += f.vr;
+    ctx.save();
+    ctx.translate(f.x + f.w / 2, f.y + BH / 2);
+    ctx.rotate(f.rot);
+    ctx.fillStyle = f.color;
+    ctx.fillRect(-f.w / 2, -BH / 2, f.w, BH);
+    ctx.restore();
+  }
+  falling = falling.filter(f => f.y < H + 80);
+
+  // ճոճվող բլոկը՝ կռունկի պարանով
+  if (state === 'play') {
+    phase += 0.032 + Math.min(0.05, stack.length * 0.0011);
+    const b = swingBlock();
+    ctx.strokeStyle = '#5a4632';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(b.x + b.w / 2, 0);
+    ctx.lineTo(b.x + b.w / 2, b.y);
+    ctx.stroke();
+    drawBlock(b.x, b.y, b.w, floorColor(stack.length), floorColorLight(stack.length));
+  }
+
+  // «ՃՇԳՐԻՏ» գրությունները
+  for (const p of popups) {
+    p.life--;
+    p.y -= 1.2;
+    ctx.globalAlpha = Math.min(1, p.life / 20);
+    drawText(p.text, p.x, p.y, 26, '#ff9f1c');
+    ctx.globalAlpha = 1;
+  }
+  popups = popups.filter(p => p.life > 0);
+
+  // ——— Գրությունները ———
+  const score = stack.length - 1;
+  if (state === 'play') {
+    drawText(T.floors + score, W / 2, 92, 30, 'rgba(30,40,70,0.85)');
+    drawText(T.best + best, W - 16, 30, 16, 'rgba(30,40,70,0.7)', 'right');
+  }
+  if (state === 'menu') {
+    drawText(T.title, W / 2, H * 0.32, Math.min(54, W * 0.12), 'rgba(30,40,70,0.9)');
+    drawText(T.sub, W / 2, H * 0.32 + 40, 18, 'rgba(30,40,70,0.75)');
+    drawText(T.best + best, W / 2, H * 0.32 + 72, 16, 'rgba(30,40,70,0.6)');
+  }
+  if (state === 'over') {
+    ctx.fillStyle = 'rgba(255, 253, 247, 0.9)';
+    const bw = Math.min(W - 30, 440), bx = W / 2 - bw / 2, by = H / 2 - 64;
+    // կլորացրած ուղղանկյուն՝ ձեռքով, որ հին հեռախոսներում էլ աշխատի
+    const r = 18;
+    ctx.beginPath();
+    ctx.moveTo(bx + r, by);
+    ctx.arcTo(bx + bw, by, bx + bw, by + 128, r);
+    ctx.arcTo(bx + bw, by + 128, bx, by + 128, r);
+    ctx.arcTo(bx, by + 128, bx, by, r);
+    ctx.arcTo(bx, by, bx + bw, by, r);
+    ctx.closePath();
+    ctx.fill();
+    drawText(T.over, W / 2, by + 46, 26, '#23405c');
+    drawText(T.overSub(score), W / 2, by + 80, 16, '#5a708c');
+    if (score === best && score > 0) drawText(T.newRec, W / 2, by + 110, 16, '#c9820e');
+  }
+
+  requestAnimationFrame(update);
+}
+
+update();
+</script>
