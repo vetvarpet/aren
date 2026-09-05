@@ -186,7 +186,7 @@
     transition: transform 0.12s, border-color 0.12s;
   }
   .langbtn:hover { transform: translateY(-2px); border-color: var(--accent); }
-  .langbtn .flag { width: 27px; height: 18px; flex-shrink: 0; border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,0.35); }
+  .langbtn .flag { font-size: 1.35rem; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -197,14 +197,14 @@
     <img class="joy2" src="./logo.png" alt="Golden Games">
     <p class="ask">Ընտրի՛ր լեզուն · Choose language</p>
     <div class="langs">
-      <button class="langbtn" data-lang="hy"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" rx="3" fill="#f2a800"/><rect width="30" height="13.6" fill="#0033a0"/><rect width="30" height="6.8" fill="#d90012"/></svg> Հայերեն</button>
-      <button class="langbtn" data-lang="ru"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" rx="3" fill="#d52b1e"/><rect width="30" height="13.6" fill="#0039a6"/><rect width="30" height="6.8" fill="#f5f5f5"/></svg> Русский</button>
-      <button class="langbtn" data-lang="en"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" rx="3" fill="#012169"/><path d="M0 0 L30 20 M30 0 L0 20" stroke="#f5f5f5" stroke-width="4"/><path d="M0 0 L30 20 M30 0 L0 20" stroke="#c8102e" stroke-width="1.8"/><path d="M15 0 V20 M0 10 H30" stroke="#f5f5f5" stroke-width="6.5"/><path d="M15 0 V20 M0 10 H30" stroke="#c8102e" stroke-width="3.5"/></svg> English</button>
-      <button class="langbtn" data-lang="es"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" rx="3" fill="#f1bf00"/><rect width="30" height="5" fill="#aa151b"/><rect y="15" width="30" height="5" fill="#aa151b"/></svg> Español</button>
-      <button class="langbtn" data-lang="fr"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" rx="3" fill="#f5f5f5"/><path d="M0 3 Q0 0 3 0 L10 0 L10 20 L3 20 Q0 20 0 17 Z" fill="#0055a4"/><path d="M20 0 L27 0 Q30 0 30 3 L30 17 Q30 20 27 20 L20 20 Z" fill="#ef4135"/></svg> Français</button>
-      <button class="langbtn" data-lang="de"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" rx="3" fill="#ffce00"/><path d="M0 3 Q0 0 3 0 L27 0 Q30 0 30 3 L30 6.6 L0 6.6 Z" fill="#111111"/><rect y="6.6" width="30" height="6.7" fill="#dd0000"/></svg> Deutsch</button>
-      <button class="langbtn" data-lang="ja"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" rx="3" fill="#f5f5f5"/><circle cx="15" cy="10" r="5.5" fill="#bc002d"/></svg> 日本語</button>
-      <button class="langbtn" data-lang="zh"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" rx="3" fill="#de2910"/><path d="M6.2 3 L7.4 6.1 L10.7 6.2 L8.1 8.2 L9 11.3 L6.2 9.4 L3.4 11.3 L4.3 8.2 L1.7 6.2 L5 6.1 Z" fill="#ffde00"/><circle cx="12.6" cy="3.2" r="1" fill="#ffde00"/><circle cx="14.4" cy="5.6" r="1" fill="#ffde00"/><circle cx="14.4" cy="8.6" r="1" fill="#ffde00"/><circle cx="12.6" cy="11" r="1" fill="#ffde00"/></svg> 中文</button>
+      <button class="langbtn" data-lang="hy"><span class="flag">🇦🇲</span> Հայերեն</button>
+      <button class="langbtn" data-lang="ru"><span class="flag">🇷🇺</span> Русский</button>
+      <button class="langbtn" data-lang="en"><span class="flag">🇬🇧</span> English</button>
+      <button class="langbtn" data-lang="es"><span class="flag">🇪🇸</span> Español</button>
+      <button class="langbtn" data-lang="fr"><span class="flag">🇫🇷</span> Français</button>
+      <button class="langbtn" data-lang="de"><span class="flag">🇩🇪</span> Deutsch</button>
+      <button class="langbtn" data-lang="ja"><span class="flag">🇯🇵</span> 日本語</button>
+      <button class="langbtn" data-lang="zh"><span class="flag">🇨🇳</span> 中文</button>
     </div>
   </div>
 </div>
