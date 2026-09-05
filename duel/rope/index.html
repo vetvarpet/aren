@@ -47,11 +47,13 @@
     position: absolute;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 44px;
+    width: 56px;
+    height: 56px;
     z-index: 4;
     pointer-events: none;
     filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
   }
+  #knot svg { width: 100%; height: 100%; display: block; }
 
   .confetti {
     position: fixed;
@@ -68,7 +70,13 @@
 <div class="half" id="top"><div class="msg" id="msgT"></div></div>
 <div class="half" id="bottom"><div class="msg" id="msgB"></div></div>
 <div id="ropeLine"></div>
-<div id="knot">🪢</div>
+<div id="knot"><svg viewBox="0 0 48 48" aria-hidden="true">
+  <circle cx="24" cy="24" r="12" fill="none" stroke="#a87f18" stroke-width="10"/>
+  <circle cx="24" cy="24" r="12" fill="none" stroke="#e8c04a" stroke-width="6"/>
+  <path d="M24 6 V13 M24 35 V42" stroke="#e8c04a" stroke-width="8" stroke-linecap="round"/>
+  <path d="M24 6 V13 M24 35 V42" stroke="#a87f18" stroke-width="3" stroke-dasharray="4 4"/>
+  <path d="M15 15 q4 -2 7 2 M33 33 q-4 2 -7 -2" stroke="#a87f18" stroke-width="2" fill="none" opacity="0.7"/>
+</svg></div>
 
 <script>
 // ——————————————————————————————————————
