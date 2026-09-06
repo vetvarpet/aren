@@ -23,6 +23,8 @@ and iterating on the code together with Claude, one change at a time.
 | [`2048`](./2048/) | 🧊 Golden 2048 (2048) | The sliding-tile classic: merge equal numbers and reach the golden 2048 |
 | [`ninja`](./ninja/) | 🥷 Golden Ninja (Նինձյա ցատկ) | Wall-jumping ninja: tap to switch walls, dodge the spikes, the world speeds up |
 | [`mine`](./mine/) | ⛏️ Golden Mine (Ոսկե հանք) | Gold-miner: swing the hook, pull up gold and diamonds, reach the goal before time runs out |
+| [`basket`](./basket/) | 🏀 Golden Basket (Բասկետբոլ) | Flick basketball: moving hoop, tricky wind, and a fire ball after 3 baskets in a row |
+| [`men`](./men/) | 👨🏻 Golden Men (Անցի՛ր ճանապարհը) | Crossy-road: dodge the cars, hop across the river on floating logs, count your steps |
 
 Every project is a single self-contained `index.html` — no frameworks, no
 build step. Open any folder's `index.html` in a browser and play. Sounds and

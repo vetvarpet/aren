@@ -126,14 +126,14 @@ document.querySelector('.sub').textContent = T.sub;
 
 // Իրական անունները՝ ընտրված լեզվով
 const REAL = {
-  hy: ['Կատվիկ', 'Հրթիռը տիեզերքում', 'Ձկնորսություն', 'Աշտարակ', 'Խլուրդներ', 'Լաբիրինթոս', 'Մրցարշավ', 'Զույգեր', 'Կրկնիր ինձ', 'Թվերի որսորդ', 'Ռիթմի խաղ', '2048', 'Նինձյա ցատկ', 'Ոսկե հանք'],
-  ru: ['Котик', 'Ракета в космосе', 'Рыбалка', 'Башня', 'Кроты', 'Лабиринт', 'Гонка', 'Пары', 'Повтори за мной', 'Охотник за числами', 'Ритм-игра', '2048', 'Прыжки ниндзя', 'Золотая шахта'],
-  en: ['Kitty', 'Rocket in Space', 'Fishing', 'Tower', 'Moles', 'Maze', 'Race', 'Pairs', 'Repeat After Me', 'Number Hunter', 'Rhythm Game', '2048', 'Ninja Jump', 'Gold Mine'],
-  es: ['Gatito', 'Cohete', 'Pesca', 'Torre', 'Topos', 'Laberinto', 'Carrera', 'Parejas', 'Repite conmigo', 'Cazanúmeros', 'Juego de ritmo', '2048', 'Salto ninja', 'Mina de oro'],
-  fr: ['Petit chat', 'Fusée', 'Pêche', 'Tour', 'Taupes', 'Labyrinthe', 'Course', 'Paires', 'Répète après moi', 'Chasseur de nombres', 'Jeu de rythme', '2048', 'Saut de ninja', 'Mine d’or'],
-  de: ['Kätzchen', 'Rakete', 'Angeln', 'Turm', 'Maulwürfe', 'Labyrinth', 'Rennen', 'Paare', 'Sprich mir nach', 'Zahlenjäger', 'Rhythmusspiel', '2048', 'Ninja-Sprung', 'Goldmine'],
-  ja: ['ネコちゃん', '宇宙ロケット', 'さかなつり', 'タワー', 'モグラたたき', 'めいろ', 'レース', 'ペアさがし', 'まねっこ', '数字ハンター', 'リズムゲーム', '2048', '忍者ジャンプ', '金鉱掘り'],
-  zh: ['小猫咪', '太空火箭', '钓鱼', '高塔', '打地鼠', '迷宫', '赛车', '翻对对', '跟我学', '数字猎人', '节奏游戏', '2048', '忍者跳', '黄金矿工'],
+  hy: ['Կատվիկ', 'Հրթիռը տիեզերքում', 'Ձկնորսություն', 'Աշտարակ', 'Խլուրդներ', 'Լաբիրինթոս', 'Մրցարշավ', 'Զույգեր', 'Կրկնիր ինձ', 'Թվերի որսորդ', 'Ռիթմի խաղ', '2048', 'Նինձյա ցատկ', 'Ոսկե հանք', 'Բասկետբոլ', 'Անցի՛ր ճանապարհը'],
+  ru: ['Котик', 'Ракета в космосе', 'Рыбалка', 'Башня', 'Кроты', 'Лабиринт', 'Гонка', 'Пары', 'Повтори за мной', 'Охотник за числами', 'Ритм-игра', '2048', 'Прыжки ниндзя', 'Золотая шахта', 'Баскетбол', 'Перейди дорогу'],
+  en: ['Kitty', 'Rocket in Space', 'Fishing', 'Tower', 'Moles', 'Maze', 'Race', 'Pairs', 'Repeat After Me', 'Number Hunter', 'Rhythm Game', '2048', 'Ninja Jump', 'Gold Mine', 'Basketball', 'Cross the Road'],
+  es: ['Gatito', 'Cohete', 'Pesca', 'Torre', 'Topos', 'Laberinto', 'Carrera', 'Parejas', 'Repite conmigo', 'Cazanúmeros', 'Juego de ritmo', '2048', 'Salto ninja', 'Mina de oro', 'Baloncesto', 'Cruza la calle'],
+  fr: ['Petit chat', 'Fusée', 'Pêche', 'Tour', 'Taupes', 'Labyrinthe', 'Course', 'Paires', 'Répète après moi', 'Chasseur de nombres', 'Jeu de rythme', '2048', 'Saut de ninja', 'Mine d’or', 'Basket', 'Traverse la route'],
+  de: ['Kätzchen', 'Rakete', 'Angeln', 'Turm', 'Maulwürfe', 'Labyrinth', 'Rennen', 'Paare', 'Sprich mir nach', 'Zahlenjäger', 'Rhythmusspiel', '2048', 'Ninja-Sprung', 'Goldmine', 'Basketball', 'Über die Straße'],
+  ja: ['ネコちゃん', '宇宙ロケット', 'さかなつり', 'タワー', 'モグラたたき', 'めいろ', 'レース', 'ペアさがし', 'まねっこ', '数字ハンター', 'リズムゲーム', '2048', '忍者ジャンプ', '金鉱掘り', 'バスケ', 'みちをわたろう'],
+  zh: ['小猫咪', '太空火箭', '钓鱼', '高塔', '打地鼠', '迷宫', '赛车', '翻对对', '跟我学', '数字猎人', '节奏游戏', '2048', '忍者跳', '黄金矿工', '篮球', '过马路'],
 };
 const R = REAL[ggLang] || REAL.hy;
 
@@ -153,6 +153,8 @@ const GAMES = [
   { name: 'Golden 2048', href: '../2048/', key: 'aren-2048-best', fmt: v => v + T.u.pt },
   { name: 'Golden Ninja', href: '../ninja/', key: 'aren-ninja-best', fmt: v => v + T.u.m },
   { name: 'Golden Mine', href: '../mine/', key: 'aren-mine-best', fmt: v => T.u.lvl(v) },
+  { name: 'Golden Basket', href: '../basket/', key: 'aren-basket-best', fmt: v => v + T.u.pt },
+  { name: 'Golden Men', href: '../men/', key: 'aren-men-best', fmt: v => v + T.u.chain },
 ];
 
 // Փոքրիկ գավաթ ամեն տողի համար. ոսկե՝ ռեկորդ կա, մոխրագույն՝ դեռ չկա

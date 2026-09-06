@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Basket 🏀</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; }
+  html, body { height: 100%; overflow: hidden; background: #1a1430; }
+  canvas { display: block; touch-action: none; }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN BASKET 🏀 — քաշիր, բաց թող, գոլ արա
+//  Զամբյուղը շարժվում է, քամին խանգարում է,
+//  3 գոլ իրար հետևից՝ գնդակը կրակ է առնում։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+// Կանվասի վրա էմոջի չենք գրում — նկարում ենք մեր ձեռքով
+const TRL = {
+  hy: { how: 'Քաշիր գնդակը ու բաց թող', tap: 'Հպիր՝ սկսելու', score: 'Միավոր', best: 'Ռեկորդ՝ ', fire: 'ԿՐԱԿԵ ԳՆԴԱԿ', over: 'Ժամանակը վերջացավ', rec: 'ՆՈՐ ՌԵԿՈՐԴ', again: 'Հպիր՝ նորից խաղալու' },
+  ru: { how: 'Потяни мяч и отпусти', tap: 'Коснись, чтобы начать', score: 'Очки', best: 'Рекорд: ', fire: 'ОГНЕННЫЙ МЯЧ', over: 'Время вышло', rec: 'НОВЫЙ РЕКОРД', again: 'Коснись, чтобы сыграть ещё' },
+  en: { how: 'Drag the ball and let go', tap: 'Tap to start', score: 'Score', best: 'Best: ', fire: 'FIRE BALL', over: 'Time is up', rec: 'NEW RECORD', again: 'Tap to play again' },
+  es: { how: 'Arrastra el balón y suéltalo', tap: 'Toca para empezar', score: 'Puntos', best: 'Récord: ', fire: 'BALÓN DE FUEGO', over: 'Se acabó el tiempo', rec: 'NUEVO RÉCORD', again: 'Toca para jugar otra vez' },
+  fr: { how: 'Tire le ballon et lâche-le', tap: 'Touche pour commencer', score: 'Points', best: 'Record : ', fire: 'BALLON DE FEU', over: 'Le temps est écoulé', rec: 'NOUVEAU RECORD', again: 'Touche pour rejouer' },
+  de: { how: 'Zieh den Ball und lass los', tap: 'Tippe zum Starten', score: 'Punkte', best: 'Rekord: ', fire: 'FEUERBALL', over: 'Die Zeit ist um', rec: 'NEUER REKORD', again: 'Tippe für noch eine Runde' },
+  ja: { how: 'ボールをひっぱってはなそう', tap: 'タップでスタート', score: 'スコア', best: 'ベスト：', fire: 'ファイアボール', over: 'タイムアップ', rec: 'しんきろく', again: 'タップでもういっかい' },
+  zh: { how: '拖动球再松手', tap: '点一下开始', score: '得分', best: '纪录：', fire: '火焰球', over: '时间到', rec: '新纪录', again: '点一下再来一局' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W = 0, H = 0;
+function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sThrow = () => tone(300, 0.1, 'sine', 0.1);
+const sClang = () => tone(660, 0.09, 'square', 0.08);
+const sSwish = () => { tone(880, 0.1, 'triangle', 0.18); tone(1320, 0.16, 'triangle', 0.14, 0.06); };
+const sFire = () => [660, 880, 1100, 1320].forEach((f, k) => tone(f, 0.12, 'sawtooth', 0.08, k * 0.06));
+const sMiss = () => tone(200, 0.12, 'sine', 0.08);
+const sBuzzer = () => { tone(180, 0.5, 'square', 0.16); tone(140, 0.5, 'square', 0.12, 0.02); };
+const sRecord = () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.2, 'triangle', 0.18, k * 0.11));
+
+// ——— Խաղի վիճակը ———
+let state = 'menu';        // menu / play / over
+let endedAt = 0;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-basket-best') || 0); } catch (e) {}
+
+const GRAV = 0.38;         // ձգողությունը
+const K = 0.062;           // քաշելու ուժը արագություն դարձնող թիվը
+let BR = 22;               // գնդակի շառավիղը
+
+let ball, hoop, wind, score, combo, fire, timeLeft, canThrow, resetTimer, spin;
+let floats = [];           // «+2» թռչող գրություններ
+let flames = [];           // կրակի մասնիկներ
+let msgFlash = 0;          // «ԿՐԱԿԵ ԳՆԴԱԿ» գրության պահը
+
+function newRound() {
+  BR = Math.max(17, Math.min(26, Math.min(W, H) * 0.045));
+  score = 0; combo = 0; fire = false;
+  timeLeft = 60;
+  hoop = { x: W / 2, y: H * 0.27, w: BR * 3.1, dir: 1 };
+  floats = []; flames = [];
+  newWind();
+  resetBall();
+}
+function resetBall() {
+  ball = { x: W / 2, y: H - BR * 3.4, vx: 0, vy: 0, flying: false, scored: false };
+  canThrow = true;
+  spin = 0;
+}
+function newWind() {
+  const max = 1.4 + Math.min(score, 24) * 0.09;   // քամին ուժեղանում է խաղի հետ
+  wind = (Math.random() * 2 - 1) * max;
+}
+function hoopSpeed() { return 0.5 + Math.min(score, 26) * 0.075; }
+
+// ——— Քաշել-բաց թողնելը ———
+let drag = null;
+function dragStart(x, y) {
+  if (state === 'menu') { initAudio(); state = 'play'; newRound(); return; }
+  if (state === 'over') {
+    if (Date.now() - endedAt > 1100) { initAudio(); state = 'play'; newRound(); }
+    return;
+  }
+  if (!canThrow || ball.flying) return;
+  drag = { x0: x, y0: y, x, y };
+}
+function dragMove(x, y) {
+  if (drag) { drag.x = x; drag.y = y; }
+}
+function dragEnd() {
+  if (!drag || state !== 'play') { drag = null; return; }
+  const dx = drag.x - drag.x0;
+  const dy = drag.y - drag.y0;
+  drag = null;
+  if (dy > -18 || Math.hypot(dx, dy) < 26) return;   // միայն վերև նետելն է հաշվում
+  initAudio();
+  ball.vx = Math.max(-15, Math.min(15, dx * K));
+  ball.vy = Math.max(-27, Math.min(-6, dy * K));
+  ball.flying = true;
+  ball.scored = false;
+  canThrow = false;
+  sThrow();
+}
+window.addEventListener('touchstart', (e) => {
+  if (e.target.closest('a')) return;
+  dragStart(e.touches[0].clientX, e.touches[0].clientY);
+}, { passive: true });
+window.addEventListener('touchmove', (e) => {
+  dragMove(e.touches[0].clientX, e.touches[0].clientY);
+}, { passive: true });
+window.addEventListener('touchend', () => dragEnd());
+window.addEventListener('mousedown', (e) => {
+  if (e.target.closest('a')) return;
+  dragStart(e.clientX, e.clientY);
+});
+window.addEventListener('mousemove', (e) => dragMove(e.clientX, e.clientY));
+window.addEventListener('mouseup', () => dragEnd());
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// ——— Խաղի քայլը ———
+function goal() {
+  const pts = fire ? 4 : 2;
+  score += pts;
+  combo++;
+  floats.push({ x: hoop.x, y: hoop.y - 20, txt: '+' + pts, t: 1 });
+  sSwish();
+  if (combo === 3) { fire = true; msgFlash = 1; sFire(); }
+}
+function miss() {
+  if (combo > 0 || fire) sMiss();
+  combo = 0;
+  fire = false;
+}
+
+function step() {
+  if (state !== 'play') return;
+
+  timeLeft -= 1 / 60;
+  if (timeLeft <= 0) {
+    timeLeft = 0;
+    state = 'over';
+    endedAt = Date.now();
+    sBuzzer();
+    if (score > best) {
+      best = score;
+      try { localStorage.setItem('aren-basket-best', best); } catch (e) {}
+      sRecord();
+    }
+    return;
+  }
+
+  // Զամբյուղը ման է գալիս ձախ-աջ
+  hoop.x += hoop.dir * hoopSpeed();
+  if (hoop.x < hoop.w) { hoop.x = hoop.w; hoop.dir = 1; }
+  if (hoop.x > W - hoop.w) { hoop.x = W - hoop.w; hoop.dir = -1; }
+
+  if (ball.flying) {
+    const prevY = ball.y;
+    ball.vx += wind * 0.012;   // քամին կամաց հրում է
+    ball.vy += GRAV;
+    ball.x += ball.vx;
+    ball.y += ball.vy;
+    spin += ball.vx * 0.02;
+
+    // Օղակի երկու ծայրերը՝ փոքր կլորիկներ, գնդակը դրանցից թռչում է
+    for (const ex of [hoop.x - hoop.w / 2, hoop.x + hoop.w / 2]) {
+      const dx = ball.x - ex, dy = ball.y - hoop.y;
+      const d = Math.hypot(dx, dy);
+      if (d < BR + 5 && d > 0.001) {
+        const nx = dx / d, ny = dy / d;
+        const dot = ball.vx * nx + ball.vy * ny;
+        if (dot < 0) {
+          ball.vx -= 1.55 * dot * nx;
+          ball.vy -= 1.55 * dot * ny;
+          ball.vx *= 0.82; ball.vy *= 0.82;
+          sClang();
+        }
+        ball.x = ex + nx * (BR + 5.2);
+        ball.y = hoop.y + ny * (BR + 5.2);
+      }
+    }
+
+    // Գո՞լ է. գնդակը վերևից ներքև անցավ օղակի գծով
+    if (!ball.scored && prevY <= hoop.y && ball.y > hoop.y && ball.vy > 0 &&
+        Math.abs(ball.x - hoop.x) < hoop.w / 2 - BR * 0.35) {
+      ball.scored = true;
+      goal();
+    }
+
+    // Կրակե գնդակի հետքը
+    if (fire) {
+      flames.push({ x: ball.x + (Math.random() - 0.5) * BR, y: ball.y + (Math.random() - 0.5) * BR, r: BR * (0.4 + Math.random() * 0.4), t: 1 });
+    }
+
+    // Գնդակը դուրս թռավ էկրանից՝ նետումն ավարտվեց
+    if (ball.y > H + BR * 2 || ball.x < -W * 0.5 || ball.x > W * 1.5) {
+      if (!ball.scored) miss();
+      ball.flying = false;
+      resetTimer = 22;
+    }
+  } else if (!canThrow) {
+    if (--resetTimer <= 0) { newWind(); resetBall(); }
+  }
+
+  floats.forEach(f => { f.y -= 1.2; f.t -= 0.02; });
+  floats = floats.filter(f => f.t > 0);
+  flames.forEach(f => { f.y -= 1.6; f.t -= 0.06; });
+  flames = flames.filter(f => f.t > 0);
+  if (msgFlash > 0) msgFlash -= 0.008;
+}
+
+// ——— Նկարելը ———
+function drawBg() {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#241a45');
+  g.addColorStop(0.75, '#3a2a5e');
+  g.addColorStop(1, '#4a3670');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  // հատակի տախտակները
+  const fy = H * 0.9;
+  ctx.fillStyle = '#8a5a30';
+  ctx.fillRect(0, fy, W, H - fy);
+  ctx.strokeStyle = 'rgba(60,35,12,0.6)';
+  ctx.lineWidth = 2;
+  for (let x = ((Date.now() / 100) % 60) - 60; x < W; x += 60) {
+    ctx.beginPath(); ctx.moveTo(x, fy); ctx.lineTo(x - 14, H); ctx.stroke();
+  }
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.fillRect(0, fy, W, 4);
+}
+
+function drawBall(x, y, r, rot) {
+  if (fire) {   // կրակի փայլը գնդակի տակ
+    const fg = ctx.createRadialGradient(x, y, r * 0.4, x, y, r * 2);
+    fg.addColorStop(0, 'rgba(255,140,40,0.5)');
+    fg.addColorStop(1, 'rgba(255,80,20,0)');
+    ctx.fillStyle = fg;
+    ctx.beginPath(); ctx.arc(x, y, r * 2, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rot);
+  const g = ctx.createRadialGradient(-r * 0.3, -r * 0.3, r * 0.2, 0, 0, r);
+  g.addColorStop(0, fire ? '#ffb066' : '#f5913e');
+  g.addColorStop(1, fire ? '#f05a1e' : '#d96a1e');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#7c3a0e';
+  ctx.lineWidth = Math.max(1.5, r * 0.09);
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-r, 0); ctx.lineTo(r, 0); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(0, r); ctx.stroke();
+  ctx.beginPath(); ctx.arc(-r * 1.35, 0, r * 1.05, -0.9, 0.9); ctx.stroke();
+  ctx.beginPath(); ctx.arc(r * 1.35, 0, r * 1.05, Math.PI - 0.9, Math.PI + 0.9); ctx.stroke();
+  ctx.restore();
+}
+
+function drawFlameIcon(x, y, s) {   // փոքր բոց՝ HUD-ի համար
+  ctx.fillStyle = '#ff8c28';
+  ctx.beginPath();
+  ctx.moveTo(x, y - s);
+  ctx.quadraticCurveTo(x + s * 0.9, y - s * 0.1, x + s * 0.45, y + s * 0.55);
+  ctx.quadraticCurveTo(x + s * 0.2, y + s, x, y + s);
+  ctx.quadraticCurveTo(x - s * 0.2, y + s, x - s * 0.45, y + s * 0.55);
+  ctx.quadraticCurveTo(x - s * 0.9, y - s * 0.1, x, y - s);
+  ctx.fill();
+  ctx.fillStyle = '#ffd166';
+  ctx.beginPath();
+  ctx.moveTo(x, y - s * 0.35);
+  ctx.quadraticCurveTo(x + s * 0.4, y + s * 0.25, x, y + s * 0.75);
+  ctx.quadraticCurveTo(x - s * 0.4, y + s * 0.25, x, y - s * 0.35);
+  ctx.fill();
+}
+
+function drawHoop() {
+  const { x, y, w } = hoop;
+  // վահանակը
+  const bw = w * 1.35, bh = w * 0.8;
+  ctx.fillStyle = 'rgba(240,244,255,0.92)';
+  ctx.strokeStyle = '#8a93b8';
+  ctx.lineWidth = 3;
+  ctx.fillRect(x - bw / 2, y - bh - w * 0.28, bw, bh);
+  ctx.strokeRect(x - bw / 2, y - bh - w * 0.28, bw, bh);
+  ctx.strokeStyle = '#e0663c';
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(x - bw * 0.22, y - bh * 0.62 - w * 0.28, bw * 0.44, bh * 0.5);
+  // ցանցը
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+  ctx.lineWidth = 1.6;
+  const nh = w * 0.72;
+  for (let i = 0; i <= 5; i++) {
+    const t0 = i / 5;
+    ctx.beginPath();
+    ctx.moveTo(x - w / 2 + t0 * w, y);
+    ctx.lineTo(x - w * 0.27 + t0 * w * 0.54, y + nh);
+    ctx.stroke();
+  }
+  ctx.beginPath(); ctx.moveTo(x - w * 0.42, y + nh * 0.38); ctx.lineTo(x + w * 0.42, y + nh * 0.38); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x - w * 0.32, y + nh * 0.75); ctx.lineTo(x + w * 0.32, y + nh * 0.75); ctx.stroke();
+}
+function drawRim() {
+  const { x, y, w } = hoop;
+  ctx.strokeStyle = '#ff5a3c';
+  ctx.lineWidth = Math.max(4, BR * 0.26);
+  ctx.beginPath();
+  ctx.ellipse(x, y, w / 2, Math.max(3.5, w * 0.09), 0, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+function drawWind() {
+  const cx2 = W / 2, cy2 = 118;
+  const len = wind * 16;
+  ctx.strokeStyle = 'rgba(160,220,255,0.9)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(cx2 - len, cy2);
+  ctx.lineTo(cx2 + len, cy2);
+  ctx.stroke();
+  const tip = cx2 + len, s = Math.sign(wind) || 1;
+  ctx.beginPath();
+  ctx.moveTo(tip, cy2);
+  ctx.lineTo(tip - s * 8, cy2 - 5);
+  ctx.moveTo(tip, cy2);
+  ctx.lineTo(tip - s * 8, cy2 + 5);
+  ctx.stroke();
+  // քամու գալարիկ գծիկներ
+  ctx.strokeStyle = 'rgba(160,220,255,0.4)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(cx2 - len * 0.7, cy2 - 8); ctx.lineTo(cx2 + len * 0.7, cy2 - 8); ctx.stroke();
+}
+
+function drawText(txt, x, y, size, color, align, bold) {
+  ctx.fillStyle = color;
+  ctx.font = (bold ? 'bold ' : '') + size + 'px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+  ctx.textAlign = align || 'center';
+  ctx.fillText(txt, x, y);
+}
+
+function draw() {
+  drawBg();
+
+  if (state === 'menu') {
+    drawText('Golden Basket', W / 2, H * 0.24, Math.min(44, W * 0.09), '#ffd166', 'center', true);
+    hoop = hoop || { x: W / 2, y: H * 0.27, w: 70, dir: 1 };
+    const demo = { x: W / 2, y: H * 0.52, w: Math.min(90, W * 0.24) };
+    const keep = hoop; hoop = demo; drawHoop(); drawRim(); hoop = keep;
+    drawBall(W / 2, H * 0.72, Math.min(34, W * 0.08), -0.4);
+    drawText(T.how, W / 2, H * 0.83, Math.min(19, W * 0.05), '#eef0ff');
+    if (best > 0) drawText(T.best + best, W / 2, H * 0.875, Math.min(16, W * 0.042), '#9a9ec7');
+    if (Math.floor(Date.now() / 600) % 2) drawText(T.tap, W / 2, H * 0.93, Math.min(17, W * 0.045), '#6ee7b7');
+    return;
+  }
+
+  // կրակի մասնիկները՝ գնդակի հետևից
+  for (const f of flames) {
+    const fg = ctx.createRadialGradient(f.x, f.y, 1, f.x, f.y, f.r);
+    fg.addColorStop(0, 'rgba(255,210,80,' + (0.55 * f.t) + ')');
+    fg.addColorStop(1, 'rgba(255,90,20,0)');
+    ctx.fillStyle = fg;
+    ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
+  }
+
+  drawHoop();
+
+  // նշան բռնելու կետագիծը՝ քաշելու պահին
+  if (drag && !ball.flying) {
+    const dx = drag.x - drag.x0, dy = drag.y - drag.y0;
+    if (dy < -18) {
+      let px = ball.x, py = ball.y;
+      let vx = Math.max(-15, Math.min(15, dx * K));
+      let vy = Math.max(-27, Math.min(-6, dy * K));
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      for (let i = 0; i < 42; i++) {
+        vx += wind * 0.012; vy += GRAV;
+        px += vx; py += vy;
+        if (i % 3 === 0) { ctx.beginPath(); ctx.arc(px, py, 3.2, 0, Math.PI * 2); ctx.fill(); }
+        if (py > H) break;
+      }
+    }
+  }
+
+  drawBall(ball.x, ball.y, BR, spin);
+  drawRim();
+  drawWind();
+
+  // թռչող «+2»-երը
+  for (const f of floats) {
+    drawText(f.txt, f.x, f.y, 26, 'rgba(110,231,183,' + f.t + ')', 'center', true);
+  }
+
+  // HUD — վերևի գրությունները (ետ-կոճակից ցածր)
+  drawText(String(score), W / 2, 78, 40, '#ffd166', 'center', true);
+  const tt = Math.ceil(timeLeft);
+  drawText('0:' + (tt < 10 ? '0' : '') + tt, W - 16, 78, 24, tt <= 10 ? '#ff7b6b' : '#eef0ff', 'right', true);
+  if (best > 0) drawText(T.best + best, 16, 74, 15, '#9a9ec7', 'left');
+  if (combo >= 2 && !fire) drawText('x' + combo, W / 2 + 46, 76, 20, '#6ee7b7', 'left', true);
+  if (fire) {
+    drawFlameIcon(W / 2 + 52, 68, 13);
+    drawText('x' + combo, W / 2 + 68, 76, 20, '#ff8c28', 'left', true);
+  }
+  if (msgFlash > 0 && fire) {
+    drawText(T.fire, W / 2, H * 0.45, Math.min(34, W * 0.08), 'rgba(255,140,40,' + Math.min(1, msgFlash) + ')', 'center', true);
+  }
+
+  if (state === 'over') {
+    ctx.fillStyle = 'rgba(12,10,26,0.78)';
+    ctx.fillRect(0, 0, W, H);
+    drawText(T.over, W / 2, H * 0.34, Math.min(30, W * 0.07), '#eef0ff', 'center', true);
+    drawText(String(score), W / 2, H * 0.47, Math.min(64, W * 0.15), '#ffd166', 'center', true);
+    if (score >= best && score > 0) drawText(T.rec, W / 2, H * 0.55, Math.min(22, W * 0.055), '#6ee7b7', 'center', true);
+    else if (best > 0) drawText(T.best + best, W / 2, H * 0.55, Math.min(18, W * 0.047), '#9a9ec7');
+    if (Date.now() - endedAt > 1100 && Math.floor(Date.now() / 600) % 2) {
+      drawText(T.again, W / 2, H * 0.66, Math.min(17, W * 0.045), '#6ee7b7');
+    }
+  }
+}
+
+function loop() {
+  step();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
