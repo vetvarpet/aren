@@ -40,7 +40,7 @@
   .logo .joy { display: block; flex-shrink: 0; border-radius: 12px; }
   .logo h1 { font-size: clamp(1.3rem, 4vw, 1.9rem); color: var(--accent); letter-spacing: 0.01em; }
   .logo p { color: var(--dim); font-size: 0.85rem; }
-  nav { display: flex; gap: 10px; }
+  nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
   nav a {
     color: var(--ink);
     text-decoration: none;
@@ -194,6 +194,40 @@
   }
   .langbtn:hover { transform: translateY(-2px); border-color: var(--accent); }
   .langbtn .flag { font-size: 1.35rem; flex-shrink: 0; }
+
+  /* ——— Գաղտնի անակնկալը 🤫 ——— */
+  .goldrop {
+    position: fixed;
+    top: -60px;
+    z-index: 99;
+    pointer-events: none;
+    animation: goldfall linear forwards;
+  }
+  @keyframes goldfall { to { transform: translateY(115vh) rotate(720deg); } }
+  #secretMsg[hidden] { display: none; }
+  #secretMsg {
+    position: fixed;
+    inset: 0;
+    z-index: 98;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(12, 10, 26, 0.82);
+  }
+  #secretMsg .inner {
+    background: var(--card);
+    border: 3px solid var(--accent);
+    border-radius: 22px;
+    padding: 30px 26px;
+    text-align: center;
+    width: min(420px, 100%);
+    animation: secretPop 0.35s;
+    box-shadow: 0 0 60px rgba(255, 209, 102, 0.35);
+  }
+  @keyframes secretPop { from { transform: scale(0.6); opacity: 0; } }
+  #secretMsg h3 { color: var(--accent); font-size: 1.4rem; margin-bottom: 10px; }
+  #secretMsg p { color: var(--ink); line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -213,6 +247,13 @@
       <button class="langbtn" data-lang="ja"><span class="flag">🇯🇵</span> 日本語</button>
       <button class="langbtn" data-lang="zh"><span class="flag">🇨🇳</span> 中文</button>
     </div>
+  </div>
+</div>
+
+<div id="secretMsg" hidden>
+  <div class="inner">
+    <h3 id="secretTitle">Գտա՜ր գաղտնիքը 👑</h3>
+    <p id="secretText">Դու իսկական Golden խաղացող ես։ Այս գաղտնիքը գիտեն միայն ամենաուշադիրները 😼✨</p>
   </div>
 </div>
 
@@ -1206,6 +1247,79 @@ let saved = null;
 try { saved = localStorage.getItem('gg-lang'); } catch (e) {}
 if (saved) applyLang(saved);
 else langPick.hidden = false;
+
+// ——————————————————————————————————————
+//  ԳԱՂՏՆԻՔԸ 🤫 — թագով լոգոյին 5 անգամ հպվիր…
+// ——————————————————————————————————————
+const SECRETS = {
+  hy: ['Գտա՜ր գաղտնիքը 👑', 'Դու իսկական Golden խաղացող ես։ Այս գաղտնիքը գիտեն միայն ամենաուշադիրները 😼✨'],
+  ru: ['Ты нашёл секрет! 👑', 'Ты настоящий Golden игрок. Этот секрет знают только самые внимательные 😼✨'],
+  en: ['You found the secret! 👑', 'You are a true Golden player. Only the most curious ever find this 😼✨'],
+  es: ['¡Encontraste el secreto! 👑', 'Eres un auténtico jugador Golden. Solo los más curiosos lo encuentran 😼✨'],
+  fr: ['Tu as trouvé le secret ! 👑', 'Tu es un vrai joueur Golden. Seuls les plus curieux le découvrent 😼✨'],
+  de: ['Du hast das Geheimnis gefunden! 👑', 'Du bist ein echter Golden-Spieler. Nur die Neugierigsten finden das 😼✨'],
+  ja: ['ひみつを見つけた！👑', 'きみは本物のGoldenプレイヤー！これを見つけるのは、いちばん好奇心のある子だけ 😼✨'],
+  zh: ['你发现了秘密！👑', '你是真正的Golden玩家。只有最细心的人才能找到它 😼✨'],
+};
+const secretMsg = document.getElementById('secretMsg');
+let crownTaps = 0, crownTimer = null, secretBusy = false;
+
+function goldFanfare() {
+  try {
+    const a = new (window.AudioContext || window.webkitAudioContext)();
+    [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, k) => {
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = 'triangle'; o.frequency.value = f;
+      const t = a.currentTime + k * 0.12;
+      g.gain.setValueAtTime(0.18, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      o.connect(g); g.connect(a.destination);
+      o.start(t); o.stop(t + 0.3);
+    });
+  } catch (e) {}
+}
+
+function goldenRain() {
+  const stuff = ['👑', '⭐', '🏆', '💛', '✨', '🌟'];
+  for (let k = 0; k < 70; k++) {
+    const s = document.createElement('span');
+    s.className = 'goldrop';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (18 + Math.random() * 26) + 'px';
+    s.style.animationDuration = (2.2 + Math.random() * 2.2) + 's';
+    s.style.animationDelay = (Math.random() * 1.2) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+
+function showSecret() {
+  if (secretBusy) return;
+  secretBusy = true;
+  let lang = 'hy';
+  try { lang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+  const sec = SECRETS[lang] || SECRETS.hy;
+  document.getElementById('secretTitle').textContent = sec[0];
+  document.getElementById('secretText').textContent = sec[1];
+  secretMsg.hidden = false;
+  goldenRain();
+  goldFanfare();
+  setTimeout(() => { secretBusy = false; }, 1200);
+}
+secretMsg.addEventListener('pointerdown', () => {
+  if (!secretBusy) secretMsg.hidden = true;
+});
+
+document.querySelector('.logo .joy').addEventListener('pointerdown', () => {
+  crownTaps++;
+  clearTimeout(crownTimer);
+  crownTimer = setTimeout(() => { crownTaps = 0; }, 1600);   // դանդաղացար՝ նորից սկսիր
+  if (crownTaps >= 5) {
+    crownTaps = 0;
+    showSecret();
+  }
+});
 </script>
 </body>
 </html>
