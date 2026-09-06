@@ -39,17 +39,28 @@
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
   }
+  /* Սալիկը ինքն է սահում իր տեղը՝ transform-ի անցումով */
   .tile {
     position: absolute;
+    left: 0;
+    top: 0;
+    transition: transform 0.13s ease;
+    will-change: transform;
+  }
+  .tin {
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 10px;
     font-weight: bold;
     color: #2e2410;
-    animation: pop 0.14s;
   }
+  .tin.pop { animation: pop 0.16s; }
   @keyframes pop { from { transform: scale(0.4); } }
+  .tin.bump { animation: bump 0.18s; }
+  @keyframes bump { 40% { transform: scale(1.18); } }
 
   #msg { font-size: 1.05rem; color: #ffd76e; min-height: 1.4em; text-align: center; }
   #newBtn {
@@ -85,7 +96,7 @@
 <script>
 // ——————————————————————————————————————
 //  GOLDEN 2048 🧊 — սահեցրու, միացրու, հասիր 2048-ին
-//  Սվայպ արա՝ բոլոր քառակուսիները սահում են այդ կողմը։
+//  Սվայպ արա էկրանի ՑԱՆԿԱՑԱԾ տեղում՝ բոլոր սալիկները սահում են այդ կողմը։
 //  Երկու նույն թիվ իրար դիպան՝ դառնում են մեկ կրկնակի մեծ։
 // ——————————————————————————————————————
 
@@ -120,7 +131,7 @@ const COLORS = {
   1024: ['#ffd166', '#5c4308'], 2048: ['#f0b429', '#fff5e6'], 4096: ['#c98a12', '#fff5e6'],
 };
 
-let grid = [];        // 4×4. 0 = դատարկ
+let grid = [];        // 4×4. null = դատարկ, թե չէ՝ սալիկ {v, r, c, el}
 let score = 0;
 let won = false;
 let over = false;
@@ -155,6 +166,66 @@ function hud() {
   if (best > 0) { bestBox.innerHTML = T.best + '<b>' + best + '</b>'; bestBox.hidden = false; }
 }
 
+// ——— Չափերը. վանդակների ցանցը սարքում ենք մեկ անգամ ———
+const GAP = 8;
+let cw = 0;
+const cellEls = [];
+function layout() {
+  const size = board.clientWidth - 16;   // padding-ից հետո
+  cw = (size - GAP * 3) / 4;
+  for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {
+    const cell = cellEls[r * 4 + c];
+    cell.style.left = (8 + c * (cw + GAP)) + 'px';
+    cell.style.top = (8 + r * (cw + GAP)) + 'px';
+    cell.style.width = cw + 'px';
+    cell.style.height = cw + 'px';
+  }
+  eachTile(t => { sizeTile(t); styleTile(t); posTile(t); });
+}
+for (let i = 0; i < 16; i++) {
+  const cell = document.createElement('div');
+  cell.className = 'cell';
+  cellEls.push(cell);
+  board.appendChild(cell);
+}
+window.addEventListener('resize', layout);
+
+function eachTile(fn) {
+  for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) if (grid[r][c]) fn(grid[r][c]);
+}
+function sizeTile(t) {
+  t.el.style.width = cw + 'px';
+  t.el.style.height = cw + 'px';
+}
+function posTile(t) {
+  t.el.style.transform = 'translate(' + (8 + t.c * (cw + GAP)) + 'px, ' + (8 + t.r * (cw + GAP)) + 'px)';
+}
+function styleTile(t) {
+  const [bg, fg] = COLORS[t.v] || ['#8a5a30', '#fff5e6'];
+  t.in.style.background = bg;
+  t.in.style.color = fg;
+  t.in.style.fontSize = (t.v < 100 ? cw * 0.44 : t.v < 1000 ? cw * 0.36 : cw * 0.3) + 'px';
+  t.in.textContent = t.v;
+}
+function replayAnim(t, name) {   // pop/bump անիմացիան նորից միացնելու հնարքը
+  t.in.classList.remove('pop', 'bump');
+  void t.in.offsetWidth;
+  t.in.classList.add(name);
+}
+
+function makeTile(r, c, v) {
+  const t = { r, c, v, merged: false };
+  t.el = document.createElement('div');
+  t.el.className = 'tile';
+  t.in = document.createElement('div');
+  t.in.className = 'tin pop';
+  t.el.appendChild(t.in);
+  sizeTile(t); styleTile(t); posTile(t);
+  board.appendChild(t.el);
+  grid[r][c] = t;
+  return t;
+}
+
 function emptyCells() {
   const out = [];
   for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) if (!grid[r][c]) out.push([r, c]);
@@ -165,57 +236,71 @@ function addTile() {
   const e = emptyCells();
   if (!e.length) return;
   const [r, c] = e[Math.floor(Math.random() * e.length)];
-  grid[r][c] = Math.random() < 0.9 ? 2 : 4;
+  makeTile(r, c, Math.random() < 0.9 ? 2 : 4);
 }
 
 function newGame() {
-  grid = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+  board.querySelectorAll('.tile').forEach(el => el.remove());
+  grid = [[null,null,null,null],[null,null,null,null],[null,null,null,null],[null,null,null,null]];
   score = 0; won = false; over = false;
+  layout();
   addTile(); addTile();
   msgEl.textContent = T.hint;
-  render();
   hud();
 }
 
-// Մեկ տողը սահեցնում ենք ձախ. վերադարձնում է [նոր տող, միավոր]
-function slideRow(row) {
-  const a = row.filter(v => v);
-  let gained = 0;
-  for (let i = 0; i < a.length - 1; i++) {
-    if (a[i] === a[i + 1]) {
-      a[i] *= 2;
-      gained += a[i];
-      a.splice(i + 1, 1);
-    }
-  }
-  while (a.length < 4) a.push(0);
-  return [a, gained];
-}
-
-function rotate(g) {   // պտտում ենք ժամացույցի սլաքով
-  const n = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
-  for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) n[c][3 - r] = g[r][c];
-  return n;
-}
-
 // dir: 0=ձախ, 1=վերև, 2=աջ, 3=ներքև
+// Ամեն սալիկ սահում է մինչև պատը կամ ուրիշ սալիկ․ նույն թվին դիպավ՝ միանում են։
 function move(dir) {
   if (over) return;
   initAudio();
-  let g = grid.map(r => r.slice());
-  const rot = [0, 1, 2, 3][dir] === 0 ? 0 : dir === 1 ? 3 : dir === 2 ? 2 : 1;
-  for (let k = 0; k < rot; k++) g = rotate(g);
+  const dr = [0, -1, 0, 1][dir];
+  const dc = [-1, 0, 1, 0][dir];
+  // սկսում ենք այն կողմից, ուր սահում ենք, որ առջևինները առաջինը գնան
+  const rows = dr === 1 ? [3, 2, 1, 0] : [0, 1, 2, 3];
+  const cols = dc === 1 ? [3, 2, 1, 0] : [0, 1, 2, 3];
   let gained = 0, moved = false;
-  g = g.map(row => {
-    const [nr, gn] = slideRow(row);
-    gained += gn;
-    if (nr.join() !== row.join()) moved = true;
-    return nr;
-  });
-  for (let k = 0; k < (4 - rot) % 4; k++) g = rotate(g);
+
+  for (const r of rows) for (const c of cols) {
+    const t = grid[r][c];
+    if (!t) continue;
+    let nr = r, nc = c;
+    let target = null;
+    while (true) {
+      const rr = nr + dr, cc = nc + dc;
+      if (rr < 0 || rr > 3 || cc < 0 || cc > 3) break;
+      if (grid[rr][cc]) {
+        if (grid[rr][cc].v === t.v && !grid[rr][cc].merged) target = grid[rr][cc];
+        break;
+      }
+      nr = rr; nc = cc;
+    }
+    if (target) {
+      // միանում ենք. t-ն սահում է target-ի վրա ու վերանում
+      moved = true;
+      grid[r][c] = null;
+      target.v *= 2;
+      target.merged = true;
+      gained += target.v;
+      t.r = target.r; t.c = target.c;
+      posTile(t);
+      const deadEl = t.el;
+      setTimeout(() => {
+        deadEl.remove();
+        styleTile(target);
+        replayAnim(target, 'bump');
+      }, 130);
+    } else if (nr !== r || nc !== c) {
+      moved = true;
+      grid[r][c] = null;
+      grid[nr][nc] = t;
+      t.r = nr; t.c = nc;
+      posTile(t);
+    }
+  }
+  eachTile(t => { t.merged = false; });
   if (!moved) return;
 
-  grid = g;
   score += gained;
   if (score > best) {
     best = score;
@@ -223,10 +308,9 @@ function move(dir) {
   }
   gained > 0 ? sMerge() : sSlide();
   addTile();
-  render();
   hud();
 
-  if (!won && grid.some(r => r.some(v => v >= 2048))) {
+  if (!won && [].concat(...grid).some(t => t && t.v >= 2048)) {
     won = true;
     msgEl.textContent = T.win;
     sWin();
@@ -239,56 +323,26 @@ function move(dir) {
   }
 }
 
+function valAt(r, c) { return grid[r][c] ? grid[r][c].v : 0; }
 function isStuck() {
   if (emptyCells().length) return false;
   for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {
-    if (c < 3 && grid[r][c] === grid[r][c + 1]) return false;
-    if (r < 3 && grid[r][c] === grid[r + 1][c]) return false;
+    if (c < 3 && valAt(r, c) === valAt(r, c + 1)) return false;
+    if (r < 3 && valAt(r, c) === valAt(r + 1, c)) return false;
   }
   return true;
 }
 
-// ——— Նկարելը ———
-function render() {
-  board.innerHTML = '';
-  const size = board.clientWidth - 16;   // padding-ից հետո
-  const gap = 8;
-  const cw = (size - gap * 3) / 4;
-  for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {
-    const cell = document.createElement('div');
-    cell.className = 'cell';
-    cell.style.left = (8 + c * (cw + gap)) + 'px';
-    cell.style.top = (8 + r * (cw + gap)) + 'px';
-    cell.style.width = cw + 'px';
-    cell.style.height = cw + 'px';
-    board.appendChild(cell);
-    const v = grid[r][c];
-    if (v) {
-      const tile = document.createElement('div');
-      tile.className = 'tile';
-      const [bg, fg] = COLORS[v] || ['#8a5a30', '#fff5e6'];
-      tile.style.background = bg;
-      tile.style.color = fg;
-      tile.style.left = cell.style.left;
-      tile.style.top = cell.style.top;
-      tile.style.width = cw + 'px';
-      tile.style.height = cw + 'px';
-      tile.style.fontSize = (v < 100 ? cw * 0.44 : v < 1000 ? cw * 0.36 : cw * 0.3) + 'px';
-      tile.textContent = v;
-      board.appendChild(tile);
-    }
-  }
-}
-window.addEventListener('resize', render);
-
-// ——— Կառավարումը. սվայպ + ստեղնաշար ———
+// ——— Կառավարումը. սվայպ ԱՄԲՈՂՋ էկրանով + ստեղնաշար ———
+// Կոճակների ու հղումների վրայից սկսված հպումները չենք խառնում խաղին
 let sx = 0, sy = 0, swiping = false;
-board.addEventListener('touchstart', (e) => {
+window.addEventListener('touchstart', (e) => {
+  if (e.target.closest('a, button')) return;
   sx = e.touches[0].clientX;
   sy = e.touches[0].clientY;
   swiping = true;
 }, { passive: true });
-board.addEventListener('touchend', (e) => {
+window.addEventListener('touchend', (e) => {
   if (!swiping) return;
   swiping = false;
   const dx = e.changedTouches[0].clientX - sx;
@@ -299,7 +353,10 @@ board.addEventListener('touchend', (e) => {
 });
 // մկնիկով էլ (համակարգչի համար)
 let mdown = false;
-board.addEventListener('mousedown', (e) => { sx = e.clientX; sy = e.clientY; mdown = true; });
+window.addEventListener('mousedown', (e) => {
+  if (e.target.closest('a, button')) return;
+  sx = e.clientX; sy = e.clientY; mdown = true;
+});
 window.addEventListener('mouseup', (e) => {
   if (!mdown) return;
   mdown = false;
