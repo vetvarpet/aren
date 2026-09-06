@@ -222,6 +222,7 @@
     </div>
     <nav>
       <a href="./about.html" id="navAbout">😼 Մեր մասին</a>
+      <a href="./trophies/" id="navTroph">🏆 Գավաթներ</a>
       <a href="./qr.html">📱 QR</a>
       <a href="https://github.com/vetvarpet/aren">⭐ GitHub</a>
       <a href="#" id="langBtn" title="Լեզու / Язык / Language">🌐</a>
@@ -716,6 +717,7 @@ document.addEventListener('touchend', (e) => {
 const DICT = {
   ru: {
     about: '😼 О нас',
+    troph: '🏆 Кубки',
     newTag: 'NEW',
     cards: {
       './cat-jump/': ['Котик', 'Прыгай через ящики, лови рыбок. Ночью летят вороны — проходи под ними, не прыгай. 100 очков — кубок.', '▶ Играть'],
@@ -733,6 +735,7 @@ const DICT = {
   },
   en: {
     about: '😼 About',
+    troph: '🏆 Trophies',
     newTag: 'NEW',
     cards: {
       './cat-jump/': ['Kitty', 'Jump over boxes and catch fish. At night crows fly over — pass under them, don’t jump. 100 points wins the trophy.', '▶ Play'],
@@ -750,6 +753,7 @@ const DICT = {
   },
   es: {
     about: '😼 Sobre nosotros',
+    troph: '🏆 Trofeos',
     newTag: 'NUEVO',
     cards: {
       './cat-jump/': ['Gatito', 'Salta las cajas y atrapa peces. De noche vuelan cuervos: pasa por debajo, no saltes. Con 100 puntos ganas la copa.', '▶ Jugar'],
@@ -767,6 +771,7 @@ const DICT = {
   },
   fr: {
     about: '😼 À propos',
+    troph: '🏆 Trophées',
     newTag: 'NOUVEAU',
     cards: {
       './cat-jump/': ['Petit chat', 'Saute par-dessus les caisses et attrape les poissons. La nuit, des corbeaux passent : baisse-toi, ne saute pas. 100 points = la coupe.', '▶ Jouer'],
@@ -784,6 +789,7 @@ const DICT = {
   },
   de: {
     about: '😼 Über uns',
+    troph: '🏆 Pokale',
     newTag: 'NEU',
     cards: {
       './cat-jump/': ['Kätzchen', 'Spring über Kisten und fang Fische. Nachts fliegen Krähen — duck dich drunter durch, nicht springen. 100 Punkte = Pokal.', '▶ Spielen'],
@@ -801,6 +807,7 @@ const DICT = {
   },
   ja: {
     about: '😼 わたしたち',
+    troph: '🏆 トロフィー',
     newTag: '新',
     cards: {
       './cat-jump/': ['ネコちゃん', '箱をとびこえて魚をキャッチ。夜はカラスが来るよ。下をくぐって、ジャンプしないで！100ポイントでトロフィー。', '▶ あそぶ'],
@@ -818,6 +825,7 @@ const DICT = {
   },
   zh: {
     about: '😼 关于我们',
+    troph: '🏆 奖杯',
     newTag: '新',
     cards: {
       './cat-jump/': ['小猫咪', '跳过箱子抓小鱼。晚上有乌鸦飞来——从下面过，别跳！100分赢奖杯。', '▶ 开玩'],
@@ -841,6 +849,7 @@ function applyLang(lang) {
   const d = DICT[lang];
   if (!d) return;   // հայերենը արդեն էջի մեջ է
   document.getElementById('navAbout').textContent = d.about;
+  document.getElementById('navTroph').textContent = d.troph;
   document.querySelectorAll('.game').forEach(card => {
     const c = d.cards[card.getAttribute('href')];
     if (!c) return;

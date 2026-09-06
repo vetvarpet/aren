@@ -1,0 +1,197 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Trophies 🏆</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background:
+      radial-gradient(circle at 80% 8%, rgba(255, 209, 102, 0.10), transparent 45%),
+      linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    min-height: 100dvh;
+    padding: 72px 18px 32px;   /* վերևից տեղ ենք թողնում «← Golden Games»-ի համար */
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  nav { position: fixed; top: 14px; left: 14px; z-index: 10; }
+  nav a {
+    color: #f5eede;
+    text-decoration: none;
+    background: #3d3560;
+    border: 2px solid #6a5f9e;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+  }
+
+  .bigcup { width: 92px; height: 92px; }
+  h1 { font-size: clamp(1.4rem, 5.5vw, 2.1rem); color: #ffd76e; text-align: center; }
+  .sub { color: #9a9ec7; text-align: center; }
+  .count {
+    background: #ffd166;
+    color: #2e2410;
+    font-weight: bold;
+    padding: 7px 18px;
+    border-radius: 999px;
+    font-size: 0.95rem;
+  }
+
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(94vw, 460px);
+    margin-top: 6px;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #1d1d3f;
+    border: 2px solid #33356b;
+    border-radius: 16px;
+    padding: 10px 16px;
+    text-decoration: none;
+    color: #f5eede;
+    transition: transform 0.12s, border-color 0.12s;
+  }
+  .row:hover { transform: translateY(-2px); border-color: #ffd76e; }
+  .row.won { border-color: rgba(255, 209, 102, 0.55); }
+  .row svg { width: 40px; height: 40px; flex-shrink: 0; }
+  .row .info { flex: 1; min-width: 0; }
+  .row h2 { font-size: 0.98rem; }
+  .row .real { color: #9a9ec7; font-size: 0.78rem; margin-top: 1px; }
+  .row .val {
+    font-size: 1.15rem;
+    font-weight: bold;
+    color: #ffd76e;
+    white-space: nowrap;
+  }
+  .row.empty svg { opacity: 0.85; }
+  .row.empty .val { color: #6a6f96; font-size: 0.8rem; font-weight: normal; }
+</style>
+
+<nav><a href="../">← Golden Games</a></nav>
+
+<svg class="bigcup" viewBox="0 0 48 48" aria-hidden="true">
+  <defs>
+    <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#e0a415"/>
+    </linearGradient>
+  </defs>
+  <path d="M14 25 Q6 24 6 15 Q6 11 10 11 L13 11" fill="none" stroke="#e8c04a" stroke-width="3.5"/>
+  <path d="M34 25 Q42 24 42 15 Q42 11 38 11 L35 11" fill="none" stroke="#e8c04a" stroke-width="3.5"/>
+  <path d="M12 8 L36 8 Q36 24 24 30 Q12 24 12 8 Z" fill="url(#tg)" stroke="#c98a12" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M17 12 Q17 20 21 24" fill="none" stroke="#fff3c4" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+  <rect x="21.5" y="30" width="5" height="6" fill="#ffd166" stroke="#c98a12" stroke-width="1.2"/>
+  <rect x="14.5" y="36" width="19" height="5.5" rx="2.2" fill="#ffd166" stroke="#c98a12" stroke-width="1.5"/>
+</svg>
+
+<h1>Golden Trophies 🏆</h1>
+<p class="sub"></p>
+<div class="count"></div>
+
+<div class="list" id="list"></div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN TROPHIES 🏆 — ռեկորդների սենյակը
+//  Այստեղ հավաքված են քո լավագույն արդյունքները բոլոր խաղերից։
+//  Ռեկորդները պահվում են հենց քո հեռախոսում, ոչ մի տեղ չեն ուղարկվում։
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { sub: 'Քո ռեկորդները բոլոր խաղերում', count: (n, m) => 'Գավաթներ՝ ' + n + '/' + m, none: 'դեռ չես խաղացել', u: { pt: ' միավոր', fl: ' հարկ', lvl: n => 'մակարդակ ' + n, tries: ' փորձով', chain: ' քայլ', num: ' թիվ' } },
+  ru: { sub: 'Твои рекорды во всех играх', count: (n, m) => 'Кубки: ' + n + '/' + m, none: 'ещё не играл', u: { pt: ' очков', fl: ' этажей', lvl: n => 'уровень ' + n, tries: ' попыток', chain: ' шагов', num: ' чисел' } },
+  en: { sub: 'Your best scores in every game', count: (n, m) => 'Trophies: ' + n + '/' + m, none: 'not played yet', u: { pt: ' points', fl: ' floors', lvl: n => 'level ' + n, tries: ' tries', chain: ' steps', num: ' numbers' } },
+  es: { sub: 'Tus récords en todos los juegos', count: (n, m) => 'Trofeos: ' + n + '/' + m, none: 'aún sin jugar', u: { pt: ' puntos', fl: ' pisos', lvl: n => 'nivel ' + n, tries: ' intentos', chain: ' pasos', num: ' números' } },
+  fr: { sub: 'Tes records dans tous les jeux', count: (n, m) => 'Trophées : ' + n + '/' + m, none: 'pas encore joué', u: { pt: ' points', fl: ' étages', lvl: n => 'niveau ' + n, tries: ' essais', chain: ' pas', num: ' nombres' } },
+  de: { sub: 'Deine Rekorde in allen Spielen', count: (n, m) => 'Pokale: ' + n + '/' + m, none: 'noch nicht gespielt', u: { pt: ' Punkte', fl: ' Etagen', lvl: n => 'Level ' + n, tries: ' Versuche', chain: ' Schritte', num: ' Zahlen' } },
+  ja: { sub: 'ぜんぶのゲームのベスト記録', count: (n, m) => 'トロフィー：' + n + '/' + m, none: 'まだあそんでないよ', u: { pt: 'ポイント', fl: '階', lvl: n => 'レベル' + n, tries: '回', chain: 'ステップ', num: '個' } },
+  zh: { sub: '你在所有游戏里的纪录', count: (n, m) => '奖杯：' + n + '/' + m, none: '还没玩过', u: { pt: '分', fl: '层', lvl: n => '第' + n + '关', tries: '次', chain: '步', num: '个' } },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.querySelector('.sub').textContent = T.sub;
+
+// Իրական անունները՝ ընտրված լեզվով
+const REAL = {
+  hy: ['Կատվիկ', 'Հրթիռը տիեզերքում', 'Ձկնորսություն', 'Աշտարակ', 'Խլուրդներ', 'Լաբիրինթոս', 'Մրցարշավ', 'Զույգեր', 'Կրկնիր ինձ', 'Թվերի որսորդ'],
+  ru: ['Котик', 'Ракета в космосе', 'Рыбалка', 'Башня', 'Кроты', 'Лабиринт', 'Гонка', 'Пары', 'Повтори за мной', 'Охотник за числами'],
+  en: ['Kitty', 'Rocket in Space', 'Fishing', 'Tower', 'Moles', 'Maze', 'Race', 'Pairs', 'Repeat After Me', 'Number Hunter'],
+  es: ['Gatito', 'Cohete', 'Pesca', 'Torre', 'Topos', 'Laberinto', 'Carrera', 'Parejas', 'Repite conmigo', 'Cazanúmeros'],
+  fr: ['Petit chat', 'Fusée', 'Pêche', 'Tour', 'Taupes', 'Labyrinthe', 'Course', 'Paires', 'Répète après moi', 'Chasseur de nombres'],
+  de: ['Kätzchen', 'Rakete', 'Angeln', 'Turm', 'Maulwürfe', 'Labyrinth', 'Rennen', 'Paare', 'Sprich mir nach', 'Zahlenjäger'],
+  ja: ['ネコちゃん', '宇宙ロケット', 'さかなつり', 'タワー', 'モグラたたき', 'めいろ', 'レース', 'ペアさがし', 'まねっこ', '数字ハンター'],
+  zh: ['小猫咪', '太空火箭', '钓鱼', '高塔', '打地鼠', '迷宫', '赛车', '翻对对', '跟我学', '数字猎人'],
+};
+const R = REAL[ggLang] || REAL.hy;
+
+// Խաղերի ցուցակը. key-ն ռեկորդի պահեստի անունն է, fmt-ը՝ ինչպես ցույց տալ
+const GAMES = [
+  { name: 'Golden Cat', href: '../cat-jump/', key: 'cat-best', fmt: v => v + T.u.pt },
+  { name: 'Golden Rocket', href: '../rocket/', key: 'aren-rocket-best', fmt: v => v + T.u.pt },
+  { name: 'Golden Fishing', href: '../fishing/', key: 'aren-fish-best', fmt: v => v + T.u.pt },
+  { name: 'Golden Tower', href: '../tower/', key: 'aren-tower-best', fmt: v => v + T.u.fl },
+  { name: 'Golden Moles', href: '../moles/', key: 'aren-moles-best', fmt: v => v + T.u.pt },
+  { name: 'Golden Maze', href: '../maze/', key: 'aren-maze-max', fmt: v => T.u.lvl(v) + '/100' },
+  { name: 'Golden Driver', href: '../city-drive/race/', key: 'aren-race-level', fmt: v => T.u.lvl(v) + '/10' },
+  { name: 'Golden Memory', href: '../memory/pairs/', key: 'aren-memory-best', fmt: v => v + T.u.tries },
+  { name: 'Golden Memory', href: '../memory/repeat/', key: 'aren-repeat-best', fmt: v => v + T.u.chain },
+  { name: 'Golden Memory', href: '../memory/numbers/', key: 'aren-numbers-best', fmt: v => v + T.u.num },
+];
+
+// Փոքրիկ գավաթ ամեն տողի համար. ոսկե՝ ռեկորդ կա, մոխրագույն՝ դեռ չկա
+function cupSVG(gold, i) {
+  const fill = gold ? 'url(#g' + i + ')' : '#4a4f72';
+  const edge = gold ? '#c98a12' : '#33356b';
+  const grad = gold
+    ? '<defs><linearGradient id="g' + i + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#e0a415"/></linearGradient></defs>'
+    : '';
+  return '<svg viewBox="0 0 48 48" aria-hidden="true">' + grad +
+    '<path d="M14 25 Q6 24 6 15 Q6 11 10 11 L13 11" fill="none" stroke="' + (gold ? '#e8c04a' : '#3d426b') + '" stroke-width="3.5"/>' +
+    '<path d="M34 25 Q42 24 42 15 Q42 11 38 11 L35 11" fill="none" stroke="' + (gold ? '#e8c04a' : '#3d426b') + '" stroke-width="3.5"/>' +
+    '<path d="M12 8 L36 8 Q36 24 24 30 Q12 24 12 8 Z" fill="' + fill + '" stroke="' + edge + '" stroke-width="2" stroke-linejoin="round"/>' +
+    '<rect x="21.5" y="30" width="5" height="6" fill="' + fill + '" stroke="' + edge + '" stroke-width="1.2"/>' +
+    '<rect x="14.5" y="36" width="19" height="5.5" rx="2.2" fill="' + fill + '" stroke="' + edge + '" stroke-width="1.5"/>' +
+    '</svg>';
+}
+
+const list = document.getElementById('list');
+let wonCount = 0;
+
+GAMES.forEach((g, i) => {
+  let v = 0;
+  try { v = Number(localStorage.getItem(g.key) || 0); } catch (e) {}
+  const has = v > 0;
+  if (has) wonCount++;
+
+  const a = document.createElement('a');
+  a.className = 'row ' + (has ? 'won' : 'empty');
+  a.href = g.href;
+  a.innerHTML = cupSVG(has, i) +
+    '<div class="info"><h2>' + g.name + '</h2><div class="real">' + R[i] + '</div></div>' +
+    '<div class="val">' + (has ? g.fmt(v) : T.none) + '</div>';
+  list.appendChild(a);
+});
+
+document.querySelector('.count').textContent = T.count(wonCount, GAMES.length);
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>
