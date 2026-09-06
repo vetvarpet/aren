@@ -1,0 +1,315 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Ninja 🥷</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: #191233;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+  }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+<canvas id="game"></canvas>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN NINJA 🥷 — նինձյան մագլցում է երկու պատի արանքով
+//  Դիպչիր՝ պատից պատ թռչելու։ Փշերին չկպնե՛ս։
+//  Ինչքան բարձրանաս, էնքան արագ է դառնում։
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { title: 'GOLDEN NINJA', sub: 'Դիպչիր՝ պատից պատ թռչելու', best: 'Ռեկորդ՝ ', m: ' մ', ouch: 'Փշերը կծեցի՜ն', overSub: n => n + ' մ բարձրացար · Դիպչիր՝ նորից', newRec: 'ՆՈՐ ՌԵԿՈՐԴ 🏆' },
+  ru: { title: 'GOLDEN NINJA', sub: 'Нажимай, чтобы прыгать со стены на стену', best: 'Рекорд: ', m: ' м', ouch: 'Шипы уколол!', overSub: n => 'Ты поднялся на ' + n + ' м · Нажми ещё раз', newRec: 'НОВЫЙ РЕКОРД 🏆' },
+  en: { title: 'GOLDEN NINJA', sub: 'Tap to jump between the walls', best: 'Best: ', m: ' m', ouch: 'Spiked!', overSub: n => 'You climbed ' + n + ' m · Tap to retry', newRec: 'NEW RECORD 🏆' },
+  es: { title: 'GOLDEN NINJA', sub: 'Toca para saltar de pared a pared', best: 'Récord: ', m: ' m', ouch: '¡Pinchos!', overSub: n => 'Subiste ' + n + ' m · Toca para reintentar', newRec: '¡NUEVO RÉCORD! 🏆' },
+  fr: { title: 'GOLDEN NINJA', sub: 'Touche pour sauter de mur en mur', best: 'Record : ', m: ' m', ouch: 'Aïe, les piques !', overSub: n => 'Tu as grimpé ' + n + ' m · Touche pour réessayer', newRec: 'NOUVEAU RECORD 🏆' },
+  de: { title: 'GOLDEN NINJA', sub: 'Tippe, um von Wand zu Wand zu springen', best: 'Rekord: ', m: ' m', ouch: 'Stacheln!', overSub: n => 'Du bist ' + n + ' m geklettert · Tippe für nochmal', newRec: 'NEUER REKORD 🏆' },
+  ja: { title: 'GOLDEN NINJA', sub: 'タップで壁から壁へジャンプ', best: 'ベスト：', m: ' m', ouch: 'トゲが痛い！', overSub: n => n + 'mのぼったよ · タップでもう一回', newRec: '新記録 🏆' },
+  zh: { title: 'GOLDEN NINJA', sub: '点一下在两面墙之间跳', best: '纪录：', m: ' 米', ouch: '被刺扎到了！', overSub: n => '你爬了' + n + '米 · 点一下再来', newRec: '新纪录 🏆' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let W = 0, H = 0, WALL = 0;
+function resize() {
+  const DPR = window.devicePixelRatio || 1;
+  canvas.width = innerWidth * DPR;
+  canvas.height = innerHeight * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  W = innerWidth;
+  H = innerHeight;
+  WALL = Math.max(46, Math.min(70, W * 0.14));   // պատի հաստությունը
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ——— Խաղի վիճակը ———
+const NINJA = 34;         // նինձյայի չափը
+let state = 'menu';       // menu → play → over
+let side = 0;             // 0 = ձախ պատ, 1 = աջ պատ
+let nx = 0;               // նինձյայի x-ը (թռիչքի ժամանակ շարժվում է)
+let ny = 0;               // նինձյայի y-ը էկրանին
+let jumping = false;
+let dist = 0;             // բարձրությունը «մետրերով»
+let speed = 0;
+let spikes = [];          // { side, y, h } — y-ն աշխարհի կոորդինատ է
+let nextSpikeAt = 0;
+let scroll = 0;
+let endedAt = 0;
+let frame = 0;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-ninja-best') || 0); } catch (e) {}
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.16, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sJump = () => tone(500, 0.1, 'square', 0.12);
+const sLand = () => tone(240, 0.07, 'square', 0.1);
+const sDie = () => [330, 262, 196, 147].forEach((f, k) => tone(f, 0.18, 'sawtooth', 0.14, k * 0.1));
+
+function newGame() {
+  side = 0;
+  jumping = false;
+  ny = H * 0.62;
+  nx = WALL;
+  dist = 0;
+  speed = 2.6;
+  scroll = 0;
+  spikes = [];
+  nextSpikeAt = 400;
+  state = 'play';
+}
+
+// Փուշ ենք ավելացնում վերևից. երբեք երկու պատին իրար դեմ, որ միշտ ելք լինի
+function addSpikes() {
+  const s = Math.random() < 0.5 ? 0 : 1;
+  const h = 90 + Math.random() * 110;
+  spikes.push({ side: s, y: scroll - 80 - h, h });
+  // երբեմն մյուս պատին էլ, բայց հեռվում
+  if (Math.random() < 0.4) {
+    spikes.push({ side: 1 - s, y: scroll - 80 - h - 220 - Math.random() * 160, h: 80 + Math.random() * 90 });
+  }
+  nextSpikeAt = 240 + Math.random() * 160;
+}
+
+function jump() {
+  if (state === 'menu') { newGame(); return; }
+  if (state === 'over') {
+    if (Date.now() - endedAt < 1000) return;
+    newGame();
+    return;
+  }
+  if (jumping) return;
+  jumping = true;
+  side = 1 - side;
+  sJump();
+}
+
+canvas.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  initAudio();
+  jump();
+});
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') { initAudio(); jump(); }
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+function gameOver() {
+  state = 'over';
+  endedAt = Date.now();
+  const m = Math.floor(dist);
+  if (m > best) {
+    best = m;
+    try { localStorage.setItem('aren-ninja-best', best); } catch (e) {}
+  }
+  sDie();
+}
+
+// ——— Նկարելը ———
+function drawWall(x, w) {
+  ctx.fillStyle = '#3d3560';
+  ctx.fillRect(x, 0, w, H);
+  // աղյուսների կարերը՝ պտտվում են սքրոլի հետ
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+  ctx.lineWidth = 2;
+  const bh = 34;
+  const off = ((scroll % bh) + bh) % bh;
+  for (let y = -bh + off; y < H + bh; y += bh) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + w, y);
+    ctx.stroke();
+  }
+  ctx.fillStyle = 'rgba(255,255,255,0.05)';
+  ctx.fillRect(x + (x === 0 ? w - 6 : 0), 0, 6, H);
+}
+
+function drawSpike(sp) {
+  const yTop = sp.y - scroll + H * 0.62;   // աշխարհից էկրան
+  const n = Math.max(2, Math.round(sp.h / 26));
+  const step = sp.h / n;
+  ctx.fillStyle = '#aab3c7';
+  for (let k = 0; k < n; k++) {
+    const y0 = yTop + k * step;
+    ctx.beginPath();
+    if (sp.side === 0) {
+      ctx.moveTo(WALL, y0);
+      ctx.lineTo(WALL + 22, y0 + step / 2);
+      ctx.lineTo(WALL, y0 + step);
+    } else {
+      ctx.moveTo(W - WALL, y0);
+      ctx.lineTo(W - WALL - 22, y0 + step / 2);
+      ctx.lineTo(W - WALL, y0 + step);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+function drawNinja(x, y, facing) {
+  ctx.save();
+  ctx.translate(x, y);
+  if (facing === 1) ctx.scale(-1, 1);
+  // մարմինը
+  ctx.fillStyle = '#23264a';
+  ctx.beginPath();
+  ctx.moveTo(-NINJA / 2, NINJA / 2);
+  ctx.quadraticCurveTo(-NINJA / 2, -NINJA / 2, 4, -NINJA / 2);
+  ctx.quadraticCurveTo(NINJA / 2, -NINJA / 2, NINJA / 2, 2);
+  ctx.quadraticCurveTo(NINJA / 2, NINJA / 2, 0, NINJA / 2);
+  ctx.closePath();
+  ctx.fill();
+  // դեմքի բացվածքն ու աչքերը
+  ctx.fillStyle = '#e8c9a0';
+  ctx.fillRect(-2, -10, NINJA / 2 + 0, 11);
+  ctx.fillStyle = '#191233';
+  ctx.beginPath(); ctx.arc(5, -5, 2.2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(12, -5, 2.2, 0, Math.PI * 2); ctx.fill();
+  // ոսկե գոտի + ճակատակապ (Golden Ninja ենք, չէ՞)
+  ctx.fillStyle = '#ffd166';
+  ctx.fillRect(-NINJA / 2, -14, NINJA + 0, 3.5);
+  ctx.fillRect(-NINJA / 2, 6, NINJA / 2 + 6, 4);
+  // ծածանվող ժապավենը
+  ctx.strokeStyle = '#ffd166';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(-NINJA / 2, -12);
+  ctx.quadraticCurveTo(-NINJA / 2 - 12, -12 + Math.sin(frame * 0.3) * 5, -NINJA / 2 - 20, -8 + Math.sin(frame * 0.3 + 1) * 5);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawText(txt, x, y, size, color, align) {
+  ctx.fillStyle = color;
+  ctx.font = 'bold ' + size + 'px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+  ctx.textAlign = align || 'center';
+  ctx.fillText(txt, x, y);
+}
+
+function update() {
+  frame++;
+
+  // ֆոնը
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#141026');
+  g.addColorStop(1, '#241a45');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+
+  if (state === 'play') {
+    speed = 2.6 + dist / 220;
+    scroll -= speed;
+    dist += speed / 10;
+    nextSpikeAt -= speed;
+    if (nextSpikeAt <= 0) addSpikes();
+    spikes = spikes.filter(sp => sp.y - scroll + H * 0.62 < H + 200);
+
+    // թռիչքի ժամանակ x-ը սահուն անցնում է մյուս պատին
+    const targetX = side === 0 ? WALL : W - WALL;
+    nx += (targetX - nx) * 0.25;
+    if (Math.abs(targetX - nx) < 2 && jumping) { jumping = false; nx = targetX; sLand(); }
+
+    // բախում փշերի հետ (միայն երբ պատին ես)
+    if (!jumping) {
+      for (const sp of spikes) {
+        if (sp.side !== side) continue;
+        const yTop = sp.y - scroll + H * 0.62;
+        if (ny + NINJA / 2 > yTop && ny - NINJA / 2 < yTop + sp.h) {
+          gameOver();
+          break;
+        }
+      }
+    }
+  }
+
+  drawWall(0, WALL);
+  drawWall(W - WALL, WALL);
+  for (const sp of spikes) drawSpike(sp);
+
+  const nxDraw = state === 'menu' ? WALL : nx;
+  const off = side === 0 ? NINJA / 2 + 2 : -NINJA / 2 - 2;
+  drawNinja(nxDraw + (state === 'menu' ? NINJA / 2 + 2 : off), ny || H * 0.62, side);
+
+  if (state === 'play') {
+    drawText(Math.floor(dist) + T.m, W / 2, 90, 30, 'rgba(245, 238, 222, 0.9)');
+    drawText(T.best + best + T.m, W - 14, 30, 15, 'rgba(245, 238, 222, 0.6)', 'right');
+  }
+  if (state === 'menu') {
+    drawText(T.title, W / 2, H * 0.3, Math.min(46, W * 0.1), '#ffd76e');
+    drawText(T.sub, W / 2, H * 0.3 + 40, 17, 'rgba(245, 238, 222, 0.85)');
+    if (best > 0) drawText(T.best + best + T.m, W / 2, H * 0.3 + 72, 15, 'rgba(245, 238, 222, 0.6)');
+  }
+  if (state === 'over') {
+    ctx.fillStyle = 'rgba(20, 15, 40, 0.75)';
+    ctx.fillRect(0, 0, W, H);
+    drawText(T.ouch, W / 2, H * 0.4, 30, '#ff7b6b');
+    drawText(T.overSub(Math.floor(dist)), W / 2, H * 0.4 + 42, 17, 'rgba(245, 238, 222, 0.9)');
+    if (Math.floor(dist) === best && best > 0) drawText(T.newRec, W / 2, H * 0.4 + 76, 17, '#ffd166');
+  }
+
+  requestAnimationFrame(update);
+}
+ny = 0;
+update();
+</script>

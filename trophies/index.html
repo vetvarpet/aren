@@ -112,28 +112,28 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { sub: 'Քո ռեկորդները բոլոր խաղերում', count: (n, m) => 'Գավաթներ՝ ' + n + '/' + m, none: 'դեռ չես խաղացել', u: { pt: ' միավոր', fl: ' հարկ', lvl: n => 'մակարդակ ' + n, tries: ' փորձով', chain: ' քայլ', num: ' թիվ' } },
-  ru: { sub: 'Твои рекорды во всех играх', count: (n, m) => 'Кубки: ' + n + '/' + m, none: 'ещё не играл', u: { pt: ' очков', fl: ' этажей', lvl: n => 'уровень ' + n, tries: ' попыток', chain: ' шагов', num: ' чисел' } },
-  en: { sub: 'Your best scores in every game', count: (n, m) => 'Trophies: ' + n + '/' + m, none: 'not played yet', u: { pt: ' points', fl: ' floors', lvl: n => 'level ' + n, tries: ' tries', chain: ' steps', num: ' numbers' } },
-  es: { sub: 'Tus récords en todos los juegos', count: (n, m) => 'Trofeos: ' + n + '/' + m, none: 'aún sin jugar', u: { pt: ' puntos', fl: ' pisos', lvl: n => 'nivel ' + n, tries: ' intentos', chain: ' pasos', num: ' números' } },
-  fr: { sub: 'Tes records dans tous les jeux', count: (n, m) => 'Trophées : ' + n + '/' + m, none: 'pas encore joué', u: { pt: ' points', fl: ' étages', lvl: n => 'niveau ' + n, tries: ' essais', chain: ' pas', num: ' nombres' } },
-  de: { sub: 'Deine Rekorde in allen Spielen', count: (n, m) => 'Pokale: ' + n + '/' + m, none: 'noch nicht gespielt', u: { pt: ' Punkte', fl: ' Etagen', lvl: n => 'Level ' + n, tries: ' Versuche', chain: ' Schritte', num: ' Zahlen' } },
-  ja: { sub: 'ぜんぶのゲームのベスト記録', count: (n, m) => 'トロフィー：' + n + '/' + m, none: 'まだあそんでないよ', u: { pt: 'ポイント', fl: '階', lvl: n => 'レベル' + n, tries: '回', chain: 'ステップ', num: '個' } },
-  zh: { sub: '你在所有游戏里的纪录', count: (n, m) => '奖杯：' + n + '/' + m, none: '还没玩过', u: { pt: '分', fl: '层', lvl: n => '第' + n + '关', tries: '次', chain: '步', num: '个' } },
+  hy: { sub: 'Քո ռեկորդները բոլոր խաղերում', count: (n, m) => 'Գավաթներ՝ ' + n + '/' + m, none: 'դեռ չես խաղացել', u: { pt: ' միավոր', fl: ' հարկ', lvl: n => 'մակարդակ ' + n, tries: ' փորձով', chain: ' քայլ', num: ' թիվ', m: ' մ' } },
+  ru: { sub: 'Твои рекорды во всех играх', count: (n, m) => 'Кубки: ' + n + '/' + m, none: 'ещё не играл', u: { pt: ' очков', fl: ' этажей', lvl: n => 'уровень ' + n, tries: ' попыток', chain: ' шагов', num: ' чисел', m: ' м' } },
+  en: { sub: 'Your best scores in every game', count: (n, m) => 'Trophies: ' + n + '/' + m, none: 'not played yet', u: { pt: ' points', fl: ' floors', lvl: n => 'level ' + n, tries: ' tries', chain: ' steps', num: ' numbers', m: ' m' } },
+  es: { sub: 'Tus récords en todos los juegos', count: (n, m) => 'Trofeos: ' + n + '/' + m, none: 'aún sin jugar', u: { pt: ' puntos', fl: ' pisos', lvl: n => 'nivel ' + n, tries: ' intentos', chain: ' pasos', num: ' números', m: ' m' } },
+  fr: { sub: 'Tes records dans tous les jeux', count: (n, m) => 'Trophées : ' + n + '/' + m, none: 'pas encore joué', u: { pt: ' points', fl: ' étages', lvl: n => 'niveau ' + n, tries: ' essais', chain: ' pas', num: ' nombres', m: ' m' } },
+  de: { sub: 'Deine Rekorde in allen Spielen', count: (n, m) => 'Pokale: ' + n + '/' + m, none: 'noch nicht gespielt', u: { pt: ' Punkte', fl: ' Etagen', lvl: n => 'Level ' + n, tries: ' Versuche', chain: ' Schritte', num: ' Zahlen', m: ' m' } },
+  ja: { sub: 'ぜんぶのゲームのベスト記録', count: (n, m) => 'トロフィー：' + n + '/' + m, none: 'まだあそんでないよ', u: { pt: 'ポイント', fl: '階', lvl: n => 'レベル' + n, tries: '回', chain: 'ステップ', num: '個', m: ' m' } },
+  zh: { sub: '你在所有游戏里的纪录', count: (n, m) => '奖杯：' + n + '/' + m, none: '还没玩过', u: { pt: '分', fl: '层', lvl: n => '第' + n + '关', tries: '次', chain: '步', num: '个', m: ' 米' } },
 };
 const T = TRL[ggLang] || TRL.hy;
 document.querySelector('.sub').textContent = T.sub;
 
 // Իրական անունները՝ ընտրված լեզվով
 const REAL = {
-  hy: ['Կատվիկ', 'Հրթիռը տիեզերքում', 'Ձկնորսություն', 'Աշտարակ', 'Խլուրդներ', 'Լաբիրինթոս', 'Մրցարշավ', 'Զույգեր', 'Կրկնիր ինձ', 'Թվերի որսորդ'],
-  ru: ['Котик', 'Ракета в космосе', 'Рыбалка', 'Башня', 'Кроты', 'Лабиринт', 'Гонка', 'Пары', 'Повтори за мной', 'Охотник за числами'],
-  en: ['Kitty', 'Rocket in Space', 'Fishing', 'Tower', 'Moles', 'Maze', 'Race', 'Pairs', 'Repeat After Me', 'Number Hunter'],
-  es: ['Gatito', 'Cohete', 'Pesca', 'Torre', 'Topos', 'Laberinto', 'Carrera', 'Parejas', 'Repite conmigo', 'Cazanúmeros'],
-  fr: ['Petit chat', 'Fusée', 'Pêche', 'Tour', 'Taupes', 'Labyrinthe', 'Course', 'Paires', 'Répète après moi', 'Chasseur de nombres'],
-  de: ['Kätzchen', 'Rakete', 'Angeln', 'Turm', 'Maulwürfe', 'Labyrinth', 'Rennen', 'Paare', 'Sprich mir nach', 'Zahlenjäger'],
-  ja: ['ネコちゃん', '宇宙ロケット', 'さかなつり', 'タワー', 'モグラたたき', 'めいろ', 'レース', 'ペアさがし', 'まねっこ', '数字ハンター'],
-  zh: ['小猫咪', '太空火箭', '钓鱼', '高塔', '打地鼠', '迷宫', '赛车', '翻对对', '跟我学', '数字猎人'],
+  hy: ['Կատվիկ', 'Հրթիռը տիեզերքում', 'Ձկնորսություն', 'Աշտարակ', 'Խլուրդներ', 'Լաբիրինթոս', 'Մրցարշավ', 'Զույգեր', 'Կրկնիր ինձ', 'Թվերի որսորդ', 'Ռիթմի խաղ', '2048', 'Նինձյա ցատկ', 'Ոսկե հանք'],
+  ru: ['Котик', 'Ракета в космосе', 'Рыбалка', 'Башня', 'Кроты', 'Лабиринт', 'Гонка', 'Пары', 'Повтори за мной', 'Охотник за числами', 'Ритм-игра', '2048', 'Прыжки ниндзя', 'Золотая шахта'],
+  en: ['Kitty', 'Rocket in Space', 'Fishing', 'Tower', 'Moles', 'Maze', 'Race', 'Pairs', 'Repeat After Me', 'Number Hunter', 'Rhythm Game', '2048', 'Ninja Jump', 'Gold Mine'],
+  es: ['Gatito', 'Cohete', 'Pesca', 'Torre', 'Topos', 'Laberinto', 'Carrera', 'Parejas', 'Repite conmigo', 'Cazanúmeros', 'Juego de ritmo', '2048', 'Salto ninja', 'Mina de oro'],
+  fr: ['Petit chat', 'Fusée', 'Pêche', 'Tour', 'Taupes', 'Labyrinthe', 'Course', 'Paires', 'Répète après moi', 'Chasseur de nombres', 'Jeu de rythme', '2048', 'Saut de ninja', 'Mine d’or'],
+  de: ['Kätzchen', 'Rakete', 'Angeln', 'Turm', 'Maulwürfe', 'Labyrinth', 'Rennen', 'Paare', 'Sprich mir nach', 'Zahlenjäger', 'Rhythmusspiel', '2048', 'Ninja-Sprung', 'Goldmine'],
+  ja: ['ネコちゃん', '宇宙ロケット', 'さかなつり', 'タワー', 'モグラたたき', 'めいろ', 'レース', 'ペアさがし', 'まねっこ', '数字ハンター', 'リズムゲーム', '2048', '忍者ジャンプ', '金鉱掘り'],
+  zh: ['小猫咪', '太空火箭', '钓鱼', '高塔', '打地鼠', '迷宫', '赛车', '翻对对', '跟我学', '数字猎人', '节奏游戏', '2048', '忍者跳', '黄金矿工'],
 };
 const R = REAL[ggLang] || REAL.hy;
 
@@ -149,6 +149,10 @@ const GAMES = [
   { name: 'Golden Memory', href: '../memory/pairs/', key: 'aren-memory-best', fmt: v => v + T.u.tries },
   { name: 'Golden Memory', href: '../memory/repeat/', key: 'aren-repeat-best', fmt: v => v + T.u.chain },
   { name: 'Golden Memory', href: '../memory/numbers/', key: 'aren-numbers-best', fmt: v => v + T.u.num },
+  { name: 'Golden Beat', href: '../beat/', key: 'aren-beat-best', fmt: v => v + T.u.pt },
+  { name: 'Golden 2048', href: '../2048/', key: 'aren-2048-best', fmt: v => v + T.u.pt },
+  { name: 'Golden Ninja', href: '../ninja/', key: 'aren-ninja-best', fmt: v => v + T.u.m },
+  { name: 'Golden Mine', href: '../mine/', key: 'aren-mine-best', fmt: v => T.u.lvl(v) },
 ];
 
 // Փոքրիկ գավաթ ամեն տողի համար. ոսկե՝ ռեկորդ կա, մոխրագույն՝ դեռ չկա

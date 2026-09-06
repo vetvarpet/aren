@@ -1,0 +1,387 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Beat 🎵</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+
+  /* ——— Երգի ընտրության էկրանը ——— */
+  #menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    height: 100dvh;
+    padding: 14px;
+    text-align: center;
+  }
+  #menu[hidden] { display: none; }
+  h1 { font-size: clamp(1.3rem, 5vw, 2rem); color: #ffd76e; }
+  .sub { color: #9a9ec7; }
+  .best { color: #6ee7b7; font-size: 0.95rem; }
+  .songbtn {
+    width: min(88vw, 340px);
+    border: 2px solid #6a5f9e;
+    border-radius: 16px;
+    padding: 14px 18px;
+    font-size: 1.05rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #3d3560;
+    color: #f5eede;
+  }
+  .songbtn:active { transform: scale(0.97); }
+
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+  }
+  canvas[hidden] { display: none; }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<div id="menu">
+  <h1>Golden Beat 🎵</h1>
+  <p class="sub"></p>
+  <p class="best" hidden></p>
+  <button class="songbtn" data-song="star"></button>
+  <button class="songbtn" data-song="birthday"></button>
+  <button class="songbtn" data-song="jingle"></button>
+  <button class="songbtn" data-song="tango"></button>
+</div>
+<canvas id="game" hidden></canvas>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN BEAT 🎵 — ռիթմի խաղ Golden Piano-ի երգերով
+//  Նոտաները իջնում են 4 գծով. խփիր ճիշտ պահին՝ երբ հասնում են ոսկե գծին։
+//  ՃՇԳՐԻՏ խփոց = 100 միավոր, լավը = 50։ Կոմբոն բազմապատկում է հաճույքը 😄
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { sub: 'Ընտրիր երգը ու խփիր ռիթմով 👇', best: 'Ռեկորդ՝ ', score: 'Միավոր՝ ', combo: 'Կոմբո ×', perfect: 'ՃՇԳՐԻ՜Տ', good: 'Լավն է', miss: 'Վրիպե՜ց', done: 'Երգը վերջացա՜վ', tapMenu: 'Դիպչիր՝ երգ ընտրելու', newRec: 'ՆՈՐ ՌԵԿՈՐԴ 🏆', songs: { star: '🌟 Աստղիկը', birthday: '🎂 Ծնունդդ շնորհավոր', jingle: '🔔 Զանգակները', tango: '💃 Արենի տանգոն' } },
+  ru: { sub: 'Выбери песню и бей в ритм 👇', best: 'Рекорд: ', score: 'Очки: ', combo: 'Комбо ×', perfect: 'ИДЕАЛЬНО!', good: 'Хорошо!', miss: 'Мимо…', done: 'Песня закончилась!', tapMenu: 'Нажми, чтобы выбрать песню', newRec: 'НОВЫЙ РЕКОРД 🏆', songs: { star: '🌟 Звёздочка', birthday: '🎂 С днём рождения', jingle: '🔔 Бубенцы', tango: '💃 Танго Арена' } },
+  en: { sub: 'Pick a song and tap to the beat 👇', best: 'Best: ', score: 'Score: ', combo: 'Combo ×', perfect: 'PERFECT!', good: 'Good!', miss: 'Miss…', done: 'Song complete!', tapMenu: 'Tap to pick a song', newRec: 'NEW RECORD 🏆', songs: { star: '🌟 Twinkle', birthday: '🎂 Happy Birthday', jingle: '🔔 Jingle Bells', tango: '💃 Aren’s Tango' } },
+  es: { sub: 'Elige una canción y toca al ritmo 👇', best: 'Récord: ', score: 'Puntos: ', combo: 'Combo ×', perfect: '¡PERFECTO!', good: '¡Bien!', miss: 'Fallo…', done: '¡Canción terminada!', tapMenu: 'Toca para elegir canción', newRec: '¡NUEVO RÉCORD! 🏆', songs: { star: '🌟 Estrellita', birthday: '🎂 Cumpleaños feliz', jingle: '🔔 Cascabeles', tango: '💃 El tango de Aren' } },
+  fr: { sub: 'Choisis une chanson et tape en rythme 👇', best: 'Record : ', score: 'Points : ', combo: 'Combo ×', perfect: 'PARFAIT !', good: 'Bien !', miss: 'Raté…', done: 'Chanson terminée !', tapMenu: 'Touche pour choisir une chanson', newRec: 'NOUVEAU RECORD 🏆', songs: { star: '🌟 Petite étoile', birthday: '🎂 Joyeux anniversaire', jingle: '🔔 Vive le vent', tango: '💃 Le tango d’Aren' } },
+  de: { sub: 'Such dir ein Lied aus und tippe im Takt 👇', best: 'Rekord: ', score: 'Punkte: ', combo: 'Combo ×', perfect: 'PERFEKT!', good: 'Gut!', miss: 'Daneben…', done: 'Lied geschafft!', tapMenu: 'Tippe, um ein Lied zu wählen', newRec: 'NEUER REKORD 🏆', songs: { star: '🌟 Funkel, funkel', birthday: '🎂 Zum Geburtstag viel Glück', jingle: '🔔 Jingle Bells', tango: '💃 Arens Tango' } },
+  ja: { sub: '曲をえらんでリズムでタップ 👇', best: 'ベスト：', score: 'スコア：', combo: 'コンボ ×', perfect: 'パーフェクト！', good: 'グッド！', miss: 'ミス…', done: '曲クリア！', tapMenu: 'タップで曲をえらぶ', newRec: '新記録 🏆', songs: { star: '🌟 きらきら星', birthday: '🎂 ハッピーバースデー', jingle: '🔔 ジングルベル', tango: '💃 アレンのタンゴ' } },
+  zh: { sub: '选一首歌，跟着节奏点 👇', best: '纪录：', score: '得分：', combo: '连击 ×', perfect: '完美！', good: '不错！', miss: '错过了…', done: '歌曲完成！', tapMenu: '点一下选歌', newRec: '新纪录 🏆', songs: { star: '🌟 小星星', birthday: '🎂 生日快乐', jingle: '🔔 铃儿响叮当', tango: '💃 阿伦的探戈' } },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.querySelector('.sub').textContent = T.sub;
+
+// Երգերը՝ ուղիղ Golden Piano-ից. [նոտայի համարը, տակտի պահը]
+const SONGS = {
+  star: { beat: 400, notes: [
+    [0, 0], [0, 1], [7, 2], [7, 3], [9, 4], [9, 5], [7, 6],
+    [5, 8], [5, 9], [4, 10], [4, 11], [2, 12], [2, 13], [0, 14],
+  ] },
+  birthday: { beat: 340, notes: [
+    [0, 0], [0, 0.5], [2, 1], [0, 2], [5, 3], [4, 4],
+    [0, 6], [0, 6.5], [2, 7], [0, 8], [7, 9], [5, 10],
+    [0, 12], [0, 12.5], [12, 13], [9, 14], [5, 15], [4, 16], [2, 17],
+    [10, 19], [10, 19.5], [9, 20], [5, 21], [7, 22], [5, 23],
+  ] },
+  jingle: { beat: 300, notes: [
+    [4, 0], [4, 1], [4, 2],
+    [4, 4], [4, 5], [4, 6],
+    [4, 8], [7, 9], [0, 10], [2, 11], [4, 12],
+    [5, 16], [5, 17], [5, 18], [5, 19], [5, 20], [4, 21], [4, 22], [4, 23],
+    [7, 24], [7, 25], [5, 26], [2, 27], [0, 28],
+  ] },
+  tango: { beat: 320, notes: [
+    [9, 0], [12, 0.5], [16, 1], [16, 2], [14, 2.5], [12, 3],
+    [11, 4], [11, 5], [9, 5.5], [8, 6], [9, 7], [11, 8],
+    [9, 10], [12, 10.5], [16, 11], [16, 12], [14, 12.5], [12, 13],
+    [11, 14], [12, 14.5], [11, 15], [8, 16], [9, 17],
+    [4, 19], [9, 19.5], [9, 20.5],
+  ] },
+};
+
+const menu = document.getElementById('menu');
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let W = 0, H = 0;
+function resize() {
+  const DPR = window.devicePixelRatio || 1;
+  canvas.width = innerWidth * DPR;
+  canvas.height = innerHeight * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  W = innerWidth;
+  H = innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+const LANE_COLORS = ['#ff7b6b', '#ffd166', '#6ee7b7', '#6ec5ff'];
+const APPROACH = 1800;   // նոտան այսքան մլվ է իջնում մինչև գիծը
+const HIT_GOOD = 170;    // «լավ» խփոցի պատուհանը
+const HIT_PERFECT = 75;  // «ճշգրիտ» խփոցի պատուհանը
+
+let best = 0;
+try { best = Number(localStorage.getItem('aren-beat-best') || 0); } catch (e) {}
+const bestEl = document.querySelector('.best');
+if (best > 0) { bestEl.textContent = T.best + best; bestEl.hidden = false; }
+
+let state = 'menu';   // menu → play → end
+let notes = [];       // { lane, time, hit, missed, judged }
+let t0 = 0;
+let score = 0, combo = 0, maxCombo = 0, perfects = 0;
+let popups = [];
+let flashes = [];     // գծի բռնկումները խփելիս
+let endAt = 0;
+let endedAt = 0;
+let frame = 0;
+
+// ——— Ձայնը՝ դաշնամուրի նույն «զանգակով» ———
+let audioCtx = null;
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+function playTone(semi) {
+  if (!audioCtx) return;
+  const freq = 261.63 * Math.pow(2, semi / 12);
+  const t = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.001, t);
+  gain.gain.exponentialRampToValueAtTime(0.3, t + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(t); osc.stop(t + 0.9);
+}
+function thud() {
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'square'; o.frequency.value = 90;
+  g.gain.setValueAtTime(0.08, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(t); o.stop(t + 0.12);
+}
+
+// ——— Երգը սկսելը ———
+let songNotes = [];   // [semi, ...] պահում ենք ձայնի համար
+function startSong(key) {
+  const song = SONGS[key];
+  notes = song.notes.map(([idx, pos]) => ({
+    semi: idx,
+    lane: idx % 4,
+    time: 2600 + pos * song.beat,   // 2.6 վրկ պատրաստվելու ժամանակ
+    judged: false,
+    y: -100,
+  }));
+  endAt = notes[notes.length - 1].time + 1600;
+  score = 0; combo = 0; maxCombo = 0; perfects = 0;
+  popups = []; flashes = [];
+  t0 = performance.now();
+  state = 'play';
+  menu.hidden = true;
+  canvas.hidden = false;
+}
+
+document.querySelectorAll('.songbtn').forEach(b => {
+  b.textContent = T.songs[b.dataset.song];
+  b.addEventListener('click', () => { initAudio(); startSong(b.dataset.song); });
+});
+
+// ——— Խփոցը ———
+function hitLane(lane) {
+  if (state !== 'play') return;
+  const now = performance.now() - t0;
+  let bestNote = null, bestDt = 1e9;
+  for (const n of notes) {
+    if (n.judged || n.lane !== lane) continue;
+    const dt = Math.abs(n.time - now);
+    if (dt < bestDt) { bestDt = dt; bestNote = n; }
+  }
+  if (bestNote && bestDt <= HIT_GOOD) {
+    bestNote.judged = true;
+    bestNote.hit = true;
+    playTone(bestNote.semi);
+    combo++;
+    maxCombo = Math.max(maxCombo, combo);
+    if (bestDt <= HIT_PERFECT) { score += 100; perfects++; popText(lane, T.perfect, '#ffd166'); }
+    else { score += 50; popText(lane, T.good, '#6ee7b7'); }
+    flashes.push({ lane, life: 12 });
+  } else {
+    thud();   // դատարկ խփոց — ոչինչ, շարունակիր
+  }
+}
+
+function popText(lane, text, color) {
+  popups.push({ x: (lane + 0.5) * (W / 4), y: hitY() - 46, text, color, life: 38 });
+}
+
+function hitY() { return H - Math.max(110, H * 0.18); }
+
+canvas.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  initAudio();
+  if (state === 'end') {
+    if (Date.now() - endedAt < 1200) return;
+    state = 'menu';
+    canvas.hidden = true;
+    menu.hidden = false;
+    if (best > 0) { bestEl.textContent = T.best + best; bestEl.hidden = false; }
+    return;
+  }
+  hitLane(Math.floor(e.clientX / W * 4));
+});
+window.addEventListener('keydown', (e) => {
+  const lanes = { KeyD: 0, KeyF: 1, KeyJ: 2, KeyK: 3 };
+  if (e.code in lanes) { initAudio(); hitLane(lanes[e.code]); }
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// ——— Նկարելը ———
+function draw() {
+  frame++;
+  if (state === 'play' || state === 'end') {
+    const now = performance.now() - t0;
+    const HY = hitY();
+    const laneW = W / 4;
+
+    ctx.fillStyle = '#191233';
+    ctx.fillRect(0, 0, W, H);
+
+    // գծերի ֆոնը
+    for (let l = 0; l < 4; l++) {
+      ctx.fillStyle = l % 2 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.055)';
+      ctx.fillRect(l * laneW, 0, laneW, H);
+    }
+
+    // խփելու ոսկե գիծը
+    ctx.fillStyle = '#ffd166';
+    ctx.fillRect(0, HY - 3, W, 6);
+    ctx.fillStyle = 'rgba(255, 209, 102, 0.15)';
+    ctx.fillRect(0, HY - 26, W, 52);
+
+    // գծի բռնկումները
+    for (const f of flashes) {
+      f.life--;
+      ctx.fillStyle = 'rgba(255, 235, 170, ' + (f.life / 12 * 0.5) + ')';
+      ctx.fillRect(f.lane * laneW, HY - 40, laneW, 80);
+    }
+    flashes = flashes.filter(f => f.life > 0);
+
+    // նոտաները
+    if (state === 'play') {
+      for (const n of notes) {
+        if (n.judged && n.hit) continue;
+        const y = HY - (n.time - now) * (HY + 60) / APPROACH;
+        if (!n.judged && n.time - now < -HIT_GOOD) {
+          n.judged = true;
+          n.missed = true;
+          combo = 0;
+          popText(n.lane, T.miss, '#ff7b6b');
+        }
+        if (y < -40 || y > H + 40) continue;
+        const x = n.lane * laneW + laneW * 0.14;
+        const w = laneW * 0.72;
+        ctx.globalAlpha = n.missed ? 0.25 : 1;
+        ctx.fillStyle = LANE_COLORS[n.lane];
+        ctx.beginPath();
+        ctx.moveTo(x + 10, y - 13);
+        ctx.arcTo(x + w, y - 13, x + w, y + 13, 10);
+        ctx.arcTo(x + w, y + 13, x, y + 13, 10);
+        ctx.arcTo(x, y + 13, x, y - 13, 10);
+        ctx.arcTo(x, y - 13, x + w, y - 13, 10);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.fillRect(x + 6, y - 9, w - 12, 5);
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // թռչող գրությունները
+    for (const p of popups) {
+      p.life--;
+      p.y -= 1;
+      ctx.globalAlpha = Math.min(1, p.life / 15);
+      ctx.fillStyle = p.color;
+      ctx.font = 'bold 20px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.text, p.x, p.y);
+      ctx.globalAlpha = 1;
+    }
+    popups = popups.filter(p => p.life > 0);
+
+    // HUD
+    ctx.fillStyle = '#f5eede';
+    ctx.font = 'bold 22px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(T.score + score, W / 2, 84);
+    if (combo > 1) {
+      ctx.fillStyle = '#ffd166';
+      ctx.fillText(T.combo + combo, W / 2, 114);
+    }
+
+    // երգը վերջացա՞վ
+    if (state === 'play' && now > endAt) {
+      state = 'end';
+      endedAt = Date.now();
+      if (score > best) {
+        best = score;
+        try { localStorage.setItem('aren-beat-best', best); } catch (e) {}
+      }
+    }
+
+    if (state === 'end') {
+      ctx.fillStyle = 'rgba(20, 15, 40, 0.82)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffd76e';
+      ctx.font = 'bold 30px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+      ctx.fillText(T.done, W / 2, H * 0.34);
+      ctx.fillStyle = '#f5eede';
+      ctx.font = 'bold 24px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+      ctx.fillText(T.score + score, W / 2, H * 0.34 + 44);
+      ctx.font = '17px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+      ctx.fillStyle = '#9a9ec7';
+      ctx.fillText(T.perfect + ' × ' + perfects + '   ·   ' + T.combo + maxCombo, W / 2, H * 0.34 + 78);
+      if (score === best && score > 0) {
+        ctx.fillStyle = '#ffd166';
+        ctx.fillText(T.newRec, W / 2, H * 0.34 + 110);
+      }
+      ctx.fillStyle = '#9a9ec7';
+      ctx.fillText(T.tapMenu, W / 2, H * 0.34 + 150);
+    }
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
