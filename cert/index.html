@@ -37,31 +37,6 @@
   h1 { color: var(--accent); font-size: clamp(1.3rem, 5vw, 1.8rem); text-align: center; }
   .sub { color: var(--dim); text-align: center; margin: 8px 0 20px; font-size: 0.9rem; }
 
-  /* ——— Ձևաթուղթը ——— */
-  .form {
-    background: var(--card);
-    border: 2px solid #33356b;
-    border-radius: 18px;
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 26px;
-  }
-  label { color: var(--dim); font-size: 0.85rem; }
-  input, select {
-    width: 100%;
-    margin-top: 5px;
-    background: #12122b;
-    border: 2px solid #33356b;
-    border-radius: 10px;
-    color: var(--ink);
-    font-family: inherit;
-    font-size: 1rem;
-    padding: 10px 12px;
-  }
-  input:focus, select:focus { outline: none; border-color: var(--accent); }
-
   /* ——— Վկայականը ——— */
   #cert {
     background: linear-gradient(160deg, #fdf8ec, #f5e9c8);
@@ -89,29 +64,35 @@
   #cert .num { color: #8a5a10; font-size: 0.75rem; margin-top: 3px; }
   #cert .line { width: 70%; height: 2px; background: #c98a12; margin: 14px auto; opacity: 0.5; }
   #cert .txt { font-size: 0.9rem; color: #6b4a14; }
+  #cert .txt.small { font-size: 0.78rem; margin-top: 4px; }
+  /* Դատարկ գծերը՝ ձեռքով լրացնելու համար */
   #cert .name {
-    font-size: clamp(1.4rem, 7vw, 1.9rem);
-    font-weight: bold;
-    color: #3a2c10;
-    margin: 10px 0 2px;
-    border-bottom: 2px dotted #c98a12;
     display: inline-block;
-    padding: 0 14px 3px;
-    min-width: 60%;
+    min-width: 78%;
+    height: 2.1rem;
+    border-bottom: 2px dotted #c98a12;
+    margin: 12px 0 4px;
   }
   #cert .role {
-    font-size: clamp(1.05rem, 5vw, 1.3rem);
-    font-weight: bold;
-    color: #8a5a10;
-    margin: 10px 0 4px;
+    display: inline-block;
+    min-width: 64%;
+    height: 1.8rem;
+    border-bottom: 2px dotted #c98a12;
+    margin-top: 14px;
   }
-  #cert .pay { font-size: 0.95rem; color: #6b4a14; margin-top: 6px; }
-  #cert .date { font-size: 0.85rem; color: #8a5a10; margin-top: 12px; }
+  #cert .date { font-size: 0.85rem; color: #8a5a10; margin-top: 18px; }
+  #cert .dline {
+    display: inline-block;
+    min-width: 132px;
+    height: 1.1rem;
+    border-bottom: 2px dotted #c98a12;
+    vertical-align: bottom;
+  }
   .sigs {
     display: flex;
     justify-content: space-between;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 22px;
     padding-right: 100px;   /* աջում կնիքի տեղն է */
     text-align: center;
   }
@@ -150,35 +131,7 @@
   <nav><a href="../about.html">← Մեր մասին</a></nav>
 
   <h1>Աշխատակցի վկայական 📜</h1>
-  <p class="sub">Լրացրու, ու վկայականը պատրաստ է․ սքրինշոթ արա ու տուր նոր աշխատակցին</p>
-
-  <div class="form">
-    <label>Աշխատակցի անունը
-      <input id="fName" type="text" placeholder="Օրինակ՝ Դավիթ Պետրոսյան" maxlength="40">
-    </label>
-    <label>Պաշտոնը
-      <select id="fRole">
-        <option>🎨 Գլխավոր դիզայներ</option>
-        <option>🧪 Թեստավորող</option>
-        <option>🎼 Երաժշտության տնօրեն</option>
-        <option>📢 Գովազդի տնօրեն</option>
-        <option>🎬 Տեսանյութերի ռեժիսոր</option>
-        <option>🌍 Թարգմանիչ-ստուգող</option>
-        <option>⚖️ Ռեկորդների դատավոր</option>
-        <option>💡 Գաղափարների տնօրեն</option>
-        <option>🕵️ Անվտանգության պետ</option>
-        <option>🐟 Ձկների հաշվապահ</option>
-        <option>🏆 Մրցույթների կազմակերպիչ</option>
-        <option>📖 Պատմությունների գրող</option>
-        <option>👔 Տնօրենի տեղակալ</option>
-        <option disabled>😼 Հիմնադիր — զբաղված է (Արեն)</option>
-        <option disabled>🤖 Կոդի վարպետ — զբաղված է (Claude)</option>
-      </select>
-    </label>
-    <label>Աշխատավարձը (վիրտուալ ձուկ / ամիս)
-      <input id="fPay" type="number" value="50" min="0" max="9999">
-    </label>
-  </div>
+  <p class="sub">Սքրինշոթ արա ու գծիկների վրա ձեռքով գրիր անունը, պաշտոնը, օրը</p>
 
   <div id="cert">
     <img class="lg" src="../logo.png" alt="Golden Games" onerror="this.src='../logo-icon.png'">
@@ -187,11 +140,11 @@
     <div class="num" id="cNum"></div>
     <div class="line"></div>
     <div class="txt">Սույնով հաստատվում է, որ</div>
-    <div><span class="name" id="cName">…</span></div>
+    <div><span class="name">&nbsp;</span></div>
     <div class="txt">ընդունված է Golden Games ստուդիա</div>
-    <div class="role" id="cRole">🎨 Գլխավոր դիզայներ</div>
-    <div class="pay" id="cPay"></div>
-    <div class="date" id="cDate"></div>
+    <div><span class="role">&nbsp;</span></div>
+    <div class="txt small">պաշտոնում</div>
+    <div class="date">Ընդունման օրը՝ <span class="dline">&nbsp;</span></div>
     <div class="sigs">
       <div class="sig">
         <div class="who">Արեն</div>
@@ -211,8 +164,8 @@
   </div>
 
   <p class="hint">
-    Վկայականի համարը ամեն անգամ նոր է ստեղծվում։<br>
-    Երկար պահիր վկայականի վրա ու սքրինշոթ արա 📸
+    Վկայականի համարը ամեն բացելիս նոր է ստեղծվում։<br>
+    Սքրինշոթ արա 📸, ու լրացրու գծիկների վրա ✍️
   </p>
 
 </div>
@@ -220,42 +173,18 @@
 <script>
 // ——————————————————————————————————————
 //  ԱՇԽԱՏԱԿՑԻ ՎԿԱՅԱԿԱՆ 📜 — Golden Games ստուդիայի
-//  պաշտոնական փաստաթուղթը։ Գրում ես անունը, ընտրում պաշտոնը,
-//  ու վկայականը ինքն է լրացվում։
+//  դատարկ ձևաթուղթը։ Անունը, պաշտոնն ու օրը
+//  լրացվում են ձեռքով — ինչպես իսկական փաստաթուղթ։
 // ——————————————————————————————————————
-
-const fName = document.getElementById('fName');
-const fRole = document.getElementById('fRole');
-const fPay = document.getElementById('fPay');
 
 // Վկայականի համարը՝ GG-տարի-պատահական թիվ
 const num = 'GG-' + new Date().getFullYear() + '-' +
   String(Math.floor(100 + Math.random() * 900));
 document.getElementById('cNum').textContent = '№ ' + num;
 
-// Այսօրվա ամսաթիվը հայերեն
-const MONTHS = ['հունվարի', 'փետրվարի', 'մարտի', 'ապրիլի', 'մայիսի', 'հունիսի',
-  'հուլիսի', 'օգոստոսի', 'սեպտեմբերի', 'հոկտեմբերի', 'նոյեմբերի', 'դեկտեմբերի'];
-const d = new Date();
-document.getElementById('cDate').textContent =
-  'Ընդունման օրը՝ ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ', ' + d.getFullYear() + ' թ․';
-
-function update() {
-  document.getElementById('cName').textContent = fName.value.trim() || '…';
-  document.getElementById('cRole').textContent = fRole.value;
-  document.getElementById('cPay').textContent =
-    'Աշխատավարձը՝ ' + (Number(fPay.value) || 0) + ' վիրտուալ ձուկ 🐟 / ամիս';
-}
-fName.addEventListener('input', update);
-fRole.addEventListener('change', update);
-fPay.addEventListener('input', update);
-update();
-
-// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք,
-// բայց ոչ դաշտերի վրա, թե չէ գրելը կխանգարի
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
 let lastTap = 0;
 document.addEventListener('touchend', (e) => {
-  if (e.target.closest('input, select')) return;
   const now = Date.now();
   if (now - lastTap < 350) e.preventDefault();
   lastTap = now;
