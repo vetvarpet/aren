@@ -69,8 +69,9 @@ const cat = {
   vy: 0,            // ինչ արագությամբ է բարձրանում/իջնում
   jumping: false,
 };
-const GRAVITY = 0.5;          // ← այս տողը գրել է ԱՐԵՆԸ 2026-09-07-ին․ իր առաջին կոդը 🏆
+const GRAVITY = 1.35;         // Արենի առաջին կոդը 0.5 էր՝ լուսնային կատու 🌙 Փորձեց ու վերադարձրեց երկրայինը
 const JUMP_POWER = -20;       // ինչքան ուժեղ է թռչում վերև (նույն բարձրությունը, բայց կայծակ)
+const CAT_COLOR = '#f28c3b';  // կատվի մորթու գույնը՝ նարնջագույն
 const CAT_SIZE = 1;           // կատվի չափը. 1-ը սովորականն է, մեծ թիվը՝ մեծ կատու
 
 // ——— Խաղի վիճակը ———
@@ -323,7 +324,7 @@ function drawCat() {
   ctx.scale(CAT_SIZE, CAT_SIZE);
 
   // պոչը
-  ctx.strokeStyle = '#f28c3b';
+  ctx.strokeStyle = CAT_COLOR;
   ctx.lineWidth = 7;
   ctx.lineCap = 'round';
   ctx.beginPath();
@@ -338,7 +339,7 @@ function drawCat() {
   ctx.beginPath(); ctx.moveTo(14, -12);  ctx.lineTo(14 + legSwing, 0);  ctx.stroke();
 
   // մարմինը
-  ctx.fillStyle = '#f28c3b';
+  ctx.fillStyle = CAT_COLOR;
   ctx.beginPath();
   ctx.ellipse(-4, -26, 30, 18, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -354,7 +355,7 @@ function drawCat() {
   }
 
   // գլուխը
-  ctx.fillStyle = '#f28c3b';
+  ctx.fillStyle = CAT_COLOR;
   ctx.beginPath();
   ctx.arc(24, -40, 16, 0, Math.PI * 2);
   ctx.fill();
