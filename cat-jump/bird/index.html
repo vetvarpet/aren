@@ -24,14 +24,14 @@ let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 // Կանվասի վրա էմոջի չենք գրում — նկարում ենք ձեռքով
 const TRL = {
-  hy: { how: 'Հպիր՝ թևերը թափահարելու', tap: 'Հպիր՝ սկսելու', best: 'Ռեկորդ՝ ', over: 'Բա՜խ…', rec: 'ՆՈՐ ՌԵԿՈՐԴ', again: 'Հպիր՝ նորից թռչելու' },
-  ru: { how: 'Нажимай, чтобы махать крыльями', tap: 'Коснись, чтобы начать', best: 'Рекорд: ', over: 'Бум…', rec: 'НОВЫЙ РЕКОРД', again: 'Коснись, чтобы лететь снова' },
-  en: { how: 'Tap to flap your wings', tap: 'Tap to start', best: 'Best: ', over: 'Bonk…', rec: 'NEW RECORD', again: 'Tap to fly again' },
-  es: { how: 'Toca para batir las alas', tap: 'Toca para empezar', best: 'Récord: ', over: '¡Pum!…', rec: 'NUEVO RÉCORD', again: 'Toca para volar otra vez' },
-  fr: { how: 'Touche pour battre des ailes', tap: 'Touche pour commencer', best: 'Record : ', over: 'Boum…', rec: 'NOUVEAU RECORD', again: 'Touche pour revoler' },
-  de: { how: 'Tippe zum Flattern', tap: 'Tippe zum Starten', best: 'Rekord: ', over: 'Bums…', rec: 'NEUER REKORD', again: 'Tippe, um wieder zu fliegen' },
-  ja: { how: 'タップではばたこう', tap: 'タップでスタート', best: 'ベスト：', over: 'ゴツン…', rec: 'しんきろく', again: 'タップでもういっかい' },
-  zh: { how: '点一下拍翅膀', tap: '点一下开始', best: '纪录：', over: '砰…', rec: '新纪录', again: '点一下再飞一次' },
+  hy: { crown: 'Թագը վաստակիր՝ 21 միավոր', how: 'Հպիր՝ թևերը թափահարելու', tap: 'Հպիր՝ սկսելու', best: 'Ռեկորդ՝ ', over: 'Բա՜խ…', rec: 'ՆՈՐ ՌԵԿՈՐԴ', again: 'Հպիր՝ նորից թռչելու' },
+  ru: { crown: 'Заработай корону: 21 очко', how: 'Нажимай, чтобы махать крыльями', tap: 'Коснись, чтобы начать', best: 'Рекорд: ', over: 'Бум…', rec: 'НОВЫЙ РЕКОРД', again: 'Коснись, чтобы лететь снова' },
+  en: { crown: 'Earn the crown at 21 points', how: 'Tap to flap your wings', tap: 'Tap to start', best: 'Best: ', over: 'Bonk…', rec: 'NEW RECORD', again: 'Tap to fly again' },
+  es: { crown: 'Gana la corona con 21 puntos', how: 'Toca para batir las alas', tap: 'Toca para empezar', best: 'Récord: ', over: '¡Pum!…', rec: 'NUEVO RÉCORD', again: 'Toca para volar otra vez' },
+  fr: { crown: 'Gagne la couronne à 21 points', how: 'Touche pour battre des ailes', tap: 'Touche pour commencer', best: 'Record : ', over: 'Boum…', rec: 'NOUVEAU RECORD', again: 'Touche pour revoler' },
+  de: { crown: 'Verdien dir die Krone: 21 Punkte', how: 'Tippe zum Flattern', tap: 'Tippe zum Starten', best: 'Rekord: ', over: 'Bums…', rec: 'NEUER REKORD', again: 'Tippe, um wieder zu fliegen' },
+  ja: { crown: 'おうかんは21ポイントでゲット', how: 'タップではばたこう', tap: 'タップでスタート', best: 'ベスト：', over: 'ゴツン…', rec: 'しんきろく', again: 'タップでもういっかい' },
+  zh: { crown: '拿到21分就能戴上王冠', how: '点一下拍翅膀', tap: '点一下开始', best: '纪录：', over: '砰…', rec: '新纪录', again: '点一下再飞一次' },
 };
 const T = TRL[ggLang] || TRL.hy;
 
@@ -64,10 +64,12 @@ const sFlap = () => tone(430 + Math.random() * 60, 0.06, 'sine', 0.07);
 const sScore = () => { tone(880, 0.08, 'triangle', 0.14); tone(1174, 0.1, 'triangle', 0.1, 0.05); };
 const sHit = () => { tone(150, 0.25, 'sawtooth', 0.2); tone(90, 0.3, 'sawtooth', 0.14, 0.05); };
 const sRecord = () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.2, 'triangle', 0.18, k * 0.11));
+const sCrown = () => [784, 988, 1175, 1568, 1175, 1568].forEach((f, k) => tone(f, 0.16, 'triangle', 0.17, k * 0.09));
 
 // ——— Խաղի թվերը ———
 const GRAV = 0.42;          // ձգողությունը
 const FLAP = -7.6;          // թևի հարվածի ուժը (մինուսը՝ վերև)
+const CROWN_AT = 21;        // այսքան միավորից թռչնակը թագ է ստանում (Արենի կանոնը)
 let state = 'menu';         // menu / play / dying / over
 let bird, pipes, score, dist, endedAt, wingT = 0, cloudsB = [], deadFall = false;
 let best = 0;
@@ -150,7 +152,7 @@ function step() {
       if (!p.passed && p.x + pw < bird.x - r) {
         p.passed = true;
         score++;
-        sScore();
+        score === CROWN_AT ? sCrown() : sScore();   // 21-ին՝ թագադրման ֆանֆար
       }
     }
     pipes = pipes.filter(p => p.x > -200);
@@ -267,21 +269,24 @@ function drawBird() {
   ctx.lineTo(r * 0.8, r * 0.32);
   ctx.closePath();
   ctx.fill();
-  // ոսկե թագը — Golden Bird է, չէ՞ 👑 (էմոջին մեկնաբանության մեջ կարելի է 😄)
-  ctx.fillStyle = '#ffd166';
-  ctx.strokeStyle = '#c98a12';
-  ctx.lineWidth = 1.4;
-  ctx.beginPath();
-  ctx.moveTo(-r * 0.45, -r * 0.85);
-  ctx.lineTo(-r * 0.5, -r * 1.35);
-  ctx.lineTo(-r * 0.15, -r * 1.0);
-  ctx.lineTo(r * 0.1, -r * 1.45);
-  ctx.lineTo(r * 0.35, -r * 1.0);
-  ctx.lineTo(r * 0.62, -r * 1.3);
-  ctx.lineTo(r * 0.5, -r * 0.8);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
+  // Ոսկե թագը ՎԱՍՏԱԿՈՒՄ ես՝ 21 միավորից (մենյուում երևում է, եթե ռեկորդդ 21+ է)
+  const crowned = state === 'menu' ? best >= CROWN_AT : score >= CROWN_AT;
+  if (crowned) {
+    ctx.fillStyle = '#ffd166';
+    ctx.strokeStyle = '#c98a12';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.45, -r * 0.85);
+    ctx.lineTo(-r * 0.5, -r * 1.35);
+    ctx.lineTo(-r * 0.15, -r * 1.0);
+    ctx.lineTo(r * 0.1, -r * 1.45);
+    ctx.lineTo(r * 0.35, -r * 1.0);
+    ctx.lineTo(r * 0.62, -r * 1.3);
+    ctx.lineTo(r * 0.5, -r * 0.8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
@@ -305,7 +310,8 @@ function draw() {
     drawBird();
     bird.x = keep.x; bird.y = keep.y;
     drawText(T.how, W / 2, H * 0.62, Math.min(19, W * 0.05), '#23405c');
-    if (best > 0) drawText(T.best + best, W / 2, H * 0.67, Math.min(16, W * 0.042), '#4a6a86');
+    drawText(T.crown, W / 2, H * 0.665, Math.min(15, W * 0.04), '#8a6d1f');
+    if (best > 0) drawText(T.best + best, W / 2, H * 0.71, Math.min(16, W * 0.042), '#4a6a86');
     if (Math.floor(Date.now() / 600) % 2) drawText(T.tap, W / 2, H * 0.76, Math.min(17, W * 0.045), '#2e5a12', 'center', true);
     return;
   }

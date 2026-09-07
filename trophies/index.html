@@ -77,6 +77,38 @@
   }
   .row.empty svg { opacity: 0.85; }
   .row.empty .val { color: #6a6f96; font-size: 0.8rem; font-weight: normal; }
+
+  /* ——— GOLDEN CHAMPION կնիքը. երևում է միայն ԲՈԼՈՐ գավաթները հավաքածին ——— */
+  #champ[hidden] { display: none; }
+  #champ {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    margin-top: 10px;
+    padding: 18px 30px;
+    border: 3px solid rgba(255, 209, 102, 0.95);
+    outline: 2px dashed rgba(255, 209, 102, 0.55);
+    outline-offset: 6px;
+    border-radius: 20px;
+    background: rgba(255, 209, 102, 0.07);
+    transform: rotate(-5deg);
+    box-shadow: 0 0 46px rgba(255, 209, 102, 0.3), inset 0 0 26px rgba(255, 209, 102, 0.1);
+    animation: stampIn 0.55s cubic-bezier(0.2, 1.6, 0.4, 1);
+  }
+  @keyframes stampIn {
+    from { transform: rotate(-5deg) scale(2.4); opacity: 0; }
+    to   { transform: rotate(-5deg) scale(1); opacity: 1; }
+  }
+  #champ img { width: 78px; height: 78px; border-radius: 14px; }
+  #champ .ct {
+    color: #ffd166;
+    font-weight: bold;
+    font-size: clamp(1rem, 4.5vw, 1.2rem);
+    letter-spacing: 0.16em;
+    white-space: nowrap;
+  }
+  #champ .cs { color: #cdd1ef; font-size: 0.82rem; text-align: center; }
 </style>
 
 <nav><a href="../">← Golden Games</a></nav>
@@ -99,6 +131,12 @@
 <p class="sub"></p>
 <div class="count"></div>
 
+<div id="champ" hidden>
+  <img src="../logo-icon.png" alt="Golden Games">
+  <div class="ct">GOLDEN CHAMPION</div>
+  <div class="cs"></div>
+</div>
+
 <div class="list" id="list"></div>
 
 <script>
@@ -112,28 +150,28 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { sub: 'Քո ռեկորդները բոլոր խաղերում', count: (n, m) => 'Գավաթներ՝ ' + n + '/' + m, none: 'դեռ չես խաղացել', u: { pt: ' միավոր', fl: ' հարկ', lvl: n => 'մակարդակ ' + n, tries: ' փորձով', chain: ' քայլ', num: ' թիվ', m: ' մ' } },
-  ru: { sub: 'Твои рекорды во всех играх', count: (n, m) => 'Кубки: ' + n + '/' + m, none: 'ещё не играл', u: { pt: ' очков', fl: ' этажей', lvl: n => 'уровень ' + n, tries: ' попыток', chain: ' шагов', num: ' чисел', m: ' м' } },
-  en: { sub: 'Your best scores in every game', count: (n, m) => 'Trophies: ' + n + '/' + m, none: 'not played yet', u: { pt: ' points', fl: ' floors', lvl: n => 'level ' + n, tries: ' tries', chain: ' steps', num: ' numbers', m: ' m' } },
-  es: { sub: 'Tus récords en todos los juegos', count: (n, m) => 'Trofeos: ' + n + '/' + m, none: 'aún sin jugar', u: { pt: ' puntos', fl: ' pisos', lvl: n => 'nivel ' + n, tries: ' intentos', chain: ' pasos', num: ' números', m: ' m' } },
-  fr: { sub: 'Tes records dans tous les jeux', count: (n, m) => 'Trophées : ' + n + '/' + m, none: 'pas encore joué', u: { pt: ' points', fl: ' étages', lvl: n => 'niveau ' + n, tries: ' essais', chain: ' pas', num: ' nombres', m: ' m' } },
-  de: { sub: 'Deine Rekorde in allen Spielen', count: (n, m) => 'Pokale: ' + n + '/' + m, none: 'noch nicht gespielt', u: { pt: ' Punkte', fl: ' Etagen', lvl: n => 'Level ' + n, tries: ' Versuche', chain: ' Schritte', num: ' Zahlen', m: ' m' } },
-  ja: { sub: 'ぜんぶのゲームのベスト記録', count: (n, m) => 'トロフィー：' + n + '/' + m, none: 'まだあそんでないよ', u: { pt: 'ポイント', fl: '階', lvl: n => 'レベル' + n, tries: '回', chain: 'ステップ', num: '個', m: ' m' } },
-  zh: { sub: '你在所有游戏里的纪录', count: (n, m) => '奖杯：' + n + '/' + m, none: '还没玩过', u: { pt: '分', fl: '层', lvl: n => '第' + n + '关', tries: '次', chain: '步', num: '个', m: ' 米' } },
+  hy: { champ: 'Հավաքել ես ԲՈԼՈՐ գավաթները', sub: 'Քո ռեկորդները բոլոր խաղերում', count: (n, m) => 'Գավաթներ՝ ' + n + '/' + m, none: 'դեռ չես խաղացել', u: { pt: ' միավոր', fl: ' հարկ', lvl: n => 'մակարդակ ' + n, tries: ' փորձով', chain: ' քայլ', num: ' թիվ', m: ' մ' } },
+  ru: { champ: 'Ты собрал ВСЕ кубки', sub: 'Твои рекорды во всех играх', count: (n, m) => 'Кубки: ' + n + '/' + m, none: 'ещё не играл', u: { pt: ' очков', fl: ' этажей', lvl: n => 'уровень ' + n, tries: ' попыток', chain: ' шагов', num: ' чисел', m: ' м' } },
+  en: { champ: 'You collected ALL the trophies', sub: 'Your best scores in every game', count: (n, m) => 'Trophies: ' + n + '/' + m, none: 'not played yet', u: { pt: ' points', fl: ' floors', lvl: n => 'level ' + n, tries: ' tries', chain: ' steps', num: ' numbers', m: ' m' } },
+  es: { champ: '¡Tienes TODOS los trofeos!', sub: 'Tus récords en todos los juegos', count: (n, m) => 'Trofeos: ' + n + '/' + m, none: 'aún sin jugar', u: { pt: ' puntos', fl: ' pisos', lvl: n => 'nivel ' + n, tries: ' intentos', chain: ' pasos', num: ' números', m: ' m' } },
+  fr: { champ: 'Tu as TOUS les trophées !', sub: 'Tes records dans tous les jeux', count: (n, m) => 'Trophées : ' + n + '/' + m, none: 'pas encore joué', u: { pt: ' points', fl: ' étages', lvl: n => 'niveau ' + n, tries: ' essais', chain: ' pas', num: ' nombres', m: ' m' } },
+  de: { champ: 'Du hast ALLE Pokale!', sub: 'Deine Rekorde in allen Spielen', count: (n, m) => 'Pokale: ' + n + '/' + m, none: 'noch nicht gespielt', u: { pt: ' Punkte', fl: ' Etagen', lvl: n => 'Level ' + n, tries: ' Versuche', chain: ' Schritte', num: ' Zahlen', m: ' m' } },
+  ja: { champ: 'トロフィーをぜんぶ集めた！', sub: 'ぜんぶのゲームのベスト記録', count: (n, m) => 'トロフィー：' + n + '/' + m, none: 'まだあそんでないよ', u: { pt: 'ポイント', fl: '階', lvl: n => 'レベル' + n, tries: '回', chain: 'ステップ', num: '個', m: ' m' } },
+  zh: { champ: '集齐了所有奖杯！', sub: '你在所有游戏里的纪录', count: (n, m) => '奖杯：' + n + '/' + m, none: '还没玩过', u: { pt: '分', fl: '层', lvl: n => '第' + n + '关', tries: '次', chain: '步', num: '个', m: ' 米' } },
 };
 const T = TRL[ggLang] || TRL.hy;
 document.querySelector('.sub').textContent = T.sub;
 
 // Իրական անունները՝ ընտրված լեզվով
 const REAL = {
-  hy: ['Կատվիկ', 'Թռչնակը', 'Հրթիռը տիեզերքում', 'Ձկնորսություն', 'Աշտարակ', 'Խլուրդներ', 'Լաբիրինթոս', 'Մրցարշավ', 'Զույգեր', 'Կրկնիր ինձ', 'Թվերի որսորդ', 'Ռիթմի խաղ', '2048', 'Նինձյա ցատկ', 'Ոսկե հանք', 'Բասկետբոլ', 'Անցի՛ր ճանապարհը'],
-  ru: ['Котик', 'Птичка', 'Ракета в космосе', 'Рыбалка', 'Башня', 'Кроты', 'Лабиринт', 'Гонка', 'Пары', 'Повтори за мной', 'Охотник за числами', 'Ритм-игра', '2048', 'Прыжки ниндзя', 'Золотая шахта', 'Баскетбол', 'Перейди дорогу'],
-  en: ['Kitty', 'Birdie', 'Rocket in Space', 'Fishing', 'Tower', 'Moles', 'Maze', 'Race', 'Pairs', 'Repeat After Me', 'Number Hunter', 'Rhythm Game', '2048', 'Ninja Jump', 'Gold Mine', 'Basketball', 'Cross the Road'],
-  es: ['Gatito', 'Pajarito', 'Cohete', 'Pesca', 'Torre', 'Topos', 'Laberinto', 'Carrera', 'Parejas', 'Repite conmigo', 'Cazanúmeros', 'Juego de ritmo', '2048', 'Salto ninja', 'Mina de oro', 'Baloncesto', 'Cruza la calle'],
-  fr: ['Petit chat', 'Petit oiseau', 'Fusée', 'Pêche', 'Tour', 'Taupes', 'Labyrinthe', 'Course', 'Paires', 'Répète après moi', 'Chasseur de nombres', 'Jeu de rythme', '2048', 'Saut de ninja', 'Mine d’or', 'Basket', 'Traverse la route'],
-  de: ['Kätzchen', 'Vögelchen', 'Rakete', 'Angeln', 'Turm', 'Maulwürfe', 'Labyrinth', 'Rennen', 'Paare', 'Sprich mir nach', 'Zahlenjäger', 'Rhythmusspiel', '2048', 'Ninja-Sprung', 'Goldmine', 'Basketball', 'Über die Straße'],
-  ja: ['ネコちゃん', 'ことり', '宇宙ロケット', 'さかなつり', 'タワー', 'モグラたたき', 'めいろ', 'レース', 'ペアさがし', 'まねっこ', '数字ハンター', 'リズムゲーム', '2048', '忍者ジャンプ', '金鉱掘り', 'バスケ', 'みちをわたろう'],
-  zh: ['小猫咪', '小鸟', '太空火箭', '钓鱼', '高塔', '打地鼠', '迷宫', '赛车', '翻对对', '跟我学', '数字猎人', '节奏游戏', '2048', '忍者跳', '黄金矿工', '篮球', '过马路'],
+  hy: ['Կատվիկ', 'Թռչնակը', 'Հրթիռը տիեզերքում', 'Ձկնորսություն', 'Աշտարակ', 'Խլուրդներ', 'Լաբիրինթոս', 'Մրցարշավ', 'Զույգեր', 'Կրկնիր ինձ', 'Թվերի որսորդ', 'Ռիթմի խաղ', '2048', 'Նինձյա ցատկ', 'Ոսկե հանք', 'Անցի՛ր ճանապարհը'],
+  ru: ['Котик', 'Птичка', 'Ракета в космосе', 'Рыбалка', 'Башня', 'Кроты', 'Лабиринт', 'Гонка', 'Пары', 'Повтори за мной', 'Охотник за числами', 'Ритм-игра', '2048', 'Прыжки ниндзя', 'Золотая шахта', 'Перейди дорогу'],
+  en: ['Kitty', 'Birdie', 'Rocket in Space', 'Fishing', 'Tower', 'Moles', 'Maze', 'Race', 'Pairs', 'Repeat After Me', 'Number Hunter', 'Rhythm Game', '2048', 'Ninja Jump', 'Gold Mine', 'Cross the Road'],
+  es: ['Gatito', 'Pajarito', 'Cohete', 'Pesca', 'Torre', 'Topos', 'Laberinto', 'Carrera', 'Parejas', 'Repite conmigo', 'Cazanúmeros', 'Juego de ritmo', '2048', 'Salto ninja', 'Mina de oro', 'Cruza la calle'],
+  fr: ['Petit chat', 'Petit oiseau', 'Fusée', 'Pêche', 'Tour', 'Taupes', 'Labyrinthe', 'Course', 'Paires', 'Répète après moi', 'Chasseur de nombres', 'Jeu de rythme', '2048', 'Saut de ninja', 'Mine d’or', 'Traverse la route'],
+  de: ['Kätzchen', 'Vögelchen', 'Rakete', 'Angeln', 'Turm', 'Maulwürfe', 'Labyrinth', 'Rennen', 'Paare', 'Sprich mir nach', 'Zahlenjäger', 'Rhythmusspiel', '2048', 'Ninja-Sprung', 'Goldmine', 'Über die Straße'],
+  ja: ['ネコちゃん', 'ことり', '宇宙ロケット', 'さかなつり', 'タワー', 'モグラたたき', 'めいろ', 'レース', 'ペアさがし', 'まねっこ', '数字ハンター', 'リズムゲーム', '2048', '忍者ジャンプ', '金鉱掘り', 'みちをわたろう'],
+  zh: ['小猫咪', '小鸟', '太空火箭', '钓鱼', '高塔', '打地鼠', '迷宫', '赛车', '翻对对', '跟我学', '数字猎人', '节奏游戏', '2048', '忍者跳', '黄金矿工', '过马路'],
 };
 const R = REAL[ggLang] || REAL.hy;
 
@@ -154,7 +192,6 @@ const GAMES = [
   { name: 'Golden 2048', href: '../2048/', key: 'aren-2048-best', fmt: v => v + T.u.pt },
   { name: 'Golden Ninja', href: '../ninja/', key: 'aren-ninja-best', fmt: v => v + T.u.m },
   { name: 'Golden Mine', href: '../mine/', key: 'aren-mine-best', fmt: v => T.u.lvl(v) },
-  { name: 'Golden Basket', href: '../basket/', key: 'aren-basket-best', fmt: v => v + T.u.pt },
   { name: 'Golden Men', href: '../men/', key: 'aren-men-best', fmt: v => v + T.u.chain },
 ];
 
@@ -193,6 +230,12 @@ GAMES.forEach((g, i) => {
 });
 
 document.querySelector('.count').textContent = T.count(wonCount, GAMES.length);
+
+// Բոլո՞րն են հավաքված — GOLDEN CHAMPION կնիքը դրվում է 🏆
+if (wonCount === GAMES.length) {
+  document.getElementById('champ').hidden = false;
+  document.querySelector('#champ .cs').textContent = T.champ;
+}
 
 // Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
 let lastTap = 0;
