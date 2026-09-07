@@ -9,7 +9,7 @@ and iterating on the code together with Claude, one change at a time.
 
 | Folder | Project | What it is |
 |--------|---------|------------|
-| [`cat-jump`](./cat-jump/) | 🐱 Golden Cat (Կատվիկ) | Runner: jump over boxes, catch fish, stay low when night crows fly over, win the trophy at 100 points |
+| [`cat-jump`](./cat-jump/) | 🐱 Golden Cat (Կատվիկ) | Two games: the runner (jump boxes, catch fish, duck the night crows) and 🐦 Golden Bird — a flappy bird with a crown flying between box towers |
 | [`city-drive`](./city-drive/) | 🚗 Golden Driver (Քաղաքի վարորդը) | Two driving games: the open city (pizza deliveries, police, car shop) and a 10-level race |
 | [`piano`](./piano/) | 🎹 Golden Piano (Դաշնամուր) | Playable piano with recording, built-in songs and a learn mode with glowing keys |
 | [`rocket`](./rocket/) | 🚀 Golden Rocket (Հրթիռը տիեզերքում) | Space flyer: catch stars, dodge spinning asteroids, 3 lives, best score saved |

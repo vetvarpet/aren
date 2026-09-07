@@ -3,840 +3,131 @@
 <title>Golden Cat 🐱</title>
 <link rel="icon" type="image/png" href="../logo-icon.png">
 <style>
-  /* ——— Խաղի գույները ——— */
-  :root {
-    --sky-top: #9fd9ef;
-    --sky-bottom: #eaf8ff;
-    --ink: #23405c;
-  }
   * { margin: 0; box-sizing: border-box; }
-  html, body {
-    height: 100%;
-    overflow: hidden;           /* էջը երբեք չի սահում */
-  }
+  html, body { height: 100%; }
   body {
-    background: linear-gradient(var(--sky-top), var(--sky-bottom));
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
     font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    min-height: 100dvh;
+    padding: 72px 18px 28px;   /* վերևից տեղ ենք թողնում «← Golden Games»-ի համար */
     user-select: none;
     -webkit-user-select: none;
+    touch-action: manipulation;
   }
-  canvas {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-    touch-action: none;         /* մատով դիպչելիս էկրանը չի շարժվում */
-    cursor: pointer;
+  nav { position: fixed; top: 14px; left: 14px; }
+  nav a {
+    color: #f5eede;
+    text-decoration: none;
+    background: #3d3560;
+    border: 2px solid #6a5f9e;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 0.9rem;
   }
+  h1 { font-size: clamp(1.3rem, 5vw, 2rem); color: #ffd76e; text-align: center; }
+  .sub { color: #9a9ec7; text-align: center; }
+
+  .games {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: min(92vw, 420px);
+  }
+  .g {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #1d1d3f;
+    border: 2px solid #33356b;
+    border-radius: 18px;
+    padding: 16px 18px;
+    text-decoration: none;
+    color: #f5eede;
+    transition: transform 0.12s, border-color 0.12s;
+  }
+  .g:hover { transform: translateY(-3px); border-color: #ffd76e; }
+  .g .ico {
+    width: 62px;
+    height: 62px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .g1 .ico { background: linear-gradient(135deg, #2b6cb0, #90cdf4); }
+  .g2 .ico { background: linear-gradient(135deg, #b7791f, #f6e05e); }
+  .g .ico svg { width: 78%; height: 78%; display: block; }
+  .g h2 { font-size: 1.05rem; }
+  .g p { color: #9a9ec7; font-size: 0.85rem; margin-top: 4px; line-height: 1.4; }
 </style>
 
-<a href="../" style="position:fixed;top:48px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
-<canvas id="game"></canvas>
+<nav><a href="../">← Golden Games</a></nav>
+
+<h1>Golden Cat 🐱</h1>
+<p class="sub">Ընտրի՛ր՝ ո՞վ է այսօր թռչելու։</p>
+
+<div class="games">
+  <a class="g g1" href="./run/">
+    <div class="ico"><svg viewBox="0 0 48 48" aria-hidden="true">
+      <ellipse cx="22" cy="30" rx="14" ry="9" fill="#f5a04f"/>
+      <path d="M-2 34 Q6 26 10 32" fill="none" stroke="#e8873c" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="34" cy="22" r="8" fill="#f5a04f"/>
+      <path d="M29 16 L28 9 L34 13 Z" fill="#f5a04f"/>
+      <path d="M38 15 L41 9 L35 12 Z" fill="#f5a04f"/>
+      <circle cx="32" cy="21" r="1.4" fill="#3a2a17"/>
+      <circle cx="37" cy="21" r="1.4" fill="#3a2a17"/>
+      <path d="M12 38 L8 43 M20 39 L18 44 M28 37 L30 43" stroke="#e8873c" stroke-width="3.5" stroke-linecap="round"/>
+    </svg></div>
+    <div><h2>Կատվի վազքը</h2><p>Թռիր արկղերի վրայով, բռնիր ձկներ, զգուշացիր գիշերվա ագռավներից</p></div>
+  </a>
+  <a class="g g2" href="./bird/">
+    <div class="ico"><svg viewBox="0 0 48 48" aria-hidden="true">
+      <circle cx="24" cy="26" r="12" fill="#ffd166"/>
+      <circle cx="24" cy="29" r="6.5" fill="#fff3c4"/>
+      <path d="M14 24 Q4 20 8 12 Q14 16 20 18 Z" fill="#f0b429"/>
+      <circle cx="30" cy="21" r="1.7" fill="#3a2a17"/>
+      <path d="M35 24 L42 26 L35 29 Z" fill="#ff8c28"/>
+      <path d="M19 12 L18 6 L23 9 L24 4 L27 9 L30 6 L30 12 Z" fill="#ffd166" stroke="#c98a12" stroke-width="1"/>
+    </svg></div>
+    <div><h2>Golden Bird</h2><p>Թռչնակը թռչում է արկղաշարերի արանքով․ հպիր՝ թևերը թափահարելու</p></div>
+  </a>
+</div>
 
 <script>
-// ——————————————————————————————————————
-//  ԿԱՏՈՒՆ ԹՌՉՈՒՄ Է — Արենի առաջին խաղը
-//  Հիմա աշխատում է և՛ հեռախոսով, և՛ համակարգչով
-// ——————————————————————————————————————
-
 
 // Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { score: 'Միավոր՝ ', best: 'Ռեկորդ՝ ', title: 'Golden Cat 🐱', sub: 'Դիպչիր՝ թռչելու · Ագռավ տեսար՝ ՄԻ՛ թռչիր', ouch: 'Ա՜խ, բախվեցիր 😿', overSub: n => 'Հավաքեցիր ' + n + ' միավոր · Դիպչիր՝ նորից խաղալու' },
-  ru: { score: 'Очки: ', best: 'Рекорд: ', title: 'Golden Cat 🐱', sub: 'Нажми — прыжок · Увидел ворону — НЕ прыгай', ouch: 'Ой, столкнулся 😿', overSub: n => 'Набрал ' + n + ' очков · Нажми, чтобы играть снова' },
-  en: { score: 'Score: ', best: 'Best: ', title: 'Golden Cat 🐱', sub: 'Tap to jump · See a crow — DON’T jump', ouch: 'Ouch, you crashed 😿', overSub: n => 'You got ' + n + ' points · Tap to play again' },
-  es: { score: 'Puntos: ', best: 'Récord: ', title: 'Golden Cat 🐱', sub: 'Toca para saltar · ¿Un cuervo? NO saltes', ouch: 'Ay, chocaste 😿', overSub: n => 'Hiciste ' + n + ' puntos · Toca para jugar otra vez' },
-  fr: { score: 'Points : ', best: 'Record : ', title: 'Golden Cat 🐱', sub: 'Touche pour sauter · Un corbeau ? NE saute PAS', ouch: 'Aïe, tu t’es cogné 😿', overSub: n => 'Tu as fait ' + n + ' points · Touche pour rejouer' },
-  de: { score: 'Punkte: ', best: 'Rekord: ', title: 'Golden Cat 🐱', sub: 'Tippe zum Springen · Krähe in Sicht? NICHT springen', ouch: 'Autsch, zusammengestoßen 😿', overSub: n => 'Du hast ' + n + ' Punkte · Tippe, um nochmal zu spielen' },
-  ja: { score: 'スコア：', best: 'ベスト：', title: 'Golden Cat 🐱', sub: 'タップでジャンプ · カラスが来たらジャンプしない！', ouch: 'いたっ、ぶつかった 😿', overSub: n => n + 'ポイントだったよ · タップでもう一回' },
-  zh: { score: '得分：', best: '纪录：', title: 'Golden Cat 🐱', sub: '点一下就跳 · 看到乌鸦千万别跳', ouch: '哎呀，撞到了 😿', overSub: n => '你得了' + n + '分 · 点一下再玩一次' },
+  ru: { h1: 'Golden Cat 🐱', sub: 'Выбери, кто сегодня летает.', g1: ['Кошачий забег', 'Прыгай через ящики, лови рыбок, берегись ночных ворон'], g2: ['Golden Bird', 'Птичка летит между башнями из ящиков: нажимай, чтобы махать крыльями'] },
+  en: { h1: 'Golden Cat 🐱', sub: 'Choose who flies today.', g1: ['Cat Run', 'Jump over boxes, catch fish, watch out for night crows'], g2: ['Golden Bird', 'The bird flies between box towers: tap to flap its wings'] },
+  es: { h1: 'Golden Cat 🐱', sub: 'Elige quién vuela hoy.', g1: ['Carrera del gato', 'Salta las cajas, atrapa peces y cuidado con los cuervos nocturnos'], g2: ['Golden Bird', 'El pajarito vuela entre torres de cajas: toca para batir las alas'] },
+  fr: { h1: 'Golden Cat 🐱', sub: 'Choisis qui vole aujourd’hui.', g1: ['La course du chat', 'Saute les caisses, attrape des poissons, gare aux corbeaux de nuit'], g2: ['Golden Bird', 'L’oiseau vole entre les tours de caisses : touche pour battre des ailes'] },
+  de: { h1: 'Golden Cat 🐱', sub: 'Wähle, wer heute fliegt.', g1: ['Katzenlauf', 'Spring über Kisten, fang Fische, pass auf die Nachtkrähen auf'], g2: ['Golden Bird', 'Der Vogel fliegt zwischen Kistentürmen: tippe zum Flattern'] },
+  ja: { h1: 'Golden Cat 🐱', sub: '今日はだれが飛ぶ？', g1: ['ネコのランニング', '箱をとびこえ、魚をキャッチ、夜のカラスに気をつけて'], g2: ['Golden Bird', 'ことりが箱のタワーのあいだを飛ぶよ：タップではばたこう'] },
+  zh: { h1: 'Golden Cat 🐱', sub: '今天谁来飞？', g1: ['小猫快跑', '跳过箱子抓小鱼，小心夜里的乌鸦'], g2: ['Golden Bird', '小鸟在箱子塔之间飞行：点一下拍翅膀'] },
 };
-const T = TRL[ggLang] || TRL.hy;
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-
-// Խաղադաշտի չափերը՝ «խաղային» միավորներով։
-// resize()-ը դրանք հաշվում է էկրանի չափից։
-let W = 900, H = 300, GROUND = 250, scale = 1;
-
-// ——— Կատուն ———
-const cat = {
-  x: 90,
-  y: 250,           // ոտքերի տեղը
-  vy: 0,            // ինչ արագությամբ է բարձրանում/իջնում
-  jumping: false,
-};
-const GRAVITY = 1.35;         // Արենի առաջին կոդը 0.5 էր՝ լուսնային կատու 🌙 Փորձեց ու վերադարձրեց երկրայինը
-const JUMP_POWER = -20;       // ինչքան ուժեղ է թռչում վերև (նույն բարձրությունը, բայց կայծակ)
-const CAT_COLOR='#f28c3b';    // ← Արենի երրորդ կոդը․ ինքը փորձեց կանաչը (#affb67), ինքն էլ ետ բերեց 🎨
-const CAT_SIZE = 1;           // կատվի չափը. 1-ը սովորականն է, մեծ թիվը՝ մեծ կատու
-
-// ——— Խաղի վիճակը ———
-let boxes = [];               // արկղերը, որ գալիս են
-let fishes = [];              // ձկները, որ լողում են օդում
-let popups = [];              // «+3» գրությունները, երբ ձուկ ես բռնում
-let clouds = [];              // ամպերը երկնքում
-let score = 0;                // միավորներ
-let best = Number(localStorage.getItem('cat-best') || 0);
-let speed = 5;                // ինչ արագ են գալիս արկղերը
-let running = false;          // խաղը գնո՞ւմ է
-let gameOver = false;
-let won = false;              // հասա՞ր 100-ի → հաղթանակ 🏆
-let confetti = [];            // տոնական թղթիկները հաղթելիս
-const WIN_AT = 100;           // այսքան միավորից խաղը հաղթված է
-let lives = 3;                // ❤️❤️❤️ երեք կյանք
-let invincible = 0;           // հարվածից հետո մի պահ անխոցելի ես (թարթում ես)
-let frame = 0;
-
-// ——— Գիշեր-ցերեկի հերթափոխը ———
-// 0-20 միավոր՝ ցերեկ, 20-40՝ գիշեր, 40-70՝ ցերեկ, 70-80՝ գիշեր, 80-ից՝ ցերեկ
-function isNightNow() {
-  return (score >= 20 && score < 40) || (score >= 70 && score < 80);
-}
-let night = 0;                // 0 = ցերեկ, 1 = գիշեր (կամաց-կամաց է փոխվում)
-let stars = [];               // աստղերը երկնքում
-
-// Երկու գույնի արանքում գույն ենք ընտրում. t=0 → առաջինը, t=1 → երկրորդը
-function mixColor(c1, c2, t) {
-  const r = Math.round(c1[0] + (c2[0] - c1[0]) * t);
-  const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
-  const b = Math.round(c1[2] + (c2[2] - c1[2]) * t);
-  return 'rgb(' + r + ',' + g + ',' + b + ')';
+const T = TRL[ggLang];
+if (T) {
+  document.querySelector('h1').textContent = T.h1;
+  document.querySelector('.sub').textContent = T.sub;
+  [['g1', '.g1'], ['g2', '.g2']].forEach(([k, sel]) => {
+    document.querySelector(sel + ' h2').textContent = T[k][0];
+    document.querySelector(sel + ' p').textContent = T[k][1];
+  });
 }
 
-// ——— Էկրանի չափին հարմարվելը ———
-// Հեռախոսը ուղղահայաց էլ բռնես, կողքի էլ՝ խաղը լցնում է ամբողջ էկրանը։
-function resize() {
-  const dpr = window.devicePixelRatio || 1;
-  const winW = window.innerWidth;
-  const winH = window.innerHeight;
-
-  canvas.width = winW * dpr;
-  canvas.height = winH * dpr;
-
-  // Ընտրում ենք այնպիսի խոշորացում, որ խաղադաշտը միշտ
-  // բավական լայն լինի (արկղերին հասցնես նկատել)
-  // և բավական բարձր (թռիչքը տեղավորվի)։
-  scale = Math.min(winH / 360, winW / 620);
-  ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
-
-  W = winW / scale;
-  H = winH / scale;
-  GROUND = H - 55;
-
-  cat.x = Math.max(70, Math.min(130, W * 0.16));
-  if (!cat.jumping) { cat.y = GROUND; cat.vy = 0; }
-
-  // ամպերը նորից ենք ցրում երկնքով
-  clouds = [];
-  for (let i = 0; i < 5; i++) {
-    clouds.push({
-      x: Math.random() * W,
-      y: 30 + Math.random() * Math.max(60, H * 0.35),
-      s: 0.6 + Math.random() * 0.9,
-    });
-  }
-
-  // աստղերն էլ ենք նորից ցրում (գիշերը կերևան)
-  stars = [];
-  for (let i = 0; i < 50; i++) {
-    stars.push({
-      x: Math.random() * W,
-      y: Math.random() * (GROUND - 60),
-      r: 0.8 + Math.random() * 1.6,
-      tw: Math.random() * 100,     // ամեն աստղ իր ռիթմով է թարթում
-    });
-  }
-}
-window.addEventListener('resize', resize);
-resize();
-
-// ——— Ձայները ———
-// Ձայնային ֆայլեր չկան. համակարգիչը ինքն է «երգում» տատանումներով։
-let audioCtx = null;
-
-// Մեկ նոտա. հաճախությունը (բարձր/ցածր ձայն), տեսակը, տևողությունը
-function beep(freq, endFreq, type, duration, volume, delay) {
-  const t = audioCtx.currentTime + (delay || 0);
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, t);
-  osc.frequency.exponentialRampToValueAtTime(endFreq, t + duration);
-  gain.gain.setValueAtTime(volume, t);
-  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start(t);
-  osc.stop(t + duration);
-}
-
-function sound(name) {
-  // Ձայնը միանում է միայն առաջին դիպչելուց հետո (հեռախոսի կանոնն է)
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-
-  if (name === 'jump') {
-    // թռիչք՝ արագ վերև սլացող «թռյո՛ւթ»
-    beep(300, 700, 'triangle', 0.18, 0.25);
-  }
-  if (name === 'fish') {
-    // ձուկ բռնելը՝ ուրախ երկու նոտա «դզի՛նգ-դզի՛նգ»
-    beep(880, 880, 'sine', 0.1, 0.3);
-    beep(1320, 1320, 'sine', 0.15, 0.3, 0.09);
-  }
-  if (name === 'gold') {
-    // ոսկե ձուկը՝ հաղթական երեք նոտա «դզի՛նգ-դզի՛նգ-դզի՛՜նգ»
-    beep(880, 880, 'sine', 0.1, 0.3);
-    beep(1109, 1109, 'sine', 0.1, 0.3, 0.09);
-    beep(1319, 1319, 'sine', 0.25, 0.35, 0.18);
-  }
-  if (name === 'crash') {
-    // բախվելը՝ ցածր «բո՛ւմ»
-    beep(220, 55, 'sawtooth', 0.45, 0.35);
-  }
-  if (name === 'hurt') {
-    // սիրտ կորցնելը՝ կարճ «ա՛յ» (դեռ չմեռար, շարունակիր)
-    beep(330, 140, 'square', 0.2, 0.3);
-  }
-  if (name === 'win') {
-    // հաղթանակի շեփորները՝ «տա-տա-տա-տաաա՜»
-    beep(523, 523, 'triangle', 0.15, 0.35);
-    beep(659, 659, 'triangle', 0.15, 0.35, 0.15);
-    beep(784, 784, 'triangle', 0.15, 0.35, 0.3);
-    beep(1047, 1047, 'triangle', 0.6, 0.4, 0.45);
-    beep(1319, 1319, 'sine', 0.6, 0.25, 0.5);
-  }
-}
-
-// ——— Ֆոնային երաժշտությունը ———
-// Փոքրիկ մեղեդի, որ պտտվում է անվերջ, քանի դեռ խաղում ես։
-// Թվերը նոտաների «բարձրություններն» են (Հց). 0 նշանակում է դադար։
-// Ամեն նոտայի տևողությունը (վայրկյան)։ Ինչքան խաղն արագ է,
-// այնքան նոտաները կարճ են → երաժշտությունը արագանում է։
-// Math.max-ը թույլ չի տալիս, որ չափից դուրս խելագարվի։
-function musicStep() {
-  return Math.max(0.12, 0.21 * (5 / speed));
-}
-const MELODY = [
-  523, 0, 659, 0, 784, 659, 880, 0,     // դո մի սոլ մի լա
-  784, 0, 659, 0, 587, 659, 523, 0,     // սոլ մի ռե մի դո
-  659, 0, 784, 0, 880, 784, 1047, 0,    // մի սոլ լա սոլ դո↑
-  880, 0, 784, 0, 659, 587, 523, 0,     // լա սոլ մի ռե դո
-];
-const BASS = [131, 98, 110, 98];        // բասը՝ ներքևից «բում-բում»
-let noteIndex = 0;
-let nextNoteTime = 0;
-
-// Մեկ նոտա նվագում ենք ճիշտ պահին
-function playNote(freq, time, duration, type, volume) {
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, time);
-  gain.gain.setValueAtTime(volume, time);
-  gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start(time);
-  osc.stop(time + duration);
-}
-
-// Ամեն կադր մի քիչ առաջ ենք նայում ու պլանավորում հաջորդ նոտաները
-function scheduleMusic() {
-  if (!audioCtx || !running || gameOver) return;
-
-  // եթե դադարից հետո ենք վերադառնում, մեղեդին նորից «տեղն ենք գցում»
-  if (nextNoteTime < audioCtx.currentTime) {
-    nextNoteTime = audioCtx.currentTime + 0.05;
-  }
-
-  while (nextNoteTime < audioCtx.currentTime + 0.15) {
-    const step = musicStep();
-    const freq = MELODY[noteIndex % MELODY.length];
-    if (freq) playNote(freq, nextNoteTime, step * 0.9, 'square', 0.04);
-
-    // ամեն 4 նոտան մեկ՝ բասի հարված
-    if (noteIndex % 4 === 0) {
-      playNote(BASS[(noteIndex / 4) % BASS.length], nextNoteTime, step * 3.5, 'triangle', 0.09);
-    }
-
-    noteIndex++;
-    nextNoteTime += step;
-  }
-}
-
-function jump() {
-  if (won) { restart(); return; }
-  if (gameOver) { restart(); return; }
-  if (!running) { running = true; }
-  if (!cat.jumping) {
-    cat.vy = JUMP_POWER;
-    cat.jumping = true;
-    sound('jump');
-  }
-}
-
-function restart() {
-  boxes = [];
-  fishes = [];
-  popups = [];
-  confetti = [];
-  won = false;
-  lives = 3;
-  invincible = 0;
-  score = 0;
-  speed = 5;
-  cat.y = GROUND;
-  cat.vy = 0;
-  cat.jumping = false;
-  gameOver = false;
-  running = true;
-}
-
-// Ստեղները (համակարգչի համար)
-// Թռիչք՝ ՊՐՈԲԵԼ կամ ↑
-document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); jump(); }
-});
-
-// Հեռախոսի համար. դիպչում ես՝ թռչում ես
-canvas.addEventListener('pointerdown', (e) => {
-  e.preventDefault();
-  jump();
-});
-
-// Ոսկե թագը՝ կատվի գլխին։ Ինքն իրեն չի նկարվում —
-// սպասում է, որ մեկը կանչի իրեն drawCrown() բառով։
-function drawCrown() {
-  ctx.fillStyle = '#ffd166';
-  ctx.strokeStyle = '#c98a12';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(15, -56);
-  ctx.lineTo(13, -70);
-  ctx.lineTo(20, -62);
-  ctx.lineTo(25, -73);
-  ctx.lineTo(30, -62);
-  ctx.lineTo(37, -70);
-  ctx.lineTo(35, -56);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = '#e63946';
-  ctx.beginPath();
-  ctx.arc(25, -62, 2, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-// ——— Նկարում ենք կատվին ———
-function drawCat() {
-  const x = cat.x, y = cat.y;
-  const run = running && !cat.jumping && !gameOver;
-  const legSwing = run ? Math.sin(frame * 0.4) * 6 : 0;
-
-  ctx.save();
-  ctx.translate(x, y);
-
-  // հարվածից հետո կատուն թարթում է՝ ցույց տալու, որ մի պահ անխոցելի է
-  if (invincible > 0 && Math.floor(frame / 5) % 2 === 0) ctx.globalAlpha = 0.35;
-
-  ctx.scale(CAT_SIZE, CAT_SIZE);
-
-  // պոչը
-  ctx.strokeStyle = CAT_COLOR;
-  ctx.lineWidth = 7;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  const tailWave = Math.sin(frame * 0.15) * 6;
-  ctx.moveTo(-28, -26);
-  ctx.quadraticCurveTo(-46, -34 + tailWave, -50, -52 + tailWave);
-  ctx.stroke();
-
-  // ոտքերը
-  ctx.lineWidth = 8;
-  ctx.beginPath(); ctx.moveTo(-18, -12); ctx.lineTo(-18 - legSwing, 0); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(14, -12);  ctx.lineTo(14 + legSwing, 0);  ctx.stroke();
-
-  // մարմինը
-  ctx.fillStyle = CAT_COLOR;
-  ctx.beginPath();
-  ctx.ellipse(-4, -26, 30, 18, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // գծավոր մեջքը
-  ctx.strokeStyle = '#d96f21';
-  ctx.lineWidth = 4;
-  for (const sx of [-14, -2, 10]) {
-    ctx.beginPath();
-    ctx.moveTo(sx, -40);
-    ctx.quadraticCurveTo(sx + 3, -34, sx, -28);
-    ctx.stroke();
-  }
-
-  // գլուխը
-  ctx.fillStyle = CAT_COLOR;
-  ctx.beginPath();
-  ctx.arc(24, -40, 16, 0, Math.PI * 2);
-  ctx.fill();
-
-  // ականջները
-  ctx.beginPath();
-  ctx.moveTo(14, -50); ctx.lineTo(12, -64); ctx.lineTo(24, -54);
-  ctx.moveTo(30, -52); ctx.lineTo(36, -64); ctx.lineTo(40, -50);
-  ctx.fill();
-
-  // աչքը
-  ctx.fillStyle = '#23405c';
-  ctx.beginPath();
-  ctx.arc(29, -42, 2.6, 0, Math.PI * 2);
-  ctx.fill();
-
-  // քիթն ու բեղերը
-  ctx.fillStyle = '#ff8fa3';
-  ctx.beginPath();
-  ctx.arc(39, -38, 2.2, 0, Math.PI * 2);
-  ctx.fill();
-
-  // ↓↓↓ ԱՐԵՆԻ ԴԱՍ 3 ՏՈՂԸ ԳԱԼՈՒ Է ԱՅՍՏԵՂ ↓↓↓
-
-  // ↑↑↑ ------------------------------------ ↑↑↑
-  ctx.strokeStyle = 'rgba(35,64,92,0.55)';
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.moveTo(40, -37); ctx.lineTo(52, -39);
-  ctx.moveTo(40, -35); ctx.lineTo(52, -33);
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-// ——— Նկարում ենք արկղը ———
-function drawBox(b) {
-  ctx.fillStyle = '#c9863f';
-  ctx.fillRect(b.x, GROUND - b.h, b.w, b.h);
-  ctx.strokeStyle = '#8f5a24';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(b.x, GROUND - b.h, b.w, b.h);
-  // ժապավենը արկղի վրա
-  ctx.fillStyle = '#8f5a24';
-  ctx.fillRect(b.x + b.w / 2 - 4, GROUND - b.h, 8, b.h);
-}
-
-// ——— Նկարում ենք ագռավին ———
-// Գիշերային ագռավն է. բարձրից է թռչում, թռիչքի ճանապարհիդ վրա
-function drawBird(b) {
-  ctx.save();
-  ctx.translate(b.x, b.y + Math.sin(frame * 0.12 + b.x) * 3);
-  ctx.scale(1.6, 1.6);
-
-  // մարմինը
-  ctx.fillStyle = '#4a4a5a';
-  ctx.beginPath();
-  ctx.ellipse(0, 0, 16, 9, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // թևը թափահարում է
-  const flap = Math.sin(frame * 0.35) * 12;
-  ctx.beginPath();
-  ctx.moveTo(-2, -2);
-  ctx.lineTo(-14, -10 - flap);
-  ctx.lineTo(6, -4);
-  ctx.closePath();
-  ctx.fill();
-
-  // կտուցը
-  ctx.fillStyle = '#f5a623';
-  ctx.beginPath();
-  ctx.moveTo(-16, 0); ctx.lineTo(-24, 2); ctx.lineTo(-16, 4);
-  ctx.closePath();
-  ctx.fill();
-
-  // աչքը
-  ctx.fillStyle = '#fff';
-  ctx.beginPath();
-  ctx.arc(-10, -2, 2, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-// ——— Նկարում ենք ձուկը ———
-function drawFish(f) {
-  ctx.save();
-  ctx.translate(f.x, f.y + Math.sin(frame * 0.1 + f.x) * 4);  // մի քիչ վեր-վար է լողում
-
-  // ոսկե ձուկը փայլում է՝ շուրջը դեղին լուսապսակ
-  if (f.gold) {
-    ctx.fillStyle = 'rgba(255, 215, 80, 0.25)';
-    ctx.beginPath();
-    ctx.arc(0, 0, 26 + Math.sin(frame * 0.25) * 4, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // մարմինը
-  ctx.fillStyle = f.gold ? '#f5b73b' : '#4aa3d8';
-  ctx.beginPath();
-  ctx.ellipse(0, 0, 16, 9, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // պոչը
-  ctx.beginPath();
-  ctx.moveTo(13, 0);
-  ctx.lineTo(24, -8);
-  ctx.lineTo(24, 8);
-  ctx.closePath();
-  ctx.fill();
-
-  // փորիկը
-  ctx.fillStyle = f.gold ? '#ffe08a' : '#8fd0f0';
-  ctx.beginPath();
-  ctx.ellipse(-2, 3, 10, 4, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // աչքը
-  ctx.fillStyle = '#23405c';
-  ctx.beginPath();
-  ctx.arc(-9, -2, 1.8, 0, Math.PI * 2);
-  ctx.fill();
-
-  // ոսկե ձկան փայլիկը
-  if (f.gold) {
-    ctx.fillStyle = '#fff6d8';
-    ctx.beginPath();
-    ctx.arc(2, -4, 2.2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  ctx.restore();
-}
-
-// ——— «+3» գրությունը, որ վեր է թռչում ձուկ բռնելիս ———
-function drawPopups() {
-  for (const p of popups) {
-    ctx.globalAlpha = p.life / 50;
-    ctx.fillStyle = '#ff5d5d';
-    ctx.font = 'bold 24px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(p.text, p.x, p.y);
-    ctx.globalAlpha = 1;
-  }
-}
-
-// ——— Ֆոնը՝ երկինք, արև/լուսին, աստղեր, ամպեր, գետին ———
-function drawWorld() {
-  // երկինքը. ցերեկը՝ երկնագույն, գիշերը՝ մուգ կապույտ
-  const sky = ctx.createLinearGradient(0, 0, 0, H);
-  sky.addColorStop(0, mixColor([159, 217, 239], [14, 22, 52], night));
-  sky.addColorStop(1, mixColor([234, 248, 255], [43, 62, 105], night));
-  ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, W, H);
-
-  // աստղերը. գիշերը վառվում են ու թարթում
-  if (night > 0.05) {
-    for (const s of stars) {
-      const twinkle = 0.6 + Math.sin((frame + s.tw) * 0.08) * 0.4;
-      ctx.globalAlpha = night * twinkle;
-      ctx.fillStyle = '#fff9e8';
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  // արևը ցերեկն է երևում…
-  if (night < 0.95) {
-    ctx.globalAlpha = 1 - night;
-    ctx.fillStyle = '#ffd76e';
-    ctx.beginPath();
-    ctx.arc(W - 70, 60, 30, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  }
-
-  // …իսկ գիշերը նրա տեղը լուսինն է գալիս
-  if (night > 0.05) {
-    ctx.globalAlpha = night;
-    ctx.fillStyle = '#f4f0dc';
-    ctx.beginPath();
-    ctx.arc(W - 70, 60, 26, 0, Math.PI * 2);
-    ctx.fill();
-    // մի կտոր «կծում ենք», որ կիսալուսին դառնա
-    ctx.fillStyle = mixColor([159, 217, 239], [14, 22, 52], night);
-    ctx.beginPath();
-    ctx.arc(W - 82, 52, 22, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  }
-
-  // ամպերը. գիշերը հազիվ են երևում
-  ctx.fillStyle = 'rgba(255,255,255,' + (0.9 - night * 0.65) + ')';
-  for (const c of clouds) {
-    ctx.beginPath();
-    ctx.arc(c.x, c.y, 16 * c.s, 0, Math.PI * 2);
-    ctx.arc(c.x + 18 * c.s, c.y - 6 * c.s, 13 * c.s, 0, Math.PI * 2);
-    ctx.arc(c.x + 36 * c.s, c.y, 15 * c.s, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // գետինը. գիշերը մթնում է
-  ctx.fillStyle = mixColor([232, 169, 76], [96, 74, 46], night);
-  ctx.fillRect(0, GROUND, W, H - GROUND);
-  ctx.fillStyle = mixColor([201, 134, 63], [70, 52, 32], night);
-  ctx.fillRect(0, GROUND, W, 5);
-}
-
-// ——— Միավորները ———
-function drawScore() {
-  // գիշերը տառերը բաց գույն են դառնում, որ կարդացվեն
-  ctx.fillStyle = mixColor([35, 64, 92], [234, 243, 255], night);
-  ctx.font = 'bold 22px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText(T.score + score, 20, 36);
-  ctx.textAlign = 'right';
-  ctx.fillText(T.best + best, W - 20, 36);
-
-  // սրտերը՝ վերևի մեջտեղում. կարմիրը՝ ողջ կյանք, մուգը՝ կորցրած
-  // (նկարում ենք ձեռքով, որ բոլոր հեռախոսներում երևա)
-  for (let i = 0; i < 3; i++) {
-    drawHeart(W / 2 + (i - 1) * 30, 28, 10, i < lives ? '#e63946' : 'rgba(70, 70, 95, 0.5)');
-  }
-}
-
-// Սրտիկ՝ երկու կորով
-function drawHeart(x, y, r, color) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.moveTo(0, r * 0.95);
-  ctx.bezierCurveTo(-r * 1.5, 0, -r * 0.9, -r * 1.05, 0, -r * 0.35);
-  ctx.bezierCurveTo(r * 0.9, -r * 1.05, r * 1.5, 0, 0, r * 0.95);
-  ctx.fill();
-  ctx.restore();
-}
-
-// Ոսկե գավաթ հաղթանակի համար (նկարում ենք ձեռքով)
-function drawTrophy(x, y) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.fillStyle = '#ffd166';
-  ctx.beginPath();
-  ctx.moveTo(-26, -30); ctx.lineTo(26, -30);
-  ctx.quadraticCurveTo(22, 8, 0, 14);
-  ctx.quadraticCurveTo(-22, 8, -26, -30);
-  ctx.fill();
-  ctx.strokeStyle = '#ffd166'; ctx.lineWidth = 5;
-  ctx.beginPath(); ctx.arc(-30, -16, 10, Math.PI * 0.5, Math.PI * 1.5); ctx.stroke();
-  ctx.beginPath(); ctx.arc(30, -16, 10, -Math.PI * 0.5, Math.PI * 0.5); ctx.stroke();
-  ctx.fillRect(-5, 14, 10, 12);
-  ctx.fillRect(-18, 26, 36, 8);
-  ctx.restore();
-}
-
-// Հաղորդագրության վահանակը էկրանի մեջտեղում
-function drawCenterText(big, small) {
-  const bw = Math.min(W - 30, 500);   // վահանակը միշտ տեղավորվում է էկրանին
-  const bh = 110;
-  const bx = W / 2 - bw / 2;
-  const by = H / 2 - bh / 2;
-
-  ctx.fillStyle = 'rgba(255, 253, 247, 0.9)';
-  ctx.fillRect(bx, by, bw, bh);
-  ctx.strokeStyle = '#23405c';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(bx, by, bw, bh);
-
-  ctx.fillStyle = '#23405c';
-  ctx.textAlign = 'center';
-  ctx.font = 'bold 28px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
-  ctx.fillText(big, W / 2, by + 44);
-  ctx.font = '17px "Noto Sans Armenian", Arial, sans-serif';
-  ctx.fillText(small, W / 2, by + 80);
-}
-
-// ——— Խաղի քայլը՝ ամեն կադր ———
-function update() {
-  frame++;
-  scheduleMusic();
-
-  // Գիշերն ու ցերեկը կամաց-կամաց են փոխվում, ինչպես իսկական մայրամուտ-արշալույս
-  const nightTarget = isNightNow() ? 1 : 0;
-  night += (nightTarget - night) * 0.02;
-
-  // Հասա՞ր 100-ի → ՀԱՂԹԱՆԱԿ 🏆
-  if (!won && score >= WIN_AT) {
-    won = true;
-    running = false;
-    sound('win');
-    // կոնֆետիների անձրև ենք պատրաստում
-    for (let i = 0; i < 120; i++) {
-      confetti.push({
-        x: Math.random() * W,
-        y: -Math.random() * H,                  // սկսում են էկրանից վերև
-        vy: 1.5 + Math.random() * 2.5,          // ընկնելու արագությունը
-        vx: -1 + Math.random() * 2,             // մի քիչ կողք-կողք
-        size: 4 + Math.random() * 5,
-        color: ['#ff5d5d', '#ffd76e', '#6ecb7e', '#4aa3d8', '#c58ae0'][i % 5],
-        spin: Math.random() * Math.PI,
-      });
-    }
-  }
-
-  // կոնֆետիները թափվում են ու պտտվում
-  if (won) {
-    for (const c of confetti) {
-      c.y += c.vy;
-      c.x += c.vx + Math.sin((frame + c.spin * 50) * 0.05);
-      c.spin += 0.08;
-      if (c.y > H + 20) { c.y = -20; c.x = Math.random() * W; }  // նորից վերևից
-    }
-  }
-
-  if (running && !gameOver) {
-    if (invincible > 0) invincible--;
-
-    // կատվի թռիչքը
-    cat.vy += GRAVITY;
-    cat.y += cat.vy;
-    if (cat.y >= GROUND) {
-      cat.y = GROUND;
-      cat.vy = 0;
-      cat.jumping = false;
-    }
-
-    // ամպերը դանդաղ լողում են
-    for (const c of clouds) {
-      c.x -= 0.4 * c.s;
-      if (c.x < -60) c.x = W + 60;
-    }
-
-    // նոր խոչընդոտ ենք ավելացնում
-    const last = boxes[boxes.length - 1];
-    if (!last || last.x < W - 260 - Math.random() * 220) {
-      // Ագռավները միայն ԳԻՇԵՐՆ են դուրս գալիս ու ԲԱՐՁՐԻՑ են թռչում.
-      // թռար՝ կխփվես նրան, տեղում մնացիր՝ կանցնի գլխիդ վրայով 😉
-      if (night > 0.5 && Math.random() < 0.3) {
-        boxes.push({ type: 'bird', x: W + 60, y: GROUND - 150, w: 60, h: 45, passed: false });
-      } else {
-        const tall = Math.random() < 0.3;
-        boxes.push({ x: W + 40, w: 26 + Math.random() * 10, h: tall ? 70 : 45, passed: false });
-      }
-    }
-
-    // երբեմն նոր ձուկ է հայտնվում օդում
-    // 5-ից 1 դեպքում ձուկը ՈՍԿԵ է՝ +6, բայց ավելի արագ է լողում
-    if (Math.random() < 0.008 && fishes.length < 2) {
-      fishes.push({
-        x: W + 40,
-        y: GROUND - 75 - Math.random() * 55,   // այնքան բարձր, որ թռչելով հասնես
-        gold: Math.random() < 0.2,
-      });
-    }
-
-    // ձկները լողում են դեպի կատուն
-    for (const f of fishes) {
-      f.x -= speed * (f.gold ? 1.4 : 1);   // ոսկե ձուկը շտապում է փախչել
-
-      // բռնեցի՞նք ձուկը → բոնուս
-      const catchX = Math.abs(f.x - cat.x) < 40 * CAT_SIZE;
-      const catchY = f.y > cat.y - 70 * CAT_SIZE && f.y < cat.y + 5;
-      if (catchX && catchY) {
-        f.caught = true;
-        const bonus = f.gold ? 6 : 3;
-        score += bonus;
-        sound(f.gold ? 'gold' : 'fish');
-        popups.push({ x: f.x, y: f.y - 15, life: 50, text: '+' + bonus + (f.gold ? '!' : '') });
-        if (score > best) {
-          best = score;
-          localStorage.setItem('cat-best', best);
-        }
-      }
-    }
-    fishes = fishes.filter(f => !f.caught && f.x > -40);
-
-    // «+3» գրությունները վեր են բարձրանում ու հալվում
-    for (const p of popups) { p.y -= 1.2; p.life--; }
-    popups = popups.filter(p => p.life > 0);
-
-    // արկղերը շարժվում են
-    for (const b of boxes) {
-      b.x -= speed;
-
-      // անցա՞նք արկղի վրայով → միավոր
-      if (!b.passed && b.x + b.w < cat.x - 30) {
-        b.passed = true;
-        score++;
-        // մինչև 40 միավոր՝ հանգիստ տեմպ, 40-ից հետո ամեն 5 միավորը արագացնում է
-        if (score >= 40 && score % 5 === 0) speed += 0.5;
-        if (score > best) {
-          best = score;
-          localStorage.setItem('cat-best', best);
-        }
-      }
-
-      // բախվեցի՞նք
-      const catLeft = cat.x - 26 * CAT_SIZE, catRight = cat.x + 38 * CAT_SIZE, catBottom = cat.y;
-      const catTop = cat.y - 64 * CAT_SIZE;
-      let hit = false;
-      if (b.type === 'bird') {
-        hit = catRight > b.x - b.w / 2 + 6 && catLeft < b.x + b.w / 2 - 6 &&
-              catBottom > b.y - b.h / 2 && catTop < b.y + b.h / 2;
-      } else {
-        hit = catRight > b.x + 6 && catLeft < b.x + b.w - 6 && catBottom > GROUND - b.h + 8;
-      }
-
-      if (hit && invincible <= 0) {
-        lives--;
-        if (lives <= 0) {
-          sound('crash');
-          gameOver = true;
-          running = false;
-        } else {
-          sound('hurt');
-          invincible = 90;   // ~1.5 վայրկյան կատուն թարթում է ու անխոցելի է
-        }
-      }
-    }
-    boxes = boxes.filter(b => b.x > -80);
-  }
-
-  // ——— Նկարում ենք ամեն ինչ ———
-  ctx.clearRect(0, 0, W, H);
-  drawWorld();
-  for (const b of boxes) b.type === 'bird' ? drawBird(b) : drawBox(b);
-  for (const f of fishes) drawFish(f);
-  drawCat();
-  drawPopups();
-  drawScore();
-
-  if (!running && !gameOver && !won) {
-    drawCenterText(T.title, T.sub);
-  }
-  if (gameOver) {
-    drawCenterText(T.ouch, T.overSub(score));
-  }
-  if (won) {
-    // կոնֆետիների անձրևը
-    for (const c of confetti) {
-      ctx.save();
-      ctx.translate(c.x, c.y);
-      ctx.rotate(c.spin);
-      ctx.fillStyle = c.color;
-      ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size * 0.6);
-      ctx.restore();
-    }
-
-    // մրցանակը՝ մեծ գավաթ, որ վեր-վար է ցատկոտում. առանց որևէ գրության
-    drawTrophy(W / 2, H / 2 + Math.sin(frame * 0.1) * 8);
-  }
-
-  requestAnimationFrame(update);
-}
-
-update();
+// Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
 </script>
