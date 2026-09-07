@@ -71,7 +71,7 @@ const cat = {
 };
 const GRAVITY = 1.35;         // Արենի առաջին կոդը 0.5 էր՝ լուսնային կատու 🌙 Փորձեց ու վերադարձրեց երկրայինը
 const JUMP_POWER = -20;       // ինչքան ուժեղ է թռչում վերև (նույն բարձրությունը, բայց կայծակ)
-const CAT_COLOR = '#affb67';  // ← Արենի երկրորդ կոդը․ ինքն է ընտրել գույնը 🎨
+const CAT_COLOR='#f28c3b';    // ← Արենի երրորդ կոդը․ ինքը փորձեց կանաչը (#affb67), ինքն էլ ետ բերեց 🎨
 const CAT_SIZE = 1;           // կատվի չափը. 1-ը սովորականն է, մեծ թիվը՝ մեծ կատու
 
 // ——— Խաղի վիճակը ———
@@ -309,6 +309,29 @@ canvas.addEventListener('pointerdown', (e) => {
   jump();
 });
 
+// Ոսկե թագը՝ կատվի գլխին։ Ինքն իրեն չի նկարվում —
+// սպասում է, որ մեկը կանչի իրեն drawCrown() բառով։
+function drawCrown() {
+  ctx.fillStyle = '#ffd166';
+  ctx.strokeStyle = '#c98a12';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(15, -56);
+  ctx.lineTo(13, -70);
+  ctx.lineTo(20, -62);
+  ctx.lineTo(25, -73);
+  ctx.lineTo(30, -62);
+  ctx.lineTo(37, -70);
+  ctx.lineTo(35, -56);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#e63946';
+  ctx.beginPath();
+  ctx.arc(25, -62, 2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 // ——— Նկարում ենք կատվին ———
 function drawCat() {
   const x = cat.x, y = cat.y;
@@ -377,6 +400,10 @@ function drawCat() {
   ctx.beginPath();
   ctx.arc(39, -38, 2.2, 0, Math.PI * 2);
   ctx.fill();
+
+  // ↓↓↓ ԱՐԵՆԻ ԴԱՍ 3 ՏՈՂԸ ԳԱԼՈՒ Է ԱՅՍՏԵՂ ↓↓↓
+
+  // ↑↑↑ ------------------------------------ ↑↑↑
   ctx.strokeStyle = 'rgba(35,64,92,0.55)';
   ctx.lineWidth = 1.2;
   ctx.beginPath();
