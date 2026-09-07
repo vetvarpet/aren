@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Pet 🐹</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  :root {
+    --bg: #12122b;
+    --card: #1d1d3f;
+    --ink: #eef0ff;
+    --dim: #9a9ec7;
+    --accent: #ffd166;
+    --accent2: #6ee7b7;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 60px 14px 24px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  nav { position: fixed; top: 12px; left: 12px; z-index: 10; }
+  nav a {
+    color: var(--ink);
+    text-decoration: none;
+    background: rgba(20, 26, 34, 0.75);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+  }
+  h1 { font-size: 1.25rem; color: var(--accent); text-align: center; }
+  .lvl { color: var(--dim); font-size: 0.8rem; text-align: center; }
+  .xpbar {
+    width: min(60vw, 220px);
+    height: 7px;
+    background: #33356b;
+    border-radius: 99px;
+    overflow: hidden;
+    margin: 4px auto 0;
+  }
+  .xpbar i { display: block; height: 100%; background: var(--accent2); border-radius: 99px; transition: width 0.4s; }
+
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 14px;
+    width: min(94vw, 420px);
+  }
+  .stat { font-size: 0.72rem; color: var(--dim); }
+  .bar {
+    height: 10px;
+    background: #33356b;
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 3px;
+  }
+  .bar i { display: block; height: 100%; border-radius: 99px; transition: width 0.5s, background 0.5s; }
+
+  canvas {
+    width: min(94vw, 420px);
+    height: min(46vh, 360px);
+    border-radius: 20px;
+    border: 2px solid #33356b;
+    display: block;
+    touch-action: manipulation;
+  }
+
+  #msg { min-height: 1.5em; color: var(--accent); font-size: 0.95rem; text-align: center; }
+
+  .acts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px;
+    width: min(94vw, 420px);
+  }
+  .acts button {
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: var(--ink);
+    background: var(--card);
+    border: 2px solid #33356b;
+    border-radius: 14px;
+    padding: 13px 6px;
+    cursor: pointer;
+    transition: transform 0.1s, border-color 0.1s;
+  }
+  .acts button:active { transform: scale(0.96); }
+  .acts button:disabled { opacity: 0.45; }
+  .acts button.gold { border-color: var(--accent); }
+  #bDance[hidden] { display: none; }
+
+  /* ——— Անվան ընտրության էկրանը ——— */
+  #namePick[hidden] { display: none; }
+  #namePick {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(12, 10, 26, 0.92);
+    display: flex;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  #namePick .inner {
+    margin: auto;
+    width: min(94vw, 360px);
+    background: var(--card);
+    border: 3px solid var(--accent);
+    border-radius: 20px;
+    padding: 24px 20px;
+    text-align: center;
+  }
+  #namePick h2 { color: var(--accent); font-size: 1.15rem; margin-bottom: 14px; }
+  #namePick input {
+    width: 100%;
+    background: #12122b;
+    border: 2px solid #33356b;
+    border-radius: 12px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 1.05rem;
+    text-align: center;
+    padding: 11px;
+  }
+  #namePick input:focus { outline: none; border-color: var(--accent); }
+  #namePick button {
+    margin-top: 14px;
+    width: 100%;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: bold;
+    background: var(--accent);
+    color: #2e2410;
+    border: 0;
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<nav><a href="../">← Golden Games</a></nav>
+
+<div>
+  <h1 id="title">Golden Pet</h1>
+  <div class="lvl" id="lvlTxt"></div>
+  <div class="xpbar"><i id="xpFill"></i></div>
+</div>
+
+<div class="stats">
+  <div class="stat"><span id="sFood"></span><div class="bar"><i id="bFood"></i></div></div>
+  <div class="stat"><span id="sFun"></span><div class="bar"><i id="bFun"></i></div></div>
+  <div class="stat"><span id="sEnergy"></span><div class="bar"><i id="bEnergy"></i></div></div>
+  <div class="stat"><span id="sClean"></span><div class="bar"><i id="bClean"></i></div></div>
+</div>
+
+<canvas id="cv"></canvas>
+
+<div id="msg"></div>
+
+<div class="acts">
+  <button id="bFeed"></button>
+  <button id="bPlay"></button>
+  <button id="bBath"></button>
+  <button id="bSleep"></button>
+  <button id="bDance" class="gold" hidden></button>
+</div>
+
+<div id="namePick" hidden>
+  <div class="inner">
+    <h2 id="nameQ"></h2>
+    <input id="nameInp" maxlength="16" autocomplete="off">
+    <button id="nameOk"></button>
+  </div>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN PET 🐹 — քո վիրտուալ փիսոն
+//  Կերակրիր, խաղացրու, լողացրու, քնացրու։
+//  Նա հիշում է քեզ ու սպասում է ամեն օր։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { food: 'Կուշտ 🍎', fun: 'Ուրախ 🎈', energy: 'Էներգիա ⚡', clean: 'Մաքուր 🛁',
+    feed: '🍎 Կերակրել', play: '🎈 Խաղալ', bath: '🛁 Լողացնել', sleep: '😴 Քնացնել', dance: '💃 Պարացնել',
+    lvl: n => 'Մակարդակ ' + n, hungry: 'Փիսոն սոված է 🥺', bored: 'Փիսոն ուզում է խաղալ 🎈', tired: 'Փիսոն հոգնել է․ քնացրու 😴', dirty: 'Փիսոյին լոգանք է պետք 🛁', happy: 'Փիսոն երջանիկ է 💛', missed: 'Կարոտե՜լ եմ քեզ 🥹', sleeping: 'Սու՛ս… փիսոն քնած է 💤', lvlup: n => 'ՄԱԿԱՐԴԱԿ ' + n + ' 🎉', dance3: 'Փիսոն սովորեց պարե՜լ 💃', crown5: 'Փիսոն ստացավ ոսկե թագը 👑', nameQ: 'Ի՞նչ անուն կտաս փիսոյիդ 🐱', nameOk: 'Սա իմ փիսոն է ✨', defName: 'Ոսկուկ' },
+  ru: { food: 'Сытый 🍎', fun: 'Весёлый 🎈', energy: 'Энергия ⚡', clean: 'Чистый 🛁',
+    feed: '🍎 Покормить', play: '🎈 Поиграть', bath: '🛁 Искупать', sleep: '😴 Уложить спать', dance: '💃 Танцевать',
+    lvl: n => 'Уровень ' + n, hungry: 'Котик проголодался 🥺', bored: 'Котик хочет играть 🎈', tired: 'Котик устал, уложи его 😴', dirty: 'Котику нужна ванна 🛁', happy: 'Котик счастлив 💛', missed: 'Я скуча-а-ал! 🥹', sleeping: 'Тс-с… котик спит 💤', lvlup: n => 'УРОВЕНЬ ' + n + ' 🎉', dance3: 'Котик научился танцевать! 💃', crown5: 'Котик получил золотую корону 👑', nameQ: 'Как назовёшь котёнка? 🐱', nameOk: 'Это мой котик ✨', defName: 'Златик' },
+  en: { food: 'Fed 🍎', fun: 'Happy 🎈', energy: 'Energy ⚡', clean: 'Clean 🛁',
+    feed: '🍎 Feed', play: '🎈 Play', bath: '🛁 Bathe', sleep: '😴 Sleep', dance: '💃 Dance',
+    lvl: n => 'Level ' + n, hungry: 'Kitty is hungry 🥺', bored: 'Kitty wants to play 🎈', tired: 'Kitty is tired, tuck it in 😴', dirty: 'Kitty needs a bath 🛁', happy: 'Kitty is happy 💛', missed: 'I missed you! 🥹', sleeping: 'Shh… kitty is sleeping 💤', lvlup: n => 'LEVEL ' + n + ' 🎉', dance3: 'Kitty learned to dance! 💃', crown5: 'Kitty earned the golden crown 👑', nameQ: 'What will you name your kitten? 🐱', nameOk: 'That’s my kitty ✨', defName: 'Goldie' },
+  es: { food: 'Comido 🍎', fun: 'Feliz 🎈', energy: 'Energía ⚡', clean: 'Limpio 🛁',
+    feed: '🍎 Dar de comer', play: '🎈 Jugar', bath: '🛁 Bañar', sleep: '😴 Dormir', dance: '💃 Bailar',
+    lvl: n => 'Nivel ' + n, hungry: 'El gatito tiene hambre 🥺', bored: 'El gatito quiere jugar 🎈', tired: 'El gatito está cansado 😴', dirty: 'El gatito necesita un baño 🛁', happy: 'El gatito es feliz 💛', missed: '¡Te extrañé! 🥹', sleeping: 'Shh… el gatito duerme 💤', lvlup: n => 'NIVEL ' + n + ' 🎉', dance3: '¡El gatito aprendió a bailar! 💃', crown5: 'El gatito ganó la corona de oro 👑', nameQ: '¿Cómo llamarás a tu gatito? 🐱', nameOk: 'Es mi gatito ✨', defName: 'Dorado' },
+  fr: { food: 'Nourri 🍎', fun: 'Joyeux 🎈', energy: 'Énergie ⚡', clean: 'Propre 🛁',
+    feed: '🍎 Nourrir', play: '🎈 Jouer', bath: '🛁 Laver', sleep: '😴 Dodo', dance: '💃 Danser',
+    lvl: n => 'Niveau ' + n, hungry: 'Le chaton a faim 🥺', bored: 'Le chaton veut jouer 🎈', tired: 'Le chaton est fatigué 😴', dirty: 'Le chaton a besoin d’un bain 🛁', happy: 'Le chaton est heureux 💛', missed: 'Tu m’as manqué ! 🥹', sleeping: 'Chut… le chaton dort 💤', lvlup: n => 'NIVEAU ' + n + ' 🎉', dance3: 'Le chaton sait danser ! 💃', crown5: 'Le chaton a gagné la couronne d’or 👑', nameQ: 'Quel nom pour ton chaton ? 🐱', nameOk: 'C’est mon chaton ✨', defName: 'Doré' },
+  de: { food: 'Satt 🍎', fun: 'Fröhlich 🎈', energy: 'Energie ⚡', clean: 'Sauber 🛁',
+    feed: '🍎 Füttern', play: '🎈 Spielen', bath: '🛁 Baden', sleep: '😴 Schlafen', dance: '💃 Tanzen',
+    lvl: n => 'Level ' + n, hungry: 'Das Kätzchen hat Hunger 🥺', bored: 'Das Kätzchen will spielen 🎈', tired: 'Das Kätzchen ist müde 😴', dirty: 'Das Kätzchen braucht ein Bad 🛁', happy: 'Das Kätzchen ist glücklich 💛', missed: 'Ich hab dich vermisst! 🥹', sleeping: 'Psst… das Kätzchen schläft 💤', lvlup: n => 'LEVEL ' + n + ' 🎉', dance3: 'Das Kätzchen kann tanzen! 💃', crown5: 'Das Kätzchen hat die goldene Krone 👑', nameQ: 'Wie nennst du dein Kätzchen? 🐱', nameOk: 'Das ist mein Kätzchen ✨', defName: 'Goldi' },
+  ja: { food: 'まんぷく 🍎', fun: 'ごきげん 🎈', energy: 'げんき ⚡', clean: 'きれい 🛁',
+    feed: '🍎 ごはん', play: '🎈 あそぶ', bath: '🛁 おふろ', sleep: '😴 ねんね', dance: '💃 ダンス',
+    lvl: n => 'レベル ' + n, hungry: 'こねこはおなかペコペコ 🥺', bored: 'こねこはあそびたい 🎈', tired: 'こねこはねむいよ 😴', dirty: 'おふろに入れてあげて 🛁', happy: 'こねこはしあわせ 💛', missed: 'さみしかったよ〜！🥹', sleeping: 'シー…こねこはおやすみ中 💤', lvlup: n => 'レベル ' + n + ' 🎉', dance3: 'こねこがダンスをおぼえた！💃', crown5: 'こねこが金のかんむりをもらった 👑', nameQ: 'こねこの名前は？🐱', nameOk: 'わたしのこねこ ✨', defName: 'ゴルディ' },
+  zh: { food: '吃饱 🍎', fun: '开心 🎈', energy: '精力 ⚡', clean: '干净 🛁',
+    feed: '🍎 喂食', play: '🎈 玩耍', bath: '🛁 洗澡', sleep: '😴 睡觉', dance: '💃 跳舞',
+    lvl: n => '等级 ' + n, hungry: '小猫饿了 🥺', bored: '小猫想玩 🎈', tired: '小猫累了，哄它睡吧 😴', dirty: '小猫该洗澡啦 🛁', happy: '小猫很幸福 💛', missed: '我好想你！🥹', sleeping: '嘘…小猫在睡觉 💤', lvlup: n => '升到' + n + '级 🎉', dance3: '小猫学会跳舞啦！💃', crown5: '小猫获得了金皇冠 👑', nameQ: '给小猫取个名字吧 🐱', nameOk: '这是我的小猫 ✨', defName: '金金' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+// ——— Փիսոյի վիճակը. պահվում է հեռախոսում ———
+const XP_LVL = [0, 30, 70, 120, 180];   // քանի փորձ է պետք ամեն մակարդակի համար
+let pet = {
+  name: '', food: 80, fun: 80, energy: 80, clean: 80,
+  xp: 0, level: 1, last: Date.now(),
+};
+let missedYou = false;
+try {
+  const raw = localStorage.getItem('aren-pet');
+  if (raw) pet = Object.assign(pet, JSON.parse(raw));
+} catch (e) {}
+
+// Քանի ժամ չես եղել՝ այնքան են իջել սանդղակները (բայց 5-ից ցածր չեն ընկնում)
+{
+  const hours = Math.min(72, (Date.now() - pet.last) / 3600000);
+  if (hours > 0.1) {
+    pet.food = Math.max(5, pet.food - hours * 3);
+    pet.fun = Math.max(5, pet.fun - hours * 2.5);
+    pet.energy = Math.max(5, pet.energy - hours * 1.5);
+    pet.clean = Math.max(5, pet.clean - hours * 1.2);
+  }
+  if (hours > 10) missedYou = true;
+  pet.last = Date.now();
+}
+function save() {
+  pet.last = Date.now();
+  try {
+    localStorage.setItem('aren-pet', JSON.stringify(pet));
+    localStorage.setItem('aren-pet-level', pet.level);
+  } catch (e) {}
+}
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+function meow() {   // մյաու՝ ձայնի սահող բարձրացում-իջեցում
+  if (!actx) return;
+  const t = actx.currentTime;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(500, t);
+  o.frequency.linearRampToValueAtTime(780, t + 0.12);
+  o.frequency.linearRampToValueAtTime(430, t + 0.38);
+  g.gain.setValueAtTime(0.12, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.42);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + 0.45);
+}
+const sChomp = () => { tone(160, 0.07, 'square', 0.12); tone(120, 0.07, 'square', 0.1, 0.12); };
+const sBounce = () => tone(440 + Math.random() * 120, 0.07, 'sine', 0.1);
+const sSplash = () => [500, 380, 300].forEach((f, k) => tone(f, 0.1, 'sine', 0.09, k * 0.05));
+const sSnore = () => { tone(90, 0.4, 'sine', 0.07); tone(70, 0.4, 'sine', 0.06, 0.5); };
+const sLvl = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.22, 'triangle', 0.18, k * 0.1));
+const sPurr = () => { for (let k = 0; k < 6; k++) tone(75 + (k % 2) * 8, 0.09, 'sawtooth', 0.045, k * 0.1); };
+function danceMusic() {
+  const seq = [0, 4, 7, 12, 7, 4, 0, 4, 7, 12, 16, 12];
+  seq.forEach((s, k) => tone(261.63 * Math.pow(2, s / 12), 0.16, 'square', 0.07, k * 0.22));
+}
+
+// ——— Էկրանի տարրերը ———
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W = 0, H = 0;
+function resize() {
+  const r = cv.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  W = r.width; H = r.height;
+  cv.width = W * dpr;
+  cv.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', () => { resize(); });
+
+const msgEl = document.getElementById('msg');
+const btns = {
+  feed: document.getElementById('bFeed'),
+  play: document.getElementById('bPlay'),
+  bath: document.getElementById('bBath'),
+  sleep: document.getElementById('bSleep'),
+  dance: document.getElementById('bDance'),
+};
+btns.feed.textContent = T.feed;
+btns.play.textContent = T.play;
+btns.bath.textContent = T.bath;
+btns.sleep.textContent = T.sleep;
+btns.dance.textContent = T.dance;
+document.getElementById('sFood').textContent = T.food;
+document.getElementById('sFun').textContent = T.fun;
+document.getElementById('sEnergy').textContent = T.energy;
+document.getElementById('sClean').textContent = T.clean;
+
+let msgTimer = null;
+function say(txt, ms) {
+  msgEl.textContent = txt;
+  clearTimeout(msgTimer);
+  if (ms) msgTimer = setTimeout(updateMsg, ms);
+}
+function updateMsg() {
+  if (sleeping) { msgEl.textContent = T.sleeping; return; }
+  const worst = Math.min(pet.food, pet.fun, pet.energy, pet.clean);
+  if (worst >= 55) { msgEl.textContent = T.happy; return; }
+  if (pet.food === worst) msgEl.textContent = T.hungry;
+  else if (pet.fun === worst) msgEl.textContent = T.bored;
+  else if (pet.energy === worst) msgEl.textContent = T.tired;
+  else msgEl.textContent = T.dirty;
+}
+
+function barColor(v) { return v > 55 ? '#6ee7b7' : v > 28 ? '#ffd166' : '#ff7b6b'; }
+function updateUI() {
+  [['bFood', 'food'], ['bFun', 'fun'], ['bEnergy', 'energy'], ['bClean', 'clean']].forEach(([id, k]) => {
+    const el = document.getElementById(id);
+    el.style.width = pet[k] + '%';
+    el.style.background = barColor(pet[k]);
+  });
+  document.getElementById('title').textContent = pet.name || 'Golden Pet';
+  document.getElementById('lvlTxt').textContent = T.lvl(pet.level) + (pet.level >= 5 ? ' 👑' : '');
+  const prev = XP_LVL[pet.level - 1], next = XP_LVL[pet.level] || XP_LVL[4];
+  const p = pet.level >= 5 ? 100 : Math.min(100, (pet.xp - prev) / (next - prev) * 100);
+  document.getElementById('xpFill').style.width = p + '%';
+  btns.dance.hidden = pet.level < 3;
+  const busy = !!anim || sleeping;
+  Object.values(btns).forEach(b => { b.disabled = busy; });
+}
+
+// ——— Գործողությունները ———
+let anim = null;        // { type, t0, dur }
+let sleeping = false;
+let sleepT0 = 0;
+
+function addXp(n) {
+  if (pet.level >= 5) { pet.xp += n; return; }
+  pet.xp += n;
+  while (pet.level < 5 && pet.xp >= XP_LVL[pet.level]) {
+    pet.level++;
+    sLvl();
+    if (pet.level === 3) say(T.dance3, 4000);
+    else if (pet.level === 5) say(T.crown5, 4000);
+    else say(T.lvlup(pet.level), 3000);
+    burst();
+  }
+}
+function startAnim(type, dur) { anim = { type, t0: performance.now(), dur }; updateUI(); }
+
+btns.feed.addEventListener('click', () => {
+  if (anim || sleeping) return;
+  initAudio();
+  pet.food = Math.min(100, pet.food + 30);
+  addXp(5);
+  startAnim('eat', 2400);
+  sChomp(); setTimeout(sChomp, 700); setTimeout(sPurr, 1500);
+  save();
+});
+btns.play.addEventListener('click', () => {
+  if (anim || sleeping) return;
+  initAudio();
+  pet.fun = Math.min(100, pet.fun + 26);
+  pet.energy = Math.max(5, pet.energy - 8);
+  addXp(6);
+  startAnim('play', 3000);
+  save();
+});
+btns.bath.addEventListener('click', () => {
+  if (anim || sleeping) return;
+  initAudio();
+  pet.clean = Math.min(100, pet.clean + 45);
+  addXp(4);
+  startAnim('bath', 2800);
+  sSplash(); setTimeout(sSplash, 1100);
+  save();
+});
+btns.sleep.addEventListener('click', () => {
+  if (anim || sleeping) return;
+  initAudio();
+  sleeping = true;
+  sleepT0 = performance.now();
+  sSnore(); setTimeout(sSnore, 1600); setTimeout(sSnore, 3200);
+  say(T.sleeping);
+  addXp(3);
+  updateUI();
+});
+btns.dance.addEventListener('click', () => {
+  if (anim || sleeping || pet.level < 3) return;
+  initAudio();
+  pet.fun = Math.min(100, pet.fun + 16);
+  pet.energy = Math.max(5, pet.energy - 6);
+  addXp(6);
+  startAnim('dance', 3200);
+  danceMusic();
+  save();
+});
+
+// Փիսոյին դիպչես՝ մյաու է անում ու մռռում
+cv.addEventListener('pointerdown', () => {
+  if (sleeping) return;
+  initAudio();
+  meow();
+  petted = 1;
+});
+
+// ——— Տոնական թղթիկներ մակարդակի համար ———
+function burst() {
+  const stuff = ['🎉', '⭐', '💛', '✨'];
+  for (let k = 0; k < 26; k++) {
+    const s = document.createElement('span');
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.cssText = 'position:fixed;top:-40px;left:' + (Math.random() * 100) + 'vw;font-size:' +
+      (14 + Math.random() * 20) + 'px;pointer-events:none;z-index:99;transition:transform 2.6s linear, opacity 2.6s;';
+    document.body.appendChild(s);
+    requestAnimationFrame(() => {
+      s.style.transform = 'translateY(110vh) rotate(600deg)';
+      s.style.opacity = '0';
+    });
+    setTimeout(() => s.remove(), 2800);
+  }
+}
+
+// ——— Ժամանակի հոսքը. բաց էջում էլ են սանդղակները կամաց իջնում ———
+setInterval(() => {
+  if (sleeping) return;
+  pet.food = Math.max(5, pet.food - 0.4);
+  pet.fun = Math.max(5, pet.fun - 0.35);
+  pet.energy = Math.max(5, pet.energy - 0.2);
+  pet.clean = Math.max(5, pet.clean - 0.15);
+  save();
+  updateUI();
+  updateMsg();
+}, 25000);
+
+// ——— Նկարելը ———
+let frame = 0, petted = 0;
+
+function isNight() { const h = new Date().getHours(); return h >= 21 || h < 8; }
+
+function drawRoom() {
+  const night = isNight();
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  if (night) { g.addColorStop(0, '#1a1a3e'); g.addColorStop(1, '#252550'); }
+  else { g.addColorStop(0, '#ffe9c4'); g.addColorStop(1, '#ffd9a0'); }
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  // պատուհանը
+  const wx = W * 0.72, wy = H * 0.13, ww = W * 0.2, wh = H * 0.26;
+  ctx.fillStyle = night ? '#0d0d28' : '#9fd9ef';
+  ctx.fillRect(wx, wy, ww, wh);
+  ctx.strokeStyle = '#8a5a30';
+  ctx.lineWidth = 5;
+  ctx.strokeRect(wx, wy, ww, wh);
+  ctx.beginPath(); ctx.moveTo(wx + ww / 2, wy); ctx.lineTo(wx + ww / 2, wy + wh); ctx.stroke();
+  if (night) {
+    ctx.fillStyle = '#f5eede';
+    ctx.beginPath(); ctx.arc(wx + ww * 0.3, wy + wh * 0.32, ww * 0.11, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#0d0d28';
+    ctx.beginPath(); ctx.arc(wx + ww * 0.36, wy + wh * 0.28, ww * 0.09, 0, Math.PI * 2); ctx.fill();
+  } else {
+    ctx.fillStyle = '#ffd166';
+    ctx.beginPath(); ctx.arc(wx + ww * 0.3, wy + wh * 0.34, ww * 0.13, 0, Math.PI * 2); ctx.fill();
+  }
+  // հատակը
+  const fy = H * 0.74;
+  ctx.fillStyle = night ? '#3a2c50' : '#c08945';
+  ctx.fillRect(0, fy, W, H - fy);
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.lineWidth = 2;
+  for (let x = 0; x < W; x += 46) {
+    ctx.beginPath(); ctx.moveTo(x, fy); ctx.lineTo(x - 10, H); ctx.stroke();
+  }
+  // գորգիկը
+  ctx.fillStyle = night ? 'rgba(110,231,183,0.18)' : 'rgba(230,57,70,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(W / 2, H * 0.84, W * 0.3, H * 0.075, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawPet() {
+  const cx = W / 2;
+  const baseY = H * 0.8;
+  const s = (Math.min(W, H) / 5.2) * (0.75 + pet.level * 0.07);
+  const worst = Math.min(pet.food, pet.fun, pet.energy, pet.clean);
+  const sad = !sleeping && worst < 28;
+
+  let bounce = Math.sin(frame * 0.045) * s * 0.02;   // շնչում է
+  let ox = 0, rot = 0;
+
+  const t = anim ? (performance.now() - anim.t0) / anim.dur : 0;
+  if (anim && t >= 1) { anim = null; updateUI(); updateMsg(); }
+
+  if (anim) {
+    if (anim.type === 'play') {
+      bounce = -Math.abs(Math.sin(t * Math.PI * 4)) * s * 0.35;
+      if (Math.abs(Math.sin(t * Math.PI * 4)) < 0.08 && frame % 4 === 0) sBounce();
+    }
+    if (anim.type === 'dance') {
+      rot = Math.sin(t * Math.PI * 8) * 0.22;
+      ox = Math.sin(t * Math.PI * 4) * s * 0.35;
+      bounce = -Math.abs(Math.sin(t * Math.PI * 8)) * s * 0.12;
+    }
+    if (anim.type === 'eat') bounce = Math.sin(t * Math.PI * 10) * s * 0.03;
+  }
+  if (petted > 0) { bounce -= Math.sin(petted * Math.PI) * s * 0.18; petted = Math.max(0, petted - 0.06); }
+
+  const y = baseY + bounce;
+
+  ctx.save();
+  ctx.translate(cx + ox, y);
+  ctx.rotate(rot);
+
+  // ստվերը
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.beginPath();
+  ctx.ellipse(0, s * 0.08 - bounce, s * 0.85, s * 0.16, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // պոչը
+  const tw = Math.sin(frame * (sleeping ? 0.02 : 0.09)) * s * 0.16;
+  ctx.strokeStyle = '#e0a415';
+  ctx.lineWidth = s * 0.16;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.6, -s * 0.25);
+  ctx.quadraticCurveTo(-s * 1.05, -s * 0.45 + tw, -s * 0.95, -s * 0.9 + tw);
+  ctx.stroke();
+
+  // մարմինը՝ նստած ոսկե փիսո
+  const bodyGrad = ctx.createRadialGradient(-s * 0.2, -s * 0.5, s * 0.1, 0, -s * 0.3, s * 1.1);
+  bodyGrad.addColorStop(0, '#ffe08a');
+  bodyGrad.addColorStop(1, '#f0b429');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, -s * 0.35, s * 0.72, s * 0.62, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // փորիկը
+  ctx.fillStyle = '#fff3c4';
+  ctx.beginPath();
+  ctx.ellipse(0, -s * 0.22, s * 0.4, s * 0.36, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // թաթիկները
+  ctx.fillStyle = '#f0b429';
+  ctx.beginPath(); ctx.ellipse(-s * 0.32, s * 0.02, s * 0.18, s * 0.12, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(s * 0.32, s * 0.02, s * 0.18, s * 0.12, 0, 0, Math.PI * 2); ctx.fill();
+
+  // կեղտի բծերը, երբ մաքրությունը ցածր է
+  if (pet.clean < 35) {
+    ctx.fillStyle = 'rgba(106,74,30,0.5)';
+    ctx.beginPath(); ctx.ellipse(-s * 0.3, -s * 0.5, s * 0.12, s * 0.08, 0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(s * 0.25, -s * 0.2, s * 0.1, s * 0.07, -0.3, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // գլուխը
+  const hy = -s * 1.05;
+  // ականջները (տխուր ժամանակ կախվում են)
+  const earDrop = sad ? s * 0.12 : 0;
+  ctx.fillStyle = '#f0b429';
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.42, hy - s * 0.28 + earDrop);
+  ctx.lineTo(-s * 0.52, hy - s * 0.62 + earDrop * 1.6);
+  ctx.lineTo(-s * 0.16, hy - s * 0.44 + earDrop);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(s * 0.42, hy - s * 0.28 + earDrop);
+  ctx.lineTo(s * 0.52, hy - s * 0.62 + earDrop * 1.6);
+  ctx.lineTo(s * 0.16, hy - s * 0.44 + earDrop);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#e07a9a';
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.38, hy - s * 0.33 + earDrop);
+  ctx.lineTo(-s * 0.44, hy - s * 0.52 + earDrop * 1.5);
+  ctx.lineTo(-s * 0.24, hy - s * 0.42 + earDrop);
+  ctx.closePath(); ctx.fill();
+  // դեմքը
+  const headGrad = ctx.createRadialGradient(-s * 0.1, hy - s * 0.1, s * 0.1, 0, hy, s * 0.6);
+  headGrad.addColorStop(0, '#ffe08a');
+  headGrad.addColorStop(1, '#f0b429');
+  ctx.fillStyle = headGrad;
+  ctx.beginPath();
+  ctx.arc(0, hy, s * 0.52, 0, Math.PI * 2);
+  ctx.fill();
+  // զոլիկները
+  ctx.strokeStyle = '#d99a12';
+  ctx.lineWidth = s * 0.05;
+  ctx.beginPath(); ctx.moveTo(-s * 0.1, hy - s * 0.48); ctx.quadraticCurveTo(-s * 0.08, hy - s * 0.34, -s * 0.1, hy - s * 0.26); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(s * 0.08, hy - s * 0.5); ctx.quadraticCurveTo(s * 0.1, hy - s * 0.36, s * 0.08, hy - s * 0.28); ctx.stroke();
+
+  // աչքերը
+  const blink = sleeping || (frame % 220 > 210);
+  ctx.strokeStyle = '#3a2a17';
+  ctx.fillStyle = '#3a2a17';
+  if (blink) {
+    ctx.lineWidth = s * 0.045;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-s * 0.26, hy - s * 0.05); ctx.quadraticCurveTo(-s * 0.18, hy + s * 0.02, -s * 0.1, hy - s * 0.05); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(s * 0.1, hy - s * 0.05); ctx.quadraticCurveTo(s * 0.18, hy + s * 0.02, s * 0.26, hy - s * 0.05); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.arc(-s * 0.18, hy - s * 0.05, s * 0.07, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s * 0.18, hy - s * 0.05, s * 0.07, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(-s * 0.155, hy - s * 0.075, s * 0.022, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(s * 0.205, hy - s * 0.075, s * 0.022, 0, Math.PI * 2); ctx.fill();
+    // տխուր ժամանակ՝ արցունքիկ
+    if (sad) {
+      ctx.fillStyle = '#7ec8f0';
+      ctx.beginPath(); ctx.ellipse(-s * 0.24, hy + s * 0.08, s * 0.035, s * 0.055, 0, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  // քիթն ու բերանը
+  ctx.fillStyle = '#e07a9a';
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.045, hy + s * 0.08);
+  ctx.lineTo(s * 0.045, hy + s * 0.08);
+  ctx.lineTo(0, hy + s * 0.14);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#3a2a17';
+  ctx.lineWidth = s * 0.03;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  if (sad) {
+    ctx.moveTo(-s * 0.1, hy + s * 0.28);
+    ctx.quadraticCurveTo(0, hy + s * 0.2, s * 0.1, hy + s * 0.28);
+  } else {
+    ctx.moveTo(0, hy + s * 0.14);
+    ctx.quadraticCurveTo(-s * 0.06, hy + s * 0.24, -s * 0.13, hy + s * 0.2);
+    ctx.moveTo(0, hy + s * 0.14);
+    ctx.quadraticCurveTo(s * 0.06, hy + s * 0.24, s * 0.13, hy + s * 0.2);
+  }
+  ctx.stroke();
+  // բեղիկները
+  ctx.lineWidth = s * 0.022;
+  ctx.strokeStyle = 'rgba(58,42,23,0.55)';
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.3, hy + s * 0.1); ctx.lineTo(-s * 0.55, hy + s * 0.06);
+  ctx.moveTo(-s * 0.3, hy + s * 0.16); ctx.lineTo(-s * 0.54, hy + s * 0.18);
+  ctx.moveTo(s * 0.3, hy + s * 0.1); ctx.lineTo(s * 0.55, hy + s * 0.06);
+  ctx.moveTo(s * 0.3, hy + s * 0.16); ctx.lineTo(s * 0.54, hy + s * 0.18);
+  ctx.stroke();
+
+  // ոսկե թագը՝ 5-րդ մակարդակից
+  if (pet.level >= 5) {
+    ctx.fillStyle = '#ffd166';
+    ctx.strokeStyle = '#c98a12';
+    ctx.lineWidth = s * 0.03;
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.24, hy - s * 0.46);
+    ctx.lineTo(-s * 0.28, hy - s * 0.72);
+    ctx.lineTo(-s * 0.1, hy - s * 0.54);
+    ctx.lineTo(0, hy - s * 0.78);
+    ctx.lineTo(s * 0.1, hy - s * 0.54);
+    ctx.lineTo(s * 0.28, hy - s * 0.72);
+    ctx.lineTo(s * 0.24, hy - s * 0.46);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#e63946';
+    ctx.beginPath(); ctx.arc(0, hy - s * 0.56, s * 0.04, 0, Math.PI * 2); ctx.fill();
+  }
+
+  ctx.restore();
+
+  // ——— Անիմացիաների դեկորները ———
+  if (anim && anim.type === 'eat') {
+    // ձուկը գալիս է դեպի բերանը ու փոքրանում
+    const fx = cx - s * 1.6 + t * s * 1.3;
+    const fs = s * 0.34 * (1 - t * 0.8);
+    ctx.save();
+    ctx.translate(fx, baseY - s * 1.0);
+    ctx.fillStyle = '#5aa7d6';
+    ctx.beginPath(); ctx.ellipse(0, 0, fs, fs * 0.55, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(fs * 0.9, 0); ctx.lineTo(fs * 1.5, -fs * 0.5); ctx.lineTo(fs * 1.5, fs * 0.5); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#12324a';
+    ctx.beginPath(); ctx.arc(-fs * 0.4, -fs * 0.12, fs * 0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  if (anim && anim.type === 'play') {
+    // գնդակը թռչկոտում է կողքին
+    const bx = cx + s * 1.1;
+    const by = baseY - s * 0.25 - Math.abs(Math.sin(t * Math.PI * 4 + 0.5)) * s * 1.1;
+    ctx.fillStyle = '#e63946';
+    ctx.beginPath(); ctx.arc(bx, by, s * 0.22, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#f2f5fa';
+    ctx.beginPath(); ctx.arc(bx, by, s * 0.22, -0.6, 0.9); ctx.lineTo(bx, by); ctx.closePath(); ctx.fill();
+  }
+  if (anim && anim.type === 'bath') {
+    // օճառի պղպջակներ
+    for (let k = 0; k < 7; k++) {
+      const bt = (t * 2 + k * 0.31) % 1;
+      const bx = cx + Math.sin(k * 2.7) * s * 0.8;
+      const by = baseY - s * 0.4 - bt * s * 1.6;
+      ctx.strokeStyle = 'rgba(160,220,255,' + (0.85 - bt * 0.7) + ')';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(bx, by, s * (0.08 + (k % 3) * 0.05), 0, Math.PI * 2); ctx.stroke();
+    }
+  }
+  if (anim && anim.type === 'dance') {
+    // նոտաներ են թռչում
+    for (let k = 0; k < 4; k++) {
+      const nt = (t * 1.6 + k * 0.27) % 1;
+      const nx = cx + Math.sin(k * 2.2 + t * 6) * s * 1.2;
+      const ny = baseY - s * 1.8 - nt * s * 1.4;
+      ctx.fillStyle = 'rgba(255,209,102,' + (1 - nt) + ')';
+      ctx.beginPath(); ctx.ellipse(nx, ny, s * 0.09, s * 0.065, -0.4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillRect(nx + s * 0.06, ny - s * 0.36, s * 0.035, s * 0.36);
+    }
+  }
+  if (sleeping) {
+    // z-երը բարձրանում են (տառ է, ոչ էմոջի — կարելի է)
+    const st = (performance.now() - sleepT0) / 1000;
+    ctx.fillStyle = 'rgba(238,240,255,0.8)';
+    ctx.font = 'bold ' + s * 0.3 + 'px Arial';
+    ctx.textAlign = 'center';
+    for (let k = 0; k < 3; k++) {
+      const zt = (st * 0.5 + k * 0.33) % 1;
+      ctx.globalAlpha = 1 - zt;
+      ctx.fillText('z', cx + s * (0.7 + k * 0.25), baseY - s * 1.6 - zt * s * 1.1);
+    }
+    ctx.globalAlpha = 1;
+    // էներգիան լցվում է, 7 վայրկյանում արթնանում է
+    pet.energy = Math.min(100, pet.energy + 0.25);
+    if (st > 7) {
+      sleeping = false;
+      pet.energy = 100;
+      meow();
+      save(); updateUI(); updateMsg();
+    }
+  }
+}
+
+function loop() {
+  frame++;
+  drawRoom();
+  drawPet();
+  requestAnimationFrame(loop);
+}
+
+// ——— Անունը՝ առաջին այցին ———
+const namePick = document.getElementById('namePick');
+document.getElementById('nameQ').textContent = T.nameQ;
+document.getElementById('nameInp').placeholder = T.defName;
+document.getElementById('nameOk').textContent = T.nameOk;
+document.getElementById('nameOk').addEventListener('click', () => {
+  const v = document.getElementById('nameInp').value.trim();
+  pet.name = v || T.defName;
+  namePick.hidden = true;
+  save();
+  updateUI();
+  meowSoon();
+});
+function meowSoon() { initAudio(); setTimeout(meow, 250); }
+
+if (!pet.name) namePick.hidden = false;
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք (բայց ոչ դաշտում)
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  if (e.target.closest('input')) return;
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+resize();
+updateUI();
+if (missedYou) say(T.missed, 5000);
+else updateMsg();
+save();
+loop();
+</script>
+</body>
+</html>
