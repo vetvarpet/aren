@@ -228,6 +228,7 @@
     <nav>
       <a href="./about.html" id="navAbout">😼 Մեր մասին</a>
       <a href="./trophies/" id="navTroph">🏆 Գավաթներ</a>
+      <a href="#" id="navRand" title="Պատահական խաղ">🎲 Պատահական</a>
       <a href="./qr.html">📱 QR</a>
       <a href="https://github.com/vetvarpet/aren">⭐ GitHub</a>
       <a href="#" id="langBtn" title="Լեզու / Язык / Language">🌐</a>
@@ -951,6 +952,7 @@ const DICT = {
   ru: {
     about: '😼 О нас',
     troph: '🏆 Кубки',
+    rand: '🎲 Случайная',
     newTag: 'NEW',
     cards: {
       './cat-jump/': ['Котик', 'Две игры в одной: кот-бегун с ящиками и воронами, и Golden Bird 🐦 — птичка между башнями из ящиков.', '▶ Играть'],
@@ -974,6 +976,7 @@ const DICT = {
   en: {
     about: '😼 About',
     troph: '🏆 Trophies',
+    rand: '🎲 Random',
     newTag: 'NEW',
     cards: {
       './cat-jump/': ['Kitty', 'Two games in one: the running cat with boxes and crows, and Golden Bird 🐦 — a bird flying between box towers.', '▶ Play'],
@@ -997,6 +1000,7 @@ const DICT = {
   es: {
     about: '😼 Sobre nosotros',
     troph: '🏆 Trofeos',
+    rand: '🎲 Al azar',
     newTag: 'NUEVO',
     cards: {
       './cat-jump/': ['Gatito', 'Dos juegos en uno: el gato corredor con cajas y cuervos, y Golden Bird 🐦, un pajarito entre torres de cajas.', '▶ Jugar'],
@@ -1020,6 +1024,7 @@ const DICT = {
   fr: {
     about: '😼 À propos',
     troph: '🏆 Trophées',
+    rand: '🎲 Au hasard',
     newTag: 'NOUVEAU',
     cards: {
       './cat-jump/': ['Petit chat', 'Deux jeux en un : le chat coureur avec caisses et corbeaux, et Golden Bird 🐦, l’oiseau entre les tours de caisses.', '▶ Jouer'],
@@ -1043,6 +1048,7 @@ const DICT = {
   de: {
     about: '😼 Über uns',
     troph: '🏆 Pokale',
+    rand: '🎲 Zufall',
     newTag: 'NEU',
     cards: {
       './cat-jump/': ['Kätzchen', 'Zwei Spiele in einem: die rennende Katze mit Kisten und Krähen, und Golden Bird 🐦 — der Vogel zwischen Kistentürmen.', '▶ Spielen'],
@@ -1066,6 +1072,7 @@ const DICT = {
   ja: {
     about: '😼 わたしたち',
     troph: '🏆 トロフィー',
+    rand: '🎲 ランダム',
     newTag: '新',
     cards: {
       './cat-jump/': ['ネコちゃん', '2つのゲームが1つに：箱とカラスのネコラン、そして箱のタワーを飛ぶ Golden Bird 🐦。', '▶ あそぶ'],
@@ -1089,6 +1096,7 @@ const DICT = {
   zh: {
     about: '😼 关于我们',
     troph: '🏆 奖杯',
+    rand: '🎲 随机',
     newTag: '新',
     cards: {
       './cat-jump/': ['小猫咪', '两个游戏合一：跳箱躲乌鸦的小猫快跑，加上在箱子塔之间飞的 Golden Bird 🐦。', '▶ 开玩'],
@@ -1118,6 +1126,7 @@ function applyLang(lang) {
   if (!d) return;   // հայերենը արդեն էջի մեջ է
   document.getElementById('navAbout').textContent = d.about;
   document.getElementById('navTroph').textContent = d.troph;
+  document.getElementById('navRand').textContent = d.rand;
   document.querySelectorAll('.game').forEach(card => {
     const c = d.cards[card.getAttribute('href')];
     if (!c) return;
@@ -1143,6 +1152,18 @@ document.getElementById('langBtn').addEventListener('pointerdown', (e) => {
   langPick.hidden = false;
 });
 document.getElementById('langBtn').addEventListener('click', (e) => e.preventDefault());
+
+// ——— 🎲 Պատահական խաղ. զառը որոշում է, թե ինչ ես խաղալու այսօր ———
+document.getElementById('navRand').addEventListener('click', (e) => {
+  e.preventDefault();
+  const cards = [...document.querySelectorAll('.game')];
+  const pick = cards[Math.floor(Math.random() * cards.length)];
+  // մի պահ առանձնացնում ենք ընտրվածը, հետո գնում ենք
+  pick.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  pick.style.borderColor = 'var(--accent)';
+  pick.style.transform = 'scale(1.04)';
+  setTimeout(() => { location.href = pick.getAttribute('href'); }, 650);
+});
 
 // Առաջին այցին հարցնում ենք, հետո հիշում ենք
 let saved = null;

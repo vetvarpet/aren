@@ -157,6 +157,8 @@
   <button data-song="birthday">🎂 Ծնունդդ շնորհավոր</button>
   <button data-song="jingle">🔔 Զանգակները</button>
   <button data-song="tango">💃 Արենի տանգոն</button>
+  <button data-song="joy">🎼 Ուրախության ձոնը</button>
+  <button data-song="lamb">🐑 Փոքրիկ գառնուկը</button>
 </div>
 
 <div class="piano-body">
@@ -184,14 +186,14 @@ document.addEventListener('touchend', (e) => {
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { h1: 'Golden Piano 🎹', rec: '⏺ Ձայնագրել', stop: '⏹ Կանգնեցնել', playMine: '▶ Լսել իմ մեղեդին', learnBtn: '🎓 Սովորել', listen: '👂 Լսել', choose: 'Ընտրիր երգը 👇', prog: (t, i, n) => t + ' — նոտա ' + i + '/' + n, bravo: t => '🏆 Բրավո՜։ Դու սովորեցիր «' + t + '»', hint: 'Նվագիր մատով կամ ստեղնաշարով՝ A S D F G H J K L ; — սևերը՝ W E T Y U O P', songs: { star: '🌟 Աստղիկը', birthday: '🎂 Ծնունդդ շնորհավոր', jingle: '🔔 Զանգակները', tango: '💃 Արենի տանգոն' }, notes: null },
-  ru: { h1: 'Golden Piano 🎹', rec: '⏺ Записать', stop: '⏹ Стоп', playMine: '▶ Моя мелодия', learnBtn: '🎓 Учиться', listen: '👂 Послушать', choose: 'Выбери песню 👇', prog: (t, i, n) => t + ' — нота ' + i + '/' + n, bravo: t => '🏆 Браво! Ты выучил «' + t + '»', hint: 'Играй пальцем или клавишами: A S D F G H J K L ; — чёрные: W E T Y U O P', songs: { star: '🌟 Звёздочка', birthday: '🎂 С днём рождения', jingle: '🔔 Бубенцы', tango: '💃 Танго Арена' }, notes: ['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си','До²','До#²','Ре²','Ре#²','Ми²'] },
-  en: { h1: 'Golden Piano 🎹', rec: '⏺ Record', stop: '⏹ Stop', playMine: '▶ Play my melody', learnBtn: '🎓 Learn', listen: '👂 Listen', choose: 'Pick a song 👇', prog: (t, i, n) => t + ' — note ' + i + '/' + n, bravo: t => '🏆 Bravo! You learned “' + t + '”', hint: 'Play with fingers or keys: A S D F G H J K L ; — black keys: W E T Y U O P', songs: { star: '🌟 Twinkle', birthday: '🎂 Happy Birthday', jingle: '🔔 Jingle Bells', tango: '💃 Aren’s Tango' }, notes: ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Re²','Re#²','Mi²'] },
-  es: { h1: 'Golden Piano 🎹', rec: '⏺ Grabar', stop: '⏹ Parar', playMine: '▶ Mi melodía', learnBtn: '🎓 Aprender', listen: '👂 Escuchar', choose: 'Elige una canción 👇', prog: (t, i, n) => t + ' — nota ' + i + '/' + n, bravo: t => '🏆 ¡Bravo! Aprendiste «' + t + '»', hint: 'Toca con el dedo o el teclado: A S D F G H J K L ; — negras: W E T Y U O P', songs: { star: '🌟 Estrellita', birthday: '🎂 Cumpleaños feliz', jingle: '🔔 Cascabeles', tango: '💃 El tango de Aren' }, notes: ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Re²','Re#²','Mi²'] },
-  fr: { h1: 'Golden Piano 🎹', rec: '⏺ Enregistrer', stop: '⏹ Stop', playMine: '▶ Ma mélodie', learnBtn: '🎓 Apprendre', listen: '👂 Écouter', choose: 'Choisis une chanson 👇', prog: (t, i, n) => t + ' — note ' + i + '/' + n, bravo: t => '🏆 Bravo ! Tu as appris « ' + t + ' »', hint: 'Joue avec le doigt ou le clavier : A S D F G H J K L ; — noires : W E T Y U O P', songs: { star: '🌟 Petite étoile', birthday: '🎂 Joyeux anniversaire', jingle: '🔔 Vive le vent', tango: '💃 Le tango d’Aren' }, notes: ['Do','Do#','Ré','Ré#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Ré²','Ré#²','Mi²'] },
-  de: { h1: 'Golden Piano 🎹', rec: '⏺ Aufnehmen', stop: '⏹ Stopp', playMine: '▶ Meine Melodie', learnBtn: '🎓 Lernen', listen: '👂 Anhören', choose: 'Such dir ein Lied aus 👇', prog: (t, i, n) => t + ' — Note ' + i + '/' + n, bravo: t => '🏆 Bravo! Du hast „' + t + '“ gelernt', hint: 'Spiel mit dem Finger oder der Tastatur: A S D F G H J K L ; — schwarze: W E T Y U O P', songs: { star: '🌟 Funkel, funkel', birthday: '🎂 Zum Geburtstag viel Glück', jingle: '🔔 Jingle Bells', tango: '💃 Arens Tango' }, notes: ['C','C#','D','D#','E','F','F#','G','G#','A','A#','H','C²','C#²','D²','D#²','E²'] },
-  ja: { h1: 'Golden Piano 🎹', rec: '⏺ ろくおん', stop: '⏹ ストップ', playMine: '▶ 自分のメロディ', learnBtn: '🎓 レッスン', listen: '👂 きく', choose: '曲をえらんでね 👇', prog: (t, i, n) => t + ' — 音 ' + i + '/' + n, bravo: t => '🏆 ブラボー！「' + t + '」をおぼえたよ', hint: '指かキーボードでひこう：A S D F G H J K L ; — 黒鍵：W E T Y U O P', songs: { star: '🌟 きらきら星', birthday: '🎂 ハッピーバースデー', jingle: '🔔 ジングルベル', tango: '💃 アレンのタンゴ' }, notes: ['ド','ド#','レ','レ#','ミ','ファ','ファ#','ソ','ソ#','ラ','ラ#','シ','ド²','ド#²','レ²','レ#²','ミ²'] },
-  zh: { h1: 'Golden Piano 🎹', rec: '⏺ 录音', stop: '⏹ 停止', playMine: '▶ 我的旋律', learnBtn: '🎓 学琴', listen: '👂 听一听', choose: '选一首歌 👇', prog: (t, i, n) => t + ' — 第' + i + '/' + n + '个音', bravo: t => '🏆 太棒了！你学会了《' + t + '》', hint: '用手指或键盘弹：A S D F G H J K L ; — 黑键：W E T Y U O P', songs: { star: '🌟 小星星', birthday: '🎂 生日快乐', jingle: '🔔 铃儿响叮当', tango: '💃 阿伦的探戈' }, notes: ['1','1#','2','2#','3','4','4#','5','5#','6','6#','7','1²','1#²','2²','2#²','3²'] },
+  hy: { h1: 'Golden Piano 🎹', rec: '⏺ Ձայնագրել', stop: '⏹ Կանգնեցնել', playMine: '▶ Լսել իմ մեղեդին', learnBtn: '🎓 Սովորել', listen: '👂 Լսել', choose: 'Ընտրիր երգը 👇', prog: (t, i, n) => t + ' — նոտա ' + i + '/' + n, bravo: t => '🏆 Բրավո՜։ Դու սովորեցիր «' + t + '»', hint: 'Նվագիր մատով կամ ստեղնաշարով՝ A S D F G H J K L ; — սևերը՝ W E T Y U O P', songs: { star: '🌟 Աստղիկը', birthday: '🎂 Ծնունդդ շնորհավոր', jingle: '🔔 Զանգակները', tango: '💃 Արենի տանգոն', joy: '🎼 Ուրախության ձոնը', lamb: '🐑 Փոքրիկ գառնուկը' }, notes: null },
+  ru: { h1: 'Golden Piano 🎹', rec: '⏺ Записать', stop: '⏹ Стоп', playMine: '▶ Моя мелодия', learnBtn: '🎓 Учиться', listen: '👂 Послушать', choose: 'Выбери песню 👇', prog: (t, i, n) => t + ' — нота ' + i + '/' + n, bravo: t => '🏆 Браво! Ты выучил «' + t + '»', hint: 'Играй пальцем или клавишами: A S D F G H J K L ; — чёрные: W E T Y U O P', songs: { star: '🌟 Звёздочка', birthday: '🎂 С днём рождения', jingle: '🔔 Бубенцы', tango: '💃 Танго Арена', joy: '🎼 Ода к радости', lamb: '🐑 Ягнёнок Мэри' }, notes: ['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си','До²','До#²','Ре²','Ре#²','Ми²'] },
+  en: { h1: 'Golden Piano 🎹', rec: '⏺ Record', stop: '⏹ Stop', playMine: '▶ Play my melody', learnBtn: '🎓 Learn', listen: '👂 Listen', choose: 'Pick a song 👇', prog: (t, i, n) => t + ' — note ' + i + '/' + n, bravo: t => '🏆 Bravo! You learned “' + t + '”', hint: 'Play with fingers or keys: A S D F G H J K L ; — black keys: W E T Y U O P', songs: { star: '🌟 Twinkle', birthday: '🎂 Happy Birthday', jingle: '🔔 Jingle Bells', tango: '💃 Aren’s Tango', joy: '🎼 Ode to Joy', lamb: '🐑 Mary’s Little Lamb' }, notes: ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Re²','Re#²','Mi²'] },
+  es: { h1: 'Golden Piano 🎹', rec: '⏺ Grabar', stop: '⏹ Parar', playMine: '▶ Mi melodía', learnBtn: '🎓 Aprender', listen: '👂 Escuchar', choose: 'Elige una canción 👇', prog: (t, i, n) => t + ' — nota ' + i + '/' + n, bravo: t => '🏆 ¡Bravo! Aprendiste «' + t + '»', hint: 'Toca con el dedo o el teclado: A S D F G H J K L ; — negras: W E T Y U O P', songs: { star: '🌟 Estrellita', birthday: '🎂 Cumpleaños feliz', jingle: '🔔 Cascabeles', tango: '💃 El tango de Aren', joy: '🎼 Himno de la alegría', lamb: '🐑 El corderito' }, notes: ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Re²','Re#²','Mi²'] },
+  fr: { h1: 'Golden Piano 🎹', rec: '⏺ Enregistrer', stop: '⏹ Stop', playMine: '▶ Ma mélodie', learnBtn: '🎓 Apprendre', listen: '👂 Écouter', choose: 'Choisis une chanson 👇', prog: (t, i, n) => t + ' — note ' + i + '/' + n, bravo: t => '🏆 Bravo ! Tu as appris « ' + t + ' »', hint: 'Joue avec le doigt ou le clavier : A S D F G H J K L ; — noires : W E T Y U O P', songs: { star: '🌟 Petite étoile', birthday: '🎂 Joyeux anniversaire', jingle: '🔔 Vive le vent', tango: '💃 Le tango d’Aren', joy: '🎼 Hymne à la joie', lamb: '🐑 Le petit agneau' }, notes: ['Do','Do#','Ré','Ré#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Ré²','Ré#²','Mi²'] },
+  de: { h1: 'Golden Piano 🎹', rec: '⏺ Aufnehmen', stop: '⏹ Stopp', playMine: '▶ Meine Melodie', learnBtn: '🎓 Lernen', listen: '👂 Anhören', choose: 'Such dir ein Lied aus 👇', prog: (t, i, n) => t + ' — Note ' + i + '/' + n, bravo: t => '🏆 Bravo! Du hast „' + t + '“ gelernt', hint: 'Spiel mit dem Finger oder der Tastatur: A S D F G H J K L ; — schwarze: W E T Y U O P', songs: { star: '🌟 Funkel, funkel', birthday: '🎂 Zum Geburtstag viel Glück', jingle: '🔔 Jingle Bells', tango: '💃 Arens Tango', joy: '🎼 Ode an die Freude', lamb: '🐑 Marys Lämmchen' }, notes: ['C','C#','D','D#','E','F','F#','G','G#','A','A#','H','C²','C#²','D²','D#²','E²'] },
+  ja: { h1: 'Golden Piano 🎹', rec: '⏺ ろくおん', stop: '⏹ ストップ', playMine: '▶ 自分のメロディ', learnBtn: '🎓 レッスン', listen: '👂 きく', choose: '曲をえらんでね 👇', prog: (t, i, n) => t + ' — 音 ' + i + '/' + n, bravo: t => '🏆 ブラボー！「' + t + '」をおぼえたよ', hint: '指かキーボードでひこう：A S D F G H J K L ; — 黒鍵：W E T Y U O P', songs: { star: '🌟 きらきら星', birthday: '🎂 ハッピーバースデー', jingle: '🔔 ジングルベル', tango: '💃 アレンのタンゴ', joy: '🎼 よろこびのうた', lamb: '🐑 メリーさんのひつじ' }, notes: ['ド','ド#','レ','レ#','ミ','ファ','ファ#','ソ','ソ#','ラ','ラ#','シ','ド²','ド#²','レ²','レ#²','ミ²'] },
+  zh: { h1: 'Golden Piano 🎹', rec: '⏺ 录音', stop: '⏹ 停止', playMine: '▶ 我的旋律', learnBtn: '🎓 学琴', listen: '👂 听一听', choose: '选一首歌 👇', prog: (t, i, n) => t + ' — 第' + i + '/' + n + '个音', bravo: t => '🏆 太棒了！你学会了《' + t + '》', hint: '用手指或键盘弹：A S D F G H J K L ; — 黑键：W E T Y U O P', songs: { star: '🌟 小星星', birthday: '🎂 生日快乐', jingle: '🔔 铃儿响叮当', tango: '💃 阿伦的探戈', joy: '🎼 欢乐颂', lamb: '🐑 玛丽的小羊羔' }, notes: ['1','1#','2','2#','3','4','4#','5','5#','6','6#','7','1²','1#²','2²','2#²','3²'] },
 };
 const T = TRL[ggLang] || TRL.hy;
 
@@ -403,6 +405,26 @@ const SONGS = {
       [11, 14], [12, 14.5], [11, 15], [8, 16], [9, 17],
       // վերջին ակորդային շեշտը՝ տանգոյի «կետը»
       [4, 19], [9, 19.5], [9, 20.5],
+    ],
+  },
+  // «Ուրախության ձոնը» — Բեթհովենի 9-րդ սիմֆոնիայից․ ամենահայտնի մեղեդին աշխարհում
+  joy: {
+    beat: 360,
+    notes: [
+      [4, 0], [4, 1], [5, 2], [7, 3], [7, 4], [5, 5], [4, 6], [2, 7],
+      [0, 8], [0, 9], [2, 10], [4, 11], [4, 12], [2, 13.5], [2, 14.5],
+      [4, 17], [4, 18], [5, 19], [7, 20], [7, 21], [5, 22], [4, 23], [2, 24],
+      [0, 25], [0, 26], [2, 27], [4, 28], [2, 29], [0, 30.5], [0, 31.5],
+    ],
+  },
+  // «Փոքրիկ գառնուկը» (Mary Had a Little Lamb) — հեշտ է, սկսնակների սիրելին
+  lamb: {
+    beat: 380,
+    notes: [
+      [4, 0], [2, 1], [0, 2], [2, 3], [4, 4], [4, 5], [4, 6],
+      [2, 8], [2, 9], [2, 10], [4, 12], [7, 13], [7, 14],
+      [4, 16], [2, 17], [0, 18], [2, 19], [4, 20], [4, 21], [4, 22], [4, 23],
+      [2, 24], [2, 25], [4, 26], [2, 27], [0, 28],
     ],
   },
 };
