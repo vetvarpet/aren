@@ -20,12 +20,9 @@ and iterating on the code together with Claude, one change at a time.
 | [`tower`](./tower/) | 🏗️ Golden Tower (Աշտարակ) | Stack the swinging blocks: land off-center and the edge gets sliced off, the tower narrows |
 | [`moles`](./moles/) | 🦔 Golden Moles (Խլուրդներ) | Whack-a-mole: gold moles are +3, dynamite moles are −5, 30 seconds on the clock |
 | [`beat`](./beat/) | 🎵 Golden Beat (Ռիթմի խաղ) | Rhythm game: hit the falling notes on the line — songs from the piano, perfects build combos |
-| [`2048`](./2048/) | 🧊 Golden 2048 (2048) | The sliding-tile classic: merge equal numbers and reach the golden 2048 |
 | [`ninja`](./ninja/) | 🥷 Golden Ninja (Նինձյա ցատկ) | Wall-jumping ninja: tap to switch walls, dodge the spikes, the world speeds up |
-| [`mine`](./mine/) | ⛏️ Golden Mine (Ոսկե հանք) | Gold-miner: swing the hook, pull up gold and diamonds, reach the goal before time runs out |
 | [`men`](./men/) | 👨🏻 Golden Men (Անցի՛ր ճանապարհը) | Crossy-road: dodge the cars, hop across the river on floating logs, count your steps |
 | [`runner`](./runner/) | 🏃 Golden Runner (Տանիքների վազորդ) | Night rooftop runner: leap building to building, double jump, dodge the antennas |
-| [`asteroid`](./asteroid/) | 🪨 Golden Asteroid (Տիեզերաքարեր) | Asteroids: the golden ship auto-flies and auto-fires, you steer and smash rocks wave after wave |
 | [`pipes`](./pipes/) | 🚰 Golden Pipes (Խողովակներ) | Rotate-the-pipes puzzle: bring the water from the tap to the flower, levels grow bigger |
 | [`blocks`](./blocks/) | 🟨 Golden Blocks (Ընկնող բլոկներ) | Classic falling blocks with a ghost landing preview and golden line-clear flashes |
 | [`words`](./words/) | 🔤 Golden Words (Բառախաղ) | Armenian word game: guess the word from a picture and build it from scrambled letters, 40 levels |
