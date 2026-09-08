@@ -115,12 +115,17 @@ function tapAt(x, y) {
   const inHalf = x - side * half;
   steer(P[side], inHalf < half / 2 ? -1 : 1);
 }
+// Հեռախոսը հպումից հետո «մկնիկի» կրկնօրինակ իրադարձություն էլ է ուղարկում —
+// առանց այս պաշտպանության մեկ հպումը երկու գոտի էր տեղափոխում
+let lastTouchAt = 0;
 window.addEventListener('touchstart', (e) => {
   if (e.target.closest('a')) return;
+  lastTouchAt = Date.now();
   for (const t of e.changedTouches) tapAt(t.clientX, t.clientY);
 }, { passive: true });
 window.addEventListener('mousedown', (e) => {
   if (e.target.closest('a')) return;
+  if (Date.now() - lastTouchAt < 700) return;
   tapAt(e.clientX, e.clientY);
 });
 window.addEventListener('keydown', (e) => {
@@ -168,7 +173,7 @@ function step() {
     }
     // Բախումներ
     for (const o of p.obs) {
-      if (!o.hit && Math.abs(o.d - p.dist - H * 0.16) < 26 && o.lane === Math.round(p.x)) {
+      if (!o.hit && Math.abs(o.d - p.dist) < 30 && o.lane === Math.round(p.x)) {
         o.hit = true;
         if (o.kind === 'cone') { p.stun = 48; p.spin = 1; sCrash(); }
         else { p.stun = 30; p.spin = 1.4; sSlip(); }
