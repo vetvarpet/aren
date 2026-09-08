@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Golden Museum 🏛️</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  :root {
+    --bg: #12122b;
+    --card: #1d1d3f;
+    --ink: #eef0ff;
+    --dim: #9a9ec7;
+    --accent: #ffd166;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    background:
+      radial-gradient(circle at 50% 0%, rgba(255, 209, 102, 0.08), transparent 50%),
+      var(--bg);
+    color: var(--ink);
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    min-height: 100dvh;
+    touch-action: manipulation;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 20px 18px 60px; }
+  nav { padding-bottom: 22px; }
+  nav a {
+    color: var(--ink);
+    text-decoration: none;
+    background: var(--card);
+    border: 2px solid #33356b;
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+  }
+  .hero { text-align: center; padding: 8px 0 8px; }
+  .hero h1 { color: var(--accent); font-size: clamp(1.4rem, 5.5vw, 2rem); }
+  .hero p { color: var(--dim); margin-top: 8px; line-height: 1.6; }
+  .quiet { text-align: center; color: #6a6f96; font-size: 0.8rem; padding: 6px 0 24px; letter-spacing: 0.14em; }
+
+  /* ——— Ցուցանմուշները՝ պատվանդանների վրա ——— */
+  .hall { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+  .exhibit {
+    background: var(--card);
+    border: 2px solid #33356b;
+    border-radius: 18px;
+    padding: 20px 16px 16px;
+    text-align: center;
+  }
+  .exhibit svg { width: 110px; height: 110px; display: block; margin: 0 auto; }
+  .pedestal {
+    width: 130px;
+    height: 16px;
+    margin: -4px auto 12px;
+    background: linear-gradient(#4a4470, #33356b);
+    border-radius: 4px 4px 8px 8px;
+  }
+  .exhibit h2 { color: var(--accent); font-size: 1.02rem; }
+  .years { color: #6a6f96; font-size: 0.75rem; margin: 3px 0 8px; letter-spacing: 0.08em; }
+  .epitaph { color: var(--dim); font-size: 0.85rem; line-height: 1.55; font-style: italic; }
+
+  .foot { text-align: center; color: var(--dim); font-size: 0.85rem; margin-top: 30px; line-height: 1.7; }
+  .foot b { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav><a href="../">← Golden Games</a></nav>
+
+  <div class="hero">
+    <h1>🏛️ Golden Museum</h1>
+    <p>Այստեղ հանգչում են խաղերը, որ եղել են… ու գնացել։<br>Խաղահրապարակի կանոն №1՝ պահիր միայն այն, ինչ սիրում ես։</p>
+  </div>
+  <p class="quiet">· ԽՆԴՐՈՒՄ ԵՆՔ ՊԱՀՊԱՆԵԼ ԼՌՈՒԹՅՈՒՆ ·</p>
+
+  <div class="hall">
+
+    <div class="exhibit">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <rect x="47" y="18" width="4" height="60" fill="#8a5a30"/>
+        <path d="M51 20 L88 30 L51 44 Z" fill="#23263a" stroke="#4a4f72" stroke-width="2"/>
+        <circle cx="66" cy="30" r="4.5" fill="#f5eede"/>
+        <path d="M60 37 L72 37 M62 40 L70 40" stroke="#f5eede" stroke-width="2" stroke-linecap="round"/>
+        <path d="M30 78 Q50 70 70 78" stroke="#33356b" stroke-width="3" fill="none"/>
+      </svg>
+      <div class="pedestal"></div>
+      <h2>Կապիտան Սևբեղ ☠️</h2>
+      <div class="years">10 ՕԳՈՍՏՈՍԻ — 28 ՕԳՈՍՏՈՍԻ, 2026</div>
+      <p class="epitaph">Ծովահեն-զրուցակիցը, որ ամեն ինչ գիտեր ու գանձերի քարտեզներ էր բաժանում։ Նավարկեց դեպի մայրամուտ։</p>
+    </div>
+
+    <div class="exhibit">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <rect x="28" y="42" width="44" height="34" rx="6" fill="#ffd166" stroke="#c98a12" stroke-width="3"/>
+        <path d="M35 42 V32 a15 15 0 0 1 30 0 V42" fill="none" stroke="#c98a12" stroke-width="6"/>
+        <circle cx="50" cy="56" r="5" fill="#5c4308"/>
+        <rect x="47.5" y="58" width="5" height="10" rx="2" fill="#5c4308"/>
+      </svg>
+      <div class="pedestal"></div>
+      <h2>Գաղտնի ակումբ 🔐</h2>
+      <div class="years">13 ՕԳՈՍՏՈՍԻ — 28 ՕԳՈՍՏՈՍԻ, 2026</div>
+      <p class="epitaph">Գաղտնաբառով դուռ ու Կեսարի ծածկագրեր։ Այնքան գաղտնի էր, որ մի օր ինքն էլ անհետացավ։</p>
+    </div>
+
+    <div class="exhibit">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M22 70 Q30 55 45 60 T70 50 Q80 44 78 34" fill="none" stroke="#6ee7b7" stroke-width="10" stroke-linecap="round"/>
+        <circle cx="78" cy="30" r="8" fill="#6ee7b7"/>
+        <circle cx="76" cy="28" r="1.8" fill="#12122b"/>
+        <circle cx="30" cy="80" r="6" fill="#ffd166" stroke="#c98a12" stroke-width="2"/>
+        <path d="M30 74 q1.5 -3 4 -3" stroke="#2f855a" stroke-width="2" fill="none"/>
+      </svg>
+      <div class="pedestal"></div>
+      <h2>Օձուկ 🐍</h2>
+      <div class="years">14 ՕԳՈՍՏՈՍԻ — 28 ՕԳՈՍՏՈՍԻ, 2026</div>
+      <p class="epitaph">Ուտում էր ոսկե խնձորներ ու երկարում։ Երկարեց, երկարեց… ու սողաց թանգարան։</p>
+    </div>
+
+    <div class="exhibit">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <rect x="26" y="24" width="48" height="10" rx="3" fill="#8f7ae0"/>
+        <path d="M30 34 h40 v8 a20 14 0 0 1 -40 0 Z" fill="#b8a3ea"/>
+        <path d="M36 60 L64 60 L60 78 L40 78 Z" fill="#5d9cec"/>
+        <circle cx="50" cy="52" r="7" fill="#f2f5fa"/>
+        <path d="M43 84 h14" stroke="#33356b" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div class="pedestal"></div>
+      <h2>Նկարչության բլոկնոտ 🖌️</h2>
+      <div class="years">28 ՕԳՈՍՏՈՍԻ, 2026 · ապրեց մի քանի ժամ</div>
+      <p class="epitaph">Վրձիններ, գույներ, ջնջախորգ։ Եկավ, նկարեց իր ինքնանկարը ու գնաց։</p>
+    </div>
+
+    <div class="exhibit">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="46" r="26" fill="#f5913e" stroke="#7c3a0e" stroke-width="3"/>
+        <path d="M24 46 h52 M50 20 v52 M32 27 q18 19 0 38 M68 27 q-18 19 0 38" stroke="#7c3a0e" stroke-width="2.5" fill="none"/>
+        <path d="M38 84 Q50 76 62 84" stroke="#33356b" stroke-width="3" fill="none"/>
+      </svg>
+      <div class="pedestal"></div>
+      <h2>Golden Basket 🏀</h2>
+      <div class="years">6 ՍԵՊՏԵՄԲԵՐԻ — 7 ՍԵՊՏԵՄԲԵՐԻ, 2026</div>
+      <p class="epitaph">Զամբյուղը շարժվում էր, քամին փչում էր, կրակե գնդակն էլ վառվում էր։ Բայց տնօրենի սիրտը չնվաճեց։ Ապրեց ուղիղ մեկ օր։</p>
+    </div>
+
+    <div class="exhibit">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M32 30 L26 14 L40 22 Z" fill="#f0b429"/>
+        <path d="M68 30 L74 14 L60 22 Z" fill="#f0b429"/>
+        <circle cx="50" cy="42" r="22" fill="#ffd166"/>
+        <circle cx="42" cy="39" r="3" fill="#3a2a17"/>
+        <circle cx="58" cy="39" r="3" fill="#3a2a17"/>
+        <path d="M47 48 L53 48 L50 52 Z" fill="#e07a9a"/>
+        <ellipse cx="50" cy="74" rx="20" ry="14" fill="#f0b429"/>
+        <ellipse cx="50" cy="77" rx="11" ry="8" fill="#fff3c4"/>
+      </svg>
+      <div class="pedestal"></div>
+      <h2>Golden Pet 🐹</h2>
+      <div class="years">7 ՍԵՊՏԵՄԲԵՐԻ — 8 ՍԵՊՏԵՄԲԵՐԻ, 2026</div>
+      <p class="epitaph">Ոսկե փիսոն, որ մյաու էր անում, պարում էր ու թագ վաստակում։ Դեռ սպասում է, որ մի օր իրեն ետ կանչեն։ Մենք հավատում ենք։</p>
+    </div>
+
+    <div class="exhibit">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <rect x="24" y="20" width="52" height="62" rx="5" fill="#fdf8ec" stroke="#c98a12" stroke-width="3"/>
+        <path d="M32 34 h36 M32 44 h36 M32 54 h24" stroke="#c98a12" stroke-width="2.5" stroke-dasharray="3 4"/>
+        <circle cx="62" cy="66" r="11" fill="none" stroke="#c98a12" stroke-width="2.5" stroke-dasharray="4 3"/>
+        <path d="M57 66 l3.5 3.5 L67 61" stroke="#c98a12" stroke-width="2.5" fill="none"/>
+      </svg>
+      <div class="pedestal"></div>
+      <h2>Վկայականների էջը 📜</h2>
+      <div class="years">7 ՍԵՊՏԵՄԲԵՐԻ — 8 ՍԵՊՏԵՄԲԵՐԻ, 2026</div>
+      <p class="epitaph">Ոսկե շրջանակ, կնիք ու երկու ստորագրություն։ Իր գործը արեց՝ վկայականը հանձնվեց, էջը՝ պատմությանը։</p>
+    </div>
+
+    <div class="exhibit">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M30 62 L30 34 L42 46 L50 30 L58 46 L70 34 L70 62 Z" fill="#ffd166" stroke="#c98a12" stroke-width="3" stroke-linejoin="round"/>
+        <circle cx="50" cy="50" r="4" fill="#e63946"/>
+        <path d="M26 74 h48" stroke="#33356b" stroke-width="4" stroke-linecap="round"/>
+        <path d="M74 26 l3 3 M80 20 l-3 3" stroke="#6a6f96" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div class="pedestal"></div>
+      <h2>Գաղտնի կնիք-անակնկալը 👑</h2>
+      <div class="years">6 ՍԵՊՏԵՄԲԵՐԻ, 2026 · ապրեց մի երեկո</div>
+      <p class="epitaph">Լոգոյին 5 անգամ հպվողին ոսկե անձրև էր սպասում։ Տնօրենը գտավ գաղտնիքը… ու հրամայեց ջնջել։ Ամենակարճ կյանքն ամենափայլունն էր։</p>
+    </div>
+
+  </div>
+
+  <p class="foot">
+    Ոչ մի նախագիծ իսկապես չի մեռնում —<br>
+    բոլորը ապրում են <b>git</b>-ի հիշողության մեջ, ու մեկ բառը բավական է ետ բերելու 🕊️
+  </p>
+
+</div>
+
+<script>
+// Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Drums 🥁</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #eef0ff;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 13px;
+    padding: 62px 12px 20px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  h1 { font-size: 1.15rem; color: #ffd76e; }
+  .sub { color: #9a9ec7; font-size: 0.85rem; text-align: center; }
+
+  .machine {
+    background: #1d1d3f;
+    border: 2px solid #33356b;
+    border-radius: 18px;
+    padding: 10px;
+    max-width: 96vw;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .track { display: flex; align-items: center; gap: 8px; }
+  .track .name { width: 32px; text-align: center; font-size: 19px; }
+  .steps { display: flex; gap: 4px; }
+  .cell {
+    width: min(8vw, 36px);
+    height: min(8vw, 36px);
+    border-radius: 9px;
+    border: 2px solid #33356b;
+    background: #12122b;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.08s;
+  }
+  .cell:active { transform: scale(0.9); }
+  .cell.on { background: var(--c, #ffd166); border-color: transparent; }
+  .cell.now { box-shadow: 0 0 0 2.5px #6ee7b7; }
+  .t0 .cell.on { --c: #ff7b6b; }
+  .t1 .cell.on { --c: #ffd166; }
+  .t2 .cell.on { --c: #6ee7b7; }
+  .t3 .cell.on { --c: #6ec5ff; }
+
+  .row2 { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; width: min(94vw, 420px); }
+  button.big {
+    flex: 1;
+    min-width: 120px;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: #2e2410;
+    background: #ffd166;
+    border: 0;
+    border-radius: 14px;
+    padding: 14px 10px;
+    cursor: pointer;
+  }
+  button.dim {
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: #eef0ff;
+    background: #1d1d3f;
+    border: 2px solid #33356b;
+    border-radius: 999px;
+    padding: 9px 16px;
+    cursor: pointer;
+  }
+  .tempo { display: flex; align-items: center; gap: 10px; color: #9a9ec7; font-size: 0.85rem; width: min(94vw, 420px); justify-content: center; }
+  input[type=range] { width: 55%; accent-color: #ffd166; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<h1>Golden Drums 🥁</h1>
+<p class="sub" id="sub"></p>
+
+<div class="machine" id="machine"></div>
+
+<div class="tempo">
+  <span>🐢</span>
+  <input id="tempo" type="range" min="80" max="170" value="110">
+  <span>🐇</span>
+  <span id="bpm"></span>
+</div>
+
+<div class="row2">
+  <button class="big" id="playBtn"></button>
+</div>
+<div class="row2">
+  <button class="dim" id="demo1"></button>
+  <button class="dim" id="demo2"></button>
+  <button class="dim" id="clearBtn"></button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN DRUMS 🥁 — քո սեփական ռիթմ-մեքենան
+//  Վառիր վանդակները, սեղմիր «Նվագել» ու ռիթմդ կդառնա երաժշտություն։
+//  Ամեն ինչ ինքնաբերաբար պահվում է հեռախոսումդ։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { sub: 'Վառիր վանդակները ու միացրու ռիթմդ', play: '▶ Նվագել', stop: '⏹ Կանգնեցնել', clear: '🧹 Մաքրել', demo1: '🎵 Ռոք', demo2: '🎵 Դիսկո' },
+  ru: { sub: 'Зажигай клетки и включай свой ритм', play: '▶ Играть', stop: '⏹ Стоп', clear: '🧹 Очистить', demo1: '🎵 Рок', demo2: '🎵 Диско' },
+  en: { sub: 'Light up the cells and start your beat', play: '▶ Play', stop: '⏹ Stop', clear: '🧹 Clear', demo1: '🎵 Rock', demo2: '🎵 Disco' },
+  es: { sub: 'Enciende las casillas y arranca tu ritmo', play: '▶ Tocar', stop: '⏹ Parar', clear: '🧹 Limpiar', demo1: '🎵 Rock', demo2: '🎵 Disco' },
+  fr: { sub: 'Allume les cases et lance ton rythme', play: '▶ Jouer', stop: '⏹ Stop', clear: '🧹 Effacer', demo1: '🎵 Rock', demo2: '🎵 Disco' },
+  de: { sub: 'Schalte die Felder an und starte deinen Beat', play: '▶ Spielen', stop: '⏹ Stopp', clear: '🧹 Leeren', demo1: '🎵 Rock', demo2: '🎵 Disco' },
+  ja: { sub: 'マスをつけて、自分のリズムをスタート', play: '▶ ならす', stop: '⏹ ストップ', clear: '🧹 けす', demo1: '🎵 ロック', demo2: '🎵 ディスコ' },
+  zh: { sub: '点亮格子，开动你的节奏', play: '▶ 播放', stop: '⏹ 停止', clear: '🧹 清空', demo1: '🎵 摇滚', demo2: '🎵 迪斯科' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('sub').textContent = T.sub;
+document.getElementById('clearBtn').textContent = T.clear;
+document.getElementById('demo1').textContent = T.demo1;
+document.getElementById('demo2').textContent = T.demo2;
+
+const STEPS = 8;
+const INSTR = ['🥁', '👏', '🎩', '🔔'];   // բաս-թմբուկ, ծափ, հայ-հեթ, զանգակ
+let grid = [
+  [1, 0, 0, 0, 1, 0, 0, 0],
+  [0, 0, 1, 0, 0, 0, 1, 0],
+  [1, 1, 1, 1, 1, 1, 1, 1],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+];
+try {
+  const raw = localStorage.getItem('aren-drums-pattern');
+  if (raw) {
+    const p = JSON.parse(raw);
+    if (Array.isArray(p) && p.length === 4) grid = p;
+  }
+} catch (e) {}
+function saveGrid() {
+  try { localStorage.setItem('aren-drums-pattern', JSON.stringify(grid)); } catch (e) {}
+}
+
+// ——— Ձայները՝ իսկական թմբուկների սինթեզ ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function noiseBuf() {
+  const b = actx.createBuffer(1, actx.sampleRate * 0.3, actx.sampleRate);
+  const d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  return b;
+}
+let noise = null;
+function playInstr(i) {
+  if (!actx) return;
+  const t = actx.currentTime;
+  if (i === 0) {   // բաս-թմբուկ. ցածր ձայն, որ արագ իջնում է
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(150, t);
+    o.frequency.exponentialRampToValueAtTime(45, t + 0.16);
+    g.gain.setValueAtTime(0.55, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t); o.stop(t + 0.25);
+  } else if (i === 1) {   // ծափ. աղմուկի կարճ պոռթկում
+    if (!noise) noise = noiseBuf();
+    const s = actx.createBufferSource(), g = actx.createGain(), f = actx.createBiquadFilter();
+    s.buffer = noise;
+    f.type = 'bandpass'; f.frequency.value = 1600; f.Q.value = 1.2;
+    g.gain.setValueAtTime(0.4, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+    s.connect(f); f.connect(g); g.connect(actx.destination);
+    s.start(t); s.stop(t + 0.18);
+  } else if (i === 2) {   // հայ-հեթ. բարձր կարճ շշշ
+    if (!noise) noise = noiseBuf();
+    const s = actx.createBufferSource(), g = actx.createGain(), f = actx.createBiquadFilter();
+    s.buffer = noise;
+    f.type = 'highpass'; f.frequency.value = 6500;
+    g.gain.setValueAtTime(0.22, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+    s.connect(f); f.connect(g); g.connect(actx.destination);
+    s.start(t); s.stop(t + 0.08);
+  } else {   // զանգակ
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'triangle';
+    o.frequency.value = 1560;
+    g.gain.setValueAtTime(0.2, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t); o.stop(t + 0.42);
+  }
+}
+
+// ——— Ցանցը էկրանին ———
+const machine = document.getElementById('machine');
+const cells = [];
+for (let r = 0; r < 4; r++) {
+  const row = document.createElement('div');
+  row.className = 'track t' + r;
+  const nm = document.createElement('div');
+  nm.className = 'name';
+  nm.textContent = INSTR[r];
+  row.appendChild(nm);
+  const st = document.createElement('div');
+  st.className = 'steps';
+  cells.push([]);
+  for (let c = 0; c < STEPS; c++) {
+    const b = document.createElement('button');
+    b.className = 'cell' + (grid[r][c] ? ' on' : '');
+    b.addEventListener('click', () => {
+      initAudio();
+      grid[r][c] = grid[r][c] ? 0 : 1;
+      b.classList.toggle('on', !!grid[r][c]);
+      if (grid[r][c]) playInstr(r);   // վառելիս լսում ես ձայնը
+      saveGrid();
+    });
+    st.appendChild(b);
+    cells[r].push(b);
+  }
+  row.appendChild(st);
+  machine.appendChild(row);
+}
+
+// ——— Նվագարկիչը ———
+let playing = false, step = 0, timer = null, bpm = 110;
+try { bpm = Number(localStorage.getItem('aren-drums-bpm') || 110) || 110; } catch (e) {}
+const tempoInp = document.getElementById('tempo');
+tempoInp.value = bpm;
+function showBpm() { document.getElementById('bpm').textContent = bpm; }
+showBpm();
+tempoInp.addEventListener('input', () => {
+  bpm = Number(tempoInp.value);
+  showBpm();
+  try { localStorage.setItem('aren-drums-bpm', bpm); } catch (e) {}
+  if (playing) { clearInterval(timer); timer = setInterval(tick, stepMs()); }
+});
+function stepMs() { return 60000 / bpm / 2; }   // ութերորդական նոտաներ
+
+function tick() {
+  cells.forEach(row => row.forEach(b => b.classList.remove('now')));
+  for (let r = 0; r < 4; r++) {
+    cells[r][step].classList.add('now');
+    if (grid[r][step]) playInstr(r);
+  }
+  step = (step + 1) % STEPS;
+}
+
+const playBtn = document.getElementById('playBtn');
+function setPlayLabel() { playBtn.textContent = playing ? T.stop : T.play; }
+setPlayLabel();
+playBtn.addEventListener('click', () => {
+  initAudio();
+  playing = !playing;
+  if (playing) {
+    step = 0;
+    tick();
+    timer = setInterval(tick, stepMs());
+  } else {
+    clearInterval(timer);
+    cells.forEach(row => row.forEach(b => b.classList.remove('now')));
+  }
+  setPlayLabel();
+});
+
+// ——— Պատրաստի ռիթմեր ու մաքրում ———
+function setGrid(g) {
+  grid = g.map(r => r.slice());
+  for (let r = 0; r < 4; r++) for (let c = 0; c < STEPS; c++) {
+    cells[r][c].classList.toggle('on', !!grid[r][c]);
+  }
+  saveGrid();
+}
+document.getElementById('demo1').addEventListener('click', () => setGrid([
+  [1, 0, 0, 1, 1, 0, 0, 0],
+  [0, 0, 1, 0, 0, 0, 1, 0],
+  [1, 1, 1, 1, 1, 1, 1, 1],
+  [0, 0, 0, 0, 0, 0, 0, 1],
+]));
+document.getElementById('demo2').addEventListener('click', () => setGrid([
+  [1, 0, 1, 0, 1, 0, 1, 0],
+  [0, 0, 1, 0, 0, 0, 1, 1],
+  [0, 1, 0, 1, 0, 1, 0, 1],
+  [1, 0, 0, 0, 0, 1, 0, 0],
+]));
+document.getElementById('clearBtn').addEventListener('click', () => setGrid([
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+]));
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք (սլայդերին չենք կպնում)
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  if (e.target.closest('input')) return;
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>
+</body>
+</html>

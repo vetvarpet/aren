@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Blocks 🟨</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #eef0ff;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 52px 10px 12px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  .hud {
+    display: flex;
+    gap: 14px;
+    font-size: 0.82rem;
+    color: #9a9ec7;
+    align-items: center;
+  }
+  .hud b { color: #ffd76e; font-size: 1rem; }
+  .mid { display: flex; gap: 10px; align-items: flex-start; }
+  canvas { display: block; border-radius: 12px; }
+  #board { border: 3px solid #33356b; background: #12122b; }
+  .side { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+  .side .cap { color: #9a9ec7; font-size: 0.7rem; }
+  #next { border: 2px solid #33356b; background: #12122b; }
+
+  .pads { display: flex; gap: 9px; margin-top: 2px; }
+  .pads button {
+    width: 64px;
+    height: 58px;
+    border-radius: 14px;
+    border: 2px solid #6a5f9e;
+    background: #3d3560;
+    color: #eef0ff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .pads button:active { transform: scale(0.93); background: #4d4477; }
+  #msg { min-height: 1.3em; color: #6ee7b7; font-weight: bold; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<div class="hud">
+  <span id="hScore"></span>
+  <span id="hLines"></span>
+  <span id="hBest"></span>
+</div>
+<div class="mid">
+  <canvas id="board"></canvas>
+  <div class="side">
+    <div class="cap" id="nextCap"></div>
+    <canvas id="next" width="72" height="72"></canvas>
+  </div>
+</div>
+<div id="msg"></div>
+<div class="pads">
+  <button id="pL">◀</button>
+  <button id="pR2">⟳</button>
+  <button id="pR">▶</button>
+  <button id="pD">⬇</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN BLOCKS 🟨 — ընկնող բլոկների դասականը
+//  Լցրու ամբողջ տողը՝ այն կվերանա ու միավոր կտա։
+//  ◀ ▶ շարժել, ⟳ պտտել, ⬇ գցել ներքև։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { score: 'Միավոր՝ ', lines: 'Տող՝ ', best: 'Ռեկորդ՝ ', next: 'Հաջորդը', tap: 'Հպիր տախտակին՝ սկսելու', over: 'Խաղն ավարտվեց', again: 'Հպիր՝ նորից', rec: 'ՆՈՐ ՌԵԿՈՐԴ 🏆' },
+  ru: { score: 'Очки: ', lines: 'Линии: ', best: 'Рекорд: ', next: 'Далее', tap: 'Коснись поля, чтобы начать', over: 'Игра окончена', again: 'Коснись, чтобы сыграть ещё', rec: 'НОВЫЙ РЕКОРД 🏆' },
+  en: { score: 'Score: ', lines: 'Lines: ', best: 'Best: ', next: 'Next', tap: 'Tap the board to start', over: 'Game over', again: 'Tap to play again', rec: 'NEW RECORD 🏆' },
+  es: { score: 'Puntos: ', lines: 'Líneas: ', best: 'Récord: ', next: 'Sigue', tap: 'Toca el tablero para empezar', over: 'Fin del juego', again: 'Toca para jugar otra vez', rec: 'NUEVO RÉCORD 🏆' },
+  fr: { score: 'Points : ', lines: 'Lignes : ', best: 'Record : ', next: 'Suivant', tap: 'Touche le plateau pour commencer', over: 'Partie terminée', again: 'Touche pour rejouer', rec: 'NOUVEAU RECORD 🏆' },
+  de: { score: 'Punkte: ', lines: 'Reihen: ', best: 'Rekord: ', next: 'Nächster', tap: 'Tippe aufs Brett zum Starten', over: 'Spiel vorbei', again: 'Tippe für noch eine Runde', rec: 'NEUER REKORD 🏆' },
+  ja: { score: 'スコア：', lines: 'ライン：', best: 'ベスト：', next: 'つぎ', tap: 'ばんをタップでスタート', over: 'ゲームオーバー', again: 'タップでもういっかい', rec: '新記録 🏆' },
+  zh: { score: '得分：', lines: '行数：', best: '纪录：', next: '下一个', tap: '点棋盘开始', over: '游戏结束', again: '点一下再来一局', rec: '新纪录 🏆' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('nextCap').textContent = T.next;
+
+const COLS = 10, ROWS = 18;
+const bcv = document.getElementById('board');
+const bctx = bcv.getContext('2d');
+const ncv = document.getElementById('next');
+const nctx = ncv.getContext('2d');
+let CS = 22;
+function layout() {
+  const maxH = innerHeight - 260;
+  const maxW = innerWidth - 110;
+  CS = Math.floor(Math.min(maxH / ROWS, maxW / COLS, 26));
+  bcv.width = COLS * CS;
+  bcv.height = ROWS * CS;
+}
+layout();
+window.addEventListener('resize', layout);
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sMove = () => tone(240, 0.04, 'square', 0.05);
+const sRot = () => tone(380, 0.05, 'square', 0.06);
+const sLock = () => tone(160, 0.07, 'square', 0.09);
+const sLine = n => [523, 659, 784, 1047].slice(0, 1 + n).forEach((f, k) => tone(f, 0.16, 'triangle', 0.16, k * 0.07));
+const sOver = () => [330, 262, 196, 147].forEach((f, k) => tone(f, 0.22, 'triangle', 0.15, k * 0.14));
+const sRec = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.2, 'triangle', 0.18, k * 0.1));
+
+// ——— Ֆիգուրները ———
+const SHAPES = [
+  { c: '#6ec5ff', m: [[1, 1, 1, 1]] },                 // I
+  { c: '#ffd166', m: [[1, 1], [1, 1]] },               // O
+  { c: '#b794f4', m: [[0, 1, 0], [1, 1, 1]] },         // T
+  { c: '#6ee7b7', m: [[0, 1, 1], [1, 1, 0]] },         // S
+  { c: '#ff7b6b', m: [[1, 1, 0], [0, 1, 1]] },         // Z
+  { c: '#f5a04f', m: [[1, 0, 0], [1, 1, 1]] },         // J
+  { c: '#ec87c0', m: [[0, 0, 1], [1, 1, 1]] },         // L
+];
+
+let state = 'menu', endedAt = 0;
+let field, cur, next, score, lines, level, dropMs, dropTimer = 0, flash = [], flashT = 0;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-blocks-best') || 0); } catch (e) {}
+
+function newPiece() {
+  const s = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+  return { m: s.m.map(r => r.slice()), c: s.c, x: Math.floor((COLS - s.m[0].length) / 2), y: -s.m.length + 1 };
+}
+function newGame() {
+  field = [];
+  for (let r = 0; r < ROWS; r++) field.push(new Array(COLS).fill(null));
+  cur = newPiece();
+  next = newPiece();
+  score = 0; lines = 0; level = 1;
+  dropMs = 700;
+  dropTimer = 0;
+  flash = [];
+  state = 'play';
+  hud();
+  document.getElementById('msg').textContent = '';
+}
+
+function hud() {
+  document.getElementById('hScore').innerHTML = T.score + '<b>' + score + '</b>';
+  document.getElementById('hLines').innerHTML = T.lines + '<b>' + lines + '</b>';
+  document.getElementById('hBest').innerHTML = best > 0 ? T.best + '<b>' + best + '</b>' : '';
+}
+
+function fits(m, x, y) {
+  for (let r = 0; r < m.length; r++) for (let c = 0; c < m[0].length; c++) {
+    if (!m[r][c]) continue;
+    const nx = x + c, ny = y + r;
+    if (nx < 0 || nx >= COLS || ny >= ROWS) return false;
+    if (ny >= 0 && field[ny][nx]) return false;
+  }
+  return true;
+}
+function rotate(m) {   // ժամացույցի սլաքով
+  const R = m[0].length, C = m.length;
+  const n = [];
+  for (let r = 0; r < R; r++) {
+    n.push([]);
+    for (let c = 0; c < C; c++) n[r].push(m[C - 1 - c][r]);
+  }
+  return n;
+}
+
+function move(dx) {
+  if (state !== 'play' || flash.length) return;
+  if (fits(cur.m, cur.x + dx, cur.y)) { cur.x += dx; sMove(); }
+}
+function turn() {
+  if (state !== 'play' || flash.length) return;
+  const m = rotate(cur.m);
+  for (const off of [0, -1, 1, -2, 2]) {   // պատի մոտ պտտելիս մի քիչ հրում ենք
+    if (fits(m, cur.x + off, cur.y)) { cur.m = m; cur.x += off; sRot(); return; }
+  }
+}
+function hardDrop() {
+  if (state !== 'play' || flash.length) return;
+  while (fits(cur.m, cur.x, cur.y + 1)) cur.y++;
+  lock();
+}
+function stepDown() {
+  if (fits(cur.m, cur.x, cur.y + 1)) cur.y++;
+  else lock();
+}
+
+function lock() {
+  sLock();
+  for (let r = 0; r < cur.m.length; r++) for (let c = 0; c < cur.m[0].length; c++) {
+    if (cur.m[r][c]) {
+      const ny = cur.y + r;
+      if (ny < 0) { gameOver(); return; }   // տեղավորվելու տեղ չմնաց
+      field[ny][cur.x + c] = cur.c;
+    }
+  }
+  // Լիքը տողերը գտնում ենք
+  flash = [];
+  for (let r = 0; r < ROWS; r++) {
+    if (field[r].every(v => v)) flash.push(r);
+  }
+  if (flash.length) {
+    flashT = 1;
+    sLine(flash.length);
+    score += [0, 100, 300, 600, 1000][flash.length] * level;
+    lines += flash.length;
+    level = 1 + Math.floor(lines / 8);
+    dropMs = Math.max(130, 700 - (level - 1) * 70);
+  }
+  cur = next;
+  next = newPiece();
+  if (!fits(cur.m, cur.x, cur.y)) { gameOver(); return; }
+  hud();
+}
+
+function gameOver() {
+  state = 'over';
+  endedAt = Date.now();
+  sOver();
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('aren-blocks-best', best); } catch (e) {}
+    setTimeout(sRec, 700);
+    document.getElementById('msg').textContent = T.rec;
+  }
+  hud();
+}
+
+// ——— Ղեկավարումը ———
+document.getElementById('pL').addEventListener('pointerdown', () => { initAudio(); move(-1); });
+document.getElementById('pR').addEventListener('pointerdown', () => { initAudio(); move(1); });
+document.getElementById('pR2').addEventListener('pointerdown', () => { initAudio(); turn(); });
+document.getElementById('pD').addEventListener('pointerdown', () => { initAudio(); hardDrop(); });
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'ArrowLeft') move(-1);
+  if (e.code === 'ArrowRight') move(1);
+  if (e.code === 'ArrowUp') turn();
+  if (e.code === 'ArrowDown') { e.preventDefault(); if (state === 'play') stepDown(); }
+  if (e.code === 'Space') { e.preventDefault(); state === 'play' ? hardDrop() : tapBoard(); }
+});
+function tapBoard() {
+  if (state === 'menu') { initAudio(); newGame(); return; }
+  if (state === 'over' && Date.now() - endedAt > 1100) { initAudio(); newGame(); }
+}
+bcv.addEventListener('pointerdown', tapBoard);
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// ——— Խաղի ժամացույցը ———
+let lastT = performance.now();
+function stepGame(now) {
+  const dt = now - lastT;
+  lastT = now;
+  if (state === 'play') {
+    if (flash.length) {
+      flashT -= dt / 350;
+      if (flashT <= 0) {
+        // ջնջում ենք փայլող տողերը
+        for (const r of flash) {
+          field.splice(r, 1);
+          field.unshift(new Array(COLS).fill(null));
+        }
+        flash = [];
+        hud();
+      }
+    } else {
+      dropTimer += dt;
+      if (dropTimer >= dropMs) {
+        dropTimer = 0;
+        stepDown();
+      }
+    }
+  }
+}
+
+// ——— Նկարելը ———
+function cell(x, y, c, g) {
+  g.fillStyle = c;
+  g.fillRect(x + 1, y + 1, CS - 2, CS - 2);
+  g.fillStyle = 'rgba(255,255,255,0.3)';
+  g.fillRect(x + 1, y + 1, CS - 2, 3);
+  g.fillStyle = 'rgba(0,0,0,0.22)';
+  g.fillRect(x + 1, y + CS - 4, CS - 2, 3);
+}
+function draw() {
+  bctx.fillStyle = '#12122b';
+  bctx.fillRect(0, 0, bcv.width, bcv.height);
+  bctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  for (let c = 1; c < COLS; c++) {
+    bctx.beginPath(); bctx.moveTo(c * CS, 0); bctx.lineTo(c * CS, bcv.height); bctx.stroke();
+  }
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    if (field[r] && field[r][c]) cell(c * CS, r * CS, field[r][c], bctx);
+  }
+  // փայլող ջնջվող տողերը՝ ոսկեգույն
+  if (flash.length && Math.floor(Date.now() / 80) % 2) {
+    for (const r of flash) {
+      bctx.fillStyle = '#ffd166';
+      bctx.fillRect(0, r * CS, bcv.width, CS);
+    }
+  }
+  if (state === 'play' && cur && !flash.length) {
+    // ուրվականը՝ ցույց է տալիս, թե ուր կընկնի
+    let gy = cur.y;
+    while (fits(cur.m, cur.x, gy + 1)) gy++;
+    for (let r = 0; r < cur.m.length; r++) for (let c = 0; c < cur.m[0].length; c++) {
+      if (cur.m[r][c] && gy + r >= 0) {
+        bctx.strokeStyle = 'rgba(255,255,255,0.22)';
+        bctx.strokeRect(( cur.x + c) * CS + 2, (gy + r) * CS + 2, CS - 4, CS - 4);
+      }
+    }
+    for (let r = 0; r < cur.m.length; r++) for (let c = 0; c < cur.m[0].length; c++) {
+      if (cur.m[r][c] && cur.y + r >= 0) cell((cur.x + c) * CS, (cur.y + r) * CS, cur.c, bctx);
+    }
+  }
+  if (state === 'menu' || state === 'over') {
+    bctx.fillStyle = 'rgba(12,10,26,0.72)';
+    bctx.fillRect(0, 0, bcv.width, bcv.height);
+    bctx.fillStyle = state === 'menu' ? '#ffd166' : '#eef0ff';
+    bctx.font = 'bold ' + Math.min(20, bcv.width * 0.085) + 'px "Noto Sans Armenian", Arial';
+    bctx.textAlign = 'center';
+    if (state === 'over') {
+      bctx.fillText(T.over, bcv.width / 2, bcv.height * 0.4);
+      bctx.fillStyle = '#ffd166';
+      bctx.font = 'bold ' + Math.min(34, bcv.width * 0.15) + 'px Arial';
+      bctx.fillText(score, bcv.width / 2, bcv.height * 0.49);
+      if (Date.now() - endedAt > 1100 && Math.floor(Date.now() / 600) % 2) {
+        bctx.fillStyle = '#6ee7b7';
+        bctx.font = Math.min(13, bcv.width * 0.06) + 'px "Noto Sans Armenian", Arial';
+        bctx.fillText(T.again, bcv.width / 2, bcv.height * 0.58);
+      }
+    } else if (Math.floor(Date.now() / 600) % 2) {
+      bctx.fillText(T.tap, bcv.width / 2, bcv.height * 0.47);
+    }
+  }
+  // հաջորդ ֆիգուրը
+  nctx.fillStyle = '#12122b';
+  nctx.fillRect(0, 0, ncv.width, ncv.height);
+  if (next && state === 'play') {
+    const s = 14;
+    const ox = (ncv.width - next.m[0].length * s) / 2;
+    const oy = (ncv.height - next.m.length * s) / 2;
+    for (let r = 0; r < next.m.length; r++) for (let c = 0; c < next.m[0].length; c++) {
+      if (next.m[r][c]) {
+        nctx.fillStyle = next.c;
+        nctx.fillRect(ox + c * s + 1, oy + r * s + 1, s - 2, s - 2);
+      }
+    }
+  }
+}
+
+function loop(now) {
+  stepGame(now || performance.now());
+  draw();
+  requestAnimationFrame(loop);
+}
+field = [];
+for (let r = 0; r < ROWS; r++) field.push(new Array(COLS).fill(null));
+hud();
+document.getElementById('msg').textContent = '';
+loop();
+</script>
+</body>
+</html>

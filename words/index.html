@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Words 🔤</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #eef0ff;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 62px 14px 20px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    overflow: hidden;
+  }
+  h1 { font-size: 1.15rem; color: #ffd76e; }
+  .lvl { color: #9a9ec7; font-size: 0.85rem; }
+  .pic { font-size: 64px; line-height: 1; filter: drop-shadow(0 6px 14px rgba(0,0,0,0.4)); }
+
+  .slots { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; min-height: 52px; }
+  .slot {
+    width: 44px;
+    height: 50px;
+    border-radius: 10px;
+    background: #1d1d3f;
+    border: 2px solid #33356b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    font-weight: bold;
+    color: #ffd166;
+  }
+  .slots.good .slot { border-color: #6ee7b7; color: #6ee7b7; }
+  .slots.bad { animation: shake 0.4s; }
+  .slots.bad .slot { border-color: #ff7b6b; color: #ff7b6b; }
+  @keyframes shake {
+    20% { transform: translateX(-8px); } 40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); } 80% { transform: translateX(5px); }
+  }
+
+  .letters { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 380px; }
+  .letters button {
+    width: 52px;
+    height: 54px;
+    border-radius: 12px;
+    border: 2px solid #6a5f9e;
+    background: #3d3560;
+    color: #eef0ff;
+    font-family: inherit;
+    font-size: 1.4rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.1s;
+  }
+  .letters button:active { transform: scale(0.92); }
+  .letters button:disabled { opacity: 0.25; }
+
+  #undo {
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: #eef0ff;
+    background: #1d1d3f;
+    border: 2px solid #33356b;
+    border-radius: 999px;
+    padding: 9px 22px;
+    cursor: pointer;
+  }
+  #msg { min-height: 1.4em; color: #6ee7b7; font-weight: bold; text-align: center; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<h1>Golden Words 🔤</h1>
+<div class="lvl" id="lvlTxt"></div>
+<div class="pic" id="pic"></div>
+<div class="slots" id="slots"></div>
+<div class="letters" id="letters"></div>
+<div id="msg"></div>
+<button id="undo"></button>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN WORDS 🔤 — նկարից գուշակիր հայերեն բառը
+//  ու հավաքիր այն խառնված տառերից։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { lvl: n => 'Բառ ' + n + '/40', hint: 'Հավաքիր բառը տառերից 👇', yes: 'Ճի՛շտ է 🎉', no: 'Չէ՛, փորձիր նորից', undo: '⌫ Ջնջել վերջին տառը', done: 'ԴՈՒ ԱՆՑԱՐ ԲՈԼՈՐ 40 ԲԱՌԸ 🏆', again: 'Սկսել սկզբից 🔄' },
+  ru: { lvl: n => 'Слово ' + n + '/40', hint: 'Собери армянское слово 👇', yes: 'Верно! 🎉', no: 'Нет, попробуй ещё', undo: '⌫ Стереть букву', done: 'ТЫ ПРОШЁЛ ВСЕ 40 СЛОВ 🏆', again: 'Начать сначала 🔄' },
+  en: { lvl: n => 'Word ' + n + '/40', hint: 'Build the Armenian word 👇', yes: 'Correct! 🎉', no: 'Nope, try again', undo: '⌫ Erase a letter', done: 'YOU FINISHED ALL 40 WORDS 🏆', again: 'Start over 🔄' },
+  es: { lvl: n => 'Palabra ' + n + '/40', hint: 'Forma la palabra armenia 👇', yes: '¡Correcto! 🎉', no: 'No, inténtalo otra vez', undo: '⌫ Borrar letra', done: '¡PASASTE LAS 40 PALABRAS! 🏆', again: 'Empezar de nuevo 🔄' },
+  fr: { lvl: n => 'Mot ' + n + '/40', hint: 'Forme le mot arménien 👇', yes: 'Exact ! 🎉', no: 'Non, réessaie', undo: '⌫ Effacer une lettre', done: 'TU AS FINI LES 40 MOTS 🏆', again: 'Recommencer 🔄' },
+  de: { lvl: n => 'Wort ' + n + '/40', hint: 'Baue das armenische Wort 👇', yes: 'Richtig! 🎉', no: 'Nein, versuch es nochmal', undo: '⌫ Buchstaben löschen', done: 'DU HAST ALLE 40 WÖRTER GESCHAFFT 🏆', again: 'Von vorn 🔄' },
+  ja: { lvl: n => 'ことば ' + n + '/40', hint: 'アルメニア語のことばを作ろう 👇', yes: 'せいかい！🎉', no: 'ちがうよ、もう一回', undo: '⌫ 1文字けす', done: '40このことば、ぜんぶクリア！🏆', again: 'さいしょから 🔄' },
+  zh: { lvl: n => '单词 ' + n + '/40', hint: '拼出亚美尼亚语单词 👇', yes: '对啦！🎉', no: '不对，再试试', undo: '⌫ 删掉一个字母', done: '40个单词全部通关！🏆', again: '重新开始 🔄' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('undo').textContent = T.undo;
+
+// ——— Բառերը՝ հեշտից դժվար ———
+const WORDS = [
+  ['ԿԱՏՈՒ', '🐱'], ['ՇՈՒՆ', '🐶'], ['ԱՐԵՎ', '☀️'], ['ՏՈՒՆ', '🏠'], ['ՁՈՒԿ', '🐟'],
+  ['ԾԱՌ', '🌳'], ['ԳԻՐՔ', '📖'], ['ԵՐԳ', '🎵'], ['ՊԱՐ', '💃'], ['ՓԻՂ', '🐘'],
+  ['ԱՍՏՂ', '⭐'], ['ՈՍԿԻ', '🥇'], ['ՆԿԱՐ', '🖼️'], ['ՁՄԵՌ', '❄️'], ['ԳՆԴԱԿ', '⚽'],
+  ['ԼՈՒՍԻՆ', '🌙'], ['ԾԱՂԻԿ', '🌸'], ['ԽՆՁՈՐ', '🍎'], ['ԲԱՆԱՆ', '🍌'], ['ԳԱՎԱԹ', '🏆'],
+  ['ՄԱՏԻՏ', '✏️'], ['ԴՊՐՈՑ', '🎒'], ['ԾԻԾԱՂ', '😂'], ['ԸՆԿԵՐ', '🤝'], ['ԿԱՊԻԿ', '🐵'],
+  ['ԱՐՋՈՒԿ', '🧸'], ['ՀՐԹԻՌ', '🚀'], ['ԱՌՅՈՒԾ', '🦁'], ['ԾԻԱԾԱՆ', '🌈'], ['ՄԵՔԵՆԱ', '🚗'],
+  ['ԹՌՉՈՒՆ', '🐦'], ['ԴԵԼՖԻՆ', '🐬'], ['ԹԱԳԱՎՈՐ', '👑'], ['ՆԱՊԱՍՏԱԿ', '🐰'], ['ՊԱՂՊԱՂԱԿ', '🍦'],
+  ['ԴԱՇՆԱՄՈՒՐ', '🎹'], ['ԺԱՄԱՑՈՒՅՑ', '⏰'], ['ԱՐԿՂ', '📦'], ['ԿԻԹԱՌ', '🎸'], ['ՀԱՅԱՍՏԱՆ', '🇦🇲'],
+];
+const DECOYS = 'ԱԲԳԴԵԶԹԺԼԽԿՀՄՆՈՊՍՎՏՐՖ';
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sTap = () => tone(520 + Math.random() * 80, 0.06, 'square', 0.07);
+const sYes = () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.18, 'triangle', 0.16, k * 0.09));
+const sNo = () => { tone(220, 0.15, 'sawtooth', 0.1); tone(180, 0.2, 'sawtooth', 0.08, 0.12); };
+const sBig = () => [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, k) => tone(f, 0.22, 'triangle', 0.18, k * 0.11));
+
+// ——— Խաղի վիճակը ———
+let level = 1;
+try { level = Math.min(40, Math.max(1, Number(localStorage.getItem('aren-words-level') || 1))); } catch (e) {}
+let word = '', picked = [], letters = [], busy = false, finished = false;
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startWord() {
+  busy = false;
+  const [w, pic] = WORDS[level - 1];
+  word = w;
+  picked = [];
+  letters = w.split('');
+  // 20-րդ բառից մի «խաբող» ավելորդ տառ ենք խառնում
+  if (level > 20) {
+    let d;
+    do { d = DECOYS[Math.floor(Math.random() * DECOYS.length)]; } while (w.includes(d));
+    letters.push(d);
+  }
+  shuffle(letters);
+  document.getElementById('pic').textContent = pic;
+  document.getElementById('lvlTxt').textContent = T.lvl(level);
+  document.getElementById('msg').textContent = T.hint;
+  render();
+}
+
+function render() {
+  const slots = document.getElementById('slots');
+  slots.className = 'slots';
+  slots.innerHTML = '';
+  for (let i = 0; i < word.length; i++) {
+    const d = document.createElement('div');
+    d.className = 'slot';
+    d.textContent = picked[i] !== undefined ? letters[picked[i]] : '';
+    slots.appendChild(d);
+  }
+  const lets = document.getElementById('letters');
+  lets.innerHTML = '';
+  letters.forEach((ch, i) => {
+    const b = document.createElement('button');
+    b.textContent = ch;
+    b.disabled = picked.includes(i) || busy;
+    b.addEventListener('click', () => pick(i));
+    lets.appendChild(b);
+  });
+}
+
+function pick(i) {
+  if (busy || picked.includes(i) || picked.length >= word.length) return;
+  initAudio();
+  sTap();
+  picked.push(i);
+  render();
+  if (picked.length === word.length) check();
+}
+
+function check() {
+  const guess = picked.map(i => letters[i]).join('');
+  const slots = document.getElementById('slots');
+  busy = true;
+  if (guess === word) {
+    slots.classList.add('good');
+    sYes();
+    document.getElementById('msg').textContent = T.yes;
+    if (level >= 40) {
+      finished = true;
+      setTimeout(() => {
+        sBig();
+        document.getElementById('pic').textContent = '🏆';
+        document.getElementById('msg').textContent = T.done;
+        document.getElementById('undo').textContent = T.again;
+        document.getElementById('slots').innerHTML = '';
+        document.getElementById('letters').innerHTML = '';
+        busy = false;
+      }, 1100);
+      try { localStorage.setItem('aren-words-level', 40); } catch (e) {}
+    } else {
+      level++;
+      try { localStorage.setItem('aren-words-level', level); } catch (e) {}
+      setTimeout(startWord, 1200);
+    }
+  } else {
+    slots.classList.add('bad');
+    sNo();
+    document.getElementById('msg').textContent = T.no;
+    setTimeout(() => { picked = []; busy = false; render(); document.getElementById('msg').textContent = T.hint; }, 900);
+  }
+}
+
+document.getElementById('undo').addEventListener('click', () => {
+  if (finished) {   // «Սկսել սկզբից»
+    finished = false;
+    level = 1;
+    try { localStorage.setItem('aren-words-level', 1); } catch (e) {}
+    document.getElementById('undo').textContent = T.undo;
+    startWord();
+    return;
+  }
+  if (busy || !picked.length) return;
+  initAudio();
+  picked.pop();
+  render();
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+startWord();
+</script>
+</body>
+</html>

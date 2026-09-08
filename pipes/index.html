@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Pipes 🚰</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #122438; }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif;
+    color: #eef0ff;
+    padding: 60px 10px 16px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  h1 { font-size: 1.15rem; color: #ffd76e; }
+  .lvl { color: #9ec7e8; font-size: 0.9rem; }
+  canvas { display: block; border-radius: 18px; touch-action: manipulation; }
+  #msg { min-height: 1.4em; color: #6ee7b7; font-weight: bold; }
+  #reset {
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: #eef0ff;
+    background: #1d3a56;
+    border: 2px solid #33567b;
+    border-radius: 999px;
+    padding: 9px 22px;
+    cursor: pointer;
+  }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<h1>Golden Pipes 🚰</h1>
+<div class="lvl" id="lvlTxt"></div>
+<canvas id="cv"></canvas>
+<div id="msg"></div>
+<button id="reset"></button>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN PIPES 🚰 — պտտիր խողովակները,
+//  որ ջուրը ծորակից հասնի ծաղիկին։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { lvl: n => 'Մակարդակ ' + n, hint: 'Հպիր խողովակին՝ պտտելու', win: 'Ջուրը հասա՜վ 🌸', reset: '🔄 Խառնել նորից' },
+  ru: { lvl: n => 'Уровень ' + n, hint: 'Нажми на трубу, чтобы повернуть', win: 'Вода дошла! 🌸', reset: '🔄 Перемешать' },
+  en: { lvl: n => 'Level ' + n, hint: 'Tap a pipe to rotate it', win: 'The water made it! 🌸', reset: '🔄 Shuffle again' },
+  es: { lvl: n => 'Nivel ' + n, hint: 'Toca una tubería para girarla', win: '¡El agua llegó! 🌸', reset: '🔄 Mezclar otra vez' },
+  fr: { lvl: n => 'Niveau ' + n, hint: 'Touche un tuyau pour le tourner', win: 'L’eau est arrivée ! 🌸', reset: '🔄 Remélanger' },
+  de: { lvl: n => 'Level ' + n, hint: 'Tippe ein Rohr an, um es zu drehen', win: 'Das Wasser ist da! 🌸', reset: '🔄 Neu mischen' },
+  ja: { lvl: n => 'レベル ' + n, hint: 'パイプをタップして回そう', win: 'お水がとどいた！🌸', reset: '🔄 もう一回まぜる' },
+  zh: { lvl: n => '第 ' + n + ' 关', hint: '点一下水管让它转', win: '水流到啦！🌸', reset: '🔄 重新打乱' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('reset').textContent = T.reset;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sTurn = () => tone(300 + Math.random() * 60, 0.05, 'square', 0.07);
+const sFlow = () => [520, 430, 360, 300].forEach((f, k) => tone(f, 0.12, 'sine', 0.1, k * 0.07));
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.22, 'triangle', 0.18, k * 0.1));
+
+// ——— Խաղի վիճակը ———
+// Ամեն վանդակ՝ open[4] (վերև, աջ, ներքև, ձախ) + rot (որքան է պտտված)
+let level = 1;
+try { level = Math.max(1, Number(localStorage.getItem('aren-pipes-level') || 1)); } catch (e) {}
+let N = 4, grid = [], srcRow = 0, endRow = 0, wet = [], solved = false, solvedAt = 0, bloom = 0;
+let CELL = 60, PAD = 34, animCell = null;
+
+function sizeFor(lv) { return Math.min(7, 4 + Math.floor((lv - 1) / 3)); }
+
+// open զանգվածը պտտում ենք ժամացույցի սլաքով
+function rotOpen(open, times) {
+  let o = open.slice();
+  for (let k = 0; k < times; k++) o = [o[3], o[0], o[1], o[2]];
+  return o;
+}
+
+function newLevel() {
+  N = sizeFor(level);
+  solved = false; bloom = 0;
+  grid = [];
+  for (let r = 0; r < N; r++) {
+    grid.push([]);
+    for (let c = 0; c < N; c++) grid[r].push(null);
+  }
+
+  // Ճանապարհ ենք սարքում ձախ պատից աջ պատ՝ պատահական ոլորաններով
+  srcRow = Math.floor(Math.random() * N);
+  let r = srcRow, c = 0;
+  const path = [[r, c]];
+  const used = new Set([r + ',' + c]);
+  while (c < N - 1) {
+    const opts = [];
+    opts.push([r, c + 1]);
+    if (r > 0 && !used.has((r - 1) + ',' + c) && Math.random() < 0.6) opts.push([r - 1, c]);
+    if (r < N - 1 && !used.has((r + 1) + ',' + c) && Math.random() < 0.6) opts.push([r + 1, c]);
+    const [nr, nc] = opts[Math.floor(Math.random() * opts.length)];
+    r = nr; c = nc;
+    path.push([r, c]);
+    used.add(r + ',' + c);
+  }
+  endRow = r;
+
+  // Ճանապարհի վանդակներին տալիս ենք ճիշտ խողովակներ
+  // ուղղություններ. 0=վերև, 1=աջ, 2=ներքև, 3=ձախ
+  function dirTo(a, b) {
+    if (b[0] < a[0]) return 0;
+    if (b[1] > a[1]) return 1;
+    if (b[0] > a[0]) return 2;
+    return 3;
+  }
+  for (let i = 0; i < path.length; i++) {
+    const open = [false, false, false, false];
+    if (i === 0) open[3] = true;                       // ծորակից է մտնում
+    else open[(dirTo(path[i], path[i - 1]))] = true;
+    if (i === path.length - 1) open[1] = true;         // ծաղիկին է դուրս գալիս
+    else open[(dirTo(path[i], path[i + 1]))] = true;
+    grid[path[i][0]][path[i][1]] = { open, rot: 0, onPath: true };
+  }
+  // Մնացած վանդակները՝ պատահական խողովակներ (ուղիղ կամ անկյուն)
+  for (let rr = 0; rr < N; rr++) for (let cc = 0; cc < N; cc++) {
+    if (!grid[rr][cc]) {
+      const straight = Math.random() < 0.5;
+      const open = straight ? [true, false, true, false] : [true, true, false, false];
+      grid[rr][cc] = { open, rot: 0, onPath: false };
+    }
+  }
+  // Խառնում ենք. ամեն վանդակ պատահական պտտում ենք
+  for (let rr = 0; rr < N; rr++) for (let cc = 0; cc < N; cc++) {
+    const t = grid[rr][cc];
+    t.rot = Math.floor(Math.random() * 4);
+    t.cur = rotOpen(t.open, t.rot);
+  }
+  // Եթե պատահաբար արդեն լուծված է՝ մի վանդակ ծուռ ենք դնում
+  if (checkFlow().won) {
+    const [pr, pc] = path[Math.floor(path.length / 2)];
+    grid[pr][pc].rot = (grid[pr][pc].rot + 1) % 4;
+    grid[pr][pc].cur = rotOpen(grid[pr][pc].open, grid[pr][pc].rot);
+  }
+  computeWet();
+  layout();
+  document.getElementById('lvlTxt').textContent = T.lvl(level);
+  document.getElementById('msg').textContent = T.hint;
+}
+
+// Ջուրը ո՞ր վանդակներին է հասնում (լայնական որոնում ծորակից)
+function checkFlow() {
+  const reach = [];
+  for (let r = 0; r < N; r++) reach.push(new Array(N).fill(false));
+  const q = [];
+  if (grid[srcRow][0].cur[3]) { reach[srcRow][0] = true; q.push([srcRow, 0]); }
+  const D = [[-1, 0, 0, 2], [0, 1, 1, 3], [1, 0, 2, 0], [0, -1, 3, 1]];
+  while (q.length) {
+    const [r, c] = q.pop();
+    for (const [dr, dc, mine, theirs] of D) {
+      const nr = r + dr, nc = c + dc;
+      if (nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
+      if (reach[nr][nc]) continue;
+      if (grid[r][c].cur[mine] && grid[nr][nc].cur[theirs]) {
+        reach[nr][nc] = true;
+        q.push([nr, nc]);
+      }
+    }
+  }
+  const won = reach[endRow][N - 1] && grid[endRow][N - 1].cur[1];
+  return { reach, won };
+}
+function computeWet() {
+  const f = checkFlow();
+  wet = f.reach;
+  return f.won;
+}
+
+function layout() {
+  const maxW = Math.min(innerWidth * 0.94, 440);
+  const maxH = innerHeight - 235;
+  CELL = Math.floor(Math.min((maxW - PAD * 2) / N, maxH / N));
+  cv.width = CELL * N + PAD * 2;
+  cv.height = CELL * N + 8;
+}
+window.addEventListener('resize', () => { layout(); });
+
+// ——— Հպումը. գտնում ենք վանդակը ու պտտում ———
+function tapAt(x, y) {
+  if (solved) return;
+  const c = Math.floor((x - PAD) / CELL);
+  const r = Math.floor((y - 4) / CELL);
+  if (r < 0 || r >= N || c < 0 || c >= N) return;
+  initAudio();
+  const t = grid[r][c];
+  t.rot = (t.rot + 1) % 4;
+  t.cur = rotOpen(t.open, t.rot);
+  t.spin = 1;   // պտույտի անիմացիա
+  sTurn();
+  const won = computeWet();
+  if (won) {
+    solved = true;
+    solvedAt = Date.now();
+    sFlow();
+    setTimeout(sWin, 350);
+    document.getElementById('msg').textContent = T.win;
+    level++;
+    try { localStorage.setItem('aren-pipes-level', level); } catch (e) {}
+    setTimeout(newLevel, 1700);
+  }
+}
+cv.addEventListener('pointerdown', (e) => {
+  const rc = cv.getBoundingClientRect();
+  tapAt((e.clientX - rc.left) * (cv.width / rc.width), (e.clientY - rc.top) * (cv.height / rc.height));
+});
+document.getElementById('reset').addEventListener('click', () => { initAudio(); newLevel(); });
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// ——— Նկարելը ———
+function drawPipe(x, y, t, isWet) {
+  const half = CELL / 2;
+  const w = Math.max(9, CELL * 0.24);
+  ctx.save();
+  ctx.translate(x + half, y + half);
+  if (t.spin > 0) {   // թարմ պտույտը մի պահ երևում է
+    ctx.rotate(-t.spin * Math.PI / 2);
+    t.spin = Math.max(0, t.spin - 0.18);
+  }
+  ctx.lineCap = 'round';
+  // խողովակի «ստվերը»
+  ctx.strokeStyle = '#0d1b2c';
+  ctx.lineWidth = w + 6;
+  strokePipe(t, half);
+  // խողովակը
+  ctx.strokeStyle = isWet ? '#4aa8e8' : '#8a93a8';
+  ctx.lineWidth = w;
+  strokePipe(t, half);
+  // փայլը
+  ctx.strokeStyle = isWet ? 'rgba(190,230,255,0.6)' : 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = Math.max(2.5, w * 0.28);
+  strokePipe(t, half);
+  ctx.restore();
+}
+function strokePipe(t, half) {
+  const dirs = [[0, -half], [half, 0], [0, half], [-half, 0]];
+  ctx.beginPath();
+  for (let d = 0; d < 4; d++) {
+    if (t.cur[d]) {
+      ctx.moveTo(0, 0);
+      ctx.lineTo(dirs[d][0], dirs[d][1]);
+    }
+  }
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(0, 0, ctx.lineWidth * 0.5, 0, Math.PI * 2);
+  ctx.fillStyle = ctx.strokeStyle;
+  ctx.fill();
+}
+
+function draw() {
+  ctx.fillStyle = '#122438';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+  // տախտակը
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    const x = PAD + c * CELL, y = 4 + r * CELL;
+    ctx.fillStyle = (r + c) % 2 ? '#1a3049' : '#1d3654';
+    ctx.fillRect(x + 1.5, y + 1.5, CELL - 3, CELL - 3);
+  }
+  // ծորակը՝ ձախից
+  const sy = 4 + srcRow * CELL + CELL / 2;
+  ctx.fillStyle = '#ffd166';
+  ctx.fillRect(2, sy - 7, PAD - 4, 14);
+  ctx.fillRect(10, sy - 16, 8, 10);
+  ctx.fillStyle = '#c98a12';
+  ctx.fillRect(6, sy - 19, 16, 5);
+  // ծաղիկը՝ աջից
+  const ey = 4 + endRow * CELL + CELL / 2;
+  const fx = cv.width - PAD / 2;
+  ctx.strokeStyle = '#2f855a';
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.moveTo(fx, ey + 16);
+  ctx.lineTo(fx, ey);
+  ctx.stroke();
+  const petals = 5, pr = solved ? 8 + Math.min(4, bloom) : 5;
+  if (solved) bloom += 0.08;
+  for (let k = 0; k < petals; k++) {
+    const a = k / petals * Math.PI * 2 + bloom * 0.3;
+    ctx.fillStyle = solved ? '#ff8fa3' : '#8a6d8f';
+    ctx.beginPath();
+    ctx.ellipse(fx + Math.cos(a) * pr * 0.9, ey - 4 + Math.sin(a) * pr * 0.9, pr * 0.62, pr * 0.42, a, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#ffd166';
+  ctx.beginPath();
+  ctx.arc(fx, ey - 4, pr * 0.42, 0, Math.PI * 2);
+  ctx.fill();
+  // խողովակները
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    drawPipe(PAD + c * CELL, 4 + r * CELL, grid[r][c], wet[r] && wet[r][c]);
+  }
+  requestAnimationFrame(draw);
+}
+
+newLevel();
+draw();
+</script>

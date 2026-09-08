@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Race 2 🏁</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; }
+  html, body { height: 100%; overflow: hidden; background: #1a2a1a; }
+  canvas { display: block; touch-action: none; }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN RACE 2 🏁 — երկու մեքենա, մեկ հեռախոս
+//  Ձախ կեսը 1-ին խաղացողինն է, աջը՝ 2-րդի։
+//  Հպիր քո կեսի ձախ/աջ մասին՝ գոտի փոխելու։
+//  Ով առաջինը հասնի վերջնագծին՝ նա էլ չեմպիոն է։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+// Կանվասի վրա էմոջի չենք գրում — նկարում ենք ձեռքով
+const TRL = {
+  hy: { p1: 'ԽԱՂԱՑՈՂ 1', p2: 'ԽԱՂԱՑՈՂ 2', how1: 'Ամեն մեկը իր կեսում է', how2: 'Հպիր ձախ/աջ՝ գոտի փոխելու', how3: 'Կոներից ու յուղից զգույշ', tap: 'Հպեք երկուսով՝ սկսելու', win: n => 'ԽԱՂԱՑՈՂ ' + n + '-Ը ՀԱՂԹԵ՜Ց', again: 'Հպիր՝ ռևանշի' },
+  ru: { p1: 'ИГРОК 1', p2: 'ИГРОК 2', how1: 'У каждого своя половина', how2: 'Жми влево/вправо, чтобы менять полосу', how3: 'Берегись конусов и масла', tap: 'Коснитесь вдвоём, чтобы начать', win: n => 'ИГРОК ' + n + ' ПОБЕДИЛ!', again: 'Коснись для реванша' },
+  en: { p1: 'PLAYER 1', p2: 'PLAYER 2', how1: 'Each player owns one half', how2: 'Tap left/right to change lanes', how3: 'Watch out for cones and oil', tap: 'Both tap to start', win: n => 'PLAYER ' + n + ' WINS!', again: 'Tap for a rematch' },
+  es: { p1: 'JUGADOR 1', p2: 'JUGADOR 2', how1: 'Cada uno tiene su mitad', how2: 'Toca izquierda/derecha para cambiar de carril', how3: 'Cuidado con conos y aceite', tap: 'Toquen los dos para empezar', win: n => '¡GANA EL JUGADOR ' + n + '!', again: 'Toca para la revancha' },
+  fr: { p1: 'JOUEUR 1', p2: 'JOUEUR 2', how1: 'Chacun a sa moitié', how2: 'Touche gauche/droite pour changer de voie', how3: 'Gare aux cônes et à l’huile', tap: 'Touchez à deux pour commencer', win: n => 'LE JOUEUR ' + n + ' GAGNE !', again: 'Touche pour la revanche' },
+  de: { p1: 'SPIELER 1', p2: 'SPIELER 2', how1: 'Jeder hat seine Hälfte', how2: 'Tippe links/rechts für den Spurwechsel', how3: 'Vorsicht vor Hütchen und Öl', tap: 'Beide tippen zum Starten', win: n => 'SPIELER ' + n + ' GEWINNT!', again: 'Tippe für die Revanche' },
+  ja: { p1: 'プレイヤー1', p2: 'プレイヤー2', how1: 'はんぶんずつ自分のコース', how2: '左右タップでレーンチェンジ', how3: 'コーンとオイルに気をつけて', tap: 'ふたりでタップしてスタート', win: n => 'プレイヤー' + n + 'のかち！', again: 'タップでもういっかい' },
+  zh: { p1: '玩家1', p2: '玩家2', how1: '一人一半屏幕', how2: '点左/右来变道', how3: '小心锥桶和油渍', tap: '两人一起点开始', win: n => '玩家' + n + '获胜！', again: '点一下再来一局' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W = 0, H = 0;
+function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sLane = () => tone(300, 0.05, 'square', 0.06);
+const sCrash = () => { tone(140, 0.25, 'sawtooth', 0.18); tone(90, 0.3, 'sawtooth', 0.12, 0.05); };
+const sSlip = () => [500, 400, 300].forEach((f, k) => tone(f, 0.08, 'sine', 0.09, k * 0.06));
+const sCnt = () => tone(440, 0.15, 'square', 0.12);
+const sGo = () => tone(880, 0.3, 'square', 0.14);
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.22, 'triangle', 0.18, k * 0.1));
+
+// ——— Խաղի վիճակը ———
+const GOAL = 3600;              // ուղու երկարությունը
+let state = 'menu', endedAt = 0, count = 0, countAt = 0, winner = 0;
+let P;                          // երկու խաղացողները
+let frame = 0;
+
+function makePlayer(side, color) {
+  return { side, color, lane: 1, x: 1, dist: 0, stun: 0, spin: 0, obs: [], nextObs: 300 };
+}
+function newGame() {
+  P = [makePlayer(0, ['#e63946', '#b52734']), makePlayer(1, ['#5d9cec', '#3f7ec4'])];
+  winner = 0;
+  count = 3;
+  countAt = performance.now();
+  sCnt();
+  state = 'count';
+}
+
+// Կեսի երկրաչափությունը
+function laneX(side, lane) {
+  const half = W / 2;
+  const x0 = side * half;
+  const roadW = half - 22;
+  return x0 + 11 + roadW * (0.5 + lane) / 3;
+}
+
+function steer(p, dir) {
+  if (state !== 'play' || p.stun > 0) return;
+  const nl = p.lane + dir;
+  if (nl < 0 || nl > 2) return;
+  p.lane = nl;
+  sLane();
+}
+
+function tapAt(x, y) {
+  initAudio();
+  if (state === 'menu') { newGame(); return; }
+  if (state === 'over') {
+    if (Date.now() - endedAt > 1200) newGame();
+    return;
+  }
+  if (state !== 'play') return;
+  const side = x < W / 2 ? 0 : 1;
+  const half = W / 2;
+  const inHalf = x - side * half;
+  steer(P[side], inHalf < half / 2 ? -1 : 1);
+}
+window.addEventListener('touchstart', (e) => {
+  if (e.target.closest('a')) return;
+  for (const t of e.changedTouches) tapAt(t.clientX, t.clientY);
+}, { passive: true });
+window.addEventListener('mousedown', (e) => {
+  if (e.target.closest('a')) return;
+  tapAt(e.clientX, e.clientY);
+});
+window.addEventListener('keydown', (e) => {
+  if (state === 'menu' || state === 'over') { tapAt(0, 0); return; }
+  if (e.code === 'KeyA') steer(P[0], -1);
+  if (e.code === 'KeyD') steer(P[0], 1);
+  if (e.code === 'ArrowLeft') steer(P[1], -1);
+  if (e.code === 'ArrowRight') steer(P[1], 1);
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+function step() {
+  frame++;
+  if (state === 'count') {
+    const el = (performance.now() - countAt) / 1000;
+    const c = 3 - Math.floor(el);
+    if (c !== count && c > 0) { count = c; sCnt(); }
+    if (el >= 3) { state = 'play'; sGo(); }
+    return;
+  }
+  if (state !== 'play') return;
+
+  for (const p of P) {
+    // Արագությունը. խփվել ես՝ կանգնում ես մի պահ
+    const sp = p.stun > 0 ? 0.6 : 5.2;
+    if (p.stun > 0) p.stun--;
+    if (p.spin > 0) p.spin -= 0.05;
+    p.dist += sp;
+    // մեքենան սահուն է անցնում գոտի
+    p.x += (p.lane - p.x) * 0.2;
+
+    // Խոչընդոտներ ենք ծնում
+    p.nextObs -= sp;
+    if (p.nextObs <= 0 && GOAL - p.dist > 400) {
+      const kind = Math.random() < 0.3 ? 'oil' : 'cone';
+      p.obs.push({ lane: Math.floor(Math.random() * 3), d: p.dist + H * 0.9, kind, hit: false });
+      p.nextObs = 150 + Math.random() * 200;
+    }
+    // Բախումներ
+    for (const o of p.obs) {
+      if (!o.hit && Math.abs(o.d - p.dist - H * 0.16) < 26 && o.lane === Math.round(p.x)) {
+        o.hit = true;
+        if (o.kind === 'cone') { p.stun = 48; p.spin = 1; sCrash(); }
+        else { p.stun = 30; p.spin = 1.4; sSlip(); }
+      }
+    }
+    p.obs = p.obs.filter(o => o.d > p.dist - 100);
+
+    if (p.dist >= GOAL && !winner) {
+      winner = p.side + 1;
+      state = 'over';
+      endedAt = Date.now();
+      sWin();
+    }
+  }
+}
+
+// ——— Նկարելը ———
+function drawCar(x, y, colors, spin) {
+  ctx.save();
+  ctx.translate(x, y);
+  if (spin > 0) ctx.rotate(Math.sin(spin * 9) * 0.5);
+  const w = Math.min(34, W * 0.085), h = w * 1.7;
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath(); ctx.ellipse(0, 4, w * 0.62, h * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = colors[0];
+  ctx.beginPath();
+  ctx.moveTo(-w / 2, h / 2);
+  ctx.lineTo(-w / 2, -h * 0.22);
+  ctx.quadraticCurveTo(-w / 2, -h / 2, 0, -h / 2);
+  ctx.quadraticCurveTo(w / 2, -h / 2, w / 2, -h * 0.22);
+  ctx.lineTo(w / 2, h / 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = colors[1];
+  ctx.fillRect(-w * 0.34, -h * 0.1, w * 0.68, h * 0.34);
+  ctx.fillStyle = '#bfe3f7';
+  ctx.fillRect(-w * 0.3, -h * 0.34, w * 0.6, h * 0.2);
+  ctx.fillStyle = '#1c1f2b';
+  ctx.fillRect(-w * 0.58, -h * 0.32, w * 0.16, h * 0.26);
+  ctx.fillRect(w * 0.42, -h * 0.32, w * 0.16, h * 0.26);
+  ctx.fillRect(-w * 0.58, h * 0.1, w * 0.16, h * 0.26);
+  ctx.fillRect(w * 0.42, h * 0.1, w * 0.16, h * 0.26);
+  ctx.restore();
+}
+
+function drawHalf(p) {
+  const half = W / 2;
+  const x0 = p.side * half;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x0, 0, half, H);
+  ctx.clip();
+
+  // խոտ + ճանապարհ
+  ctx.fillStyle = '#2f6b1f';
+  ctx.fillRect(x0, 0, half, H);
+  ctx.fillStyle = '#3a3f52';
+  ctx.fillRect(x0 + 11, 0, half - 22, H);
+  // գոտիների գծերը՝ շարժվող
+  ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([22, 20]);
+  ctx.lineDashOffset = (p.dist * 1.0) % 42;
+  for (let l = 1; l < 3; l++) {
+    const lx = x0 + 11 + (half - 22) * l / 3;
+    ctx.beginPath(); ctx.moveTo(lx, 0); ctx.lineTo(lx, H); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // վերջնագիծը
+  const finY = H * 0.84 - (GOAL - p.dist);
+  if (finY > -40 && finY < H + 40) {
+    for (let c = 0; c < Math.ceil((half - 22) / 16); c++) {
+      for (let rr = 0; rr < 2; rr++) {
+        ctx.fillStyle = (c + rr) % 2 ? '#f2f5fa' : '#232733';
+        ctx.fillRect(x0 + 11 + c * 16, finY + rr * 12, 16, 12);
+      }
+    }
+  }
+
+  // խոչընդոտները
+  for (const o of p.obs) {
+    const oy = H * 0.84 - (o.d - p.dist);
+    if (oy < -30 || oy > H + 30) continue;
+    const ox = laneX(p.side, o.lane);
+    if (o.kind === 'cone') {
+      ctx.fillStyle = o.hit ? 'rgba(230,120,60,0.4)' : '#e6743c';
+      ctx.beginPath();
+      ctx.moveTo(ox, oy - 15);
+      ctx.lineTo(ox + 10, oy + 8);
+      ctx.lineTo(ox - 10, oy + 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.fillRect(ox - 6, oy - 3, 12, 4);
+    } else {
+      ctx.fillStyle = o.hit ? 'rgba(20,22,30,0.35)' : 'rgba(20,22,30,0.75)';
+      ctx.beginPath();
+      ctx.ellipse(ox, oy, 17, 11, 0.4, 0, Math.PI * 2);
+      ctx.ellipse(ox + 9, oy + 5, 9, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // մեքենան
+  drawCar(laneX(p.side, p.x), H * 0.84, p.color, p.spin);
+
+  // առաջընթացի գիծը
+  const pw = half - 40;
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.fillRect(x0 + 20, 54, pw, 8);
+  ctx.fillStyle = p.side === 0 ? '#ff7b6b' : '#6ec5ff';
+  ctx.fillRect(x0 + 20, 54, pw * Math.min(1, p.dist / GOAL), 8);
+  drawText(p.side === 0 ? T.p1 : T.p2, x0 + half / 2, 46, 13, 'rgba(255,255,255,0.85)', 'center', true);
+
+  ctx.restore();
+}
+
+function drawText(txt, x, y, size, color, align, bold) {
+  ctx.fillStyle = color;
+  ctx.font = (bold ? 'bold ' : '') + size + 'px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+  ctx.textAlign = align || 'center';
+  ctx.fillText(txt, x, y);
+}
+
+function draw() {
+  ctx.fillStyle = '#1a2a1a';
+  ctx.fillRect(0, 0, W, H);
+
+  if (state === 'menu') {
+    drawText('Golden Race 2', W / 2, H * 0.2, Math.min(42, W * 0.095), '#ffd166', 'center', true);
+    drawCar(W / 2 - 50, H * 0.4, ['#e63946', '#b52734'], 0);
+    drawCar(W / 2 + 50, H * 0.4, ['#5d9cec', '#3f7ec4'], 0);
+    drawText(T.how1, W / 2, H * 0.56, Math.min(18, W * 0.048), '#eef0ff');
+    drawText(T.how2, W / 2, H * 0.605, Math.min(18, W * 0.048), '#eef0ff');
+    drawText(T.how3, W / 2, H * 0.65, Math.min(18, W * 0.048), '#eef0ff');
+    if (Math.floor(Date.now() / 600) % 2) drawText(T.tap, W / 2, H * 0.76, Math.min(17, W * 0.045), '#6ee7b7');
+    return;
+  }
+
+  drawHalf(P[0]);
+  drawHalf(P[1]);
+  // բաժանարար գիծը
+  ctx.fillStyle = '#12122b';
+  ctx.fillRect(W / 2 - 3, 0, 6, H);
+
+  if (state === 'count') {
+    ctx.fillStyle = 'rgba(12,10,26,0.45)';
+    ctx.fillRect(0, 0, W, H);
+    drawText(String(count), W / 2, H * 0.5, Math.min(90, W * 0.25), '#ffd166', 'center', true);
+  }
+
+  if (state === 'over') {
+    ctx.fillStyle = 'rgba(12,10,26,0.78)';
+    ctx.fillRect(0, 0, W, H);
+    drawCar(W / 2, H * 0.34, winner === 1 ? ['#e63946', '#b52734'] : ['#5d9cec', '#3f7ec4'], 0);
+    drawText(T.win(winner), W / 2, H * 0.47, Math.min(30, W * 0.072), '#ffd166', 'center', true);
+    // գավաթ
+    ctx.save();
+    ctx.translate(W / 2, H * 0.56);
+    ctx.fillStyle = '#ffd166';
+    ctx.strokeStyle = '#c98a12';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-16, -14); ctx.lineTo(16, -14);
+    ctx.quadraticCurveTo(16, 8, 0, 14);
+    ctx.quadraticCurveTo(-16, 8, -16, -14);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillRect(-3, 14, 6, 8);
+    ctx.fillRect(-11, 22, 22, 5);
+    ctx.restore();
+    if (Date.now() - endedAt > 1200 && Math.floor(Date.now() / 600) % 2) {
+      drawText(T.again, W / 2, H * 0.68, Math.min(17, W * 0.045), '#6ee7b7');
+    }
+  }
+}
+
+function loop() {
+  step();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>

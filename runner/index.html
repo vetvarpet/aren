@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Runner 🏃</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; }
+  html, body { height: 100%; overflow: hidden; background: #101830; }
+  canvas { display: block; touch-action: none; cursor: pointer; }
+</style>
+
+<a href="../" style="position:fixed;top:10px;right:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN RUNNER 🏃 — վազք տանիքներով
+//  Հպիր՝ ցատկելու։ Օդում մեկ անգամ էլ կարող ես ցատկել։
+//  Մի ընկիր շենքերի արանքը ու ցատկիր ալեհավաքների վրայով։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+// Կանվասի վրա էմոջի չենք գրում — նկարում ենք ձեռքով
+const TRL = {
+  hy: { how: 'Հպիր՝ ցատկելու · Օդում կրկնակի ցատկ', tap: 'Հպիր՝ սկսելու', best: 'Ռեկորդ՝ ', over: 'Ընկա՜ր…', rec: 'ՆՈՐ ՌԵԿՈՐԴ', again: 'Հպիր՝ նորից վազելու', m: ' մ' },
+  ru: { how: 'Нажми — прыжок · В воздухе можно ещё раз', tap: 'Коснись, чтобы начать', best: 'Рекорд: ', over: 'Упал…', rec: 'НОВЫЙ РЕКОРД', again: 'Коснись, чтобы бежать снова', m: ' м' },
+  en: { how: 'Tap to jump · Double jump in the air', tap: 'Tap to start', best: 'Best: ', over: 'You fell…', rec: 'NEW RECORD', again: 'Tap to run again', m: ' m' },
+  es: { how: 'Toca para saltar · Doble salto en el aire', tap: 'Toca para empezar', best: 'Récord: ', over: 'Te caíste…', rec: 'NUEVO RÉCORD', again: 'Toca para correr otra vez', m: ' m' },
+  fr: { how: 'Touche pour sauter · Double saut en l’air', tap: 'Touche pour commencer', best: 'Record : ', over: 'Tombé…', rec: 'NOUVEAU RECORD', again: 'Touche pour recourir', m: ' m' },
+  de: { how: 'Tippe zum Springen · Doppelsprung in der Luft', tap: 'Tippe zum Starten', best: 'Rekord: ', over: 'Runtergefallen…', rec: 'NEUER REKORD', again: 'Tippe, um wieder zu laufen', m: ' m' },
+  ja: { how: 'タップでジャンプ · 空中でもう1回', tap: 'タップでスタート', best: 'ベスト：', over: 'おちちゃった…', rec: 'しんきろく', again: 'タップでもういっかい', m: ' m' },
+  zh: { how: '点一下跳 · 空中还能再跳一次', tap: '点一下开始', best: '纪录：', over: '掉下去了…', rec: '新纪录', again: '点一下再跑一次', m: ' 米' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W = 0, H = 0;
+function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sJump = () => tone(420, 0.08, 'square', 0.07);
+const sJump2 = () => tone(560, 0.08, 'square', 0.07);
+const sLand = () => tone(180, 0.05, 'square', 0.06);
+const sFall = () => [400, 300, 210, 140].forEach((f, k) => tone(f, 0.14, 'sawtooth', 0.12, k * 0.08));
+const sRec = () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.2, 'triangle', 0.18, k * 0.11));
+
+// ——— Խաղի վիճակը ———
+const GRAV = 0.62;
+const JUMP = -13.5;
+let state = 'menu', endedAt = 0;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-runner-best') || 0); } catch (e) {}
+
+let player, builds, dist, jumps, stars = [], frame = 0, wasLanded = false;
+
+function roofY() { return H * (0.55 + Math.random() * 0.22); }
+
+function newGame() {
+  player = { x: W * 0.24, y: 0, vy: 0, onGround: false };
+  builds = [];
+  // առաջին շենքը երկար է, որ հանգիստ սկսես
+  builds.push({ x: -40, w: W * 1.1, top: H * 0.66, obs: [] });
+  player.y = H * 0.66;
+  dist = 0;
+  jumps = 0;
+  stars = [];
+  for (let i = 0; i < 40; i++) stars.push({ x: Math.random() * W, y: Math.random() * H * 0.5, r: 0.8 + Math.random() * 1.5 });
+  state = 'play';
+}
+function speedNow() { return 4.2 + Math.min(6, dist / 300); }
+
+function addBuild() {
+  const last = builds[builds.length - 1];
+  const sp = speedNow();
+  const gap = 55 + Math.random() * (60 + sp * 9);
+  const w = 190 + Math.random() * 260;
+  let top = last.top + (Math.random() * 2 - 1) * H * 0.16;
+  top = Math.max(H * 0.4, Math.min(H * 0.8, top));
+  // եթե հաջորդ տանիքը շատ բարձր է՝ իջեցնում ենք, որ ցատկը հնարավոր լինի
+  if (last.top - top > H * 0.16) top = last.top - H * 0.16;
+  const obs = [];
+  if (w > 250 && Math.random() < Math.min(0.75, 0.3 + dist / 900)) {
+    obs.push({ dx: 90 + Math.random() * (w - 160), w: 16 + Math.random() * 12, h: 26 + Math.random() * 22 });
+  }
+  builds.push({ x: last.x + last.w + gap, w, top, obs });
+}
+
+function jump() {
+  if (state === 'menu') { initAudio(); newGame(); return; }
+  if (state === 'over') {
+    if (Date.now() - endedAt > 1100) { initAudio(); newGame(); }
+    return;
+  }
+  if (state !== 'play') return;
+  initAudio();
+  if (player.onGround) {
+    player.vy = JUMP;
+    player.onGround = false;
+    jumps = 1;
+    sJump();
+  } else if (jumps < 2) {
+    player.vy = JUMP * 0.92;
+    jumps = 2;
+    sJump2();
+  }
+}
+window.addEventListener('touchstart', (e) => { if (!e.target.closest('a')) jump(); }, { passive: true });
+window.addEventListener('mousedown', (e) => { if (!e.target.closest('a')) jump(); });
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); jump(); }
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+function die() {
+  state = 'dying';
+  sFall();
+}
+function finishOver() {
+  state = 'over';
+  endedAt = Date.now();
+  const d = Math.floor(dist / 10);
+  if (d > best) {
+    best = d;
+    try { localStorage.setItem('aren-runner-best', best); } catch (e) {}
+    sRec();
+  }
+}
+
+function step() {
+  frame++;
+  if (state === 'play') {
+    const sp = speedNow();
+    dist += sp;
+    for (const b of builds) b.x -= sp;
+    while (builds[builds.length - 1].x + builds[builds.length - 1].w < W + 500) addBuild();
+    builds = builds.filter(b => b.x + b.w > -200);
+
+    player.vy += GRAV;
+    player.y += player.vy;
+
+    // Վայրէջք տանիքին. միայն երբ իջնում ենք ու տանիքի մակարդակին ենք հասնում
+    player.onGround = false;
+    for (const b of builds) {
+      if (player.x > b.x - 6 && player.x < b.x + b.w + 6) {
+        if (player.vy >= 0 && player.y >= b.top - 2 && player.y - player.vy <= b.top + 14) {
+          player.y = b.top;
+          player.vy = 0;
+          player.onGround = true;
+          jumps = 0;
+          if (!wasLanded) sLand();
+        }
+        // Ալեհավաքին կպանք
+        for (const o of b.obs) {
+          const ox = b.x + o.dx;
+          if (player.x > ox - 12 && player.x < ox + o.w + 12 && player.y > b.top - o.h - 4) {
+            die();
+          }
+        }
+      }
+    }
+    wasLanded = player.onGround;
+
+    if (player.y > H + 60) { die(); }
+  } else if (state === 'dying') {
+    player.vy += GRAV;
+    player.y += player.vy;
+    if (player.y > H + 160) finishOver();
+  }
+}
+
+// ——— Նկարելը ———
+function drawBg() {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#101830');
+  g.addColorStop(1, '#2a2a55');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#f5eede';
+  ctx.beginPath(); ctx.arc(W * 0.8, H * 0.14, 22, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#101830';
+  ctx.beginPath(); ctx.arc(W * 0.8 + 8, H * 0.14 - 6, 18, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  for (const s of stars) {
+    ctx.globalAlpha = 0.4 + Math.sin(frame * 0.03 + s.x) * 0.3;
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  // հեռվի քաղաքը
+  ctx.fillStyle = 'rgba(40,48,90,0.8)';
+  for (let i = 0; i < 8; i++) {
+    const bx = ((i * 170 - dist * 0.15) % (W + 340)) - 170;
+    ctx.fillRect(bx, H * 0.42 + (i % 3) * 26, 90 + (i % 4) * 30, H);
+  }
+}
+
+function drawBuilds() {
+  for (const b of builds) {
+    ctx.fillStyle = '#232a4d';
+    ctx.fillRect(b.x, b.top, b.w, H - b.top);
+    ctx.fillStyle = '#3a4373';
+    ctx.fillRect(b.x, b.top, b.w, 7);
+    // պատուհանները
+    ctx.fillStyle = 'rgba(255,224,138,0.75)';
+    const seed = Math.floor(b.x / 50);
+    for (let wy = b.top + 26; wy < H - 14; wy += 42) {
+      for (let wx = b.x + 16; wx < b.x + b.w - 22; wx += 38) {
+        if ((Math.floor(wx * 0.7 + wy * 1.3 + seed) % 7) < 3) ctx.fillRect(wx, wy, 13, 17);
+      }
+    }
+    // ալեհավաքները
+    for (const o of b.obs) {
+      const ox = b.x + o.dx;
+      ctx.fillStyle = '#8d93a8';
+      ctx.fillRect(ox + o.w / 2 - 2.5, b.top - o.h, 5, o.h);
+      ctx.fillRect(ox, b.top - o.h, o.w, 6);
+      ctx.beginPath();
+      ctx.arc(ox + o.w / 2, b.top - o.h - 4, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#e63946';
+      ctx.fill();
+    }
+  }
+}
+
+function drawMan() {
+  const x = player.x, y = player.y;
+  const s = Math.max(15, Math.min(20, H * 0.026));
+  const run = player.onGround && state === 'play';
+  const leg = run ? Math.sin(frame * 0.45) * s * 0.55 : s * 0.2;
+  ctx.save();
+  ctx.translate(x, y);
+  if (state === 'dying') ctx.rotate(frame * 0.05 % 0.8);
+  // ոտքերը
+  ctx.strokeStyle = '#2c3a6b';
+  ctx.lineWidth = s * 0.32;
+  ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(0, -s * 0.8); ctx.lineTo(-leg * 0.6, 0); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, -s * 0.8); ctx.lineTo(leg * 0.6, -Math.abs(leg) * 0.2); ctx.stroke();
+  // մարմինը՝ ոսկե շապիկ
+  ctx.fillStyle = '#f0b429';
+  ctx.beginPath();
+  ctx.ellipse(0, -s * 1.35, s * 0.52, s * 0.72, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // ձեռքերը
+  ctx.strokeStyle = '#e8b98a';
+  ctx.lineWidth = s * 0.26;
+  const arm = run ? Math.sin(frame * 0.45 + Math.PI) * s * 0.5 : -s * 0.5;
+  ctx.beginPath(); ctx.moveTo(0, -s * 1.5); ctx.lineTo(arm * 0.7, -s * 1.05); ctx.stroke();
+  // գլուխը
+  ctx.fillStyle = '#e8b98a';
+  ctx.beginPath(); ctx.arc(s * 0.1, -s * 2.25, s * 0.42, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#4a3018';
+  ctx.beginPath(); ctx.arc(s * 0.06, -s * 2.38, s * 0.42, Math.PI, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#1c1408';
+  ctx.beginPath(); ctx.arc(s * 0.26, -s * 2.25, s * 0.06, 0, Math.PI * 2); ctx.fill();
+  // շարֆիկը՝ քամուց ծածանվող
+  ctx.strokeStyle = '#e63946';
+  ctx.lineWidth = s * 0.2;
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.1, -s * 1.9);
+  ctx.quadraticCurveTo(-s * 0.9, -s * 1.8 + Math.sin(frame * 0.3) * s * 0.25, -s * 1.4, -s * 1.6 + Math.sin(frame * 0.3 + 1) * s * 0.3);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawText(txt, x, y, size, color, align, bold) {
+  ctx.fillStyle = color;
+  ctx.font = (bold ? 'bold ' : '') + size + 'px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+  ctx.textAlign = align || 'center';
+  ctx.fillText(txt, x, y);
+}
+
+function draw() {
+  drawBg();
+
+  if (state === 'menu') {
+    drawText('Golden Runner', W / 2, H * 0.24, Math.min(42, W * 0.095), '#ffd166', 'center', true);
+    // ցուցադրական տանիք ու վազորդ
+    ctx.fillStyle = '#232a4d';
+    ctx.fillRect(W * 0.2, H * 0.56, W * 0.6, H * 0.2);
+    ctx.fillStyle = '#3a4373';
+    ctx.fillRect(W * 0.2, H * 0.56, W * 0.6, 7);
+    const keep = player;
+    player = { x: W / 2, y: H * 0.56, vy: 0, onGround: true };
+    drawMan();
+    player = keep;
+    drawText(T.how, W / 2, H * 0.85, Math.min(18, W * 0.048), '#eef0ff');
+    if (best > 0) drawText(T.best + best + T.m, W / 2, H * 0.895, Math.min(15, W * 0.04), '#9a9ec7');
+    if (Math.floor(Date.now() / 600) % 2) drawText(T.tap, W / 2, H * 0.94, Math.min(17, W * 0.045), '#6ee7b7');
+    return;
+  }
+
+  drawBuilds();
+  drawMan();
+
+  drawText(Math.floor(dist / 10) + T.m, W / 2, 78, 34, '#ffffff', 'center', true);
+  if (best > 0) drawText(T.best + best + T.m, W / 2, 102, 14, 'rgba(255,255,255,0.7)');
+
+  if (state === 'over') {
+    ctx.fillStyle = 'rgba(12,10,26,0.75)';
+    ctx.fillRect(0, 0, W, H);
+    drawText(T.over, W / 2, H * 0.34, Math.min(30, W * 0.075), '#eef0ff', 'center', true);
+    drawText(Math.floor(dist / 10) + T.m, W / 2, H * 0.47, Math.min(58, W * 0.14), '#ffd166', 'center', true);
+    if (Math.floor(dist / 10) >= best && dist > 0) drawText(T.rec, W / 2, H * 0.55, Math.min(22, W * 0.055), '#6ee7b7', 'center', true);
+    else if (best > 0) drawText(T.best + best + T.m, W / 2, H * 0.55, Math.min(17, W * 0.045), '#9a9ec7');
+    if (Date.now() - endedAt > 1100 && Math.floor(Date.now() / 600) % 2) {
+      drawText(T.again, W / 2, H * 0.66, Math.min(17, W * 0.045), '#6ee7b7');
+    }
+  }
+}
+
+function loop() {
+  step();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>

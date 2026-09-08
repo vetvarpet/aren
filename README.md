@@ -24,6 +24,15 @@ and iterating on the code together with Claude, one change at a time.
 | [`ninja`](./ninja/) | 🥷 Golden Ninja (Նինձյա ցատկ) | Wall-jumping ninja: tap to switch walls, dodge the spikes, the world speeds up |
 | [`mine`](./mine/) | ⛏️ Golden Mine (Ոսկե հանք) | Gold-miner: swing the hook, pull up gold and diamonds, reach the goal before time runs out |
 | [`men`](./men/) | 👨🏻 Golden Men (Անցի՛ր ճանապարհը) | Crossy-road: dodge the cars, hop across the river on floating logs, count your steps |
+| [`runner`](./runner/) | 🏃 Golden Runner (Տանիքների վազորդ) | Night rooftop runner: leap building to building, double jump, dodge the antennas |
+| [`asteroid`](./asteroid/) | 🪨 Golden Asteroid (Տիեզերաքարեր) | Asteroids: the golden ship auto-flies and auto-fires, you steer and smash rocks wave after wave |
+| [`pipes`](./pipes/) | 🚰 Golden Pipes (Խողովակներ) | Rotate-the-pipes puzzle: bring the water from the tap to the flower, levels grow bigger |
+| [`blocks`](./blocks/) | 🟨 Golden Blocks (Ընկնող բլոկներ) | Classic falling blocks with a ghost landing preview and golden line-clear flashes |
+| [`words`](./words/) | 🔤 Golden Words (Բառախաղ) | Armenian word game: guess the word from a picture and build it from scrambled letters, 40 levels |
+| [`drums`](./drums/) | 🥁 Golden Drums (Ռիթմ-մեքենա) | Beat machine: four synthesized instruments, eight steps, tempo slider, patterns auto-saved |
+| [`race2`](./race2/) | 🏁 Golden Race 2 (Մրցավազք երկուսով) | Split-screen two-player race on one phone: dodge cones and oil, first to the finish wins |
+| [`time`](./time/) | 🕰️ Golden Time (Ժամանակի մեքենա) | The site's whole story as a timeline, from the first flying cat to today |
+| [`museum`](./museum/) | 🏛️ Golden Museum (Թանգարան) | Memorial hall of deleted projects, pedestals, epitaphs and all |
 
 Every project is a single self-contained `index.html` — no frameworks, no
 build step. Open any folder's `index.html` in a browser and play. Sounds and

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ժամանակի մեքենա 🕰️</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  :root {
+    --bg: #12122b;
+    --card: #1d1d3f;
+    --ink: #eef0ff;
+    --dim: #9a9ec7;
+    --accent: #ffd166;
+    --accent2: #6ee7b7;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    background:
+      radial-gradient(circle at 80% 10%, rgba(255, 209, 102, 0.07), transparent 45%),
+      var(--bg);
+    color: var(--ink);
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    min-height: 100dvh;
+    touch-action: manipulation;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 20px 18px 60px; }
+  nav { padding-bottom: 22px; }
+  nav a {
+    color: var(--ink);
+    text-decoration: none;
+    background: var(--card);
+    border: 2px solid #33356b;
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+  }
+  .hero { text-align: center; padding: 8px 0 26px; }
+  .hero h1 { color: var(--accent); font-size: clamp(1.4rem, 5.5vw, 2rem); }
+  .hero p { color: var(--dim); margin-top: 8px; line-height: 1.6; }
+
+  /* ——— Ժամանակի գիծը ——— */
+  .tl { position: relative; padding-left: 34px; }
+  .tl::before {
+    content: '';
+    position: absolute;
+    left: 12px;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    background: linear-gradient(#ffd166, #6ee7b7, #ffd166);
+    border-radius: 3px;
+    opacity: 0.5;
+  }
+  .ev {
+    position: relative;
+    background: var(--card);
+    border: 2px solid #33356b;
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  .ev::before {   /* կետը գծի վրա */
+    content: '';
+    position: absolute;
+    left: -28.5px;
+    top: 20px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+  .ev.big { border-color: rgba(255, 209, 102, 0.6); }
+  .ev.big::before { background: var(--accent2); box-shadow: 0 0 0 2px var(--accent2), 0 0 14px rgba(110, 231, 183, 0.7); }
+  .ev .date { color: var(--accent2); font-size: 0.75rem; letter-spacing: 0.06em; }
+  .ev h2 { font-size: 1rem; color: var(--accent); margin: 4px 0 5px; }
+  .ev p { color: var(--dim); font-size: 0.87rem; line-height: 1.55; }
+  .ev .tag {
+    display: inline-block;
+    margin-top: 7px;
+    background: rgba(255, 209, 102, 0.12);
+    color: var(--accent);
+    font-size: 0.72rem;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .foot { text-align: center; color: var(--dim); font-size: 0.85rem; margin-top: 28px; line-height: 1.7; }
+  .foot b { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav><a href="../">← Golden Games</a></nav>
+
+  <div class="hero">
+    <h1>🕰️ Ժամանակի մեքենա</h1>
+    <p>Ինչպես մի թռչող կատուն դարձավ Golden Games։<br>Ամբողջ պատմությունը՝ օր առ օր։</p>
+  </div>
+
+  <div class="tl">
+
+    <div class="ev big">
+      <div class="date">10 ՕԳՈՍՏՈՍԻ, 2026</div>
+      <h2>Մեծ պայթյունը 💥</h2>
+      <p>Ամեն ինչ սկսվեց մեկ մտքից՝ «ուզում եմ խաղ, որտեղ կատուն թռչում է արկղերի վրայով»։ Մեկ օրում ծնվեցին թռչող կատուն, Քաղաքի վարորդը, ծովահեն Կապիտան Սևբեղը ու դաշնամուրը։ Մի օրում՝ քսան փոփոխություն։</p>
+      <span class="tag">Ստուդիայի ծննդյան օրը</span>
+    </div>
+
+    <div class="ev">
+      <div class="date">13 ՕԳՈՍՏՈՍԻ, 2026</div>
+      <h2>Արենի տանգոն 💃</h2>
+      <p>Դաշնամուրը ստացավ իր սեփական երգը՝ մինոր տանգո, որ ուրիշ ոչ մի տեղ չկա։ Կողքից եկան Գաղտնի ակումբն ու Օձուկը։</p>
+    </div>
+
+    <div class="ev">
+      <div class="date">15 ՕԳՈՍՏՈՍԻ, 2026</div>
+      <h2>Առաջին գլխավոր էջը 🏠</h2>
+      <p>Խաղերը հավաքվեցին մեկ պորտալում։ Անունը դեռ «Արեն Սայտ» էր — Golden-ը դեռ առջևում էր։</p>
+    </div>
+
+    <div class="ev">
+      <div class="date">28 ՕԳՈՍՏՈՍԻ, 2026</div>
+      <h2>Մեծ մաքրությունը 🧹</h2>
+      <p>Ծնվեց խաղահրապարակի կանոն №1-ը՝ «պահիր միայն այն, ինչ սիրում ես»։ Ծովահենը, ակումբն ու օձուկը գնացին թանգարան։ Տեղները եկան Հրթիռն ու Հիշողության խաղերը։</p>
+    </div>
+
+    <div class="ev">
+      <div class="date">29-31 ՕԳՈՍՏՈՍԻ, 2026</div>
+      <h2>Խաղերի ջրվեժ 🌊</h2>
+      <p>Ոսկե մեքենան քաղաքում, Կրկնիր ինձ, Թվերի որսորդ, Մրցարշավ, Ձկնորսություն ու Լաբիրինթոս՝ 100 մակարդակով։ Դպրոցի համար QR պաստառ էլ սարքվեց։</p>
+    </div>
+
+    <div class="ev big">
+      <div class="date">31 ՕԳՈՍՏՈՍԻ, 2026</div>
+      <h2>Ծնվում է անունը՝ GOLDEN GAMES 👑</h2>
+      <p>Փորձեցինք «Aren Games», փորձեցինք ուրիշ բաներ… ու ծնվեց իսկականը՝ Golden Games։ Անուն, որ մնաց ընդմիշտ։</p>
+      <span class="tag">Անվան օրը</span>
+    </div>
+
+    <div class="ev">
+      <div class="date">1-4 ՍԵՊՏԵՄԲԵՐԻ, 2026</div>
+      <h2>Երկուսով ավելի լավ է 👥</h2>
+      <p>Մենամարտը դարձավ յոթ խաղանոց հավաքածու՝ պինգ-պոնգից մինչև պարան քաշել։ Սայտը սովորեց երեք լեզու, ամեն խաղ ստացավ «← Golden Games» կոճակ։</p>
+    </div>
+
+    <div class="ev">
+      <div class="date">5 ՍԵՊՏԵՄԲԵՐԻ, 2026</div>
+      <h2>Գեղեցկության օրը 🎨</h2>
+      <p>Էմոջի-նկարները փոխարինվեցին ձեռքով նկարած տեսարաններով։ Ընկերոջ սարքած ոսկե լոգոն բարձրացավ իր տեղը։ Սայտը սովորեց ութ լեզու, ծնվեցին Golden Tower-ն ու Golden Moles-ը, ու բոլոր խաղերը ստացան Golden անուններ։</p>
+    </div>
+
+    <div class="ev">
+      <div class="date">6 ՍԵՊՏԵՄԲԵՐԻ, 2026</div>
+      <h2>Վեց խաղ մեկ օրում 🤯</h2>
+      <p>Գավաթների սենյակը, հետո միանգամից՝ Golden Beat, 2048, Ninja, Mine, ապա Basket ու Men։ Ստուդիայի ամենաարդյունավետ օրը։</p>
+    </div>
+
+    <div class="ev big">
+      <div class="date">7 ՍԵՊՏԵՄԲԵՐԻ, 2026</div>
+      <h2>Արենը գրում է իր առաջին կոդը ✍️</h2>
+      <p>const GRAVITY = 0.5; — լուսնային կատու։ Հետո երկրորդ տողը՝ կանաչ կատու, ու երրորդը՝ ամեն ինչ ինքն է ետ բերել։ Նույն օրը թիմը դարձավ պաշտոնական՝ Արենը՝ տնօրեն, Քլոդ Ծրագրանյանը՝ փոխտնօրեն։</p>
+      <span class="tag">Պատմական օր</span>
+    </div>
+
+    <div class="ev">
+      <div class="date">7 ՍԵՊՏԵՄԲԵՐԻ, 2026</div>
+      <h2>Թռչնակն ու չեմպիոնի կնիքը 🐦</h2>
+      <p>Golden Bird-ը թռավ կատվի տան մեջ, թագը դարձավ 21 միավորի մրցանակ, իսկ բոլոր գավաթները հավաքողին սպասում է GOLDEN CHAMPION կնիքը։</p>
+    </div>
+
+    <div class="ev">
+      <div class="date">8 ՍԵՊՏԵՄԲԵՐԻ, 2026</div>
+      <h2>Պահեստի մեծ բացումը 🏭</h2>
+      <p>Տնօրենն ասաց՝ «պահեստից բեր լիքը մտքեր»։ Ու մի օրում ստուդիան ստացավ Ժամանակի մեքենան (հենց այս էջը), Թանգարանը ու մի փունջ նոր խաղ։</p>
+    </div>
+
+  </div>
+
+  <p class="foot">
+    Ամեն փոփոխություն պահված է <b>GitHub</b>-ի պատմության մեջ՝<br>
+    ավելի քան 120 քայլ՝ առաջին կատվից մինչև այսօր 📖
+  </p>
+
+</div>
+
+<script>
+// Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>
+</body>
+</html>
