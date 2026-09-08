@@ -74,6 +74,7 @@ let best = 0;
 try { best = Number(localStorage.getItem('aren-runner-best') || 0); } catch (e) {}
 
 let player, builds, dist, jumps, stars = [], frame = 0, wasLanded = false;
+let lastGroundF = -99;   // վերջին կադրը, երբ գետնին էիր
 
 function roofY() { return H * (0.55 + Math.random() * 0.22); }
 
@@ -115,7 +116,8 @@ function jump() {
   }
   if (state !== 'play') return;
   initAudio();
-  if (player.onGround) {
+  // Եզրից ընկնելուց հետո էլ մի կարճ պահ առաջին ցատկը դեռ քոնն է
+  if (player.onGround || (jumps === 0 && frame - lastGroundF < 8)) {
     player.vy = JUMP;
     player.onGround = false;
     jumps = 1;
@@ -176,6 +178,7 @@ function step() {
           player.vy = 0;
           player.onGround = true;
           jumps = 0;
+          lastGroundF = frame;
           if (!wasLanded) sLand();
         }
         // Ալեհավաքին կպանք
@@ -187,6 +190,7 @@ function step() {
         }
       }
     }
+    if (player.onGround) lastGroundF = frame;
     wasLanded = player.onGround;
 
     if (player.y > H + 60) { die(); }

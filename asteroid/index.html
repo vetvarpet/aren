@@ -168,19 +168,19 @@ function step() {
   if (state !== 'play') return;
 
   // Նավը
-  if (holdL) ship.a -= 0.065;
-  if (holdR) ship.a += 0.065;
-  ship.vx += Math.cos(ship.a) * 0.085;
-  ship.vy += Math.sin(ship.a) * 0.085;
-  ship.vx *= 0.985; ship.vy *= 0.985;
+  if (holdL) ship.a -= 0.078;
+  if (holdR) ship.a += 0.078;
+  ship.vx += Math.cos(ship.a) * 0.055;
+  ship.vy += Math.sin(ship.a) * 0.055;
+  ship.vx *= 0.978; ship.vy *= 0.978;
   ship.x = (ship.x + ship.vx + W) % W;
   ship.y = (ship.y + ship.vy + H) % H;
 
   // Ինքնակրակ
   if (--fireT <= 0) {
-    bullets.push({ x: ship.x + Math.cos(ship.a) * 16, y: ship.y + Math.sin(ship.a) * 16, vx: Math.cos(ship.a) * 7.5 + ship.vx, vy: Math.sin(ship.a) * 7.5 + ship.vy, life: 62 });
+    bullets.push({ x: ship.x + Math.cos(ship.a) * 16, y: ship.y + Math.sin(ship.a) * 16, vx: Math.cos(ship.a) * 8 + ship.vx, vy: Math.sin(ship.a) * 8 + ship.vy, life: 72 });
     sShoot();
-    fireT = 22;
+    fireT = 15;
   }
   for (const b of bullets) {
     b.x = (b.x + b.vx + W) % W;

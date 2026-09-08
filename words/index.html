@@ -162,12 +162,23 @@ function shuffle(a) {
   return a;
 }
 
+// Հայերեն «ՈՒ»-ն երկու նշան է (Ո + Ւ), բայց մեկ տառ է —
+// տառախաղում այն մեկ կոճակ պիտի լինի
+function toUnits(w) {
+  const out = [];
+  for (let i = 0; i < w.length; i++) {
+    if (w[i] === 'Ո' && w[i + 1] === 'Ւ') { out.push('ՈՒ'); i++; }
+    else out.push(w[i]);
+  }
+  return out;
+}
+
 function startWord() {
   busy = false;
   const [w, pic] = WORDS[level - 1];
   word = w;
   picked = [];
-  letters = w.split('');
+  letters = toUnits(w);
   // 20-րդ բառից մի «խաբող» ավելորդ տառ ենք խառնում
   if (level > 20) {
     let d;
@@ -185,7 +196,7 @@ function render() {
   const slots = document.getElementById('slots');
   slots.className = 'slots';
   slots.innerHTML = '';
-  for (let i = 0; i < word.length; i++) {
+  for (let i = 0; i < toUnits(word).length; i++) {
     const d = document.createElement('div');
     d.className = 'slot';
     d.textContent = picked[i] !== undefined ? letters[picked[i]] : '';
@@ -203,12 +214,12 @@ function render() {
 }
 
 function pick(i) {
-  if (busy || picked.includes(i) || picked.length >= word.length) return;
+  if (busy || picked.includes(i) || picked.length >= toUnits(word).length) return;
   initAudio();
   sTap();
   picked.push(i);
   render();
-  if (picked.length === word.length) check();
+  if (picked.length === toUnits(word).length) check();
 }
 
 function check() {

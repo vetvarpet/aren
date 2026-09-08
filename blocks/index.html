@@ -33,12 +33,13 @@
   .hud b { color: #ffd76e; font-size: 1rem; }
   .mid { display: flex; gap: 10px; align-items: flex-start; }
   canvas { display: block; border-radius: 12px; }
-  #board { border: 3px solid #33356b; background: #12122b; }
+  #board { border: 3px solid #33356b; background: #12122b; touch-action: none; }   /* սվայպը խաղինն է */
   .side { display: flex; flex-direction: column; gap: 6px; align-items: center; }
   .side .cap { color: #9a9ec7; font-size: 0.7rem; }
   #next { border: 2px solid #33356b; background: #12122b; }
 
   .pads { display: flex; gap: 9px; margin-top: 2px; }
+  .pads button:nth-child(3) { margin-left: 14px; }
   .pads button {
     width: 64px;
     height: 58px;
@@ -73,8 +74,8 @@
 <div id="msg"></div>
 <div class="pads">
   <button id="pL">◀</button>
-  <button id="pR2">⟳</button>
   <button id="pR">▶</button>
+  <button id="pR2">⟳</button>
   <button id="pD">⬇</button>
 </div>
 
@@ -263,8 +264,22 @@ function gameOver() {
 }
 
 // ——— Ղեկավարումը ———
-document.getElementById('pL').addEventListener('pointerdown', () => { initAudio(); move(-1); });
-document.getElementById('pR').addEventListener('pointerdown', () => { initAudio(); move(1); });
+// Ձախ/աջ կոճակը պահես՝ բլոկը ինքն է շարունակում գնալ
+function holdBtn(id, fn) {
+  const el = document.getElementById(id);
+  let iv = null;
+  const stop = () => { clearInterval(iv); iv = null; };
+  el.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    initAudio();
+    fn();
+    stop();
+    iv = setInterval(fn, 130);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => el.addEventListener(ev, stop));
+}
+holdBtn('pL', () => move(-1));
+holdBtn('pR', () => move(1));
 document.getElementById('pR2').addEventListener('pointerdown', () => { initAudio(); turn(); });
 document.getElementById('pD').addEventListener('pointerdown', () => { initAudio(); hardDrop(); });
 window.addEventListener('keydown', (e) => {
@@ -278,7 +293,21 @@ function tapBoard() {
   if (state === 'menu') { initAudio(); newGame(); return; }
   if (state === 'over' && Date.now() - endedAt > 1100) { initAudio(); newGame(); }
 }
-bcv.addEventListener('pointerdown', tapBoard);
+// Տախտակի վրա էլ կարելի է խաղալ. հպում = պտտել,
+// սվայպ ձախ/աջ = շարժել, սվայպ ներքև = գցել
+let bsx = 0, bsy = 0;
+bcv.addEventListener('pointerdown', (e) => { bsx = e.clientX; bsy = e.clientY; });
+bcv.addEventListener('pointerup', (e) => {
+  const dx = e.clientX - bsx, dy = e.clientY - bsy;
+  if (state !== 'play') { tapBoard(); return; }
+  initAudio();
+  if (Math.abs(dx) < 22 && Math.abs(dy) < 22) { turn(); return; }
+  if (Math.abs(dy) > Math.abs(dx)) {
+    if (dy > 45) hardDrop();
+  } else {
+    move(dx > 0 ? 1 : -1);
+  }
+});
 
 // Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
 let lastTap = 0;
