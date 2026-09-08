@@ -27,7 +27,6 @@ and iterating on the code together with Claude, one change at a time.
 | [`blocks`](./blocks/) | 🟨 Golden Blocks (Ընկնող բլոկներ) | Classic falling blocks with a ghost landing preview and golden line-clear flashes |
 | [`words`](./words/) | 🔤 Golden Words (Բառախաղ) | Armenian word game: guess the word from a picture and build it from scrambled letters, 40 levels |
 | [`drums`](./drums/) | 🥁 Golden Drums (Ռիթմ-մեքենա) | Beat machine: four synthesized instruments, eight steps, tempo slider, patterns auto-saved |
-| [`race2`](./race2/) | 🏁 Golden Race 2 (Մրցավազք երկուսով) | Split-screen two-player race on one phone: dodge cones and oil, first to the finish wins |
 | [`time`](./time/) | 🕰️ Golden Time (Ժամանակի մեքենա) | The site's whole story as a timeline, from the first flying cat to today |
 | [`museum`](./museum/) | 🏛️ Golden Museum (Թանգարան) | Memorial hall of deleted projects, pedestals, epitaphs and all |
 

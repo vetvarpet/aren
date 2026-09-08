@@ -121,7 +121,6 @@
   .c22 { background: linear-gradient(135deg, #241a45, #33356b); }
   .c23 { background: linear-gradient(135deg, #3b2a6b, #6b4fa8); }
   .c24 { background: linear-gradient(135deg, #4a1f5e, #8f3e8f); }
-  .c25 { background: linear-gradient(135deg, #1a2a1a, #2f6b1f); }
   .c26 { background: linear-gradient(135deg, #2a1e3f, #4a3670); }
   .c27 { background: linear-gradient(135deg, #241a45, #3a2c50); }
   .info { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
@@ -1032,42 +1031,6 @@
       </div>
     </a>
 
-    <a class="game" href="./race2/">
-      <div class="cover c25">
-        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <rect width="300" height="140" fill="#2f6b1f"/>
-          <rect x="12" y="0" width="126" height="140" fill="#3a3f52"/>
-          <rect x="162" y="0" width="126" height="140" fill="#3a3f52"/>
-          <rect x="144" y="0" width="12" height="140" fill="#12122b"/>
-          <g stroke="rgba(255,255,255,0.5)" stroke-width="3" stroke-dasharray="14 12">
-            <path d="M75 0 V140 M225 0 V140"/>
-          </g>
-          <g>
-            <rect x="34" y="70" width="26" height="44" rx="7" fill="#e63946"/>
-            <rect x="39" y="82" width="16" height="14" rx="3" fill="#bfe3f7"/>
-            <rect x="196" y="40" width="26" height="44" rx="7" fill="#5d9cec"/>
-            <rect x="201" y="52" width="16" height="14" rx="3" fill="#bfe3f7"/>
-          </g>
-          <g fill="#e6743c">
-            <path d="M100 40 L108 58 L92 58 Z"/>
-            <path d="M252 96 L260 114 L244 114 Z"/>
-          </g>
-          <g>
-            <rect x="20" y="8" width="12" height="10" fill="#f2f5fa"/><rect x="32" y="8" width="12" height="10" fill="#232733"/>
-            <rect x="20" y="18" width="12" height="10" fill="#232733"/><rect x="32" y="18" width="12" height="10" fill="#f2f5fa"/>
-            <rect x="256" y="8" width="12" height="10" fill="#f2f5fa"/><rect x="268" y="8" width="12" height="10" fill="#232733"/>
-            <rect x="256" y="18" width="12" height="10" fill="#232733"/><rect x="268" y="18" width="12" height="10" fill="#f2f5fa"/>
-          </g>
-        </svg>
-      <span class="new-tag">ՆՈՐ</span></div>
-      <div class="info">
-        <h2>Golden Race 2</h2>
-        <p class="real">Մրցավազք երկուսով</p>
-        <p class="desc">Երկու մեքենա, մեկ հեռախոս․ ամեն մեկը իր կեսում է քշում։ Ով առաջինը հասնի վերջնագծին։</p>
-        <div class="play">▶ Մրցել</div>
-      </div>
-    </a>
-
     <a class="game" href="./time/">
       <div class="cover c26">
         <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -1179,7 +1142,6 @@ const DICT = {
       './blocks/': ['Падающие блоки', 'Классический тетрис: заполняй ряды, чтобы они исчезали. Тень показывает, куда упадёт блок.', '▶ Строить'],
       './words/': ['Игра в слова', 'Угадай по картинке армянское слово и собери его из перемешанных букв. 40 слов.', '▶ Собирать'],
       './drums/': ['Ритм-машина', 'Зажигай клетки и делай свой ритм: барабан, хлопок, колокольчик. Ритм сохраняется сам.', '▶ Играть'],
-      './race2/': ['Гонка вдвоём', 'Две машины, один телефон: у каждого своя половина. Кто первым дойдёт до финиша.', '▶ Гоняться'],
       './time/': ['Машина времени', 'Вся история сайта — от первого летающего кота до сегодня, день за днём.', '▶ В путь'],
       './museum/': ['Музей', 'Место отдыха удалённых игр: от пирата до золотого котёнка. Соблюдай тишину 🤫', '▶ Войти'],
     },
@@ -1209,7 +1171,6 @@ const DICT = {
       './blocks/': ['Falling Blocks', 'Classic tetris: fill the rows to clear them. The ghost shows where your block will land.', '▶ Stack'],
       './words/': ['Word Game', 'Guess the Armenian word from the picture and build it from scrambled letters. 40 words.', '▶ Build'],
       './drums/': ['Beat Machine', 'Light up the cells and make your own beat: drum, clap, bell. Your rhythm saves itself.', '▶ Play'],
-      './race2/': ['Two-Player Race', 'Two cars, one phone: each player owns half the screen. First to the finish line wins.', '▶ Race'],
       './time/': ['Time Machine', 'The whole story of the site — from the first flying cat to today, day by day.', '▶ Travel'],
       './museum/': ['Museum', 'The resting place of deleted games: from the pirate to the golden kitten. Keep quiet 🤫', '▶ Enter'],
     },
@@ -1239,7 +1200,6 @@ const DICT = {
       './blocks/': ['Bloques', 'Tetris clásico: llena las filas para que desaparezcan. La sombra muestra dónde caerá.', '▶ Apilar'],
       './words/': ['Juego de palabras', 'Adivina la palabra armenia por la imagen y ármala con letras revueltas. 40 palabras.', '▶ Armar'],
       './drums/': ['Caja de ritmos', 'Enciende las casillas y crea tu ritmo: tambor, palmada, campana. Se guarda solo.', '▶ Tocar'],
-      './race2/': ['Carrera de a dos', 'Dos coches, un teléfono: cada uno con su mitad. Gana quien llegue primero a la meta.', '▶ Competir'],
       './time/': ['Máquina del tiempo', 'Toda la historia del sitio, del primer gato volador hasta hoy, día a día.', '▶ Viajar'],
       './museum/': ['Museo', 'El descanso de los juegos borrados: del pirata al gatito dorado. Guarda silencio 🤫', '▶ Entrar'],
     },
@@ -1269,7 +1229,6 @@ const DICT = {
       './blocks/': ['Blocs', 'Tetris classique : remplis les lignes pour les faire disparaître. L’ombre montre où ça tombe.', '▶ Empiler'],
       './words/': ['Jeu de mots', 'Devine le mot arménien d’après l’image et forme-le avec les lettres mélangées. 40 mots.', '▶ Former'],
       './drums/': ['Boîte à rythmes', 'Allume les cases et crée ton rythme : tambour, clap, clochette. Il se sauvegarde tout seul.', '▶ Jouer'],
-      './race2/': ['Course à deux', 'Deux voitures, un téléphone : chacun sa moitié. Le premier à la ligne d’arrivée gagne.', '▶ Courir'],
       './time/': ['Machine à remonter le temps', 'Toute l’histoire du site, du premier chat volant à aujourd’hui, jour après jour.', '▶ Voyager'],
       './museum/': ['Musée', 'Le repos des jeux supprimés : du pirate au chaton doré. Silence, s’il te plaît 🤫', '▶ Entrer'],
     },
@@ -1299,7 +1258,6 @@ const DICT = {
       './blocks/': ['Blöcke', 'Klassisches Tetris: fülle die Reihen, damit sie verschwinden. Der Schatten zeigt, wo es landet.', '▶ Stapeln'],
       './words/': ['Wortspiel', 'Errate das armenische Wort vom Bild und baue es aus den gemischten Buchstaben. 40 Wörter.', '▶ Bauen'],
       './drums/': ['Beat-Maschine', 'Schalte Felder an und bau deinen Beat: Trommel, Klatschen, Glocke. Speichert sich selbst.', '▶ Spielen'],
-      './race2/': ['Rennen zu zweit', 'Zwei Autos, ein Handy: jeder hat seine Hälfte. Wer zuerst im Ziel ist, gewinnt.', '▶ Rasen'],
       './time/': ['Zeitmaschine', 'Die ganze Geschichte der Seite — von der ersten fliegenden Katze bis heute, Tag für Tag.', '▶ Reisen'],
       './museum/': ['Museum', 'Der Ruheort gelöschter Spiele: vom Piraten bis zum goldenen Kätzchen. Bitte leise 🤫', '▶ Eintreten'],
     },
@@ -1329,7 +1287,6 @@ const DICT = {
       './blocks/': ['ブロック', 'クラシックなテトリス：横一列そろえて消そう。かげが落ちる場所を教えてくれる。', '▶ つむ'],
       './words/': ['ことばゲーム', '絵からアルメニア語のことばをあてて、まぜられた文字から作ろう。40問！', '▶ つくる'],
       './drums/': ['リズムマシン', 'マスをつけて自分のビートを作ろう：ドラム、クラップ、ベル。リズムは自動セーブ。', '▶ ならす'],
-      './race2/': ['ふたりでレース', '2台の車、1台のスマホ：半分ずつ自分のコース。先にゴールした方のかち！', '▶ きそう'],
       './time/': ['タイムマシン', 'サイトのぜんぶの歴史：さいしょの飛びネコから今日まで、1日ずつ。', '▶ たびする'],
       './museum/': ['ミュージアム', 'けされたゲームのおやすみの場所：海賊から金のこねこまで。おしずかに 🤫', '▶ はいる'],
     },
@@ -1359,7 +1316,6 @@ const DICT = {
       './blocks/': ['方块', '经典俄罗斯方块：填满一行就消除。影子会告诉你方块落在哪。', '▶ 叠放'],
       './words/': ['单词游戏', '看图猜亚美尼亚语单词，再用打乱的字母拼出来。共40个词。', '▶ 拼词'],
       './drums/': ['节奏机', '点亮格子做出你的节奏：鼓、拍手、铃铛。节奏自动保存。', '▶ 演奏'],
-      './race2/': ['双人赛车', '两辆车一部手机：一人一半屏幕。先到终点的赢！', '▶ 比赛'],
       './time/': ['时光机', '网站的全部历史——从第一只飞猫到今天，一天一天看。', '▶ 出发'],
       './museum/': ['博物馆', '被删游戏的安息之地：从海盗到金色小猫。请保持安静 🤫', '▶ 进入'],
     },
