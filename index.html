@@ -52,6 +52,37 @@
   }
   nav a:hover { border-color: var(--accent); color: var(--accent); }
 
+  /* ——— «Ի՞նչ խաղանք» զտիչը 💡 — Արենի միտքն է ——— */
+  .mood {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin: 4px auto 2px;
+  }
+  .mood .mq { color: var(--accent); font-weight: bold; font-size: 0.95rem; margin-right: 2px; }
+  .mood button {
+    font-family: inherit;
+    color: var(--ink);
+    background: var(--card);
+    border: 2px solid #33356b;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: border-color 0.12s, transform 0.12s;
+  }
+  .mood button:hover { border-color: var(--accent); }
+  .mood button.on {
+    background: var(--accent);
+    color: #2e2410;
+    border-color: var(--accent);
+    font-weight: bold;
+    transform: scale(1.05);
+  }
+  .game.moodhide { display: none; }
+
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -239,6 +270,15 @@
       <a href="#" id="langBtn" title="Լեզու / Язык / Language">🌐</a>
     </nav>
   </header>
+
+  <!-- «Ի՞նչ խաղանք» զտիչը. սեղմիր ու կմնան միայն տրամադրությանդ հարմար խաղերը -->
+  <div class="mood" id="mood">
+    <span class="mq" id="moodQ">Ի՞նչ խաղանք՝</span>
+    <button data-mood="solo" id="moodSolo">🙋 Մենակ եմ</button>
+    <button data-mood="friend" id="moodFriend">👥 Ընկերոջ հետ եմ</button>
+    <button data-mood="calm" id="moodCalm">🌿 Հանգիստ բան եմ ուզում</button>
+    <button data-mood="fast" id="moodFast">⚡ Ադրենալին եմ ուզում</button>
+  </div>
 
   <div class="grid">
 
@@ -1122,6 +1162,7 @@ const DICT = {
     about: '😼 О нас',
     troph: '🏆 Кубки',
     rand: '🎲 Случайная',
+    moodQ: 'Во что сыграем?', moodSolo: '🙋 Я один', moodFriend: '👥 Я с другом', moodCalm: '🌿 Хочу спокойное', moodFast: '⚡ Хочу адреналина',
     newTag: 'NEW',
     cards: {
       './cat-jump/': ['Котик', 'Две игры в одной: кот-бегун с ящиками и воронами, и Golden Bird 🐦 — птичка между башнями из ящиков.', '▶ Играть'],
@@ -1151,6 +1192,7 @@ const DICT = {
     about: '😼 About',
     troph: '🏆 Trophies',
     rand: '🎲 Random',
+    moodQ: 'What shall we play?', moodSolo: '🙋 On my own', moodFriend: '👥 With a friend', moodCalm: '🌿 Something calm', moodFast: '⚡ Adrenaline!',
     newTag: 'NEW',
     cards: {
       './cat-jump/': ['Kitty', 'Two games in one: the running cat with boxes and crows, and Golden Bird 🐦 — a bird flying between box towers.', '▶ Play'],
@@ -1180,6 +1222,7 @@ const DICT = {
     about: '😼 Sobre nosotros',
     troph: '🏆 Trofeos',
     rand: '🎲 Al azar',
+    moodQ: '¿A qué jugamos?', moodSolo: '🙋 Estoy solo', moodFriend: '👥 Con un amigo', moodCalm: '🌿 Algo tranquilo', moodFast: '⚡ ¡Adrenalina!',
     newTag: 'NUEVO',
     cards: {
       './cat-jump/': ['Gatito', 'Dos juegos en uno: el gato corredor con cajas y cuervos, y Golden Bird 🐦, un pajarito entre torres de cajas.', '▶ Jugar'],
@@ -1209,6 +1252,7 @@ const DICT = {
     about: '😼 À propos',
     troph: '🏆 Trophées',
     rand: '🎲 Au hasard',
+    moodQ: 'On joue à quoi ?', moodSolo: '🙋 Je suis seul', moodFriend: '👥 Avec un ami', moodCalm: '🌿 Un truc calme', moodFast: '⚡ De l’adrénaline !',
     newTag: 'NOUVEAU',
     cards: {
       './cat-jump/': ['Petit chat', 'Deux jeux en un : le chat coureur avec caisses et corbeaux, et Golden Bird 🐦, l’oiseau entre les tours de caisses.', '▶ Jouer'],
@@ -1238,6 +1282,7 @@ const DICT = {
     about: '😼 Über uns',
     troph: '🏆 Pokale',
     rand: '🎲 Zufall',
+    moodQ: 'Was spielen wir?', moodSolo: '🙋 Ich bin allein', moodFriend: '👥 Mit einem Freund', moodCalm: '🌿 Etwas Ruhiges', moodFast: '⚡ Adrenalin!',
     newTag: 'NEU',
     cards: {
       './cat-jump/': ['Kätzchen', 'Zwei Spiele in einem: die rennende Katze mit Kisten und Krähen, und Golden Bird 🐦 — der Vogel zwischen Kistentürmen.', '▶ Spielen'],
@@ -1267,6 +1312,7 @@ const DICT = {
     about: '😼 わたしたち',
     troph: '🏆 トロフィー',
     rand: '🎲 ランダム',
+    moodQ: 'なにであそぶ？', moodSolo: '🙋 ひとりで', moodFriend: '👥 ともだちと', moodCalm: '🌿 のんびりしたい', moodFast: '⚡ ドキドキしたい',
     newTag: '新',
     cards: {
       './cat-jump/': ['ネコちゃん', '2つのゲームが1つに：箱とカラスのネコラン、そして箱のタワーを飛ぶ Golden Bird 🐦。', '▶ あそぶ'],
@@ -1296,6 +1342,7 @@ const DICT = {
     about: '😼 关于我们',
     troph: '🏆 奖杯',
     rand: '🎲 随机',
+    moodQ: '玩什么好呢？', moodSolo: '🙋 我一个人', moodFriend: '👥 和朋友一起', moodCalm: '🌿 想玩安静的', moodFast: '⚡ 想要刺激的',
     newTag: '新',
     cards: {
       './cat-jump/': ['小猫咪', '两个游戏合一：跳箱躲乌鸦的小猫快跑，加上在箱子塔之间飞的 Golden Bird 🐦。', '▶ 开玩'],
@@ -1331,6 +1378,11 @@ function applyLang(lang) {
   document.getElementById('navAbout').textContent = d.about;
   document.getElementById('navTroph').textContent = d.troph;
   document.getElementById('navRand').textContent = d.rand;
+  document.getElementById('moodQ').textContent = d.moodQ;
+  document.getElementById('moodSolo').textContent = d.moodSolo;
+  document.getElementById('moodFriend').textContent = d.moodFriend;
+  document.getElementById('moodCalm').textContent = d.moodCalm;
+  document.getElementById('moodFast').textContent = d.moodFast;
   document.querySelectorAll('.game').forEach(card => {
     const c = d.cards[card.getAttribute('href')];
     if (!c) return;
@@ -1357,10 +1409,48 @@ document.getElementById('langBtn').addEventListener('pointerdown', (e) => {
 });
 document.getElementById('langBtn').addEventListener('click', (e) => e.preventDefault());
 
+// ——— «Ի՞նչ խաղանք» զտիչը 💡 — Արենի միտքն է ———
+// Ամեն խաղ ունի պիտակներ. մենակ / ընկերոջ հետ / հանգիստ / ադրենալին
+const MOODS = {
+  './cat-jump/': ['solo', 'fast'],
+  './city-drive/': ['solo', 'fast'],
+  './piano/': ['solo', 'friend', 'calm'],
+  './rocket/': ['solo', 'fast'],
+  './memory/': ['solo', 'calm'],
+  './fishing/': ['solo', 'calm'],
+  './duel/': ['friend', 'fast'],
+  './maze/': ['solo', 'calm'],
+  './tower/': ['solo', 'calm'],
+  './moles/': ['solo', 'fast'],
+  './beat/': ['solo', 'fast'],
+  './ninja/': ['solo', 'fast'],
+  './men/': ['solo', 'fast'],
+  './runner/': ['solo', 'fast'],
+  './pipes/': ['solo', 'calm'],
+  './words/': ['solo', 'calm'],
+  './blocks/': ['solo', 'fast'],
+  './drums/': ['solo', 'friend', 'calm'],
+  // time-ն ու museum-ը խաղ չեն — զտելիս թաքնվում են
+};
+let mood = null;
+function applyMood() {
+  document.querySelectorAll('#mood button').forEach(b => b.classList.toggle('on', b.dataset.mood === mood));
+  document.querySelectorAll('.game').forEach(card => {
+    const tags = MOODS[card.getAttribute('href')] || [];
+    card.classList.toggle('moodhide', mood !== null && !tags.includes(mood));
+  });
+}
+document.querySelectorAll('#mood button').forEach(b => {
+  b.addEventListener('click', () => {
+    mood = (mood === b.dataset.mood) ? null : b.dataset.mood;   // նույնը կրկին սեղմես՝ բոլորն ետ կգան
+    applyMood();
+  });
+});
+
 // ——— 🎲 Պատահական խաղ. զառը որոշում է, թե ինչ ես խաղալու այսօր ———
 document.getElementById('navRand').addEventListener('click', (e) => {
   e.preventDefault();
-  const cards = [...document.querySelectorAll('.game')];
+  const cards = [...document.querySelectorAll('.game:not(.moodhide)')];
   const pick = cards[Math.floor(Math.random() * cards.length)];
   // մի պահ առանձնացնում ենք ընտրվածը, հետո գնում ենք
   pick.scrollIntoView({ behavior: 'smooth', block: 'center' });
