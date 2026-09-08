@@ -78,6 +78,30 @@
   .row.empty svg { opacity: 0.85; }
   .row.empty .val { color: #6a6f96; font-size: 0.8rem; font-weight: normal; }
 
+  /* ——— Առաջին գավաթի ուղերձը. երևում է միայն ուղիղ 1 գավաթ ունեցողին ———
+     Արենի միտքն է. առաջին գավաթը ամենակարևորն է, դրանից հետո մարդ կանգ չի առնում */
+  #first[hidden] { display: none; }
+  #first {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+    padding: 14px 26px;
+    border: 2px solid rgba(255, 209, 102, 0.7);
+    border-radius: 18px;
+    background: rgba(255, 209, 102, 0.08);
+    box-shadow: 0 0 30px rgba(255, 209, 102, 0.18);
+    animation: firstIn 0.6s cubic-bezier(0.2, 1.5, 0.4, 1);
+    text-align: center;
+  }
+  @keyframes firstIn {
+    from { transform: scale(0.4); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  #first .ft { color: #ffd166; font-weight: bold; font-size: clamp(1rem, 4.6vw, 1.25rem); }
+  #first .fs { color: #cdd1ef; font-size: 0.86rem; }
+
   /* ——— GOLDEN CHAMPION կնիքը. երևում է միայն ԲՈԼՈՐ գավաթները հավաքածին ——— */
   #champ[hidden] { display: none; }
   #champ {
@@ -131,6 +155,11 @@
 <p class="sub"></p>
 <div class="count"></div>
 
+<div id="first" hidden>
+  <div class="ft"></div>
+  <div class="fs"></div>
+</div>
+
 <div id="champ" hidden>
   <img src="../logo-icon.png" alt="Golden Games">
   <div class="ct">GOLDEN CHAMPION</div>
@@ -150,14 +179,14 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { champ: 'Հավաքել ես ԲՈԼՈՐ գավաթները', sub: 'Քո ռեկորդները բոլոր խաղերում', count: (n, m) => 'Գավաթներ՝ ' + n + '/' + m, none: 'դեռ չես խաղացել', u: { pt: ' միավոր', fl: ' հարկ', lvl: n => 'մակարդակ ' + n, tries: ' փորձով', chain: ' քայլ', num: ' թիվ', m: ' մ' } },
-  ru: { champ: 'Ты собрал ВСЕ кубки', sub: 'Твои рекорды во всех играх', count: (n, m) => 'Кубки: ' + n + '/' + m, none: 'ещё не играл', u: { pt: ' очков', fl: ' этажей', lvl: n => 'уровень ' + n, tries: ' попыток', chain: ' шагов', num: ' чисел', m: ' м' } },
-  en: { champ: 'You collected ALL the trophies', sub: 'Your best scores in every game', count: (n, m) => 'Trophies: ' + n + '/' + m, none: 'not played yet', u: { pt: ' points', fl: ' floors', lvl: n => 'level ' + n, tries: ' tries', chain: ' steps', num: ' numbers', m: ' m' } },
-  es: { champ: '¡Tienes TODOS los trofeos!', sub: 'Tus récords en todos los juegos', count: (n, m) => 'Trofeos: ' + n + '/' + m, none: 'aún sin jugar', u: { pt: ' puntos', fl: ' pisos', lvl: n => 'nivel ' + n, tries: ' intentos', chain: ' pasos', num: ' números', m: ' m' } },
-  fr: { champ: 'Tu as TOUS les trophées !', sub: 'Tes records dans tous les jeux', count: (n, m) => 'Trophées : ' + n + '/' + m, none: 'pas encore joué', u: { pt: ' points', fl: ' étages', lvl: n => 'niveau ' + n, tries: ' essais', chain: ' pas', num: ' nombres', m: ' m' } },
-  de: { champ: 'Du hast ALLE Pokale!', sub: 'Deine Rekorde in allen Spielen', count: (n, m) => 'Pokale: ' + n + '/' + m, none: 'noch nicht gespielt', u: { pt: ' Punkte', fl: ' Etagen', lvl: n => 'Level ' + n, tries: ' Versuche', chain: ' Schritte', num: ' Zahlen', m: ' m' } },
-  ja: { champ: 'トロフィーをぜんぶ集めた！', sub: 'ぜんぶのゲームのベスト記録', count: (n, m) => 'トロフィー：' + n + '/' + m, none: 'まだあそんでないよ', u: { pt: 'ポイント', fl: '階', lvl: n => 'レベル' + n, tries: '回', chain: 'ステップ', num: '個', m: ' m' } },
-  zh: { champ: '集齐了所有奖杯！', sub: '你在所有游戏里的纪录', count: (n, m) => '奖杯：' + n + '/' + m, none: '还没玩过', u: { pt: '分', fl: '层', lvl: n => '第' + n + '关', tries: '次', chain: '步', num: '个', m: ' 米' } },
+  hy: { first: 'Սա դեռ սկիզբն է ✨', firstSub: n => 'Քեզ սպասում է ևս ' + n + ' գավաթ 🏆', champ: 'Հավաքել ես ԲՈԼՈՐ գավաթները', sub: 'Քո ռեկորդները բոլոր խաղերում', count: (n, m) => 'Գավաթներ՝ ' + n + '/' + m, none: 'դեռ չես խաղացել', u: { pt: ' միավոր', fl: ' հարկ', lvl: n => 'մակարդակ ' + n, tries: ' փորձով', chain: ' քայլ', num: ' թիվ', m: ' մ' } },
+  ru: { first: 'Это только начало ✨', firstSub: n => 'Тебя ждут ещё ' + n + ' кубков 🏆', champ: 'Ты собрал ВСЕ кубки', sub: 'Твои рекорды во всех играх', count: (n, m) => 'Кубки: ' + n + '/' + m, none: 'ещё не играл', u: { pt: ' очков', fl: ' этажей', lvl: n => 'уровень ' + n, tries: ' попыток', chain: ' шагов', num: ' чисел', m: ' м' } },
+  en: { first: 'This is just the beginning ✨', firstSub: n => n + ' more trophies are waiting for you 🏆', champ: 'You collected ALL the trophies', sub: 'Your best scores in every game', count: (n, m) => 'Trophies: ' + n + '/' + m, none: 'not played yet', u: { pt: ' points', fl: ' floors', lvl: n => 'level ' + n, tries: ' tries', chain: ' steps', num: ' numbers', m: ' m' } },
+  es: { first: 'Esto es solo el comienzo ✨', firstSub: n => 'Te esperan ' + n + ' trofeos más 🏆', champ: '¡Tienes TODOS los trofeos!', sub: 'Tus récords en todos los juegos', count: (n, m) => 'Trofeos: ' + n + '/' + m, none: 'aún sin jugar', u: { pt: ' puntos', fl: ' pisos', lvl: n => 'nivel ' + n, tries: ' intentos', chain: ' pasos', num: ' números', m: ' m' } },
+  fr: { first: 'Ce n’est que le début ✨', firstSub: n => 'Encore ' + n + ' trophées t’attendent 🏆', champ: 'Tu as TOUS les trophées !', sub: 'Tes records dans tous les jeux', count: (n, m) => 'Trophées : ' + n + '/' + m, none: 'pas encore joué', u: { pt: ' points', fl: ' étages', lvl: n => 'niveau ' + n, tries: ' essais', chain: ' pas', num: ' nombres', m: ' m' } },
+  de: { first: 'Das ist erst der Anfang ✨', firstSub: n => n + ' Pokale warten noch auf dich 🏆', champ: 'Du hast ALLE Pokale!', sub: 'Deine Rekorde in allen Spielen', count: (n, m) => 'Pokale: ' + n + '/' + m, none: 'noch nicht gespielt', u: { pt: ' Punkte', fl: ' Etagen', lvl: n => 'Level ' + n, tries: ' Versuche', chain: ' Schritte', num: ' Zahlen', m: ' m' } },
+  ja: { first: 'これはまだ始まりだよ ✨', firstSub: n => 'あと' + n + '個のトロフィーが待ってる 🏆', champ: 'トロフィーをぜんぶ集めた！', sub: 'ぜんぶのゲームのベスト記録', count: (n, m) => 'トロフィー：' + n + '/' + m, none: 'まだあそんでないよ', u: { pt: 'ポイント', fl: '階', lvl: n => 'レベル' + n, tries: '回', chain: 'ステップ', num: '個', m: ' m' } },
+  zh: { first: '这只是开始 ✨', firstSub: n => '还有' + n + '个奖杯在等你 🏆', champ: '集齐了所有奖杯！', sub: '你在所有游戏里的纪录', count: (n, m) => '奖杯：' + n + '/' + m, none: '还没玩过', u: { pt: '分', fl: '层', lvl: n => '第' + n + '关', tries: '次', chain: '步', num: '个', m: ' 米' } },
 };
 const T = TRL[ggLang] || TRL.hy;
 document.querySelector('.sub').textContent = T.sub;
@@ -232,6 +261,13 @@ GAMES.forEach((g, i) => {
 });
 
 document.querySelector('.count').textContent = T.count(wonCount, GAMES.length);
+
+// Առաջին գավա՞թն է — ամենակարևորը։ Ցույց ենք տալիս, որ սա դեռ սկիզբն է ✨
+if (wonCount === 1) {
+  document.getElementById('first').hidden = false;
+  document.querySelector('#first .ft').textContent = T.first;
+  document.querySelector('#first .fs').textContent = T.firstSub(GAMES.length - 1);
+}
 
 // Բոլո՞րն են հավաքված — GOLDEN CHAMPION կնիքը դրվում է 🏆
 if (wonCount === GAMES.length) {
