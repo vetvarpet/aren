@@ -118,7 +118,6 @@
   .c15 { background: linear-gradient(135deg, #10182e, #35507a); }
   .c16 { background: linear-gradient(135deg, #3a2410, #7a5a2e); }
   .c18 { background: linear-gradient(135deg, #2c5220, #74ad46); }
-  .c19 { background: linear-gradient(135deg, #b7791f, #ffd9a0); }
   .info { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
   .info h2 { font-size: 1.05rem; }
   .info .real { flex: 0 0 auto; color: var(--accent); font-size: 0.78rem; margin-top: -3px; }
@@ -926,54 +925,6 @@
       </div>
     </a>
 
-    <a class="game" href="./pet/">
-      <div class="cover c19">
-        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <defs>
-            <linearGradient id="cv19s" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#ffe9c4"/><stop offset="1" stop-color="#ffd9a0"/>
-            </linearGradient>
-            <radialGradient id="cv19h" cx="0.4" cy="0.35" r="1">
-              <stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#f0b429"/>
-            </radialGradient>
-          </defs>
-          <rect width="300" height="140" fill="url(#cv19s)"/>
-          <g transform="translate(240,36)">
-            <rect x="-26" y="-24" width="52" height="44" fill="#9fd9ef" stroke="#8a5a30" stroke-width="4"/>
-            <line x1="0" y1="-24" x2="0" y2="20" stroke="#8a5a30" stroke-width="3"/>
-            <circle cx="-12" cy="-10" r="7" fill="#ffd166"/>
-          </g>
-          <rect y="108" width="300" height="32" fill="#c08945"/>
-          <ellipse cx="150" cy="122" rx="85" ry="12" fill="rgba(230,57,70,0.3)"/>
-          <g transform="translate(150,88)">
-            <path d="M-30 -52 L-38 -76 L-14 -62 Z" fill="#f0b429"/>
-            <path d="M30 -52 L38 -76 L14 -62 Z" fill="#f0b429"/>
-            <path d="M-28 -55 L-33 -70 L-19 -61 Z" fill="#e07a9a"/>
-            <circle cx="0" cy="-38" r="36" fill="url(#cv19h)"/>
-            <circle cx="-12" cy="-42" r="4.6" fill="#3a2a17"/>
-            <circle cx="12" cy="-42" r="4.6" fill="#3a2a17"/>
-            <circle cx="-10.4" cy="-43.6" r="1.5" fill="#ffffff"/>
-            <circle cx="13.6" cy="-43.6" r="1.5" fill="#ffffff"/>
-            <path d="M-3 -31 L3 -31 L0 -27 Z" fill="#e07a9a"/>
-            <path d="M0 -27 q-4 6 -9 4 M0 -27 q4 6 9 4" fill="none" stroke="#3a2a17" stroke-width="2" stroke-linecap="round"/>
-            <path d="M-20 -30 L-36 -27 M-20 -24 L-35 -19 M20 -30 L36 -27 M20 -24 L35 -19" stroke="rgba(58,42,23,0.5)" stroke-width="1.6" stroke-linecap="round"/>
-            <path d="M-7 -66 q3 -8 7 -9 M2 -68 q3 -6 6 -6" stroke="#d99a12" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-          </g>
-          <g transform="translate(64,104)">
-            <circle r="14" fill="#e63946"/>
-            <path d="M0 -14 A14 14 0 0 1 14 0 L0 0 Z" fill="#f2f5fa"/>
-          </g>
-          <path d="M52 34 l2.6 5.4 5.4 2.6 -5.4 2.6 -2.6 5.4 -2.6 -5.4 -5.4 -2.6 5.4 -2.6 Z" fill="#ffffff" opacity="0.8"/>
-        </svg>
-      <span class="new-tag">ՆՈՐ</span></div>
-      <div class="info">
-        <h2>Golden Pet</h2>
-        <p class="real">Ոսկե փիսոն</p>
-        <p class="desc">Քո վիրտուալ ընկերիկը․ կերակրիր, խաղացրու, լողացրու ու քնացրու։ Ամեն օր մտիր՝ նա քեզ սպասում է 🥺</p>
-        <div class="play">▶ Խնամել</div>
-      </div>
-    </a>
-
   </div>
 
   <footer>
@@ -1019,7 +970,6 @@ const DICT = {
       './ninja/': ['Прыжки ниндзя', 'Прыгай со стены на стену и уворачивайся от шипов. Чем дальше — тем быстрее.', '▶ Прыгать'],
       './mine/': ['Золотая шахта', 'Бросай крюк, вытаскивай золото и алмазы. Камни тяжёлые, а время идёт.', '▶ Копать'],
       './men/': ['Перейди дорогу', 'Проведи человечка между машинами и через реку по брёвнам. Один неверный шаг — и ты в воде.', '▶ Идти'],
-      './pet/': ['Золотой котёнок', 'Твой виртуальный питомец: корми, играй, купай и укладывай спать. Заходи каждый день — он ждёт тебя 🥺', '▶ Заботиться'],
     },
     footer: 'Сделал Арен Агбалян, 10 лет 😼<br>Все игры написаны на JavaScript, созданы вместе с Claude — мастером кода и лучшим сотрудником 🤖 · <a href="https://github.com/vetvarpet/aren">Код на GitHub</a>',
   },
@@ -1044,7 +994,6 @@ const DICT = {
       './ninja/': ['Ninja Jump', 'Jump from wall to wall and dodge the spikes. The farther you go, the faster it gets.', '▶ Jump'],
       './mine/': ['Gold Mine', 'Throw the hook, pull up gold and diamonds. Rocks are heavy and the clock is ticking.', '▶ Dig'],
       './men/': ['Cross the Road', 'Guide the little man between the cars and across the river on floating logs. One wrong step and you’re in the water.', '▶ Go'],
-      './pet/': ['Golden Kitten', 'Your virtual pet: feed it, play with it, bathe it and tuck it in. Visit every day — it waits for you 🥺', '▶ Care'],
     },
     footer: 'Built by Aren Aghbalyan, age 10 😼<br>All games written in JavaScript, created together with Claude — Code Master, best employee 🤖 · <a href="https://github.com/vetvarpet/aren">Code on GitHub</a>',
   },
@@ -1069,7 +1018,6 @@ const DICT = {
       './ninja/': ['Salto ninja', 'Salta de pared en pared y esquiva los pinchos. Cuanto más lejos, más rápido.', '▶ Saltar'],
       './mine/': ['Mina de oro', 'Lanza el gancho y saca oro y diamantes. Las piedras pesan y el tiempo corre.', '▶ Cavar'],
       './men/': ['Cruza la calle', 'Guía al hombrecito entre los coches y cruza el río saltando por los troncos. Un paso en falso y al agua.', '▶ Ir'],
-      './pet/': ['Gatito dorado', 'Tu mascota virtual: dale de comer, juega, báñala y acuéstala. Entra cada día: te espera 🥺', '▶ Cuidar'],
     },
     footer: 'Hecho por Aren Aghbalyan, 10 años 😼<br>Todos los juegos están escritos en JavaScript, creados junto a Claude, maestro del código y mejor empleado 🤖 · <a href="https://github.com/vetvarpet/aren">Código en GitHub</a>',
   },
@@ -1094,7 +1042,6 @@ const DICT = {
       './ninja/': ['Saut de ninja', 'Saute de mur en mur et évite les piques. Plus tu vas loin, plus ça va vite.', '▶ Sauter'],
       './mine/': ['Mine d’or', 'Lance le grappin, remonte l’or et les diamants. Les pierres sont lourdes et le temps file.', '▶ Creuser'],
       './men/': ['Traverse la route', 'Guide le petit bonhomme entre les voitures et traverse la rivière sur les troncs. Un faux pas et tu tombes à l’eau.', '▶ Marcher'],
-      './pet/': ['Chaton doré', 'Ton animal virtuel : nourris-le, joue avec lui, lave-le et couche-le. Reviens chaque jour, il t’attend 🥺', '▶ S’occuper'],
     },
     footer: 'Créé par Aren Aghbalyan, 10 ans 😼<br>Tous les jeux sont écrits en JavaScript, créés avec Claude, maître du code et meilleur employé 🤖 · <a href="https://github.com/vetvarpet/aren">Code sur GitHub</a>',
   },
@@ -1119,7 +1066,6 @@ const DICT = {
       './ninja/': ['Ninja-Sprung', 'Spring von Wand zu Wand und weich den Stacheln aus. Je weiter du kommst, desto schneller wird es.', '▶ Springen'],
       './mine/': ['Goldmine', 'Wirf den Haken, zieh Gold und Diamanten hoch. Steine sind schwer, die Zeit läuft.', '▶ Graben'],
       './men/': ['Über die Straße', 'Führe das Männchen zwischen den Autos hindurch und über den Fluss auf Baumstämmen. Ein falscher Schritt — und du bist im Wasser.', '▶ Los'],
-      './pet/': ['Goldenes Kätzchen', 'Dein virtuelles Haustier: füttern, spielen, baden, schlafen legen. Schau jeden Tag vorbei — es wartet auf dich 🥺', '▶ Pflegen'],
     },
     footer: 'Gebaut von Aren Aghbalyan, 10 Jahre 😼<br>Alle Spiele sind in JavaScript geschrieben, zusammen mit Claude erstellt — Code-Meister, bester Mitarbeiter 🤖 · <a href="https://github.com/vetvarpet/aren">Code auf GitHub</a>',
   },
@@ -1144,7 +1090,6 @@ const DICT = {
       './ninja/': ['忍者ジャンプ', '壁から壁へジャンプしてトゲをよけよう。進むほどスピードアップ！', '▶ とぶ'],
       './mine/': ['金鉱掘り', 'フックを投げて金やダイヤを引き上げよう。岩は重いし、時間はどんどん過ぎる。', '▶ ほる'],
       './men/': ['みちをわたろう', '車のあいだをぬけて、丸太に乗って川をわたろう。一歩まちがえたら水の中！', '▶ すすむ'],
-      './pet/': ['きんいろのこねこ', 'きみのバーチャルペット：ごはん、あそび、おふろ、ねんね。毎日会いに来てね、待ってるよ 🥺', '▶ おせわ'],
     },
     footer: '作った人：アレン・アグバリャン（10さい）😼<br>ぜんぶJavaScriptで、Claude（コードマスター＆さいこうのスタッフ 🤖）といっしょに作りました · <a href="https://github.com/vetvarpet/aren">GitHubのコード</a>',
   },
@@ -1169,7 +1114,6 @@ const DICT = {
       './ninja/': ['忍者跳', '在两面墙之间跳来跳去，躲开尖刺。跑得越远速度越快。', '▶ 起跳'],
       './mine/': ['黄金矿工', '抛出钩子，拉上金子和钻石。石头很重，时间不等人。', '▶ 开挖'],
       './men/': ['过马路', '带小人穿过车流，再踩着浮木过河。走错一步就掉水里！', '▶ 出发'],
-      './pet/': ['金色小猫', '你的虚拟宠物：喂它、陪它玩、给它洗澡、哄它睡觉。每天来看看，它在等你 🥺', '▶ 照顾'],
     },
     footer: '作者：阿伦·阿格巴良，10岁 😼<br>所有游戏都用JavaScript编写，与Claude——代码大师、最佳员工 🤖 一起制作 · <a href="https://github.com/vetvarpet/aren">GitHub上的代码</a>',
   },

@@ -24,7 +24,6 @@ and iterating on the code together with Claude, one change at a time.
 | [`ninja`](./ninja/) | 🥷 Golden Ninja (Նինձյա ցատկ) | Wall-jumping ninja: tap to switch walls, dodge the spikes, the world speeds up |
 | [`mine`](./mine/) | ⛏️ Golden Mine (Ոսկե հանք) | Gold-miner: swing the hook, pull up gold and diamonds, reach the goal before time runs out |
 | [`men`](./men/) | 👨🏻 Golden Men (Անցի՛ր ճանապարհը) | Crossy-road: dodge the cars, hop across the river on floating logs, count your steps |
-| [`pet`](./pet/) | 🐹 Golden Pet (Ոսկե փիսոն) | Virtual golden kitten: name it, feed it, play, bathe and tuck it in — it remembers you between visits and levels up to earn its crown |
 
 Every project is a single self-contained `index.html` — no frameworks, no
 build step. Open any folder's `index.html` in a browser and play. Sounds and
