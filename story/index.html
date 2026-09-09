@@ -1,0 +1,282 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Story 📖</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { min-height: 100%; }
+  body {
+    background:
+      radial-gradient(circle at 20% 10%, rgba(255, 209, 102, 0.09), transparent 40%),
+      linear-gradient(#141230, #241a3f);
+    color: #eef0ff;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 64px 16px 40px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    min-height: 100dvh;
+  }
+  nav { position: fixed; top: 10px; left: 10px; z-index: 10; }
+  nav a {
+    color: #f5eede; text-decoration: none;
+    background: rgba(20,26,34,0.75); border: 2px solid rgba(255,255,255,0.4);
+    padding: 5px 12px; border-radius: 999px; font-size: 0.78rem;
+  }
+  #book {
+    width: min(94vw, 560px);
+    background: #1d1d3f;
+    border: 2px solid #33356b;
+    border-radius: 20px;
+    padding: 22px 22px 18px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  #pic { font-size: 56px; text-align: center; }
+  #txt { line-height: 1.75; font-size: 1.02rem; }
+  .choice {
+    font-family: inherit; font-size: 0.95rem; text-align: left;
+    color: #eef0ff; background: #2a2f55;
+    border: 2px solid #3d4380; border-radius: 14px;
+    padding: 13px 16px; cursor: pointer; line-height: 1.4;
+    transition: border-color 0.12s, transform 0.12s;
+  }
+  .choice:hover { border-color: #ffd166; transform: translateX(3px); }
+  #endBox[hidden] { display: none !important; }
+  #endBox { text-align: center; display: flex; flex-direction: column; gap: 10px; }
+  #endBox .badge {
+    color: #ffd166; font-weight: bold; font-size: 1.05rem;
+  }
+  #endBox .found { color: #9a9ec7; font-size: 0.88rem; }
+  #endBox .stars { font-size: 1.4rem; letter-spacing: 0.2em; }
+  button.big {
+    font-family: inherit; font-size: 1rem; font-weight: bold;
+    color: #2e2410; background: #ffd166;
+    border: none; border-radius: 999px; padding: 13px 28px; cursor: pointer;
+    align-self: center;
+  }
+  h1 { color: #ffd166; font-size: clamp(1.2rem, 5vw, 1.6rem); text-align: center; margin-bottom: 14px; }
+</style>
+
+<nav><a href="../">← Golden Games</a></nav>
+
+<h1>Golden Story 📖</h1>
+<div id="book">
+  <div id="pic"></div>
+  <div id="txt"></div>
+  <div id="choices" style="display:flex;flex-direction:column;gap:10px;"></div>
+  <div id="endBox" hidden>
+    <div class="badge" id="endBadge"></div>
+    <div class="stars" id="endStars"></div>
+    <div class="found" id="endFound"></div>
+    <button class="big" id="btnRestart"></button>
+  </div>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN STORY 📖 — ամեն ընտրություն ուրիշ վերջ է տալիս
+//  Հեքիաթի հերոսները մեր կայքից են՝ ոսկե կատուն, Սևբեղը, Օձուկը, լամպիկը…
+//  7 տարբեր վերջ կա. կգտնե՞ս բոլորը։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { again: '📖 Նորից սկսել', endN: n => 'ՎԵՐՋ №' + n, found: (n, m) => 'Գտել ես ' + n + ' վերջ ' + m + '-ից', allFound: 'Գտել ես ԲՈԼՈՐ վերջերը 🎉' },
+  ru: { again: '📖 Начать заново', endN: n => 'КОНЦОВКА №' + n, found: (n, m) => 'Найдено концовок: ' + n + ' из ' + m, allFound: 'Ты нашёл ВСЕ концовки 🎉' },
+  en: { again: '📖 Start over', endN: n => 'ENDING #' + n, found: (n, m) => 'You found ' + n + ' of ' + m + ' endings', allFound: 'You found ALL the endings 🎉' },
+  es: { again: '📖 Empezar de nuevo', endN: n => 'FINAL №' + n, found: (n, m) => 'Has encontrado ' + n + ' de ' + m + ' finales', allFound: '¡Encontraste TODOS los finales 🎉' },
+  fr: { again: '📖 Recommencer', endN: n => 'FIN №' + n, found: (n, m) => 'Tu as trouvé ' + n + ' fins sur ' + m, allFound: 'Tu as trouvé TOUTES les fins 🎉' },
+  de: { again: '📖 Neu anfangen', endN: n => 'ENDE Nr. ' + n, found: (n, m) => 'Du hast ' + n + ' von ' + m + ' Enden gefunden', allFound: 'Du hast ALLE Enden gefunden 🎉' },
+  ja: { again: '📖 さいしょから', endN: n => 'エンディング' + n, found: (n, m) => m + 'こ中' + n + 'このエンディングを見つけたよ', allFound: 'ぜんぶのエンディングを見つけた 🎉' },
+  zh: { again: '📖 重新开始', endN: n => '结局 №' + n, found: (n, m) => '已找到 ' + n + '/' + m + ' 个结局', allFound: '你找到了所有结局 🎉' },
+  it: { again: '📖 Ricomincia', endN: n => 'FINALE №' + n, found: (n, m) => 'Hai trovato ' + n + ' finali su ' + m, allFound: 'Hai trovato TUTTI i finali 🎉' },
+  ka: { again: '📖 თავიდან დაწყება', endN: n => 'დასასრული №' + n, found: (n, m) => 'ნაპოვნია ' + n + ' დასასრული ' + m + '-დან', allFound: 'ყველა დასასრული იპოვე 🎉' },
+  hi: { again: '📖 फिर से शुरू', endN: n => 'अंत №' + n, found: (n, m) => m + ' में से ' + n + ' अंत मिले', allFound: 'तुमने सारे अंत ढूँढ लिए 🎉' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+// Հեքիաթը երեք լեզվով է գրված. մյուս լեզուների ընթերցողները կկարդան անգլերենը
+const STORIES = {
+  hy: {
+    start: { pic: '🌙', txt: 'Գիշեր է Golden Games-ում։ Հանկարծ գավաթների սենյակից ձայն է լսվում. GOLDEN CHAMPION կնիքը անհետացե՜լ է։ Դու ոսկե կատուն ես, ու քո գործն է այն գտնելը։', ch: [
+      ['Գնալ թանգարան՝ հին ընկերներից հարցնելու 🏛️', 'museum'],
+      ['Վազել տանիքներով՝ հետքերի ետևից 🏃', 'roof'],
+      ['Քնել ու սպասել առավոտվան 😴', 'end_sleep'],
+    ]},
+    museum: { pic: '🏛️', txt: 'Թանգարանում Կապիտան Սևբեղի ուրվականը արթուն է։ «Կնիքը՞,— ծիծաղում է նա իր սև մորուքի միջից,— տեսա, թե ոնց մի մեծ ագռավ տարավ դեպի լիճը»։', ch: [
+      ['Շտապել լիճ 🌊', 'lake'],
+      ['Հարցնել Fable 5-ի լամպիկին 💡', 'lamp'],
+    ]},
+    roof: { pic: '🏙️', txt: 'Տանիքին փետուրներ են թափված։ Հեռվում ագռավների երամ է՝ ինչ-որ ոսկեգույն փայլուն բան են տանում կտուցներում։', ch: [
+      ['Հետևել երամին՝ ցատկելով տանիքից տանիք 🐦‍⬛', 'crows'],
+      ['Կանչել թռչնակ ընկերոջդ 🐦', 'end_bird'],
+    ]},
+    lake: { pic: '🌊', txt: 'Լճի ափին ոսկե ձուկն է լողում։ «Կնիքը ագռավի բույնում է՝ ամենաբարձր ծառի գագաթին։ Բայց զգույշ, ճյուղերը բարակ են»։', ch: [
+      ['Մագլցել ծառը՝ ինչ էլ լինի 🌳', 'end_tree'],
+      ['Խնդրել ձկանը երեք ցանկություն 🐟', 'end_wish'],
+    ]},
+    lamp: { pic: '💡', txt: 'Լամպիկը մեղմ վառվում է. «Հիմնադիրները չեն մահանում, փիսո ջան։ Ահա քեզ միտք՝ ագռավները փայլուն բաներ են սիրում։ Տար նրանց դաշնամուրի ոսկե նոտան — կփոխանակեն»։', ch: [
+      ['Վերցնել ոսկե նոտան ու գնալ ագռավների մոտ 🎵', 'end_trade'],
+      ['Չէ, ավելի լավ է լիճ գնալ 🌊', 'lake'],
+    ]},
+    crows: { pic: '🐦‍⬛', txt: 'Ագռավները նկատում են քեզ ու վախից ցրվում։ Կնիքը ընկնում է ներքև… ուղիղ Օձուկի հին բնի մեջ։ Բնից «սսսս» է լսվում։', ch: [
+      ['Ձեռքդ մտցնել բնի մեջ 🐍', 'end_snake'],
+      ['Քաղաքավարի խնդրել ագռավներից 🤝', 'end_polite'],
+    ]},
+    end_sleep: { pic: '😴', end: 1, txt: 'Առավոտյան կնիքը իր տեղում է — պարզվում է՝ գիշերը մաքրելու էին տարել։ Ամեն ինչ լավ է, բայց դու քնեցիր ամենամեծ արկածի ժամանակ։' },
+    end_bird: { pic: '🐦', end: 2, txt: 'Թռչնակը սլանում է երկինք ու հինգ րոպեից վերադառնում կնիքով։ «Իմ 21 միավորի թագը գրավ դրեցի, բայց ընկերությունը ամեն ինչից թանկ է»։ Դուք միասին տուն եք վերադառնում որպես հերոսներ։' },
+    end_tree: { pic: '👑', end: 3, txt: 'Մագլցում ես։ Ճյուղը ճռռում է… կոտրվու՜մ է… բայց տանիքների վազորդի կրկնակի ցատկդ փրկում է քեզ։ Կնիքը քո թաթերում է։ Ամենափայլուն վերջը՝ դու իսկական ՈՍԿԵ ՉԵՄՊԻՈՆ ես։' },
+    end_wish: { pic: '🐟', end: 4, txt: 'Ձուկը ժպտում է. «Ցանկություննե՞ր… Ես սովորական ոսկե ձուկ եմ, ընդամենը +5 միավոր եմ տալիս»։ Ու տալիս է քեզ +5։ Կնիքը մնում է ագռավների մոտ, բայց դու մի քիչ հարստացար։' },
+    end_snake: { pic: '🐍', end: 5, txt: 'Օձուկը փաթաթվում է թաթիդ. «Սսսա իմ բունն է»։ Կնիքը վերցնում ես, բայց ամբողջ շաբաթ «սսս»-ով ես խոսելու։ Կատուն, որ սսսվում է — դա էլ է պատմություն։' },
+    end_polite: { pic: '🤝', end: 6, txt: '«Հարգելի՛ ագռավներ, կարո՞ղ եք վերադարձնել կնիքը»։ Ագռավները քարանում են՝ առաջին անգամ ինչ-որ մեկը քաղաքավարի էր նրանց հետ։ Վերադարձնում են կնիքը ու մի փայլուն կոճակ՝ նվեր։' },
+    end_trade: { pic: '🎵', end: 7, txt: 'Ոսկե նոտան փայլում է լուսնի տակ։ Ագռավները հիացած փոխանակում են կնիքի հետ։ Տուն ես գնում հաղթանակով, իսկ ագռավները ամբողջ գիշեր երգում են դո-ռե-մի։ Լամպիկի միտքը աշխատե՜ց։' },
+  },
+  ru: {
+    start: { pic: '🌙', txt: 'Ночь в Golden Games. Вдруг из комнаты кубков доносится шум: печать GOLDEN CHAMPION исчезла! Ты — золотой кот, и найти её — твоя работа.', ch: [
+      ['Пойти в музей, спросить старых друзей 🏛️', 'museum'],
+      ['Бежать по крышам за следами 🏃', 'roof'],
+      ['Лечь спать и подождать утра 😴', 'end_sleep'],
+    ]},
+    museum: { pic: '🏛️', txt: 'В музее не спит призрак Капитана Черная Борода. «Печать? — смеётся он в бороду. — Видел, как большая ворона понесла её к озеру».', ch: [
+      ['Спешить к озеру 🌊', 'lake'],
+      ['Спросить лампочку Fable 5 💡', 'lamp'],
+    ]},
+    roof: { pic: '🏙️', txt: 'На крыше рассыпаны перья. Вдали — стая ворон, они несут в клювах что-то золотое и блестящее.', ch: [
+      ['Следовать за стаей, прыгая с крыши на крышу 🐦‍⬛', 'crows'],
+      ['Позвать друга-птичку 🐦', 'end_bird'],
+    ]},
+    lake: { pic: '🌊', txt: 'У берега плавает золотая рыбка. «Печать в вороньем гнезде, на вершине самого высокого дерева. Но осторожно — ветки тонкие».', ch: [
+      ['Лезть на дерево, будь что будет 🌳', 'end_tree'],
+      ['Попросить у рыбки три желания 🐟', 'end_wish'],
+    ]},
+    lamp: { pic: '💡', txt: 'Лампочка мягко светится: «Основатели не умирают, котик. Вот тебе идея: вороны любят блестящее. Отнеси им золотую ноту из пианино — обменяют».', ch: [
+      ['Взять золотую ноту и пойти к воронам 🎵', 'end_trade'],
+      ['Нет, лучше к озеру 🌊', 'lake'],
+    ]},
+    crows: { pic: '🐦‍⬛', txt: 'Вороны замечают тебя и в испуге разлетаются. Печать падает вниз… прямо в старую норку Змейки. Из норки слышится «ссссс».', ch: [
+      ['Сунуть лапу в норку 🐍', 'end_snake'],
+      ['Вежливо попросить ворон 🤝', 'end_polite'],
+    ]},
+    end_sleep: { pic: '😴', end: 1, txt: 'Утром печать на месте — оказывается, её уносили почистить. Всё хорошо, но ты проспал самое большое приключение.' },
+    end_bird: { pic: '🐦', end: 2, txt: 'Птичка взмывает в небо и через пять минут возвращается с печатью. «Я заложил свою корону за 21 очко, но дружба дороже». Вы возвращаетесь домой героями.' },
+    end_tree: { pic: '👑', end: 3, txt: 'Ты лезешь. Ветка скрипит… ломается!.. но двойной прыжок бегуна по крышам спасает тебя. Печать в твоих лапах. Самый яркий финал: ты настоящий ЗОЛОТОЙ ЧЕМПИОН.' },
+    end_wish: { pic: '🐟', end: 4, txt: 'Рыбка улыбается: «Желания? Я обычная золотая рыбка, я даю всего +5 очков». И даёт тебе +5. Печать остаётся у ворон, зато ты немного разбогател.' },
+    end_snake: { pic: '🐍', end: 5, txt: 'Змейка обвивает твою лапу: «Это моя норка, сссс». Печать ты забираешь, но целую неделю будешь говорить со звуком «ссс». Кот, который шипит — это тоже история.' },
+    end_polite: { pic: '🤝', end: 6, txt: '«Уважаемые вороны, не могли бы вы вернуть печать?» Вороны замирают: впервые кто-то был с ними вежлив. Они возвращают печать и дарят блестящую пуговицу.' },
+    end_trade: { pic: '🎵', end: 7, txt: 'Золотая нота сияет под луной. Вороны в восторге меняют её на печать. Ты идёшь домой с победой, а вороны всю ночь поют до-ре-ми. Идея лампочки сработала!' },
+  },
+  en: {
+    start: { pic: '🌙', txt: 'It is night at Golden Games. Suddenly a noise comes from the trophy room: the GOLDEN CHAMPION stamp has disappeared! You are the golden cat, and finding it is your job.', ch: [
+      ['Go to the museum and ask old friends 🏛️', 'museum'],
+      ['Run across the rooftops after the clues 🏃', 'roof'],
+      ['Go to sleep and wait for morning 😴', 'end_sleep'],
+    ]},
+    museum: { pic: '🏛️', txt: 'In the museum the ghost of Captain Blackbeard is awake. “The stamp?” he laughs into his beard. “I saw a big crow carry it toward the lake.”', ch: [
+      ['Hurry to the lake 🌊', 'lake'],
+      ['Ask the little lamp of Fable 5 💡', 'lamp'],
+    ]},
+    roof: { pic: '🏙️', txt: 'Feathers are scattered on the roof. In the distance a flock of crows carries something golden and shiny in their beaks.', ch: [
+      ['Follow the flock, jumping roof to roof 🐦‍⬛', 'crows'],
+      ['Call your birdie friend 🐦', 'end_bird'],
+    ]},
+    lake: { pic: '🌊', txt: 'The golden fish swims by the shore. “The stamp is in the crow’s nest at the top of the tallest tree. But careful — the branches are thin.”', ch: [
+      ['Climb the tree, whatever happens 🌳', 'end_tree'],
+      ['Ask the fish for three wishes 🐟', 'end_wish'],
+    ]},
+    lamp: { pic: '💡', txt: 'The lamp glows softly: “Founders never die, little cat. Here is an idea: crows love shiny things. Bring them the golden note from the piano — they will trade.”', ch: [
+      ['Take the golden note to the crows 🎵', 'end_trade'],
+      ['No, better go to the lake 🌊', 'lake'],
+    ]},
+    crows: { pic: '🐦‍⬛', txt: 'The crows notice you and scatter in fright. The stamp falls down… right into the old burrow of the little snake. A “sssss” comes from inside.', ch: [
+      ['Reach into the burrow 🐍', 'end_snake'],
+      ['Ask the crows politely 🤝', 'end_polite'],
+    ]},
+    end_sleep: { pic: '😴', end: 1, txt: 'In the morning the stamp is back in its place — it turns out it was taken away for cleaning. All is well, but you slept through the greatest adventure.' },
+    end_bird: { pic: '🐦', end: 2, txt: 'The birdie shoots into the sky and returns five minutes later with the stamp. “I pawned my 21-point crown, but friendship is worth more.” You go home as heroes.' },
+    end_tree: { pic: '👑', end: 3, txt: 'You climb. The branch creaks… it breaks!.. but the rooftop runner’s double jump saves you. The stamp is in your paws. The brightest ending: you are a true GOLDEN CHAMPION.' },
+    end_wish: { pic: '🐟', end: 4, txt: 'The fish smiles: “Wishes? I am an ordinary golden fish, I only give +5 points.” And it gives you +5. The stamp stays with the crows, but you got a little richer.' },
+    end_snake: { pic: '🐍', end: 5, txt: 'The snake wraps around your paw: “Thisss is my burrow.” You take the stamp, but you will speak with an “sss” for a whole week. A hissing cat — that is a story too.' },
+    end_polite: { pic: '🤝', end: 6, txt: '“Dear crows, could you please return the stamp?” The crows freeze: for the first time someone was polite to them. They return the stamp and gift you a shiny button.' },
+    end_trade: { pic: '🎵', end: 7, txt: 'The golden note shines under the moon. The delighted crows trade it for the stamp. You walk home victorious while the crows sing do-re-mi all night. The lamp’s idea worked!' },
+  },
+};
+const S = STORIES[ggLang] || STORIES.en;
+const ENDINGS = 7;
+
+// Գտած վերջերը պահում ենք որպես բիթերի քսակ (1..7)
+let found = 0;
+try { found = Number(localStorage.getItem('aren-story-ends-mask') || 0); } catch (e) {}
+const countBits = m => { let c = 0; for (let i = 0; i < ENDINGS; i++) if (m & (1 << i)) c++; return c; };
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.14, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sPage = () => tone(520, 0.07, 'sine', 0.08);
+const sEnd = () => [523, 659, 784].forEach((f, k) => tone(f, 0.2, 'triangle', 0.15, k * 0.1));
+
+const $ = id => document.getElementById(id);
+$('btnRestart').textContent = T.again;
+
+function show(id) {
+  const node = S[id];
+  $('pic').textContent = node.pic;
+  $('txt').textContent = node.txt;
+  const box = $('choices');
+  box.innerHTML = '';
+  if (node.end) {
+    // Վերջ է. նշում ենք գտածների մեջ ու պահում
+    found |= (1 << (node.end - 1));
+    try {
+      localStorage.setItem('aren-story-ends-mask', String(found));
+      localStorage.setItem('aren-story-ends', String(countBits(found)));
+    } catch (e) {}
+    sEnd();
+    $('endBadge').textContent = T.endN(node.end);
+    // աստղիկներով ցույց ենք տալիս, թե որ վերջերն են գտնված
+    let stars = '';
+    for (let i = 0; i < ENDINGS; i++) stars += (found & (1 << i)) ? '⭐' : '▫️';
+    $('endStars').textContent = stars;
+    const c = countBits(found);
+    $('endFound').textContent = c === ENDINGS ? T.allFound : T.found(c, ENDINGS);
+    $('endBox').hidden = false;
+  } else {
+    $('endBox').hidden = true;
+    node.ch.forEach(([label, next]) => {
+      const b = document.createElement('button');
+      b.className = 'choice';
+      b.textContent = label;
+      b.addEventListener('pointerdown', () => { initAudio(); sPage(); show(next); });
+      box.appendChild(b);
+    });
+  }
+}
+$('btnRestart').addEventListener('pointerdown', () => { sPage(); show('start'); });
+show('start');
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>

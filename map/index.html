@@ -1,0 +1,304 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Map 🗺️</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(circle at 80% 8%, rgba(255, 209, 102, 0.08), transparent 45%),
+      linear-gradient(#12122b, #1a2340);
+    color: #eef0ff;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    padding: 56px 10px 10px;
+  }
+  nav { position: fixed; top: 10px; left: 10px; z-index: 10; }
+  nav a {
+    color: #f5eede; text-decoration: none;
+    background: rgba(20,26,34,0.75); border: 2px solid rgba(255,255,255,0.4);
+    padding: 5px 12px; border-radius: 999px; font-size: 0.78rem;
+  }
+  #hud {
+    display: flex; gap: 10px; align-items: center; justify-content: center;
+    flex-wrap: wrap; margin-bottom: 4px; min-height: 34px;
+  }
+  #ask { color: #ffd166; font-weight: bold; font-size: clamp(1rem, 4.6vw, 1.3rem); text-align: center; }
+  #tally { color: #9a9ec7; font-size: 0.85rem; }
+  #mapbox { width: min(94vw, 440px); flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
+  svg { width: 100%; height: 100%; max-height: 72vh; }
+  .marz { fill: #2a2f55; stroke: #12122b; stroke-width: 2.5; cursor: pointer; transition: fill 0.15s; }
+  .marz:hover { fill: #3a4070; }
+  .marz.good { fill: #2f9e6e; }
+  .marz.bad { fill: #b3384a; }
+  .marz.hint { animation: hintP 0.5s 3; }
+  @keyframes hintP { 50% { fill: #ffd166; } }
+  .city { fill: #ffd166; stroke: #8a6a1f; stroke-width: 1.5; cursor: pointer; }
+  .cityhit { fill: transparent; cursor: pointer; }
+  .city.good { fill: #6ee7b7; }
+  .city.bad { fill: #ff6b6b; }
+  .city.hint { animation: hintC 0.5s 3; }
+  @keyframes hintC { 50% { r: 13; fill: #fff3c4; } }
+  #menu[hidden], #over[hidden] { display: none !important; }
+  #menu, #over {
+    position: fixed; inset: 0; z-index: 5;
+    background: rgba(12, 12, 32, 0.92);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; text-align: center; padding: 24px;
+  }
+  h1 { color: #ffd166; font-size: clamp(1.4rem, 6vw, 2rem); }
+  .sub { color: #9a9ec7; max-width: 34ch; line-height: 1.5; }
+  button.big {
+    font-family: inherit; font-size: 1rem; font-weight: bold;
+    color: #2e2410; background: #ffd166;
+    border: none; border-radius: 999px; padding: 14px 30px; cursor: pointer;
+  }
+  button.big.alt { background: #6ee7b7; color: #123326; }
+  #overEmoji { font-size: 64px; }
+  #hidden-note { display: none; }
+</style>
+
+<nav><a href="../">← Golden Games</a></nav>
+
+<div id="hud">
+  <div id="ask"></div>
+  <div id="tally"></div>
+</div>
+
+<div id="mapbox">
+<svg viewBox="0 0 420 570" aria-label="Հայաստանի քարտեզ">
+  <!-- ——— Հայաստանի ոճավորված քարտեզը. 10 մարզ + Երևան ——— -->
+  <g id="marzes">
+    <polygon class="marz" data-i="0" points="40,40 140,30 150,120 60,140 28,90"/>
+    <polygon class="marz" data-i="1" points="140,30 250,25 260,110 150,120"/>
+    <polygon class="marz" data-i="2" points="250,25 360,45 340,130 260,110"/>
+    <polygon class="marz" data-i="3" points="60,140 150,120 180,200 155,235 90,230 48,180"/>
+    <polygon class="marz" data-i="4" points="150,120 260,110 250,200 195,235 180,200"/>
+    <polygon class="marz" data-i="5" points="260,110 340,130 392,220 330,300 250,260 250,200"/>
+    <polygon class="marz" data-i="6" points="48,180 90,230 155,235 160,270 150,262 140,300 40,280 28,230"/>
+    <polygon class="marz" data-i="7" points="155,235 195,235 200,265 160,270"/>
+    <polygon class="marz" data-i="8" points="140,300 150,262 160,270 200,265 250,260 262,332 180,342"/>
+    <polygon class="marz" data-i="9" points="262,332 330,300 352,382 262,402"/>
+    <polygon class="marz" data-i="10" points="262,402 352,382 372,432 332,542 282,552 250,470"/>
+  </g>
+  <!-- Սևանա լիճը 💙 -->
+  <ellipse cx="308" cy="208" rx="30" ry="48" transform="rotate(28 308 208)" fill="#3f6fa8" stroke="#2a4a75" stroke-width="2" pointer-events="none"/>
+  <g id="cities"></g>
+</svg>
+</div>
+
+<div id="menu">
+  <h1>Golden Map 🗺️</h1>
+  <p class="sub" id="menuSub"></p>
+  <button class="big" id="btnMarz"></button>
+  <button class="big alt" id="btnCity"></button>
+  <p class="sub" id="bestLine"></p>
+</div>
+
+<div id="over" hidden>
+  <div id="overEmoji">🏆</div>
+  <h1 id="overTitle"></h1>
+  <p class="sub" id="overSub"></p>
+  <button class="big" id="btnAgain"></button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN MAP 🗺️ — գուշակիր Հայաստանի մարզերն ու քաղաքները
+//  Քարտեզը ոճավորված է՝ նկարել ենք ձեռքով, ամեն ինչ առանց ինտերնետի։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { sub: 'Հայաստանի քարտեզն է։ Գտիր, թե որտեղ է այն, ինչ հարցնում եմ։', marz: '🗺️ Մարզեր', city: '📍 Քաղաքներ', find: n => 'Գտի՛ր՝ ' + n, best: n => 'Ռեկորդ՝ ' + n + '/10', great: 'Ապրե՜ս', good: 'Լավ էր', tryagain: 'Կստացվի՜', score: (n) => 'Ճիշտ գտար ' + n + '-ը 10-ից', again: 'Նորից խաղալ', roundOf: (i) => i + '/10' },
+  ru: { sub: 'Это карта Армении. Найди то, что я спрашиваю.', marz: '🗺️ Области', city: '📍 Города', find: n => 'Найди: ' + n, best: n => 'Рекорд: ' + n + '/10', great: 'Молодец!', good: 'Неплохо!', tryagain: 'Получится!', score: n => 'Угадал ' + n + ' из 10', again: 'Играть снова', roundOf: i => i + '/10' },
+  en: { sub: 'This is the map of Armenia. Find what I ask for.', marz: '🗺️ Provinces', city: '📍 Cities', find: n => 'Find: ' + n, best: n => 'Best: ' + n + '/10', great: 'Amazing!', good: 'Nice!', tryagain: 'You’ll get it!', score: n => 'You got ' + n + ' out of 10', again: 'Play again', roundOf: i => i + '/10' },
+  es: { sub: 'Este es el mapa de Armenia. Encuentra lo que te pido.', marz: '🗺️ Provincias', city: '📍 Ciudades', find: n => 'Encuentra: ' + n, best: n => 'Récord: ' + n + '/10', great: '¡Genial!', good: '¡Bien!', tryagain: '¡Lo lograrás!', score: n => 'Acertaste ' + n + ' de 10', again: 'Jugar otra vez', roundOf: i => i + '/10' },
+  fr: { sub: 'Voici la carte de l’Arménie. Trouve ce que je demande.', marz: '🗺️ Régions', city: '📍 Villes', find: n => 'Trouve : ' + n, best: n => 'Record : ' + n + '/10', great: 'Bravo !', good: 'Pas mal !', tryagain: 'Tu vas y arriver !', score: n => 'Tu as trouvé ' + n + ' sur 10', again: 'Rejouer', roundOf: i => i + '/10' },
+  de: { sub: 'Das ist die Karte Armeniens. Finde, was ich frage.', marz: '🗺️ Provinzen', city: '📍 Städte', find: n => 'Finde: ' + n, best: n => 'Rekord: ' + n + '/10', great: 'Super!', good: 'Gut!', tryagain: 'Du schaffst das!', score: n => 'Du hast ' + n + ' von 10', again: 'Nochmal spielen', roundOf: i => i + '/10' },
+  ja: { sub: 'アルメニアの地図だよ。聞かれた場所を見つけてね。', marz: '🗺️ 地方', city: '📍 都市', find: n => 'さがして：' + n, best: n => 'ベスト：' + n + '/10', great: 'すごい！', good: 'いいね！', tryagain: 'つぎはできるよ！', score: n => '10問中' + n + '問せいかい', again: 'もういちど', roundOf: i => i + '/10' },
+  zh: { sub: '这是亚美尼亚地图。找到我问的地方。', marz: '🗺️ 省份', city: '📍 城市', find: n => '找到：' + n, best: n => '纪录：' + n + '/10', great: '太棒了！', good: '不错！', tryagain: '你可以的！', score: n => '10题答对' + n + '题', again: '再玩一次', roundOf: i => i + '/10' },
+  it: { sub: 'Questa è la mappa dell’Armenia. Trova quello che ti chiedo.', marz: '🗺️ Province', city: '📍 Città', find: n => 'Trova: ' + n, best: n => 'Record: ' + n + '/10', great: 'Bravissimo!', good: 'Bene!', tryagain: 'Ce la farai!', score: n => 'Ne hai trovati ' + n + ' su 10', again: 'Gioca ancora', roundOf: i => i + '/10' },
+  ka: { sub: 'ეს სომხეთის რუკაა. იპოვე, რასაც გკითხავ.', marz: '🗺️ მხარეები', city: '📍 ქალაქები', find: n => 'იპოვე: ' + n, best: n => 'რეკორდი: ' + n + '/10', great: 'ყოჩაღ!', good: 'კარგია!', tryagain: 'გამოგივა!', score: n => 'გამოიცანი ' + n + ' 10-დან', again: 'თავიდან თამაში', roundOf: i => i + '/10' },
+  hi: { sub: 'यह आर्मेनिया का नक्शा है। जो मैं पूछूँ उसे ढूँढो।', marz: '🗺️ प्रांत', city: '📍 शहर', find: n => 'ढूँढो: ' + n, best: n => 'रिकॉर्ड: ' + n + '/10', great: 'शाबाश!', good: 'बढ़िया!', tryagain: 'हो जाएगा!', score: n => '10 में से ' + n + ' सही', again: 'फिर से खेलो', roundOf: i => i + '/10' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+// Մարզերի ու քաղաքների անունները. հայերեն, ռուսերեն, մնացածը՝ լատինատառ
+const MARZ_N = {
+  hy: ['Շիրակ', 'Լոռի', 'Տավուշ', 'Արագածոտն', 'Կոտայք', 'Գեղարքունիք', 'Արմավիր', 'Երևան', 'Արարատ', 'Վայոց ձոր', 'Սյունիք'],
+  ru: ['Ширак', 'Лори', 'Тавуш', 'Арагацотн', 'Котайк', 'Гегаркуник', 'Армавир', 'Ереван', 'Арарат', 'Вайоц дзор', 'Сюник'],
+  lat: ['Shirak', 'Lori', 'Tavush', 'Aragatsotn', 'Kotayk', 'Gegharkunik', 'Armavir', 'Yerevan', 'Ararat', 'Vayots Dzor', 'Syunik'],
+};
+// Քաղաքները՝ [անուն, x, y]
+const CITIES = [
+  ['Երևան', 'Ереван', 'Yerevan', 176, 251],
+  ['Գյումրի', 'Гюмри', 'Gyumri', 85, 85],
+  ['Վանաձոր', 'Ванадзор', 'Vanadzor', 200, 72],
+  ['Ալավերդի', 'Алаверди', 'Alaverdi', 235, 48],
+  ['Իջևան', 'Иджеван', 'Ijevan', 300, 78],
+  ['Դիլիջան', 'Дилижан', 'Dilijan', 268, 100],
+  ['Սևան', 'Севан', 'Sevan', 262, 148],
+  ['Հրազդան', 'Раздан', 'Hrazdan', 215, 155],
+  ['Գավառ', 'Гавар', 'Gavar', 285, 235],
+  ['Վարդենիս', 'Варденис', 'Vardenis', 352, 258],
+  ['Աշտարակ', 'Аштарак', 'Ashtarak', 142, 195],
+  ['Ապարան', 'Апаран', 'Aparan', 140, 150],
+  ['Արմավիր', 'Армавир', 'Armavir', 78, 255],
+  ['Արտաշատ', 'Арташат', 'Artashat', 202, 292],
+  ['Եղեգնաձոր', 'Ехегнадзор', 'Yeghegnadzor', 288, 352],
+  ['Ջերմուկ', 'Джермук', 'Jermuk', 332, 340],
+  ['Սիսիան', 'Сисиан', 'Sisian', 298, 432],
+  ['Գորիս', 'Горис', 'Goris', 332, 452],
+  ['Կապան', 'Капан', 'Kapan', 318, 500],
+  ['Մեղրի', 'Мегри', 'Meghri', 300, 540],
+];
+const nameOf = (kind, i) => {
+  if (kind === 'marz') return (MARZ_N[ggLang] || MARZ_N.lat)[i] || MARZ_N.lat[i];
+  const c = CITIES[i];
+  return ggLang === 'hy' ? c[0] : ggLang === 'ru' ? c[1] : c[2];
+};
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sYes = () => { tone(660, 0.1, 'triangle', 0.15); tone(880, 0.15, 'triangle', 0.15, 0.08); };
+const sNo = () => tone(160, 0.25, 'sawtooth', 0.12);
+const sEnd = () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.2, 'triangle', 0.16, k * 0.1));
+
+// ——— Խաղի վիճակը ———
+let mode = null;        // 'marz' | 'city'
+let queue = [];         // հարցերի հերթը
+let round = 0, score = 0, waiting = false;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-map-best') || 0); } catch (e) {}
+
+const $ = id => document.getElementById(id);
+$('menuSub').textContent = T.sub;
+$('btnMarz').textContent = T.marz;
+$('btnCity').textContent = T.city;
+$('btnAgain').textContent = T.again;
+$('bestLine').textContent = best > 0 ? T.best(best) : '';
+
+// Քաղաքների կետերը SVG-ում. ամեն կետին անտեսանելի մեծ «բռնելու» շրջան ենք տալիս
+const cg = $('cities');
+CITIES.forEach((c, i) => {
+  const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  dot.setAttribute('class', 'city');
+  dot.setAttribute('cx', c[3]); dot.setAttribute('cy', c[4]); dot.setAttribute('r', 7);
+  dot.dataset.i = i;
+  const hit = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  hit.setAttribute('class', 'cityhit');
+  hit.setAttribute('cx', c[3]); hit.setAttribute('cy', c[4]); hit.setAttribute('r', 17);
+  hit.dataset.i = i;
+  cg.appendChild(dot); cg.appendChild(hit);
+});
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startGame(m) {
+  initAudio();
+  mode = m;
+  const n = m === 'marz' ? 11 : CITIES.length;
+  queue = shuffle([...Array(n).keys()]).slice(0, 10);
+  round = 0; score = 0;
+  $('menu').hidden = true;
+  $('over').hidden = true;
+  cg.style.display = m === 'city' ? '' : 'none';
+  document.querySelectorAll('.marz, .city').forEach(e => e.classList.remove('good', 'bad', 'hint'));
+  nextRound();
+}
+
+function nextRound() {
+  waiting = false;
+  document.querySelectorAll('.marz, .city').forEach(e => e.classList.remove('good', 'bad', 'hint'));
+  if (round >= 10) { finish(); return; }
+  $('ask').textContent = T.find(nameOf(mode, queue[round]));
+  $('tally').textContent = T.roundOf(round + 1) + ' · ' + '⭐'.repeat(score);
+}
+
+function pick(i, el) {
+  if (waiting || mode === null) return;
+  waiting = true;
+  const target = queue[round];
+  if (i === target) {
+    score++;
+    el.classList.add('good');
+    sYes();
+  } else {
+    el.classList.add('bad');
+    // ցույց ենք տալիս ճիշտը՝ թող սովորի
+    const sel = mode === 'marz' ? '.marz[data-i="' + target + '"]' : '.city[data-i="' + target + '"]';
+    document.querySelector(sel).classList.add('hint');
+    sNo();
+  }
+  round++;
+  setTimeout(nextRound, i === target ? 700 : 1600);
+}
+
+document.querySelectorAll('.marz').forEach(p => p.addEventListener('pointerdown', () => { if (mode === 'marz') pick(Number(p.dataset.i), p); }));
+document.querySelectorAll('.city, .cityhit').forEach(c => c.addEventListener('pointerdown', () => {
+  if (mode !== 'city') return;
+  const dot = document.querySelector('.city[data-i="' + c.dataset.i + '"]');
+  pick(Number(c.dataset.i), dot);
+}));
+
+function finish() {
+  mode = null;
+  sEnd();
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('aren-map-best', String(best)); } catch (e) {}
+  }
+  $('overEmoji').textContent = score >= 9 ? '🏆' : score >= 6 ? '🌟' : '💪';
+  $('overTitle').textContent = score >= 9 ? T.great : score >= 6 ? T.good : T.tryagain;
+  $('overSub').textContent = T.score(score) + ' · ' + T.best(best);
+  $('over').hidden = false;
+}
+
+$('btnMarz').addEventListener('pointerdown', () => startGame('marz'));
+$('btnCity').addEventListener('pointerdown', () => startGame('city'));
+$('btnAgain').addEventListener('pointerdown', () => {
+  $('over').hidden = true;
+  $('menu').hidden = false;
+  $('bestLine').textContent = best > 0 ? T.best(best) : '';
+  $('ask').textContent = '';
+  $('tally').textContent = '';
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>

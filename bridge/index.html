@@ -1,0 +1,405 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Bridge 🌉</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #101228; }
+  canvas { display: block; touch-action: none; }
+  nav { position: fixed; top: 10px; left: 10px; z-index: 10; }
+  nav a {
+    color: #f5eede; text-decoration: none; font-family: Arial, sans-serif;
+    background: rgba(20,26,34,0.75); border: 2px solid rgba(255,255,255,0.4);
+    padding: 5px 12px; border-radius: 999px; font-size: 0.78rem;
+  }
+  #btns[hidden] { display: none !important; }
+  #btns { position: fixed; bottom: 16px; right: 14px; z-index: 10; display: flex; gap: 10px; }
+  #btns button {
+    font-family: inherit; font-size: 1.3rem;
+    width: 58px; height: 58px; border-radius: 50%;
+    border: 3px solid #8a6a1f; background: #ffd166; color: #2e2410;
+    cursor: pointer; font-weight: bold;
+  }
+  #btns button#bClear { background: #2a2f55; color: #eef0ff; border-color: #3d4380; }
+</style>
+
+<nav><a href="../">← Golden Games</a></nav>
+<canvas id="cv"></canvas>
+<div id="btns" hidden>
+  <button id="bClear">↺</button>
+  <button id="bGo">▶</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN BRIDGE 🌉 — կամուրջ ես կառուցում, մեքենան անցնում կամ ընկնում է
+//  Մատով գծիր տախտակները ձորի վրայով, հետո սեղմիր ▶ ու պահիր շունչդ։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { title: 'Golden Bridge 🌉', how1: 'Մատով գծիր տախտակներ ձորի վրայով', how2: 'Փայտը սահմանափակ է՝ խնայի՛ր', how3: 'Սեղմիր ▶ ու մեքենան կգնա', tap: 'Հպիր՝ սկսելու', lvl: n => 'Մակարդակ ' + n, wood: 'Փայտ՝ ', crash: 'Ընկա՜վ 💦 Ուղղիր կամուրջը', win: 'Անցա՜վ 🎉', done: 'Բոլոր կամուրջները կառուցեցիր 🏆' },
+  ru: { title: 'Golden Bridge 🌉', how1: 'Рисуй пальцем доски над пропастью', how2: 'Дерево ограничено — экономь', how3: 'Нажми ▶ и машина поедет', tap: 'Коснись, чтобы начать', lvl: n => 'Уровень ' + n, wood: 'Дерево: ', crash: 'Упала! 💦 Почини мост', win: 'Проехала! 🎉', done: 'Ты построил все мосты 🏆' },
+  en: { title: 'Golden Bridge 🌉', how1: 'Draw planks over the gorge with your finger', how2: 'Wood is limited — save it', how3: 'Press ▶ and the car will go', tap: 'Tap to start', lvl: n => 'Level ' + n, wood: 'Wood: ', crash: 'It fell! 💦 Fix the bridge', win: 'It crossed! 🎉', done: 'You built all the bridges 🏆' },
+  es: { title: 'Golden Bridge 🌉', how1: 'Dibuja tablones sobre el barranco con el dedo', how2: 'La madera es limitada: ahórrala', how3: 'Pulsa ▶ y el coche irá', tap: 'Toca para empezar', lvl: n => 'Nivel ' + n, wood: 'Madera: ', crash: '¡Se cayó! 💦 Arregla el puente', win: '¡Cruzó! 🎉', done: 'Construiste todos los puentes 🏆' },
+  fr: { title: 'Golden Bridge 🌉', how1: 'Dessine des planches au-dessus du ravin avec ton doigt', how2: 'Le bois est limité — économise', how3: 'Appuie sur ▶ et la voiture partira', tap: 'Touche pour commencer', lvl: n => 'Niveau ' + n, wood: 'Bois : ', crash: 'Elle est tombée ! 💦 Répare le pont', win: 'Elle est passée ! 🎉', done: 'Tu as construit tous les ponts 🏆' },
+  de: { title: 'Golden Bridge 🌉', how1: 'Zeichne mit dem Finger Bretter über die Schlucht', how2: 'Das Holz ist begrenzt — spare', how3: 'Drück ▶ und das Auto fährt', tap: 'Tippe zum Starten', lvl: n => 'Level ' + n, wood: 'Holz: ', crash: 'Es fiel! 💦 Repariere die Brücke', win: 'Geschafft! 🎉', done: 'Du hast alle Brücken gebaut 🏆' },
+  ja: { title: 'Golden Bridge 🌉', how1: '指で谷の上に板をかこう', how2: '木材はかぎりがあるよ、大切に', how3: '▶ をおすと車が走るよ', tap: 'タップでスタート', lvl: n => 'レベル' + n, wood: '木材：', crash: '落ちちゃった！💦 橋をなおそう', win: 'わたれた！🎉', done: 'ぜんぶの橋をかけたね 🏆', },
+  zh: { title: 'Golden Bridge 🌉', how1: '用手指在峡谷上画木板', how2: '木料有限，要节省', how3: '按 ▶ 汽车就出发', tap: '点一下开始', lvl: n => '第' + n + '关', wood: '木料：', crash: '掉下去了！💦 修修桥吧', win: '过去了！🎉', done: '所有的桥都建好了 🏆' },
+  it: { title: 'Golden Bridge 🌉', how1: 'Disegna le assi sopra il burrone con il dito', how2: 'Il legno è limitato: risparmialo', how3: 'Premi ▶ e l’auto partirà', tap: 'Tocca per iniziare', lvl: n => 'Livello ' + n, wood: 'Legno: ', crash: 'È caduta! 💦 Sistema il ponte', win: 'È passata! 🎉', done: 'Hai costruito tutti i ponti 🏆' },
+  ka: { title: 'Golden Bridge 🌉', how1: 'თითით დახაზე ფიცრები ხევზე', how2: 'ხე შეზღუდულია — დაზოგე', how3: 'დააჭირე ▶ და მანქანა წავა', tap: 'შეეხე დასაწყებად', lvl: n => 'დონე ' + n, wood: 'ხე: ', crash: 'ჩავარდა! 💦 შეაკეთე ხიდი', win: 'გადავიდა! 🎉', done: 'ყველა ხიდი ააშენე 🏆' },
+  hi: { title: 'Golden Bridge 🌉', how1: 'उँगली से खाई के ऊपर तख़्ते बनाओ', how2: 'लकड़ी सीमित है — बचाकर रखो', how3: '▶ दबाओ और गाड़ी चलेगी', tap: 'शुरू करने के लिए टैप करो', lvl: n => 'स्तर ' + n, wood: 'लकड़ी: ', crash: 'गिर गई! 💦 पुल ठीक करो', win: 'पार हो गई! 🎉', done: 'तुमने सारे पुल बना लिए 🏆' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W = 0, H = 0;
+function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; layout(); }
+window.addEventListener('resize', resize);
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sDraw = () => tone(420, 0.05, 'square', 0.05);
+const sGo = () => tone(300, 0.15, 'sawtooth', 0.1);
+const sSplash = () => { tone(200, 0.3, 'sawtooth', 0.15); tone(120, 0.4, 'sine', 0.15, 0.08); };
+const sWin = () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.2, 'triangle', 0.16, k * 0.09));
+
+// ——— Մակարդակները. ձորի եզրերը՝ էկրանի մասերով, փայտի պաշարը՝ ձորի լայնության բազմապատիկ ———
+const LEVELS = [
+  { g0: 0.32, g1: 0.54, dy: 0,    bud: 1.6,  pillar: null },
+  { g0: 0.30, g1: 0.58, dy: 0,    bud: 1.45, pillar: null },
+  { g0: 0.26, g1: 0.60, dy: 45,   bud: 1.5,  pillar: null },
+  { g0: 0.24, g1: 0.64, dy: 0,    bud: 1.3,  pillar: 0.44 },
+  { g0: 0.22, g1: 0.64, dy: -45,  bud: 1.45, pillar: null },
+  { g0: 0.20, g1: 0.66, dy: 0,    bud: 1.25, pillar: null },
+  { g0: 0.20, g1: 0.70, dy: 40,   bud: 1.3,  pillar: 0.5 },
+  { g0: 0.18, g1: 0.72, dy: 0,    bud: 1.2,  pillar: null },
+];
+let level = 1;
+try { level = Number(localStorage.getItem('aren-bridge-level') || 1); } catch (e) {}
+if (level < 1 || level > LEVELS.length) level = 1;
+
+// ——— Խաղի վիճակը ———
+let state = 'menu';    // menu | build | drive | fall | win
+let endedAt = 0;
+let planks = [];       // {x1,y1,x2,y2}
+let budget = 0, budgetMax = 0;
+let drawing = null;    // {x1,y1,x2,y2} նախադիտում
+let msg = '', msgAt = 0;
+let frame = 0;
+let cliff = {};        // հաշվարկված երկրաչափություն
+const car = { x: 0, y: 0, vy: 0, ang: 0, falling: 0 };
+
+function layout() {
+  const L = LEVELS[Math.min(level, LEVELS.length) - 1];
+  const cy = H * 0.62;
+  cliff = {
+    gl: W * L.g0,
+    gr: W * L.g1,
+    yl: cy,
+    yr: cy + (L.dy ? L.dy * (H / 700) : 0),
+    pillar: L.pillar ? { x: W * L.pillar, w: Math.max(20, W * 0.045), y: cy + 26 } : null,
+  };
+  budgetMax = (cliff.gr - cliff.gl) * L.bud;
+}
+
+function newLevel(keepPlanks) {
+  layout();
+  if (!keepPlanks) planks = [];
+  budget = budgetMax - planks.reduce((s, p) => s + Math.hypot(p.x2 - p.x1, p.y2 - p.y1), 0);
+  car.x = Math.max(50, cliff.gl - W * 0.22);
+  car.y = cliff.yl;
+  car.vy = 0; car.ang = 0; car.falling = 0;
+  state = 'build';
+  document.getElementById('btns').hidden = false;
+}
+
+// ——— Հենարանի որոնումը. x կետում ինչի՞ վրա կարող է կանգնել անիվը ———
+function supportY(x) {
+  let best = null;
+  if (x <= cliff.gl) best = cliff.yl;
+  if (x >= cliff.gr) best = cliff.yr;
+  if (cliff.pillar && Math.abs(x - cliff.pillar.x) <= cliff.pillar.w / 2) best = cliff.pillar.y;
+  for (const p of planks) {
+    const lo = Math.min(p.x1, p.x2), hi = Math.max(p.x1, p.x2);
+    if (x < lo - 2 || x > hi + 2) continue;
+    const t = (hi - lo) < 1 ? 0 : (x - p.x1) / (p.x2 - p.x1);
+    const y = p.y1 + (p.y2 - p.y1) * Math.min(1, Math.max(0, t));
+    if (best === null || y < best) best = y;
+  }
+  return best;
+}
+
+// ——— Կցելու կետերի «մագնիսը» ———
+function snap(x, y) {
+  const pts = [
+    [cliff.gl, cliff.yl], [cliff.gr, cliff.yr],
+  ];
+  if (cliff.pillar) {
+    pts.push([cliff.pillar.x - cliff.pillar.w / 2, cliff.pillar.y], [cliff.pillar.x + cliff.pillar.w / 2, cliff.pillar.y]);
+  }
+  for (const p of planks) { pts.push([p.x1, p.y1], [p.x2, p.y2]); }
+  for (const [px, py] of pts) {
+    if (Math.hypot(x - px, y - py) < 20) return [px, py];
+  }
+  return [x, y];
+}
+
+// ——— Հպումով գծելը ———
+cv.addEventListener('pointerdown', (e) => {
+  initAudio();
+  if (state === 'menu') { newLevel(false); return; }
+  if (state === 'win' || state === 'fall') return;
+  if (state !== 'build' || budget < 10) return;
+  const [x, y] = snap(e.clientX, e.clientY);
+  drawing = { x1: x, y1: y, x2: x, y2: y };
+});
+cv.addEventListener('pointermove', (e) => {
+  if (!drawing) return;
+  const [x, y] = snap(e.clientX, e.clientY);
+  drawing.x2 = x; drawing.y2 = y;
+});
+cv.addEventListener('pointerup', () => {
+  if (!drawing) return;
+  let len = Math.hypot(drawing.x2 - drawing.x1, drawing.y2 - drawing.y1);
+  if (len >= 18) {
+    if (len > budget) {
+      // փայտը չի հերիքում՝ կարճացնում ենք մինչև պաշարը
+      const k = budget / len;
+      drawing.x2 = drawing.x1 + (drawing.x2 - drawing.x1) * k;
+      drawing.y2 = drawing.y1 + (drawing.y2 - drawing.y1) * k;
+      len = budget;
+    }
+    planks.push({ ...drawing });
+    budget -= len;
+    sDraw();
+  }
+  drawing = null;
+});
+cv.addEventListener('pointercancel', () => { drawing = null; });
+
+document.getElementById('bClear').addEventListener('pointerdown', () => {
+  if (state !== 'build') return;
+  planks = [];
+  budget = budgetMax;
+  sDraw();
+});
+document.getElementById('bGo').addEventListener('pointerdown', () => {
+  if (state !== 'build') return;
+  initAudio();
+  state = 'drive';
+  sGo();
+  document.getElementById('btns').hidden = true;
+});
+
+// ——— Քայլը ———
+function step() {
+  frame++;
+  if (state === 'drive') {
+    car.x += Math.max(2.6, W * 0.006);
+    const front = supportY(car.x + 16);
+    const back = supportY(car.x - 16);
+    if (front === null && back === null) {
+      state = 'fall';
+      car.falling = 1;
+    } else {
+      const yF = front === null ? (back + 40) : front;
+      const yB = back === null ? (front + 40) : back;
+      const target = Math.min(yF, yB) - 0; // անիվները նստում են հենարանին
+      const slope = (yF - yB) / 32;
+      if (Math.abs(slope) > 1.1) {
+        state = 'fall'; car.falling = 1;
+      } else {
+        car.y += (target - car.y) * 0.4;
+        car.ang = Math.atan2(yF - yB, 32) * 0.8;
+        if (front === null || back === null) car.ang += (front === null ? 0.06 : -0.06);
+      }
+    }
+    if (car.x - 16 > cliff.gr + 20) {
+      // ԱՆՑԱ՜Վ 🎉
+      state = 'win';
+      endedAt = Date.now();
+      sWin();
+      if (level < LEVELS.length) {
+        level++;
+        try { localStorage.setItem('aren-bridge-level', String(level)); } catch (e) {}
+        setTimeout(() => newLevel(false), 1500);
+      } else {
+        try { localStorage.setItem('aren-bridge-level', String(LEVELS.length)); } catch (e) {}
+        setTimeout(() => { state = 'menu'; document.getElementById('btns').hidden = true; }, 2200);
+      }
+    }
+  }
+  if (state === 'fall') {
+    car.vy += 0.9;
+    car.y += car.vy;
+    car.x += 1.2;
+    car.ang += 0.09;
+    if (car.falling === 1 && car.y > H * 0.9) {
+      car.falling = 2;
+      sSplash();
+      msg = T.crash; msgAt = Date.now();
+      setTimeout(() => { newLevel(true); }, 1400);
+    }
+  }
+}
+
+// ——— Նկարելը ———
+function drawCarShape(x, y, ang) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(ang);
+  ctx.fillStyle = '#ffd166';
+  ctx.beginPath();
+  ctx.moveTo(-22, -8);
+  ctx.lineTo(-14, -18); ctx.lineTo(10, -18); ctx.lineTo(20, -8);
+  ctx.lineTo(22, -8); ctx.lineTo(22, 0); ctx.lineTo(-22, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = '#8a6a1f';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#bfe3f7';
+  ctx.fillRect(-10, -15, 14, 7);
+  ctx.fillStyle = '#1c1f2b';
+  for (const wx of [-13, 13]) {
+    ctx.beginPath(); ctx.arc(wx, 2, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#555c70';
+    ctx.beginPath(); ctx.arc(wx, 2, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#1c1f2b';
+  }
+  ctx.restore();
+}
+
+function drawText(txt, x, y, size, color, bold) {
+  ctx.fillStyle = color;
+  ctx.font = (bold ? 'bold ' : '') + size + 'px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(txt, x, y);
+}
+
+function draw() {
+  // երկինքն ու աստղերը
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#101228'); g.addColorStop(1, '#1c2340');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  for (let i = 0; i < 24; i++) {
+    const sx = ((i * 173) % W), sy = ((i * 97) % Math.floor(H * 0.5));
+    ctx.fillRect(sx, sy, 1.6, 1.6);
+  }
+  // լուսինը
+  ctx.fillStyle = '#f6edc8';
+  ctx.beginPath(); ctx.arc(W * 0.84, H * 0.14, 22, 0, Math.PI * 2); ctx.fill();
+
+  // ջուրը ձորի հատակին
+  ctx.fillStyle = '#27436e';
+  ctx.fillRect(0, H * 0.92, W, H * 0.08);
+
+  // ժայռերը
+  ctx.fillStyle = '#2e3a2e';
+  ctx.strokeStyle = '#1d271d';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, cliff.yl); ctx.lineTo(cliff.gl, cliff.yl); ctx.lineTo(cliff.gl - 24, H); ctx.lineTo(0, H);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(W, cliff.yr); ctx.lineTo(cliff.gr, cliff.yr); ctx.lineTo(cliff.gr + 24, H); ctx.lineTo(W, H);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // խոտը եզրերին
+  ctx.fillStyle = '#3f7a34';
+  ctx.fillRect(0, cliff.yl - 5, cliff.gl, 7);
+  ctx.fillRect(cliff.gr, cliff.yr - 5, W - cliff.gr, 7);
+  // սյունը
+  if (cliff.pillar) {
+    ctx.fillStyle = '#4a3b28';
+    ctx.fillRect(cliff.pillar.x - cliff.pillar.w / 2, cliff.pillar.y, cliff.pillar.w, H - cliff.pillar.y);
+    ctx.fillStyle = '#6e5a3c';
+    ctx.fillRect(cliff.pillar.x - cliff.pillar.w / 2, cliff.pillar.y, cliff.pillar.w, 6);
+  }
+
+  // տախտակները
+  ctx.lineCap = 'round';
+  for (const p of planks) {
+    ctx.strokeStyle = '#8a5f2b';
+    ctx.lineWidth = 9;
+    ctx.beginPath(); ctx.moveTo(p.x1, p.y1); ctx.lineTo(p.x2, p.y2); ctx.stroke();
+    ctx.strokeStyle = '#c9963f';
+    ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(p.x1, p.y1); ctx.lineTo(p.x2, p.y2); ctx.stroke();
+  }
+  if (drawing) {
+    ctx.strokeStyle = 'rgba(255, 209, 102, 0.6)';
+    ctx.lineWidth = 5;
+    ctx.setLineDash([8, 7]);
+    ctx.beginPath(); ctx.moveTo(drawing.x1, drawing.y1); ctx.lineTo(drawing.x2, drawing.y2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // մեքենան
+  if (state !== 'menu') drawCarShape(car.x, car.y - 8, car.ang);
+
+  // HUD
+  if (state !== 'menu') {
+    drawText(T.lvl(level), W / 2, 34, Math.min(19, W * 0.05), '#ffd166', true);
+    // փայտի պաշարի գիծը
+    const bw = Math.min(220, W * 0.5);
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.fillRect(W / 2 - bw / 2, 46, bw, 9);
+    ctx.fillStyle = '#c9963f';
+    ctx.fillRect(W / 2 - bw / 2, 46, bw * Math.max(0, budget / budgetMax), 9);
+  }
+  if (msg && Date.now() - msgAt < 1300) {
+    drawText(msg, W / 2, H * 0.3, Math.min(24, W * 0.06), '#ff9b8a', true);
+  }
+  if (state === 'win') {
+    drawText(level >= LEVELS.length && Date.now() - endedAt > 200 ? T.done : T.win, W / 2, H * 0.3, Math.min(26, W * 0.065), '#6ee7b7', true);
+  }
+
+  if (state === 'menu') {
+    ctx.fillStyle = 'rgba(10, 10, 28, 0.6)';
+    ctx.fillRect(0, 0, W, H);
+    drawText(T.title, W / 2, H * 0.24, Math.min(38, W * 0.09), '#ffd166', true);
+    drawText(T.how1, W / 2, H * 0.4, Math.min(17, W * 0.045), '#eef0ff');
+    drawText(T.how2, W / 2, H * 0.46, Math.min(17, W * 0.045), '#eef0ff');
+    drawText(T.how3, W / 2, H * 0.52, Math.min(17, W * 0.045), '#eef0ff');
+    drawText(T.lvl(level), W / 2, H * 0.62, Math.min(17, W * 0.045), '#9a9ec7');
+    if (Math.floor(Date.now() / 600) % 2) drawText(T.tap, W / 2, H * 0.72, Math.min(17, W * 0.045), '#6ee7b7');
+  }
+}
+
+function loop() {
+  step();
+  draw();
+  requestAnimationFrame(loop);
+}
+resize();
+loop();
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>

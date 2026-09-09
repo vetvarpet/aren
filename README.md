@@ -27,6 +27,9 @@ and iterating on the code together with Claude, one change at a time.
 | [`blocks`](./blocks/) | 🟨 Golden Blocks (Ընկնող բլոկներ) | Classic falling blocks with a ghost landing preview and golden line-clear flashes |
 | [`words`](./words/) | 🔤 Golden Words (Բառախաղ) | Armenian word game: guess the word from a picture and build it from scrambled letters, 40 levels |
 | [`drums`](./drums/) | 🥁 Golden Drums (Ռիթմ-մեքենա) | Beat machine: four synthesized instruments, eight steps, tempo slider, patterns auto-saved |
+| [`map`](./map/) | 🗺️ Golden Map (Հայաստանի քարտեզ) | Guess Armenia's provinces and cities on a stylized hand-drawn map |
+| [`story`](./story/) | 📖 Golden Story (Հեքիաթ) | Interactive branching tale of the golden cat with 7 different endings |
+| [`bridge`](./bridge/) | 🌉 Golden Bridge (Կամուրջ) | Draw planks over the gorge and see if the car makes it across |
 | [`time`](./time/) | 🕰️ Golden Time (Ժամանակի մեքենա) | The site's whole story as a timeline, from the first flying cat to today |
 | [`museum`](./museum/) | 🏛️ Golden Museum (Թանգարան) | Memorial hall of deleted projects, pedestals, epitaphs and all |
 
