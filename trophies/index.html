@@ -187,6 +187,9 @@ const TRL = {
   de: { first: 'Das ist erst der Anfang ✨', firstSub: n => n + ' Pokale warten noch auf dich 🏆', champ: 'Du hast ALLE Pokale!', sub: 'Deine Rekorde in allen Spielen', count: (n, m) => 'Pokale: ' + n + '/' + m, none: 'noch nicht gespielt', u: { pt: ' Punkte', fl: ' Etagen', lvl: n => 'Level ' + n, tries: ' Versuche', chain: ' Schritte', num: ' Zahlen', m: ' m' } },
   ja: { first: 'これはまだ始まりだよ ✨', firstSub: n => 'あと' + n + '個のトロフィーが待ってる 🏆', champ: 'トロフィーをぜんぶ集めた！', sub: 'ぜんぶのゲームのベスト記録', count: (n, m) => 'トロフィー：' + n + '/' + m, none: 'まだあそんでないよ', u: { pt: 'ポイント', fl: '階', lvl: n => 'レベル' + n, tries: '回', chain: 'ステップ', num: '個', m: ' m' } },
   zh: { first: '这只是开始 ✨', firstSub: n => '还有' + n + '个奖杯在等你 🏆', champ: '集齐了所有奖杯！', sub: '你在所有游戏里的纪录', count: (n, m) => '奖杯：' + n + '/' + m, none: '还没玩过', u: { pt: '分', fl: '层', lvl: n => '第' + n + '关', tries: '次', chain: '步', num: '个', m: ' 米' } },
+  it: { first: 'Questo è solo l’inizio ✨', firstSub: n => 'Ti aspettano altri ' + n + ' trofei 🏆', champ: 'Hai raccolto TUTTI i trofei', sub: 'I tuoi record in tutti i giochi', count: (n, m) => 'Trofei: ' + n + '/' + m, none: 'non ancora giocato', u: { pt: ' punti', fl: ' piani', lvl: n => 'livello ' + n, tries: ' tentativi', chain: ' passi', num: ' numeri', m: ' m' } },
+  ka: { first: 'ეს მხოლოდ დასაწყისია ✨', firstSub: n => 'კიდევ ' + n + ' თასი გელოდება 🏆', champ: 'ყველა თასი შეაგროვე', sub: 'შენი რეკორდები ყველა თამაშში', count: (n, m) => 'თასები: ' + n + '/' + m, none: 'ჯერ არ გითამაშია', u: { pt: ' ქულა', fl: ' სართული', lvl: n => 'დონე ' + n, tries: ' ცდა', chain: ' ნაბიჯი', num: ' რიცხვი', m: ' მ' } },
+  hi: { first: 'यह तो बस शुरुआत है ✨', firstSub: n => 'अभी ' + n + ' ट्रॉफ़ियाँ तुम्हारा इंतज़ार कर रही हैं 🏆', champ: 'तुमने सारी ट्रॉफ़ियाँ जमा कर लीं', sub: 'सभी खेलों में तुम्हारे रिकॉर्ड', count: (n, m) => 'ट्रॉफ़ियाँ: ' + n + '/' + m, none: 'अभी नहीं खेला', u: { pt: ' अंक', fl: ' मंज़िल', lvl: n => 'स्तर ' + n, tries: ' कोशिशें', chain: ' कदम', num: ' संख्याएँ', m: ' मी' } },
 };
 const T = TRL[ggLang] || TRL.hy;
 document.querySelector('.sub').textContent = T.sub;
@@ -201,6 +204,9 @@ const REAL = {
   de: ['Kätzchen', 'Vögelchen', 'Rakete', 'Angeln', 'Turm', 'Maulwürfe', 'Labyrinth', 'Rennen', 'Paare', 'Sprich mir nach', 'Zahlenjäger', 'Rhythmusspiel', 'Ninja-Sprung', 'Über die Straße', 'Dachläufer', 'Rohre', 'Blöcke', 'Wortspiel'],
   ja: ['ネコちゃん', 'ことり', '宇宙ロケット', 'さかなつり', 'タワー', 'モグラたたき', 'めいろ', 'レース', 'ペアさがし', 'まねっこ', '数字ハンター', 'リズムゲーム', '忍者ジャンプ', 'みちをわたろう', '屋根ランナー', 'パイプ', 'ブロック', 'ことばゲーム'],
   zh: ['小猫咪', '小鸟', '太空火箭', '钓鱼', '高塔', '打地鼠', '迷宫', '赛车', '翻对对', '跟我学', '数字猎人', '节奏游戏', '忍者跳', '过马路', '屋顶跑酷', '水管', '方块', '单词游戏'],
+  it: ['Gattino', 'Uccellino', 'Razzo nello spazio', 'Pesca', 'Torre', 'Talpe', 'Labirinto', 'Corsa', 'Coppie', 'Ripeti con me', 'Cacciatore di numeri', 'Gioco del ritmo', 'Salto ninja', 'Attraversa la strada', 'Corridore dei tetti', 'Tubi', 'Blocchi', 'Gioco di parole'],
+  ka: ['კატუნა', 'ჩიტუნა', 'რაკეტა კოსმოსში', 'თევზაობა', 'კოშკი', 'თხუნელები', 'ლაბირინთი', 'რბოლა', 'წყვილები', 'გაიმეორე ჩემთან', 'რიცხვების მონადირე', 'რიტმის თამაში', 'ნინძას ნახტომი', 'გადადი გზაზე', 'სახურავების მორბენალი', 'მილები', 'ბლოკები', 'სიტყვების თამაში'],
+  hi: ['बिल्ली', 'चिड़िया', 'अंतरिक्ष में रॉकेट', 'मछली पकड़ना', 'मीनार', 'छछूंदर', 'भूलभुलैया', 'रेस', 'जोड़ियाँ', 'मेरे बाद दोहराओ', 'संख्या शिकारी', 'ताल का खेल', 'निंजा कूद', 'सड़क पार करो', 'छतों का धावक', 'पाइप', 'ब्लॉक', 'शब्दों का खेल'],
 };
 const R = REAL[ggLang] || REAL.hy;
 

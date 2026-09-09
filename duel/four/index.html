@@ -106,6 +106,9 @@ const TRL = {
   de: { h1: 'Vier gewinnt 🔴🟡', turn: s => 'Am Zug: ' + s, win: s => s + ' GEWINNT 🎉', draw: 'Unentschieden! Das Brett ist voll 🤝', again: '🔄 Neues Spiel' },
   ja: { h1: '四目ならべ 🔴🟡', turn: s => 'ばん：' + s, win: s => s + 'のかち！🎉', draw: 'ひきわけ！ばんがいっぱい 🤝', again: '🔄 もう一回' },
   zh: { h1: '四子棋 🔴🟡', turn: s => '轮到：' + s, win: s => s + ' 赢了 🎉', draw: '平局！棋盘满了 🤝', again: '🔄 再来一局' },
+  it: { h1: 'Forza quattro 🔴🟡', turn: s => 'Tocca a ' + s, win: s => s + ' VINCE 🎉', draw: 'Pareggio! Il tabellone è pieno 🤝', again: '🔄 Nuova partita' },
+  ka: { h1: 'ოთხი ზედიზედ 🔴🟡', turn: s => 'სვლა: ' + s, win: s => s + ' მოიგო 🎉', draw: 'ფრე! დაფა გაივსო 🤝', again: '🔄 ახალი თამაში' },
+  hi: { h1: 'कनेक्ट फ़ोर 🔴🟡', turn: s => 'बारी: ' + s, win: s => s + ' जीत गया 🎉', draw: 'बराबरी! बोर्ड भर गया 🤝', again: '🔄 नया खेल' },
 };
 const T = TRL[ggLang] || TRL.hy;
 document.querySelector('h1').textContent = T.h1;
