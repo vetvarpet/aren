@@ -134,6 +134,29 @@ function tone(freq, dur, type, vol, delay) {
 }
 const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.25, 'triangle', 0.2, k * 0.13));
 
+// Ծափահարություններ 👏 — հաղթողի պատվին հեռախոսը ծափ է տալիս (Արենի միտքն է)
+function applause() {
+  if (!actx) return;
+  const t0 = actx.currentTime;
+  for (let i = 0; i < 22; i++) {
+    const t = t0 + 0.08 + i * 0.055 + Math.random() * 0.03;
+    const dur = 0.045;
+    const buf = actx.createBuffer(1, Math.floor(actx.sampleRate * dur), actx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1) * (1 - j / d.length);
+    const src = actx.createBufferSource();
+    src.buffer = buf;
+    const bp = actx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 900 + Math.random() * 900;
+    bp.Q.value = 1.2;
+    const g = actx.createGain();
+    g.gain.value = 0.1 + Math.random() * 0.08;
+    src.connect(bp); bp.connect(g); g.connect(actx.destination);
+    src.start(t);
+  }
+}
+
 // Հանգույցի տեղը էկրանին. pos -100..100 → 15%..85%
 function drawKnot() {
   const pct = 50 + pos * 0.35;
@@ -175,7 +198,7 @@ function pull(who) {
     const topWon = pos <= -100;
     msgT.textContent = topWon ? T.winner : T.loser;
     msgB.textContent = topWon ? T.loser : T.winner;
-    sWin();
+    sWin(); applause();
     confetti();
     setTimeout(() => { if (state === 'end') say(T.again); }, 2200);
   }

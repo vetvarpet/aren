@@ -32,6 +32,28 @@
 </style>
 
 <a href="../../" style="position:fixed;top:48px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<!-- Կերպարի ընտրություն 🎨 — Արենի միտքն է. կատու, շուն, նինձյա, ռոբոտ -->
+<style>
+  #heroPick { position: fixed; top: 46px; right: 10px; z-index: 10; display: flex; gap: 6px; }
+  #heroPick button {
+    font-size: 1.15rem;
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.4);
+    background: rgba(20,26,34,0.75);
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.12s, border-color 0.12s;
+  }
+  #heroPick button.on { border-color: #ffd166; background: rgba(255,209,102,0.3); transform: scale(1.12); }
+</style>
+<div id="heroPick">
+  <button data-h="cat">🐱</button>
+  <button data-h="dog">🐶</button>
+  <button data-h="ninja">🥷</button>
+  <button data-h="robot">🤖</button>
+</div>
 <canvas id="game"></canvas>
 
 <script>
@@ -76,6 +98,25 @@ const GRAVITY = 1.35;         // Արենի առաջին կոդը 0.5 էր՝ լ�
 const JUMP_POWER = -20;       // ինչքան ուժեղ է թռչում վերև (նույն բարձրությունը, բայց կայծակ)
 const CAT_COLOR='#f28c3b';    // ← Արենի երրորդ կոդը․ ինքը փորձեց կանաչը (#affb67), ինքն էլ ետ բերեց 🎨
 const CAT_SIZE = 1;           // կատվի չափը. 1-ը սովորականն է, մեծ թիվը՝ մեծ կատու
+
+// ——— Կերպարները 🎨 — նույն մարմինը, տարբեր դեմքեր ու գույներ ———
+const HEROES = {
+  cat:   { body: CAT_COLOR, stripe: '#d96f21' },
+  dog:   { body: '#b98156', stripe: '#8f5f3a' },
+  ninja: { body: '#3b4668', stripe: '#2c3550' },
+  robot: { body: '#9aa5b1', stripe: '#6f7b8a' },
+};
+let hero = 'cat';
+try { hero = localStorage.getItem('aren-hero') || 'cat'; } catch (e) {}
+if (!HEROES[hero]) hero = 'cat';
+document.querySelectorAll('#heroPick button').forEach(b => {
+  b.classList.toggle('on', b.dataset.h === hero);
+  b.addEventListener('click', () => {
+    hero = b.dataset.h;
+    try { localStorage.setItem('aren-hero', hero); } catch (e) {}
+    document.querySelectorAll('#heroPick button').forEach(x => x.classList.toggle('on', x.dataset.h === hero));
+  });
+});
 
 // ——— Խաղի վիճակը ———
 let boxes = [];               // արկղերը, որ գալիս են
@@ -349,8 +390,10 @@ function drawCat() {
 
   ctx.scale(CAT_SIZE, CAT_SIZE);
 
+  const HC = HEROES[hero] || HEROES.cat;   // ընտրված կերպարի գույները
+
   // պոչը
-  ctx.strokeStyle = CAT_COLOR;
+  ctx.strokeStyle = HC.body;
   ctx.lineWidth = 7;
   ctx.lineCap = 'round';
   ctx.beginPath();
@@ -365,13 +408,13 @@ function drawCat() {
   ctx.beginPath(); ctx.moveTo(14, -12);  ctx.lineTo(14 + legSwing, 0);  ctx.stroke();
 
   // մարմինը
-  ctx.fillStyle = CAT_COLOR;
+  ctx.fillStyle = HC.body;
   ctx.beginPath();
   ctx.ellipse(-4, -26, 30, 18, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // գծավոր մեջքը
-  ctx.strokeStyle = '#d96f21';
+  ctx.strokeStyle = HC.stripe;
   ctx.lineWidth = 4;
   for (const sx of [-14, -2, 10]) {
     ctx.beginPath();
@@ -381,38 +424,94 @@ function drawCat() {
   }
 
   // գլուխը
-  ctx.fillStyle = CAT_COLOR;
+  ctx.fillStyle = HC.body;
   ctx.beginPath();
   ctx.arc(24, -40, 16, 0, Math.PI * 2);
   ctx.fill();
 
-  // ականջները
-  ctx.beginPath();
-  ctx.moveTo(14, -50); ctx.lineTo(12, -64); ctx.lineTo(24, -54);
-  ctx.moveTo(30, -52); ctx.lineTo(36, -64); ctx.lineTo(40, -50);
-  ctx.fill();
+  // ականջները՝ ամեն կերպարինը իրենն է
+  if (hero === 'dog') {
+    // շան կախ ընկած ականջները
+    ctx.fillStyle = HC.stripe;
+    ctx.beginPath(); ctx.ellipse(13, -46, 5.5, 11, 0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(35, -46, 5.5, 11, -0.5, 0, Math.PI * 2); ctx.fill();
+  } else if (hero === 'robot') {
+    // ռոբոտի ալեհավաքն ու պտուտակները
+    ctx.strokeStyle = HC.stripe;
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(24, -56); ctx.lineTo(24, -66); ctx.stroke();
+    ctx.fillStyle = '#e63946';
+    ctx.beginPath(); ctx.arc(24, -68, 3.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = HC.stripe;
+    ctx.fillRect(11, -46, 5, 5);
+    ctx.fillRect(34, -46, 5, 5);
+  } else {
+    // կատվի (ու նինձյա-կատվի) սուր ականջները
+    ctx.beginPath();
+    ctx.moveTo(14, -50); ctx.lineTo(12, -64); ctx.lineTo(24, -54);
+    ctx.moveTo(30, -52); ctx.lineTo(36, -64); ctx.lineTo(40, -50);
+    ctx.fill();
+  }
 
-  // աչքը
-  ctx.fillStyle = '#23405c';
-  ctx.beginPath();
-  ctx.arc(29, -42, 2.6, 0, Math.PI * 2);
-  ctx.fill();
+  // աչքը՝ ամեն կերպարինը իրենն է
+  if (hero === 'ninja') {
+    // նինձյայի դիմակի շերտն ու աչքը
+    ctx.fillStyle = '#e63946';
+    ctx.fillRect(10, -47, 29, 7);
+    ctx.strokeStyle = '#e63946';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(11, -45); ctx.lineTo(2, -38); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(11, -43); ctx.lineTo(4, -33); ctx.stroke();
+    ctx.fillStyle = '#f5eede';
+    ctx.beginPath(); ctx.ellipse(29, -43.5, 4.5, 2.6, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#23405c';
+    ctx.beginPath(); ctx.arc(30, -43.5, 1.8, 0, Math.PI * 2); ctx.fill();
+  } else if (hero === 'robot') {
+    // ռոբոտի քառակուսի լուսավոր աչքը
+    ctx.fillStyle = '#23405c';
+    ctx.fillRect(25, -46, 9, 8);
+    ctx.fillStyle = '#6ee7b7';
+    ctx.fillRect(27, -44, 5, 4);
+  } else {
+    ctx.fillStyle = '#23405c';
+    ctx.beginPath();
+    ctx.arc(29, -42, 2.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   // քիթն ու բեղերը
-  ctx.fillStyle = '#ff8fa3';
-  ctx.beginPath();
-  ctx.arc(39, -38, 2.2, 0, Math.PI * 2);
-  ctx.fill();
+  if (hero === 'cat') {
+    ctx.fillStyle = '#ff8fa3';
+    ctx.beginPath();
+    ctx.arc(39, -38, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (hero === 'dog') {
+    // շան սև քիթն ու լեզուն
+    ctx.fillStyle = '#2b2b2b';
+    ctx.beginPath(); ctx.arc(39, -38, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#e66a7a';
+    ctx.beginPath(); ctx.ellipse(37, -30, 2.6, 4.5, 0.3, 0, Math.PI * 2); ctx.fill();
+  } else if (hero === 'robot') {
+    // ռոբոտի բերան-վանդակը
+    ctx.strokeStyle = HC.stripe;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(30, -33); ctx.lineTo(39, -33);
+    ctx.moveTo(31, -30); ctx.lineTo(38, -30);
+    ctx.stroke();
+  }
 
   // ↓↓↓ ԱՐԵՆԻ ԴԱՍ 3 ՏՈՂԸ ԳԱԼՈՒ Է ԱՅՍՏԵՂ ↓↓↓
 
   // ↑↑↑ ------------------------------------ ↑↑↑
-  ctx.strokeStyle = 'rgba(35,64,92,0.55)';
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.moveTo(40, -37); ctx.lineTo(52, -39);
-  ctx.moveTo(40, -35); ctx.lineTo(52, -33);
-  ctx.stroke();
+  if (hero === 'cat' || hero === 'dog') {
+    ctx.strokeStyle = 'rgba(35,64,92,0.55)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(40, -37); ctx.lineTo(52, -39);
+    ctx.moveTo(40, -35); ctx.lineTo(52, -33);
+    ctx.stroke();
+  }
 
   ctx.restore();
 }

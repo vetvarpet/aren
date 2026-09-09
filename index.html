@@ -83,6 +83,44 @@
   }
   .game.moodhide { display: none; }
 
+  /* ——— Օրվա մարտահրավերը 🌍 — ամեն օր բոլորի համար նույնը (Արենի միտքն է) ——— */
+  .daily {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 10px auto 4px;
+    max-width: 640px;
+    padding: 12px 16px;
+    border: 2px solid rgba(255, 209, 102, 0.65);
+    border-radius: 16px;
+    background: rgba(255, 209, 102, 0.07);
+  }
+  .daily .dt { color: var(--accent); font-weight: bold; font-size: 0.92rem; white-space: nowrap; }
+  .daily .dx { color: var(--ink); font-size: 0.92rem; flex: 1; min-width: 200px; line-height: 1.45; }
+  .daily .dgo {
+    color: #2e2410;
+    background: var(--accent);
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+  .daily.done { border-color: var(--accent2); background: rgba(110, 231, 183, 0.08); }
+  .daily.done .dbadge {
+    color: #123326;
+    background: var(--accent2);
+    font-weight: bold;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    animation: dpop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1);
+  }
+  @keyframes dpop { from { transform: scale(0.3); } to { transform: scale(1); } }
+
   /* ——— Լոգոյի ինտրոն 🎬 — PlayStation-ի ոճով. փայլում է ու թռչում իր տեղը ——— */
   #intro {
     position: fixed;
@@ -333,6 +371,14 @@
     <button data-mood="friend" id="moodFriend">👥 Ընկերոջ հետ եմ</button>
     <button data-mood="calm" id="moodCalm">🌿 Հանգիստ բան եմ ուզում</button>
     <button data-mood="fast" id="moodFast">⚡ Ադրենալին եմ ուզում</button>
+  </div>
+
+  <!-- Օրվա մարտահրավերը. ամեն օր՝ նոր առաջադրանք, ամբողջ աշխարհի համար նույնը -->
+  <div class="daily" id="daily">
+    <span class="dt" id="dailyT">🌍 Օրվա մարտահրավեր</span>
+    <span class="dx" id="dailyX"></span>
+    <a class="dgo" id="dailyGo" href="#">▶ Փորձել</a>
+    <span class="dbadge" id="dailyB" hidden>🏅</span>
   </div>
 
   <div class="grid">
@@ -1218,6 +1264,7 @@ const DICT = {
     troph: '🏆 Кубки',
     rand: '🎲 Случайная',
     moodQ: 'Во что сыграем?', moodSolo: '🙋 Я один', moodFriend: '👥 Я с другом', moodCalm: '🌿 Хочу спокойное', moodFast: '⚡ Хочу адреналина',
+    dailyT: '🌍 Задание дня', dailyScore: (n, g) => 'Сегодня набери ' + n + ' в игре «' + g + '»', dailyLevel: (n, g) => 'Сегодня дойди до уровня ' + n + ' в игре «' + g + '»', dailyDone: '🏅 Сделано!', dailyGo: '▶ Попробовать',
     newTag: 'NEW',
     cards: {
       './cat-jump/': ['Котик', 'Две игры в одной: кот-бегун с ящиками и воронами, и Golden Bird 🐦 — птичка между башнями из ящиков.', '▶ Играть'],
@@ -1248,6 +1295,7 @@ const DICT = {
     troph: '🏆 Trophies',
     rand: '🎲 Random',
     moodQ: 'What shall we play?', moodSolo: '🙋 On my own', moodFriend: '👥 With a friend', moodCalm: '🌿 Something calm', moodFast: '⚡ Adrenaline!',
+    dailyT: '🌍 Daily challenge', dailyScore: (n, g) => 'Score ' + n + ' today in “' + g + '”', dailyLevel: (n, g) => 'Reach level ' + n + ' today in “' + g + '”', dailyDone: '🏅 Done!', dailyGo: '▶ Try it',
     newTag: 'NEW',
     cards: {
       './cat-jump/': ['Kitty', 'Two games in one: the running cat with boxes and crows, and Golden Bird 🐦 — a bird flying between box towers.', '▶ Play'],
@@ -1278,6 +1326,7 @@ const DICT = {
     troph: '🏆 Trofeos',
     rand: '🎲 Al azar',
     moodQ: '¿A qué jugamos?', moodSolo: '🙋 Estoy solo', moodFriend: '👥 Con un amigo', moodCalm: '🌿 Algo tranquilo', moodFast: '⚡ ¡Adrenalina!',
+    dailyT: '🌍 Reto del día', dailyScore: (n, g) => 'Consigue hoy ' + n + ' en «' + g + '»', dailyLevel: (n, g) => 'Llega hoy al nivel ' + n + ' en «' + g + '»', dailyDone: '🏅 ¡Hecho!', dailyGo: '▶ Intentar',
     newTag: 'NUEVO',
     cards: {
       './cat-jump/': ['Gatito', 'Dos juegos en uno: el gato corredor con cajas y cuervos, y Golden Bird 🐦, un pajarito entre torres de cajas.', '▶ Jugar'],
@@ -1308,6 +1357,7 @@ const DICT = {
     troph: '🏆 Trophées',
     rand: '🎲 Au hasard',
     moodQ: 'On joue à quoi ?', moodSolo: '🙋 Je suis seul', moodFriend: '👥 Avec un ami', moodCalm: '🌿 Un truc calme', moodFast: '⚡ De l’adrénaline !',
+    dailyT: '🌍 Défi du jour', dailyScore: (n, g) => 'Fais ' + n + ' aujourd’hui dans « ' + g + ' »', dailyLevel: (n, g) => 'Atteins le niveau ' + n + ' aujourd’hui dans « ' + g + ' »', dailyDone: '🏅 Fait !', dailyGo: '▶ Essayer',
     newTag: 'NOUVEAU',
     cards: {
       './cat-jump/': ['Petit chat', 'Deux jeux en un : le chat coureur avec caisses et corbeaux, et Golden Bird 🐦, l’oiseau entre les tours de caisses.', '▶ Jouer'],
@@ -1338,6 +1388,7 @@ const DICT = {
     troph: '🏆 Pokale',
     rand: '🎲 Zufall',
     moodQ: 'Was spielen wir?', moodSolo: '🙋 Ich bin allein', moodFriend: '👥 Mit einem Freund', moodCalm: '🌿 Etwas Ruhiges', moodFast: '⚡ Adrenalin!',
+    dailyT: '🌍 Tages-Challenge', dailyScore: (n, g) => 'Hol heute ' + n + ' in „' + g + '“', dailyLevel: (n, g) => 'Erreiche heute Level ' + n + ' in „' + g + '“', dailyDone: '🏅 Geschafft!', dailyGo: '▶ Versuchen',
     newTag: 'NEU',
     cards: {
       './cat-jump/': ['Kätzchen', 'Zwei Spiele in einem: die rennende Katze mit Kisten und Krähen, und Golden Bird 🐦 — der Vogel zwischen Kistentürmen.', '▶ Spielen'],
@@ -1368,6 +1419,7 @@ const DICT = {
     troph: '🏆 トロフィー',
     rand: '🎲 ランダム',
     moodQ: 'なにであそぶ？', moodSolo: '🙋 ひとりで', moodFriend: '👥 ともだちと', moodCalm: '🌿 のんびりしたい', moodFast: '⚡ ドキドキしたい',
+    dailyT: '🌍 今日のチャレンジ', dailyScore: (n, g) => '今日「' + g + '」で' + n + 'をとろう', dailyLevel: (n, g) => '今日「' + g + '」でレベル' + n + 'までいこう', dailyDone: '🏅 クリア！', dailyGo: '▶ やってみる',
     newTag: '新',
     cards: {
       './cat-jump/': ['ネコちゃん', '2つのゲームが1つに：箱とカラスのネコラン、そして箱のタワーを飛ぶ Golden Bird 🐦。', '▶ あそぶ'],
@@ -1398,6 +1450,7 @@ const DICT = {
     troph: '🏆 奖杯',
     rand: '🎲 随机',
     moodQ: '玩什么好呢？', moodSolo: '🙋 我一个人', moodFriend: '👥 和朋友一起', moodCalm: '🌿 想玩安静的', moodFast: '⚡ 想要刺激的',
+    dailyT: '🌍 每日挑战', dailyScore: (n, g) => '今天在《' + g + '》拿到' + n, dailyLevel: (n, g) => '今天在《' + g + '》达到第' + n + '关', dailyDone: '🏅 完成！', dailyGo: '▶ 去试试',
     newTag: '新',
     cards: {
       './cat-jump/': ['小猫咪', '两个游戏合一：跳箱躲乌鸦的小猫快跑，加上在箱子塔之间飞的 Golden Bird 🐦。', '▶ 开玩'],
@@ -1428,6 +1481,7 @@ const DICT = {
     troph: '🏆 Trofei',
     rand: '🎲 A caso',
     moodQ: 'A cosa giochiamo?', moodSolo: '🙋 Sono da solo', moodFriend: '👥 Con un amico', moodCalm: '🌿 Qualcosa di tranquillo', moodFast: '⚡ Adrenalina!',
+    dailyT: '🌍 Sfida del giorno', dailyScore: (n, g) => 'Fai oggi ' + n + ' in «' + g + '»', dailyLevel: (n, g) => 'Arriva oggi al livello ' + n + ' in «' + g + '»', dailyDone: '🏅 Fatto!', dailyGo: '▶ Provaci',
     newTag: 'NEW',
     cards: {
       './cat-jump/': ['Gattino', 'Due giochi in uno: il gatto che corre tra casse e corvi, e Golden Bird 🐦 — l’uccellino tra le torri di casse.', '▶ Gioca'],
@@ -1458,6 +1512,7 @@ const DICT = {
     troph: '🏆 თასები',
     rand: '🎲 შემთხვევითი',
     moodQ: 'რა ვითამაშოთ?', moodSolo: '🙋 მარტო ვარ', moodFriend: '👥 მეგობართან ერთად', moodCalm: '🌿 რამე მშვიდი მინდა', moodFast: '⚡ ადრენალინი მინდა',
+    dailyT: '🌍 დღის გამოწვევა', dailyScore: (n, g) => 'დღეს დააგროვე ' + n + ' თამაშში «' + g + '»', dailyLevel: (n, g) => 'დღეს მიაღწიე ' + n + ' დონეს თამაშში «' + g + '»', dailyDone: '🏅 შესრულებულია!', dailyGo: '▶ სცადე',
     newTag: 'NEW',
     cards: {
       './cat-jump/': ['კატუნა', 'ორი თამაში ერთში: მორბენალი კატა ყუთებითა და ყვავებით, და Golden Bird 🐦 — ჩიტუნა ყუთების კოშკებს შორის.', '▶ ითამაშე'],
@@ -1488,6 +1543,7 @@ const DICT = {
     troph: '🏆 ट्रॉफ़ियाँ',
     rand: '🎲 कोई भी',
     moodQ: 'क्या खेलें?', moodSolo: '🙋 मैं अकेला हूँ', moodFriend: '👥 दोस्त के साथ', moodCalm: '🌿 कुछ शांत चाहिए', moodFast: '⚡ एड्रेनालिन चाहिए',
+    dailyT: '🌍 आज की चुनौती', dailyScore: (n, g) => 'आज «' + g + '» में ' + n + ' बनाओ', dailyLevel: (n, g) => 'आज «' + g + '» में स्तर ' + n + ' तक पहुँचो', dailyDone: '🏅 हो गया!', dailyGo: '▶ आज़माओ',
     newTag: 'NEW',
     cards: {
       './cat-jump/': ['बिल्ली', 'एक में दो खेल: बक्सों और कौवों वाली दौड़ती बिल्ली, और Golden Bird 🐦 — बक्सों की मीनारों के बीच चिड़िया।', '▶ खेलो'],
@@ -1528,6 +1584,7 @@ function applyLang(lang) {
   document.getElementById('moodFriend').textContent = d.moodFriend;
   document.getElementById('moodCalm').textContent = d.moodCalm;
   document.getElementById('moodFast').textContent = d.moodFast;
+  DL = { T: d.dailyT, score: d.dailyScore, level: d.dailyLevel, done: d.dailyDone, go: d.dailyGo };
   document.querySelectorAll('.game').forEach(card => {
     const c = d.cards[card.getAttribute('href')];
     if (!c) return;
@@ -1537,6 +1594,7 @@ function applyLang(lang) {
   });
   document.querySelectorAll('.new-tag').forEach(t => { t.textContent = d.newTag; });
   document.querySelector('footer').innerHTML = d.footer;
+  renderDaily();   // մարտահրավերի տեքստը նոր լեզվով
 }
 
 function chooseLang(lang) {
@@ -1626,6 +1684,59 @@ document.querySelectorAll('.game').forEach(card => {
     openWithTip(card.getAttribute('href'));
   });
 });
+
+// ——— Օրվա մարտահրավերը 🌍 — Արենի միտքն է ———
+// Ամսաթիվը որոշում է առաջադրանքը, դրա համար ամբողջ աշխարհում նույնն է։
+// Արեցիր՝ ստանում ես 🏅 նշանը հենց այստեղ։
+const DAILY = [
+  { href: './cat-jump/', key: 'cat-best', n: 40, kind: 'score' },
+  { href: './rocket/', key: 'aren-rocket-best', n: 25, kind: 'score' },
+  { href: './fishing/', key: 'aren-fish-best', n: 30, kind: 'score' },
+  { href: './tower/', key: 'aren-tower-best', n: 12, kind: 'score' },
+  { href: './moles/', key: 'aren-moles-best', n: 25, kind: 'score' },
+  { href: './maze/', key: 'aren-maze-max', n: 10, kind: 'level' },
+  { href: './beat/', key: 'aren-beat-best', n: 100, kind: 'score' },
+  { href: './ninja/', key: 'aren-ninja-best', n: 80, kind: 'score' },
+  { href: './men/', key: 'aren-men-best', n: 30, kind: 'score' },
+  { href: './runner/', key: 'aren-runner-best', n: 120, kind: 'score' },
+  { href: './pipes/', key: 'aren-pipes-level', n: 6, kind: 'level' },
+  { href: './blocks/', key: 'aren-blocks-best', n: 200, kind: 'score' },
+  { href: './words/', key: 'aren-words-level', n: 10, kind: 'level' },
+];
+let DL = {
+  T: '🌍 Օրվա մարտահրավեր',
+  score: (n, g) => 'Այսօր հավաքիր ' + n + '՝ «' + g + '» խաղում',
+  level: (n, g) => 'Այսօր հասիր ' + n + '-րդ մակարդակին «' + g + '» խաղում',
+  done: '🏅 Արվա՜ծ է',
+  go: '▶ Փորձել',
+};
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function renderDaily() {
+  const ds = todayStr();
+  let h = 0;
+  for (const c of ds) h = (h * 31 + c.charCodeAt(0)) % 100000;
+  const ch = DAILY[h % DAILY.length];
+  const card = document.querySelector('.game[href="' + ch.href + '"]');
+  const gname = card ? card.querySelector('.real').textContent : ch.href;
+  let v = 0;
+  try { v = Number(localStorage.getItem(ch.key) || 0); } catch (e) {}
+  const done = v >= ch.n;
+  document.getElementById('dailyT').textContent = DL.T;
+  document.getElementById('dailyX').textContent = (ch.kind === 'level' ? DL.level : DL.score)(ch.n, gname);
+  const go = document.getElementById('dailyGo');
+  go.href = ch.href;
+  go.textContent = DL.go;
+  go.hidden = done;
+  const b = document.getElementById('dailyB');
+  b.hidden = !done;
+  b.textContent = DL.done;
+  document.getElementById('daily').classList.toggle('done', done);
+  if (done) { try { localStorage.setItem('aren-daily-' + ds, '1'); } catch (e) {} }
+}
+renderDaily();
 
 // ——— «Ի՞նչ խաղանք» զտիչը 💡 — Արենի միտքն է ———
 // Ամեն խաղ ունի պիտակներ. մենակ / ընկերոջ հետ / հանգիստ / ադրենալին
