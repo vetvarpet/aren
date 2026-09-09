@@ -83,6 +83,58 @@
   }
   .game.moodhide { display: none; }
 
+  /* ——— Լոգոյի ինտրոն 🎬 — PlayStation-ի ոճով. փայլում է ու թռչում իր տեղը ——— */
+  #intro {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #intro img {
+    width: 130px;
+    height: 130px;
+    border-radius: 26px;
+    animation: introPop 0.95s cubic-bezier(0.2, 1.4, 0.4, 1);
+    filter: drop-shadow(0 0 34px rgba(255, 209, 102, 0.55));
+  }
+  @keyframes introPop {
+    0%   { transform: scale(0.3); opacity: 0; filter: drop-shadow(0 0 0 rgba(255, 209, 102, 0)); }
+    55%  { transform: scale(1.12); opacity: 1; filter: drop-shadow(0 0 60px rgba(255, 209, 102, 0.95)); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 34px rgba(255, 209, 102, 0.55)); }
+  }
+
+  /* ——— Բեռնման խորհուրդները 💡 — խաղ բացելիս պատահական հուշում ——— */
+  #tipbox {
+    position: fixed;
+    inset: 0;
+    z-index: 95;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 30px;
+    text-align: center;
+    animation: tipIn 0.22s;
+  }
+  @keyframes tipIn { from { opacity: 0; } to { opacity: 1; } }
+  #tipbox img {
+    width: 76px;
+    height: 76px;
+    border-radius: 16px;
+    animation: tipPulse 0.8s infinite alternate ease-in-out;
+  }
+  @keyframes tipPulse {
+    from { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255, 209, 102, 0.3)); }
+    to   { transform: scale(1.09); filter: drop-shadow(0 0 26px rgba(255, 209, 102, 0.7)); }
+  }
+  #tipbox .tt { color: var(--ink); font-size: 1.02rem; line-height: 1.55; max-width: 32ch; }
+  #tipbox .td { color: #6a6f96; font-size: 0.85rem; }
+
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -1408,6 +1460,76 @@ document.getElementById('langBtn').addEventListener('pointerdown', (e) => {
   langPick.hidden = false;
 });
 document.getElementById('langBtn').addEventListener('click', (e) => e.preventDefault());
+
+// ——— Լոգոյի ինտրոն 🎬 — Արենի միտքն է ———
+// Կայքը բացվելիս լոգոն փայլատակում է ու թռչում իր տեղը։
+// Ցույց ենք տալիս սեսիայի առաջին բացմանը, որ ամեն խաղից վերադառնալիս չկրկնվի։
+(function () {
+  let seen = false;
+  try { seen = sessionStorage.getItem('gg-intro') === '1'; } catch (e) {}
+  if (seen) return;
+  try { sessionStorage.setItem('gg-intro', '1'); } catch (e) {}
+  const headerImg = document.querySelector('.logo img');
+  const ov = document.createElement('div');
+  ov.id = 'intro';
+  ov.innerHTML = '<img src="./logo-icon.png" alt="">';
+  document.body.appendChild(ov);
+  const img = ov.querySelector('img');
+  headerImg.style.visibility = 'hidden';
+  let done = false;
+  const end = () => { if (done) return; done = true; ov.remove(); headerImg.style.visibility = ''; };
+  ov.addEventListener('pointerdown', end);   // անհամբերները կարող են բաց թողնել
+  setTimeout(() => {
+    if (done) return;
+    // թռիչքը դեպի վերնագրի լոգոյի տեղը
+    const t = headerImg.getBoundingClientRect();
+    const s = img.getBoundingClientRect();
+    img.style.transition = 'transform 0.55s cubic-bezier(0.55, 0, 0.25, 1), filter 0.55s';
+    img.style.filter = 'drop-shadow(0 0 0 rgba(255,209,102,0))';
+    ov.style.transition = 'background 0.5s';
+    ov.style.background = 'transparent';
+    const dx = t.left + t.width / 2 - (s.left + s.width / 2);
+    const dy = t.top + t.height / 2 - (s.top + s.height / 2);
+    img.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + (t.width / s.width) + ')';
+    setTimeout(end, 580);
+  }, 1000);
+})();
+
+// ——— Բեռնման խորհուրդները 💡 — Արենի միտքն է ———
+// Խաղի քարտին սեղմելիս մի պահ պատահական հուշում է երևում, հետո խաղը բացվում է
+const TIPS = {
+  hy: ['Գիտեի՞ր․ ոսկե ձուկը 2 անգամ արագ է լողում 🐟', 'Խորհուրդ․ մի՛ պարտվիր 😄', 'Թռչնակը թագ է ստանում 21 միավորից 👑', 'Առաջին գավաթից հետո մարդ այլևս կանգ չի առնում 🏆', 'Լաբիրինթոսն ունի 100 մակարդակ․ քչերն են տեսել վերջինը 🌀', 'Կրկնակի ցատկը փրկում է, երբ տանիքը շատ հեռու է 🏙️', 'Խորհուրդ․ եթե պարտվեցիր՝ մեղավորը հեռախոսն է 😜', 'Հավաքիր բոլոր գավաթները ու կստանաս GOLDEN CHAMPION կնիքը 👑'],
+  ru: ['А ты знал? Золотая рыбка плавает в 2 раза быстрее 🐟', 'Совет: не проигрывай 😄', 'Птичка получает корону с 21 очка 👑', 'После первого кубка уже не остановиться 🏆', 'В лабиринте 100 уровней — мало кто видел последний 🌀', 'Двойной прыжок спасает, когда крыша далеко 🏙️', 'Совет: если проиграл — виноват телефон 😜', 'Собери все кубки и получишь печать GOLDEN CHAMPION 👑'],
+  en: ['Did you know? The golden fish swims twice as fast 🐟', 'Tip: don’t lose 😄', 'The birdie earns a crown at 21 points 👑', 'After your first trophy you won’t stop 🏆', 'The maze has 100 levels — few have seen the last one 🌀', 'A double jump saves you when the roof is far away 🏙️', 'Tip: if you lose, blame the phone 😜', 'Collect every trophy to earn the GOLDEN CHAMPION stamp 👑'],
+  es: ['¿Sabías? El pez dorado nada el doble de rápido 🐟', 'Consejo: no pierdas 😄', 'El pajarito gana una corona a los 21 puntos 👑', 'Después del primer trofeo ya nadie se detiene 🏆', 'El laberinto tiene 100 niveles: pocos vieron el último 🌀', 'El doble salto te salva cuando el tejado está lejos 🏙️', 'Consejo: si pierdes, la culpa es del teléfono 😜', 'Reúne todos los trofeos y ganarás el sello GOLDEN CHAMPION 👑'],
+  fr: ['Tu savais ? Le poisson doré nage deux fois plus vite 🐟', 'Conseil : ne perds pas 😄', 'Le petit oiseau gagne une couronne à 21 points 👑', 'Après le premier trophée, on ne s’arrête plus 🏆', 'Le labyrinthe a 100 niveaux — rares sont ceux qui ont vu le dernier 🌀', 'Le double saut te sauve quand le toit est loin 🏙️', 'Conseil : si tu perds, c’est la faute du téléphone 😜', 'Réunis tous les trophées pour le sceau GOLDEN CHAMPION 👑'],
+  de: ['Wusstest du? Der goldene Fisch schwimmt doppelt so schnell 🐟', 'Tipp: verlier nicht 😄', 'Das Vögelchen bekommt ab 21 Punkten eine Krone 👑', 'Nach dem ersten Pokal hört niemand mehr auf 🏆', 'Das Labyrinth hat 100 Level — kaum jemand sah das letzte 🌀', 'Der Doppelsprung rettet dich, wenn das Dach weit weg ist 🏙️', 'Tipp: wenn du verlierst, ist das Handy schuld 😜', 'Sammle alle Pokale für den GOLDEN-CHAMPION-Stempel 👑'],
+  ja: ['しってた？金のさかなは2ばい速くおよぐよ 🐟', 'ヒント：まけないでね 😄', 'ことりは21ポイントでかんむりをもらえるよ 👑', 'さいしょのトロフィーのあとは、もう止まらない 🏆', 'めいろは100レベル。さいごまで見た人はすくないよ 🌀', '屋根がとおいときは、二だんジャンプでたすかるよ 🏙️', 'ヒント：まけたらスマホのせいにしよう 😜', 'トロフィーをぜんぶ集めるとGOLDEN CHAMPIONのいんかんがもらえるよ 👑'],
+  zh: ['你知道吗？金鱼游得快两倍 🐟', '小提示：别输哦 😄', '小鸟到21分就能戴上王冠 👑', '拿到第一个奖杯之后，就停不下来了 🏆', '迷宫有100关，很少有人见过最后一关 🌀', '屋顶太远时，二段跳能救你 🏙️', '小提示：输了就怪手机 😜', '集齐所有奖杯就能获得GOLDEN CHAMPION印章 👑'],
+};
+const TIPS_LOAD = { hy: 'Բեռնվում է…', ru: 'Загрузка…', en: 'Loading…', es: 'Cargando…', fr: 'Chargement…', de: 'Lädt…', ja: 'ロードちゅう…', zh: '加载中…' };
+
+function openWithTip(href) {
+  let lang = 'hy';
+  try { lang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+  const list = TIPS[lang] || TIPS.hy;
+  const tip = list[Math.floor(Math.random() * list.length)];
+  const box = document.createElement('div');
+  box.id = 'tipbox';
+  box.innerHTML = '<img src="./logo-icon.png" alt=""><div class="tt"></div><div class="td"></div>';
+  box.querySelector('.tt').textContent = '💡 ' + tip;
+  box.querySelector('.td').textContent = TIPS_LOAD[lang] || TIPS_LOAD.hy;
+  document.body.appendChild(box);
+  const go = () => { location.href = href; };
+  box.addEventListener('pointerdown', go);   // անհամբերները միանգամից են գնում
+  setTimeout(go, 1600);
+}
+document.querySelectorAll('.game').forEach(card => {
+  card.addEventListener('click', (e) => {
+    e.preventDefault();
+    openWithTip(card.getAttribute('href'));
+  });
+});
 
 // ——— «Ի՞նչ խաղանք» զտիչը 💡 — Արենի միտքն է ———
 // Ամեն խաղ ունի պիտակներ. մենակ / ընկերոջ հետ / հանգիստ / ադրենալին
