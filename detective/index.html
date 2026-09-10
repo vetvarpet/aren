@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Detective 🔎</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #201626; }
+  body {
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif;
+    color: #f5eede;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    overflow-x: hidden;
+  }
+  canvas { display: block; position: fixed; inset: 0; width: 100vw; height: 100dvh; touch-action: none; }
+
+  #hud {
+    position: fixed; top: 48px; left: 10px; right: 10px; z-index: 6;
+    display: flex; flex-direction: column; gap: 4px;
+    background: rgba(20, 14, 26, 0.78);
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px; padding: 7px 12px;
+    pointer-events: none;
+  }
+  #findTxt { font-size: 1.02rem; color: #ffd76e; line-height: 1.25; }
+  #statTxt { font-size: 0.78rem; color: #cbb8dd; }
+  #hintBtn {
+    position: fixed; right: 12px; bottom: 14px; z-index: 6;
+    font-family: inherit; font-size: 1.05rem; color: #fff8e2;
+    background: #4a2f66; border: 2px solid #8d5fc0;
+    border-radius: 999px; padding: 11px 20px; cursor: pointer;
+    touch-action: manipulation;
+  }
+  #hintBtn:disabled { opacity: 0.4; }
+  #hintBtn[hidden] { display: none !important; }
+
+  /* Ուշադրություն. hidden-ը պարտվում է display:flex-ին, դրա համար ուժեղացնում ենք */
+  #ov[hidden] { display: none !important; }
+  #ov {
+    position: fixed; inset: 0; z-index: 8;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+    text-align: center; padding: 24px 18px;
+    background: rgba(14, 8, 20, 0.86);
+  }
+  #ovTitle { font-size: 1.7rem; color: #ffd76e; }
+  #ovText { font-size: 0.95rem; color: #dfd2ea; line-height: 1.5; max-width: 340px; white-space: pre-line; }
+  #ovBest { font-size: 1rem; color: #6ee7b7; }
+  #ovTap { margin-top: 10px; font-size: 1.1rem; color: #6ee7b7; }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="hud"><div id="findTxt"></div><div id="statTxt"></div></div>
+<button id="hintBtn"></button>
+<div id="ov">
+  <div id="ovTitle"></div>
+  <div id="ovText"></div>
+  <div id="ovBest"></div>
+  <div id="ovTap"></div>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN DETECTIVE 🔎
+//  Սենյակում թաքնված են իրեր։ Խաղը ասում է՝ ո՛ր իրը գտնես,
+//  իսկ դու մատով հպում ես դրան։ Սխալ հպումը ժամանակ է ուտում։
+//  💡 կոճակը 1,5 վայրկյան լուսավորում է թիրախի շուրջը։
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { title: 'Golden Detective 🔎', h1: 'Գտի՛ր թաքնված իրերը սենյակում', h2: '3 սենյակ · 💡 3 հուշում · սխալ հպումը՝ −3 վրկ', start: 'Հպի՛ր՝ սկսելու', again: 'Հպի՛ր՝ նորից խաղալու', timeup: 'Ժամանակը վերջացավ', allDone: 'Ամեն ինչ գտար։ Ապրե՜ս 🎉', find: 'Գտի՛ր՝ ', room: n => 'Սենյակ ' + n + '/3', sc: 'Գտած՝ ', tm: 'Ժամանակ՝ ', sec: ' վրկ', best: 'Ռեկորդդ՝ ', hint: '💡 Հուշում', obj: { key: 'բանալին', cup: 'բաժակը', ball: 'գնդակը', book: 'գիրքը', clock: 'ժամացույցը', shoe: 'կոշիկը', scissors: 'մկրատը', apple: 'խնձորը', candle: 'մոմը', star: 'աստղը' } },
+  ru: { title: 'Golden Detective 🔎', h1: 'Найди спрятанные вещи в комнате', h2: '3 комнаты · 💡 3 подсказки · ошибка: −3 сек', start: 'Нажми, чтобы начать', again: 'Нажми, чтобы играть снова', timeup: 'Время вышло', allDone: 'Ты нашёл всё! Молодец 🎉', find: 'Найди: ', room: n => 'Комната ' + n + '/3', sc: 'Найдено: ', tm: 'Время: ', sec: ' сек', best: 'Твой рекорд: ', hint: '💡 Подсказка', obj: { key: 'ключ', cup: 'чашку', ball: 'мяч', book: 'книгу', clock: 'часы', shoe: 'ботинок', scissors: 'ножницы', apple: 'яблоко', candle: 'свечу', star: 'звезду' } },
+  en: { title: 'Golden Detective 🔎', h1: 'Find the hidden things in the room', h2: '3 rooms · 💡 3 hints · wrong tap: −3 s', start: 'Tap to start', again: 'Tap to play again', timeup: 'Time is up', allDone: 'You found everything! 🎉', find: 'Find: ', room: n => 'Room ' + n + '/3', sc: 'Found: ', tm: 'Time: ', sec: ' s', best: 'Your best: ', hint: '💡 Hint', obj: { key: 'the key', cup: 'the cup', ball: 'the ball', book: 'the book', clock: 'the clock', shoe: 'the shoe', scissors: 'the scissors', apple: 'the apple', candle: 'the candle', star: 'the star' } },
+  es: { title: 'Golden Detective 🔎', h1: 'Encuentra las cosas escondidas en la sala', h2: '3 salas · 💡 3 pistas · fallo: −3 s', start: 'Toca para empezar', again: 'Toca para jugar otra vez', timeup: 'Se acabó el tiempo', allDone: '¡Lo encontraste todo! 🎉', find: 'Encuentra: ', room: n => 'Sala ' + n + '/3', sc: 'Encontrados: ', tm: 'Tiempo: ', sec: ' s', best: 'Tu récord: ', hint: '💡 Pista', obj: { key: 'la llave', cup: 'la taza', ball: 'el balón', book: 'el libro', clock: 'el reloj', shoe: 'el zapato', scissors: 'las tijeras', apple: 'la manzana', candle: 'la vela', star: 'la estrella' } },
+  fr: { title: 'Golden Detective 🔎', h1: 'Trouve les objets cachés dans la pièce', h2: '3 pièces · 💡 3 indices · erreur : −3 s', start: 'Touche pour commencer', again: 'Touche pour rejouer', timeup: 'Temps écoulé', allDone: 'Tu as tout trouvé ! 🎉', find: 'Trouve : ', room: n => 'Pièce ' + n + '/3', sc: 'Trouvés : ', tm: 'Temps : ', sec: ' s', best: 'Ton record : ', hint: '💡 Indice', obj: { key: 'la clé', cup: 'la tasse', ball: 'le ballon', book: 'le livre', clock: 'l’horloge', shoe: 'la chaussure', scissors: 'les ciseaux', apple: 'la pomme', candle: 'la bougie', star: 'l’étoile' } },
+  de: { title: 'Golden Detective 🔎', h1: 'Finde die versteckten Sachen im Zimmer', h2: '3 Zimmer · 💡 3 Tipps · Fehler: −3 s', start: 'Tippe zum Starten', again: 'Tippe, um nochmal zu spielen', timeup: 'Die Zeit ist um', allDone: 'Du hast alles gefunden! 🎉', find: 'Finde: ', room: n => 'Zimmer ' + n + '/3', sc: 'Gefunden: ', tm: 'Zeit: ', sec: ' s', best: 'Dein Rekord: ', hint: '💡 Tipp', obj: { key: 'den Schlüssel', cup: 'die Tasse', ball: 'den Ball', book: 'das Buch', clock: 'die Uhr', shoe: 'den Schuh', scissors: 'die Schere', apple: 'den Apfel', candle: 'die Kerze', star: 'den Stern' } },
+  ja: { title: 'Golden Detective 🔎', h1: 'へやの かくれた ものを さがそう', h2: '3へや · 💡 ヒント3かい · まちがい: −3びょう', start: 'タップでスタート', again: 'タップでもう一回', timeup: '時間切れ', allDone: 'ぜんぶ みつけた！🎉', find: 'さがして：', room: n => 'へや ' + n + '/3', sc: 'みつけた：', tm: 'じかん：', sec: '秒', best: 'ベスト記録：', hint: '💡 ヒント', obj: { key: 'かぎ', cup: 'コップ', ball: 'ボール', book: 'ほん', clock: 'とけい', shoe: 'くつ', scissors: 'はさみ', apple: 'りんご', candle: 'ろうそく', star: 'ほし' } },
+  zh: { title: 'Golden Detective 🔎', h1: '找出房间里藏起来的东西', h2: '3个房间 · 💡 3次提示 · 点错：−3秒', start: '点一下开始', again: '点一下再玩一次', timeup: '时间到', allDone: '全部找到啦！🎉', find: '找一找：', room: n => '房间 ' + n + '/3', sc: '找到：', tm: '时间：', sec: '秒', best: '你的纪录：', hint: '💡 提示', obj: { key: '钥匙', cup: '杯子', ball: '球', book: '书', clock: '钟', shoe: '鞋', scissors: '剪刀', apple: '苹果', candle: '蜡烛', star: '星星' } },
+  it: { title: 'Golden Detective 🔎', h1: 'Trova le cose nascoste nella stanza', h2: '3 stanze · 💡 3 aiuti · errore: −3 s', start: 'Tocca per iniziare', again: 'Tocca per giocare ancora', timeup: 'Tempo scaduto', allDone: 'Hai trovato tutto! 🎉', find: 'Trova: ', room: n => 'Stanza ' + n + '/3', sc: 'Trovati: ', tm: 'Tempo: ', sec: ' s', best: 'Il tuo record: ', hint: '💡 Aiuto', obj: { key: 'la chiave', cup: 'la tazza', ball: 'la palla', book: 'il libro', clock: 'l’orologio', shoe: 'la scarpa', scissors: 'le forbici', apple: 'la mela', candle: 'la candela', star: 'la stella' } },
+  ka: { title: 'Golden Detective 🔎', h1: 'იპოვე ოთახში დამალული ნივთები', h2: '3 ოთახი · 💡 3 მინიშნება · შეცდომა: −3 წმ', start: 'დააჭირე დასაწყებად', again: 'დააჭირე ისევ სათამაშოდ', timeup: 'დრო ამოიწურა', allDone: 'ყველაფერი იპოვე! 🎉', find: 'იპოვე: ', room: n => 'ოთახი ' + n + '/3', sc: 'ნაპოვნი: ', tm: 'დრო: ', sec: ' წმ', best: 'შენი რეკორდი: ', hint: '💡 მინიშნება', obj: { key: 'გასაღები', cup: 'ჭიქა', ball: 'ბურთი', book: 'წიგნი', clock: 'საათი', shoe: 'ფეხსაცმელი', scissors: 'მაკრატელი', apple: 'ვაშლი', candle: 'სანთელი', star: 'ვარსკვლავი' } },
+  hi: { title: 'Golden Detective 🔎', h1: 'कमरे में छिपी चीज़ें ढूँढो', h2: '3 कमरे · 💡 3 मदद · गलत टैप: −3 सेकंड', start: 'शुरू करने के लिए टैप करो', again: 'फिर से खेलने के लिए टैप करो', timeup: 'समय खत्म', allDone: 'तुमने सब ढूँढ लिया! 🎉', find: 'ढूँढो: ', room: n => 'कमरा ' + n + '/3', sc: 'मिले: ', tm: 'समय: ', sec: ' से', best: 'तुम्हारा रिकॉर्ड: ', hint: '💡 मदद', obj: { key: 'चाबी', cup: 'कप', ball: 'गेंद', book: 'किताब', clock: 'घड़ी', shoe: 'जूता', scissors: 'कैंची', apple: 'सेब', candle: 'मोमबत्ती', star: 'तारा' } },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const elFind = document.getElementById('findTxt');
+const elStat = document.getElementById('statTxt');
+const elHint = document.getElementById('hintBtn');
+const ov = document.getElementById('ov');
+
+let W = 0, H = 0, DPR = 1, TOPY = 0, BOTY = 0;
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  TOPY = 118;              // վահանակից ներքև
+  BOTY = H - 78;           // 💡 կոճակից վերև
+}
+resize();
+window.addEventListener('resize', () => { resize(); if (state === 'play') placeAll(); });
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sFound = () => [660, 990].forEach((f, k) => tone(f, 0.14, 'triangle', 0.2, k * 0.08));
+const sWrong = () => tone(150, 0.22, 'sawtooth', 0.16);
+const sHint = () => [880, 1180].forEach((f, k) => tone(f, 0.1, 'sine', 0.14, k * 0.07));
+const sRoom = () => [523, 659, 784].forEach((f, k) => tone(f, 0.18, 'triangle', 0.18, k * 0.1));
+const sEnd = () => [784, 659, 523, 392].forEach((f, k) => tone(f, 0.22, 'triangle', 0.18, k * 0.12));
+
+// ——— Իրերի նկարները (էմոջի չենք նկարում, միայն ձևեր) ———
+const KINDS = ['key', 'cup', 'ball', 'book', 'clock', 'shoe', 'scissors', 'apple', 'candle', 'star'];
+function drawKey(s) {
+  ctx.strokeStyle = '#f2c94c'; ctx.fillStyle = '#f2c94c'; ctx.lineWidth = s * 0.16;
+  ctx.beginPath(); ctx.arc(-s * 0.5, 0, s * 0.32, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-s * 0.2, 0); ctx.lineTo(s * 0.75, 0); ctx.stroke();
+  ctx.fillRect(s * 0.35, 0, s * 0.1, s * 0.32);
+  ctx.fillRect(s * 0.6, 0, s * 0.1, s * 0.32);
+}
+function drawCup(s) {
+  ctx.fillStyle = '#e8f1fa';
+  ctx.beginPath(); ctx.moveTo(-s * 0.5, -s * 0.4); ctx.lineTo(s * 0.4, -s * 0.4);
+  ctx.lineTo(s * 0.28, s * 0.45); ctx.lineTo(-s * 0.38, s * 0.45); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#e8f1fa'; ctx.lineWidth = s * 0.13;
+  ctx.beginPath(); ctx.arc(s * 0.42, -s * 0.02, s * 0.25, -Math.PI * 0.5, Math.PI * 0.5); ctx.stroke();
+  ctx.fillStyle = '#b95c3c'; ctx.fillRect(-s * 0.46, -s * 0.34, s * 0.82, s * 0.12);
+}
+function drawBall(s) {
+  ctx.fillStyle = '#e85d5d';
+  ctx.beginPath(); ctx.arc(0, 0, s * 0.55, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#fff4e0'; ctx.lineWidth = s * 0.12;
+  ctx.beginPath(); ctx.arc(0, 0, s * 0.55, -0.6, 0.6); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, 0, s * 0.55, Math.PI - 0.6, Math.PI + 0.6); ctx.stroke();
+}
+function drawBook(s) {
+  ctx.fillStyle = '#4a7fd0';
+  ctx.beginPath(); ctx.roundRect(-s * 0.55, -s * 0.42, s * 1.1, s * 0.84, s * 0.1); ctx.fill();
+  ctx.fillStyle = '#f6f1e2'; ctx.fillRect(-s * 0.42, -s * 0.3, s * 0.9, s * 0.6);
+  ctx.strokeStyle = '#c4bba8'; ctx.lineWidth = s * 0.06;
+  for (let i = -1; i <= 1; i++) {
+    ctx.beginPath(); ctx.moveTo(-s * 0.34, i * s * 0.16); ctx.lineTo(s * 0.4, i * s * 0.16); ctx.stroke();
+  }
+  ctx.fillStyle = '#2f5ca5'; ctx.fillRect(-s * 0.58, -s * 0.42, s * 0.13, s * 0.84);
+}
+function drawClock(s) {
+  ctx.fillStyle = '#f6f1e2';
+  ctx.beginPath(); ctx.arc(0, 0, s * 0.55, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#6b4b2a'; ctx.lineWidth = s * 0.12;
+  ctx.beginPath(); ctx.arc(0, 0, s * 0.55, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = '#333'; ctx.lineWidth = s * 0.09;
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -s * 0.34); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * 0.26, s * 0.1); ctx.stroke();
+}
+function drawShoe(s) {
+  ctx.fillStyle = '#7a5c3e';
+  ctx.beginPath(); ctx.roundRect(-s * 0.5, -s * 0.45, s * 0.42, s * 0.7, s * 0.1);
+  ctx.roundRect(-s * 0.5, s * 0.02, s * 1.05, s * 0.34, s * 0.1); ctx.fill();
+  ctx.fillStyle = '#4e3925'; ctx.fillRect(-s * 0.52, s * 0.3, s * 1.08, s * 0.14);
+}
+function drawScissors(s) {
+  ctx.strokeStyle = '#b9c3cf'; ctx.lineWidth = s * 0.13; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-s * 0.45, -s * 0.4); ctx.lineTo(s * 0.4, s * 0.35); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-s * 0.45, s * 0.4); ctx.lineTo(s * 0.4, -s * 0.35); ctx.stroke();
+  ctx.strokeStyle = '#e05a5a'; ctx.lineWidth = s * 0.11;
+  ctx.beginPath(); ctx.arc(-s * 0.55, -s * 0.5, s * 0.17, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(-s * 0.55, s * 0.5, s * 0.17, 0, Math.PI * 2); ctx.stroke();
+  ctx.lineCap = 'butt';
+}
+function drawApple(s) {
+  ctx.fillStyle = '#d64545';
+  ctx.beginPath(); ctx.arc(-s * 0.18, s * 0.05, s * 0.4, 0, Math.PI * 2);
+  ctx.arc(s * 0.18, s * 0.05, s * 0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#6b4b2a'; ctx.lineWidth = s * 0.09;
+  ctx.beginPath(); ctx.moveTo(0, -s * 0.3); ctx.lineTo(s * 0.06, -s * 0.6); ctx.stroke();
+  ctx.fillStyle = '#4aa35a';
+  ctx.beginPath(); ctx.ellipse(s * 0.26, -s * 0.55, s * 0.2, s * 0.1, -0.5, 0, Math.PI * 2); ctx.fill();
+}
+function drawCandle(s) {
+  ctx.fillStyle = '#f3e6d0'; ctx.fillRect(-s * 0.2, -s * 0.2, s * 0.4, s * 0.7);
+  ctx.fillStyle = '#ffb347';
+  ctx.beginPath(); ctx.ellipse(0, -s * 0.42, s * 0.14, s * 0.26, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#fff0a8';
+  ctx.beginPath(); ctx.ellipse(0, -s * 0.4, s * 0.07, s * 0.14, 0, 0, Math.PI * 2); ctx.fill();
+}
+function drawStar(s) {
+  ctx.fillStyle = '#ffd76e';
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5;
+    const r = i % 2 ? s * 0.26 : s * 0.6;
+    const x = Math.cos(a) * r, y = Math.sin(a) * r;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.closePath(); ctx.fill();
+}
+const PAINT = { key: drawKey, cup: drawCup, ball: drawBall, book: drawBook, clock: drawClock, shoe: drawShoe, scissors: drawScissors, apple: drawApple, candle: drawCandle, star: drawStar };
+
+// ——— Խաղի վիճակը ———
+let state = 'menu', endedAt = 0;
+let objs = [], props = [], room = 1, score = 0, target = -1;
+let timeLeft = 90, hints = 3, hintUntil = 0, shakeUntil = 0, lastTs = 0, tNow = 0;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-detective-best') || 0); } catch (e) {}
+
+// Ամեն սենյակում ավելի շատ իր ու ավելի շատ խառնաշփոթ
+const ROOMS = [
+  { n: 8, clutter: 10, size: 30 },
+  { n: 9, clutter: 22, size: 27 },
+  { n: 10, clutter: 36, size: 24 },
+];
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+// Իրերը ցրում ենք սենյակով՝ իրարից հեռու
+function placeAll() {
+  const pad = 34;
+  const put = (list, i, s) => {
+    for (let k = 0; k < 260; k++) {
+      const x = rnd(pad, W - pad), y = rnd(TOPY + pad, BOTY - pad);
+      let ok = true;
+      for (const o of list) { if (o !== list[i] && Math.hypot(o.x - x, o.y - y) < s * 1.9) { ok = false; break; } }
+      if (ok) { list[i].x = x; list[i].y = y; return; }
+    }
+    list[i].x = rnd(pad, W - pad); list[i].y = rnd(TOPY + pad, BOTY - pad);
+  };
+  for (let i = 0; i < objs.length; i++) put(objs, i, objs[i].s);
+  for (const p of props) {
+    p.x = rnd(10, W - 10); p.y = rnd(TOPY + 10, BOTY - 10);
+  }
+}
+
+function newRoom() {
+  const cfg = ROOMS[room - 1];
+  const kinds = KINDS.slice().sort(() => Math.random() - 0.5).slice(0, cfg.n);
+  objs = kinds.map(k => ({ kind: k, x: 0, y: 0, s: cfg.size, rot: rnd(-0.5, 0.5), found: false, pop: 0 }));
+  props = [];
+  for (let i = 0; i < cfg.clutter; i++) {
+    props.push({
+      x: 0, y: 0, w: rnd(18, 60), h: rnd(14, 46), rot: rnd(-0.6, 0.6),
+      c: ['#5b3f6e', '#3c5a7a', '#6b4b3a', '#3f6b52', '#7a5f3a', '#4a4a6b'][Math.floor(Math.random() * 6)],
+      round: Math.random() < 0.4,
+    });
+  }
+  placeAll();
+  pickTarget();
+  sRoom();
+}
+
+function pickTarget() {
+  const left = objs.map((o, i) => i).filter(i => !objs[i].found);
+  target = left.length ? left[Math.floor(Math.random() * left.length)] : -1;
+}
+
+function startGame() {
+  score = 0; room = 1; timeLeft = 90; hints = 3; hintUntil = 0;
+  state = 'play'; ov.hidden = true; elHint.hidden = false;
+  newRoom();
+  syncHud();
+}
+
+function endGame(won) {
+  state = 'over'; endedAt = Date.now();
+  elHint.hidden = true;
+  sEnd();
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('aren-detective-best', best); } catch (e) {}
+    confetti();
+  }
+  document.getElementById('ovTitle').textContent = won ? T.allDone : T.timeup;
+  document.getElementById('ovText').textContent = T.sc + score;
+  document.getElementById('ovBest').textContent = T.best + best;
+  document.getElementById('ovTap').textContent = T.again;
+  ov.hidden = false;
+}
+
+function syncHud() {
+  elFind.textContent = target >= 0 ? T.find + T.obj[objs[target].kind] : '';
+  elStat.textContent = T.room(room) + '  ·  ' + T.sc + score + '  ·  ' + T.tm + Math.ceil(timeLeft) + T.sec;
+  elHint.textContent = T.hint + ' ×' + hints;
+  elHint.disabled = hints <= 0 || state !== 'play';
+}
+
+// ——— Հպումները ———
+// Հեռախոսը հպումից հետո «ուրվական» մկնիկի իրադարձություններ է ուղարկում,
+// դրա համար հիշում ենք վերջին հպման ժամանակը ու անտեսում մկնիկը
+let lastTouchAt = 0;
+function isGhost(e) {
+  if (e.pointerType === 'touch') { lastTouchAt = Date.now(); return false; }
+  return Date.now() - lastTouchAt < 700;
+}
+cv.addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return;
+  e.preventDefault();
+  initAudio();
+  if (state !== 'play' || target < 0) return;
+  const x = e.clientX, y = e.clientY;
+  const o = objs[target];
+  if (!o.found && Math.hypot(o.x - x, o.y - y) < o.s * 0.95) {
+    o.found = true; o.pop = 1; score++; sFound();
+    if (objs.every(k => k.found)) {
+      if (room >= 3) { syncHud(); endGame(true); return; }
+      room++; newRoom();
+    } else pickTarget();
+    syncHud();
+  } else {
+    timeLeft = Math.max(0, timeLeft - 3);   // սխալ հպում՝ փոքր տուգանք
+    shakeUntil = Date.now() + 260;
+    sWrong();
+    syncHud();
+  }
+}, { passive: false });
+cv.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+cv.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+ov.addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return;
+  initAudio();
+  if (state === 'over' && Date.now() - endedAt < 1100) return;   // սպասիր, որ պատահական չսկսես
+  startGame();
+});
+elHint.addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return;
+  e.preventDefault();
+  initAudio();
+  if (state !== 'play' || hints <= 0 || Date.now() < hintUntil) return;
+  hints--; hintUntil = Date.now() + 1500; sHint();
+  syncHud();
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// ——— Նկարելը ———
+function drawRoom() {
+  const wallB = ['#3a2b46', '#2f3a52', '#43312a'][room - 1];
+  const floorB = ['#5a4130', '#3f4e3a', '#4a3550'][room - 1];
+  const horizon = TOPY + (BOTY - TOPY) * 0.52;
+  ctx.fillStyle = wallB; ctx.fillRect(0, 0, W, horizon);
+  ctx.fillStyle = floorB; ctx.fillRect(0, horizon, W, H - horizon);
+  // պատի պաստառ՝ շերտեր
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 10;
+  for (let x = 0; x < W; x += 26) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, horizon); ctx.stroke(); }
+  // հատակի տախտակներ
+  ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 2;
+  for (let y = horizon; y < H; y += 22) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  // պատուհան ու գորգ՝ սենյակին կյանք տալու համար
+  ctx.fillStyle = '#6fa8d0'; ctx.fillRect(W * 0.62, TOPY + 6, W * 0.3, (horizon - TOPY) * 0.55);
+  ctx.strokeStyle = '#8a6d4a'; ctx.lineWidth = 5;
+  ctx.strokeRect(W * 0.62, TOPY + 6, W * 0.3, (horizon - TOPY) * 0.55);
+  ctx.fillStyle = 'rgba(180,90,90,0.35)';
+  ctx.beginPath(); ctx.ellipse(W * 0.35, horizon + (H - horizon) * 0.45, W * 0.3, 46, 0, 0, Math.PI * 2); ctx.fill();
+  // խառնաշփոթը (որքան բարձր սենյակ, այնքան շատ)
+  for (const p of props) {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.fillStyle = p.c; ctx.globalAlpha = 0.9;
+    ctx.beginPath();
+    if (p.round) ctx.ellipse(0, 0, p.w / 2, p.h / 2, 0, 0, Math.PI * 2);
+    else ctx.roundRect(-p.w / 2, -p.h / 2, p.w, p.h, 5);
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function draw() {
+  const shake = Date.now() < shakeUntil ? Math.sin(Date.now() * 0.06) * 5 : 0;
+  ctx.save();
+  ctx.translate(shake, 0);
+  drawRoom();
+  for (const o of objs) {
+    ctx.save();
+    ctx.translate(o.x, o.y);
+    ctx.rotate(o.rot);
+    if (o.found) {
+      o.pop = Math.max(0, o.pop - 0.03);
+      ctx.globalAlpha = 0.45;
+      ctx.scale(1 + o.pop * 0.4, 1 + o.pop * 0.4);
+    }
+    PAINT[o.kind](o.s);
+    ctx.restore();
+    if (o.found) {
+      ctx.strokeStyle = 'rgba(110,231,183,0.85)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(o.x, o.y, o.s * 0.9, 0, Math.PI * 2); ctx.stroke();
+    }
+  }
+  // 💡 հուշում — մթնեցնում ենք ամեն ինչ, բացի թիրախի շուրջը
+  if (Date.now() < hintUntil && target >= 0) {
+    const o = objs[target];
+    const r = 88;
+    ctx.fillStyle = 'rgba(8,4,14,0.82)';
+    ctx.beginPath();
+    ctx.rect(0, 0, W, H);
+    ctx.arc(o.x, o.y, r, 0, Math.PI * 2);
+    ctx.fill('evenodd');
+    ctx.strokeStyle = '#ffd76e'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(o.x, o.y, r, 0, Math.PI * 2); ctx.stroke();
+  }
+  if (Date.now() < shakeUntil) {
+    ctx.fillStyle = 'rgba(220,60,60,0.18)';
+    ctx.fillRect(0, 0, W, H);
+  }
+  ctx.restore();
+}
+
+function confetti() {
+  const stuff = ['🎉', '🔎', '⭐', '💛', '🎊', '✨'];
+  for (let k = 0; k < 34; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.cssText = 'position:fixed;top:-50px;z-index:9;pointer-events:none;left:' + (Math.random() * 100) + 'vw;font-size:' + (16 + Math.random() * 20) + 'px;transition:transform ' + (2 + Math.random() * 2) + 's linear';
+    document.body.appendChild(s);
+    requestAnimationFrame(() => { s.style.transform = 'translateY(115vh) rotate(720deg)'; });
+    setTimeout(() => s.remove(), 4600);
+  }
+}
+
+function loop(ts) {
+  const dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0;
+  lastTs = ts; tNow = ts;
+  if (state === 'play') {
+    timeLeft -= dt;
+    if (timeLeft <= 0) { timeLeft = 0; syncHud(); endGame(false); }
+    else if (Math.floor(timeLeft * 2) !== Math.floor((timeLeft + dt) * 2)) syncHud();
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ——— Մեկնարկի էկրանը ———
+document.getElementById('ovTitle').textContent = T.title;
+document.getElementById('ovText').textContent = T.h1 + '\n' + T.h2;
+document.getElementById('ovBest').textContent = best > 0 ? T.best + best : '';
+document.getElementById('ovTap').textContent = T.start;
+elHint.textContent = T.hint + ' ×3';
+elHint.hidden = true;
+elFind.textContent = T.title;
+elStat.textContent = T.h2;
+requestAnimationFrame(loop);
+</script>
