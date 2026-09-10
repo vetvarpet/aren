@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Elevator 🛗</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #101a2b; }
+  body {
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif;
+    color: #eef4ff;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    overflow-x: hidden;
+  }
+  canvas { display: block; position: fixed; inset: 0; width: 100vw; height: 100dvh; touch-action: none; }
+
+  #hud {
+    position: fixed; top: 48px; left: 10px; right: 10px; z-index: 6;
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    background: rgba(12, 20, 34, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px; padding: 7px 14px;
+    pointer-events: none;
+  }
+  #scoreTxt { font-size: 1.02rem; color: #ffd76e; }
+  #timeTxt { font-size: 1.02rem; color: #8fd6ff; }
+
+  #ctrls {
+    position: fixed; left: 0; right: 0; bottom: 10px; z-index: 6;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 0 8px;
+  }
+  #ctrls[hidden] { display: none !important; }
+  #floors { display: flex; gap: 6px; }
+  .fbtn, .abtn {
+    font-family: inherit; color: #eef4ff;
+    background: #1d3352; border: 2px solid #3d648f;
+    border-radius: 14px; cursor: pointer; touch-action: manipulation;
+  }
+  .fbtn { width: 44px; height: 44px; font-size: 1.1rem; }
+  .fbtn.on { background: #f0b429; border-color: #ffe08a; color: #23180a; }
+  .abtn { width: 92px; height: 50px; font-size: 1.5rem; background: #2a4a2f; border-color: #4f8a5c; }
+  #arrows { display: flex; gap: 12px; }
+
+  /* Ուշադրություն. hidden-ը պարտվում է display:flex-ին, դրա համար ուժեղացնում ենք */
+  #ov[hidden] { display: none !important; }
+  #ov {
+    position: fixed; inset: 0; z-index: 8;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+    text-align: center; padding: 24px 18px;
+    background: rgba(6, 12, 22, 0.87);
+  }
+  #ovTitle { font-size: 1.7rem; color: #ffd76e; }
+  #ovText { font-size: 0.95rem; color: #cfe0f5; line-height: 1.5; max-width: 340px; white-space: pre-line; }
+  #ovBest { font-size: 1rem; color: #6ee7b7; }
+  #ovTap { margin-top: 10px; font-size: 1.1rem; color: #6ee7b7; }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="hud"><div id="scoreTxt"></div><div id="timeTxt"></div></div>
+<div id="ctrls">
+  <div id="floors"></div>
+  <div id="arrows">
+    <button class="abtn" id="upBtn">▲</button>
+    <button class="abtn" id="downBtn">▼</button>
+  </div>
+</div>
+<div id="ov">
+  <div id="ovTitle"></div>
+  <div id="ovText"></div>
+  <div id="ovBest"></div>
+  <div id="ovTap"></div>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN ELEVATOR 🛗
+//  6 հարկանի շենք։ Մարդիկ սպասում են հարկերում,
+//  գլխավերևում գրված է՝ ո՛ր հարկ են ուզում։
+//  ▲▼ կամ հարկի կոճակով տար վերելակը, վերցրու ու հասցրու։
+//  Ամեն հասցված մարդ՝ +1։ Ռաունդը 60 վայրկյան է։
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { title: 'Golden Elevator 🛗', h1: 'Տար մարդկանց այն հարկը, որ ուզում են', h2: '▲▼ կամ հարկի կոճակ · ամեն հասցված մարդ՝ +1 · 60 վրկ', start: 'Հպի՛ր՝ սկսելու', again: 'Հպի՛ր՝ նորից խաղալու', timeup: 'Ժամանակը վերջացավ', sc: 'Միավոր՝ ', tm: 'Ժամանակ՝ ', sec: ' վրկ', best: 'Ռեկորդդ՝ ' },
+  ru: { title: 'Golden Elevator 🛗', h1: 'Отвози людей на нужный этаж', h2: '▲▼ или кнопка этажа · каждый доставленный: +1 · 60 сек', start: 'Нажми, чтобы начать', again: 'Нажми, чтобы играть снова', timeup: 'Время вышло', sc: 'Очки: ', tm: 'Время: ', sec: ' сек', best: 'Твой рекорд: ' },
+  en: { title: 'Golden Elevator 🛗', h1: 'Take people to the floor they want', h2: '▲▼ or a floor button · each delivery: +1 · 60 s', start: 'Tap to start', again: 'Tap to play again', timeup: 'Time is up', sc: 'Score: ', tm: 'Time: ', sec: ' s', best: 'Your best: ' },
+  es: { title: 'Golden Elevator 🛗', h1: 'Lleva a la gente al piso que quiere', h2: '▲▼ o botón de piso · cada entrega: +1 · 60 s', start: 'Toca para empezar', again: 'Toca para jugar otra vez', timeup: 'Se acabó el tiempo', sc: 'Puntos: ', tm: 'Tiempo: ', sec: ' s', best: 'Tu récord: ' },
+  fr: { title: 'Golden Elevator 🛗', h1: 'Emmène les gens à l’étage qu’ils veulent', h2: '▲▼ ou bouton d’étage · chaque livraison : +1 · 60 s', start: 'Touche pour commencer', again: 'Touche pour rejouer', timeup: 'Temps écoulé', sc: 'Points : ', tm: 'Temps : ', sec: ' s', best: 'Ton record : ' },
+  de: { title: 'Golden Elevator 🛗', h1: 'Bring die Leute in ihr Stockwerk', h2: '▲▼ oder Stockwerk-Taste · jede Fahrt: +1 · 60 s', start: 'Tippe zum Starten', again: 'Tippe, um nochmal zu spielen', timeup: 'Die Zeit ist um', sc: 'Punkte: ', tm: 'Zeit: ', sec: ' s', best: 'Dein Rekord: ' },
+  ja: { title: 'Golden Elevator 🛗', h1: 'みんなを いきたい かいへ はこぼう', h2: '▲▼ か かいのボタン · とどけたら +1 · 60びょう', start: 'タップでスタート', again: 'タップでもう一回', timeup: '時間切れ', sc: 'スコア：', tm: 'じかん：', sec: '秒', best: 'ベスト記録：' },
+  zh: { title: 'Golden Elevator 🛗', h1: '把人送到他们想去的楼层', h2: '▲▼ 或楼层按钮 · 每送到一人 +1 · 60秒', start: '点一下开始', again: '点一下再玩一次', timeup: '时间到', sc: '得分：', tm: '时间：', sec: '秒', best: '你的纪录：' },
+  it: { title: 'Golden Elevator 🛗', h1: 'Porta le persone al piano che vogliono', h2: '▲▼ o tasto del piano · ogni consegna: +1 · 60 s', start: 'Tocca per iniziare', again: 'Tocca per giocare ancora', timeup: 'Tempo scaduto', sc: 'Punti: ', tm: 'Tempo: ', sec: ' s', best: 'Il tuo record: ' },
+  ka: { title: 'Golden Elevator 🛗', h1: 'წაიყვანე ხალხი სასურველ სართულზე', h2: '▲▼ ან სართულის ღილაკი · თითო მიყვანა: +1 · 60 წმ', start: 'დააჭირე დასაწყებად', again: 'დააჭირე ისევ სათამაშოდ', timeup: 'დრო ამოიწურა', sc: 'ქულა: ', tm: 'დრო: ', sec: ' წმ', best: 'შენი რეკორდი: ' },
+  hi: { title: 'Golden Elevator 🛗', h1: 'लोगों को उनकी मंज़िल तक पहुँचाओ', h2: '▲▼ या मंज़िल का बटन · हर सवारी: +1 · 60 सेकंड', start: 'शुरू करने के लिए टैप करो', again: 'फिर से खेलने के लिए टैप करो', timeup: 'समय खत्म', sc: 'स्कोर: ', tm: 'समय: ', sec: ' से', best: 'तुम्हारा रिकॉर्ड: ' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const ov = document.getElementById('ov');
+const elScore = document.getElementById('scoreTxt');
+const elTime = document.getElementById('timeTxt');
+const elCtrls = document.getElementById('ctrls');
+
+const FLOORS = 6, CAP = 3;
+let W = 0, H = 0, DPR = 1;
+let bx = 0, bw = 0, topY = 0, botY = 0, fh = 0, shaftW = 0;
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  bw = Math.min(W - 20, 430);
+  bx = (W - bw) / 2;
+  topY = 100;
+  botY = H - 128;                 // կոճակների վերևը
+  fh = (botY - topY) / FLOORS;    // մեկ հարկի բարձրությունը
+  shaftW = Math.min(84, bw * 0.26);
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Հարկ n (1-ը ամենաներքևը) → կենտրոնի y
+const floorY = (n) => botY - (n - 0.5) * fh;
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sBtn = () => tone(420, 0.06, 'square', 0.08);
+const sIn = () => tone(560, 0.1, 'sine', 0.14);
+const sDing = () => [880, 1320].forEach((f, k) => tone(f, 0.16, 'triangle', 0.2, k * 0.09));
+const sNew = () => tone(300, 0.12, 'sine', 0.1);
+const sEnd = () => [784, 659, 523, 392].forEach((f, k) => tone(f, 0.22, 'triangle', 0.18, k * 0.12));
+
+// ——— Խաղի վիճակը ———
+let state = 'menu', endedAt = 0;
+let car = { y: 0, floor: 1, target: 1, open: 0 };
+let waiting = [];      // սպասողները հարկերում
+let riders = [];       // վերելակի ներսում
+let score = 0, timeLeft = 60, spawnIn = 0.6, lastTs = 0, pops = [];
+let best = 0;
+try { best = Number(localStorage.getItem('aren-elevator-best') || 0); } catch (e) {}
+
+const COLORS = ['#ff8fa3', '#8fd6ff', '#ffd76e', '#a0e7a0', '#c8a2ff', '#ffb27a'];
+
+function newPerson() {
+  if (waiting.length >= 9) return;
+  const from = 1 + Math.floor(Math.random() * FLOORS);
+  let to = 1 + Math.floor(Math.random() * FLOORS);
+  while (to === from) to = 1 + Math.floor(Math.random() * FLOORS);
+  waiting.push({ floor: from, dest: to, c: COLORS[Math.floor(Math.random() * COLORS.length)], bob: Math.random() * 6 });
+  sNew();
+}
+
+function startGame() {
+  score = 0; timeLeft = 60; waiting = []; riders = []; pops = [];
+  car = { y: floorY(1), floor: 1, target: 1, open: 0 };
+  spawnIn = 0.4;
+  state = 'play'; ov.hidden = true; elCtrls.hidden = false;
+  newPerson(); newPerson();
+  syncHud();
+}
+
+function endGame() {
+  state = 'over'; endedAt = Date.now();
+  elCtrls.hidden = true;
+  sEnd();
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('aren-elevator-best', best); } catch (e) {}
+    confetti();
+  }
+  document.getElementById('ovTitle').textContent = T.timeup;
+  document.getElementById('ovText').textContent = T.sc + score;
+  document.getElementById('ovBest').textContent = T.best + best;
+  document.getElementById('ovTap').textContent = T.again;
+  ov.hidden = false;
+}
+
+function syncHud() {
+  elScore.textContent = T.sc + score;
+  elTime.textContent = T.tm + Math.ceil(timeLeft) + T.sec;
+  for (let n = 1; n <= FLOORS; n++) {
+    fbtns[n - 1].classList.toggle('on', car.target === n);
+  }
+}
+
+// ——— Կոճակները ———
+// Հպումից հետո հեռախոսը «ուրվական» մկնիկի իրադարձություն է ուղարկում,
+// դրա համար հիշում ենք վերջին հպումը ու անտեսում մկնիկը
+let lastTouchAt = 0;
+function isGhost(e) {
+  if (e.pointerType === 'touch') { lastTouchAt = Date.now(); return false; }
+  return Date.now() - lastTouchAt < 700;
+}
+function goTo(n) {
+  if (state !== 'play') return;
+  car.target = Math.max(1, Math.min(FLOORS, n));
+  sBtn();
+  syncHud();
+}
+const fbtns = [];
+const floorsBox = document.getElementById('floors');
+for (let n = FLOORS; n >= 1; n--) {
+  const b = document.createElement('button');
+  b.className = 'fbtn'; b.textContent = String(n); b.dataset.n = String(n);
+  b.addEventListener('pointerdown', (e) => { if (isGhost(e)) return; e.preventDefault(); initAudio(); goTo(n); });
+  floorsBox.appendChild(b);
+  fbtns[n - 1] = b;
+}
+document.getElementById('upBtn').addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return; e.preventDefault(); initAudio(); goTo(car.target + 1);
+});
+document.getElementById('downBtn').addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return; e.preventDefault(); initAudio(); goTo(car.target - 1);
+});
+ov.addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return;
+  initAudio();
+  if (state === 'over' && Date.now() - endedAt < 1100) return;   // սպասիր, որ պատահական չսկսես
+  startGame();
+});
+// Կտավին հպելով էլ կարելի է հարկ ընտրել
+cv.addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return;
+  e.preventDefault();
+  initAudio();
+  if (state !== 'play') return;
+  const n = Math.round((botY - e.clientY) / fh + 0.5);
+  if (n >= 1 && n <= FLOORS) goTo(n);
+}, { passive: false });
+cv.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+cv.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// ——— Խաղի քայլը ———
+function update(dt) {
+  if (state !== 'play') return;
+  timeLeft -= dt;
+  if (timeLeft <= 0) { timeLeft = 0; syncHud(); endGame(); return; }
+
+  // նոր մարդիկ. ժամանակի հետ ավելի հաճախ
+  spawnIn -= dt;
+  if (spawnIn <= 0) {
+    newPerson();
+    spawnIn = Math.max(1.1, 2.8 - (60 - timeLeft) * 0.03);
+  }
+
+  // վերելակը շարժվում է դեպի ընտրած հարկը
+  const ty = floorY(car.target);
+  const spd = fh * 2.6;
+  if (Math.abs(car.y - ty) > 1.5) {
+    car.y += Math.sign(ty - car.y) * Math.min(spd * dt, Math.abs(ty - car.y));
+    car.open = Math.max(0, car.open - dt * 3);
+  } else {
+    car.y = ty;
+    if (car.floor !== car.target) car.floor = car.target;
+    car.open = Math.min(1, car.open + dt * 4);
+    // հասանք՝ իջեցնում ենք, հետո վերցնում
+    for (let i = riders.length - 1; i >= 0; i--) {
+      if (riders[i].dest === car.floor) {
+        riders.splice(i, 1);
+        score++;
+        pops.push({ x: bx + shaftW / 2, y: car.y - 26, life: 1, text: '+1' });
+        sDing();
+        syncHud();
+      }
+    }
+    for (let i = waiting.length - 1; i >= 0 && riders.length < CAP; i--) {
+      if (waiting[i].floor === car.floor) {
+        riders.push(waiting.splice(i, 1)[0]);
+        sIn();
+      }
+    }
+  }
+  car.floor = Math.round((botY - car.y) / fh + 0.5);
+
+  for (const p of pops) { p.y -= 40 * dt; p.life -= dt * 1.3; }
+  pops = pops.filter(p => p.life > 0);
+  for (const p of waiting) p.bob += dt * 5;
+}
+
+// ——— Նկարելը (էմոջի չենք նկարում, միայն ձևեր) ———
+function drawPerson(x, y, p, small) {
+  const s = small ? 0.72 : 1;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(s, s);
+  // մարմինը
+  ctx.fillStyle = p.c;
+  ctx.beginPath(); ctx.roundRect(-9, -14, 18, 24, 6); ctx.fill();
+  // ոտքերը
+  ctx.fillStyle = '#2b3a52';
+  ctx.fillRect(-7, 8, 5, 9); ctx.fillRect(2, 8, 5, 9);
+  // գլուխը
+  ctx.fillStyle = '#f2c99a';
+  ctx.beginPath(); ctx.arc(0, -22, 8, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#3a2a1c';
+  ctx.beginPath(); ctx.arc(0, -25, 8, Math.PI, 0); ctx.fill();
+  // աչքերը
+  ctx.fillStyle = '#22303f';
+  ctx.beginPath(); ctx.arc(-3, -21, 1.5, 0, Math.PI * 2); ctx.arc(3, -21, 1.5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+function drawBubble(x, y, n, c) {
+  ctx.fillStyle = '#fff8e6';
+  ctx.beginPath(); ctx.roundRect(x - 13, y - 15, 26, 22, 7); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x - 4, y + 6); ctx.lineTo(x + 4, y + 6); ctx.lineTo(x, y + 12); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = c; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(x - 13, y - 15, 26, 22, 7); ctx.stroke();
+  ctx.fillStyle = '#23303f';
+  ctx.font = 'bold 15px Arial, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(String(n), x, y - 3);
+}
+
+function draw() {
+  // գիշերային երկինք
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#0d1524'); g.addColorStop(1, '#1c2c44');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // աստղեր
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  for (let i = 0; i < 26; i++) {
+    const sx = (i * 97) % W, sy = 30 + (i * 53) % Math.max(40, topY - 20);
+    ctx.fillRect(sx, sy, 2, 2);
+  }
+  // շենքը
+  ctx.fillStyle = '#243a57';
+  ctx.beginPath(); ctx.roundRect(bx, topY - 10, bw, botY - topY + 18, 12); ctx.fill();
+  // հարկերը
+  for (let n = 1; n <= FLOORS; n++) {
+    const y = floorY(n);
+    ctx.fillStyle = n % 2 ? '#2c4566' : '#294060';
+    ctx.fillRect(bx + shaftW, y - fh / 2 + 2, bw - shaftW - 4, fh - 4);
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 2;
+    ctx.strokeRect(bx + shaftW, y - fh / 2 + 2, bw - shaftW - 4, fh - 4);
+    // հարկի համարը
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.font = 'bold 16px Arial, sans-serif';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(String(n), bx + bw - 10, y + fh / 2 - 14);
+  }
+  // հանքուղին
+  ctx.fillStyle = '#16233a';
+  ctx.fillRect(bx + 4, topY - 6, shaftW - 8, botY - topY + 10);
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(bx + shaftW / 2, topY - 6); ctx.lineTo(bx + shaftW / 2, botY + 4); ctx.stroke();
+
+  // սպասողները. ամեն հարկում կողք-կողքի ենք կանգնեցնում, որ իրար չծածկեն
+  const cnt = {}, seen = {};
+  for (const p of waiting) cnt[p.floor] = (cnt[p.floor] || 0) + 1;
+  const lane = bw - shaftW - 44;
+  for (const p of waiting) {
+    const i = (seen[p.floor] = (seen[p.floor] || 0) + 1) - 1;
+    const step = Math.min(44, lane / Math.max(1, cnt[p.floor]));
+    const y = floorY(p.floor);
+    const x = bx + shaftW + 24 + i * step;
+    const bob = Math.sin(p.bob) * 2;
+    drawPerson(x, y + fh / 2 - 22 + bob, p, false);
+    drawBubble(x, y + fh / 2 - 56 + bob, p.dest, p.c);
+  }
+
+  // վերելակի խցիկը
+  const cw = shaftW - 14, ch = Math.min(fh - 8, 78);
+  const cx0 = bx + 7, cy0 = car.y - ch / 2;
+  ctx.fillStyle = '#f0b429';
+  ctx.beginPath(); ctx.roundRect(cx0, cy0, cw, ch, 8); ctx.fill();
+  // ներսը՝ դռները բացվելիս լուսավոր է
+  ctx.fillStyle = car.open > 0.2 ? '#5b6f8c' : '#1a2a42';
+  ctx.fillRect(cx0 + 4, cy0 + 5, cw - 8, ch - 10);
+  ctx.fillStyle = 'rgba(255,236,180,' + (0.25 * car.open) + ')';
+  ctx.fillRect(cx0 + 4, cy0 + 5, cw - 8, ch - 10);
+  // ուղևորները ներսում
+  for (let i = 0; i < riders.length; i++) {
+    const px = cx0 + cw / 2 + (i - (riders.length - 1) / 2) * 17;
+    drawPerson(px, cy0 + ch - 12, riders[i], true);
+  }
+  // դռները՝ բացվում-փակվում են
+  const half = (cw - 8) / 2, opn = car.open * half;
+  ctx.fillStyle = '#d99b16';
+  ctx.fillRect(cx0 + 4, cy0 + 5, half - opn, ch - 10);
+  ctx.fillRect(cx0 + 4 + half + opn, cy0 + 5, half - opn, ch - 10);
+  ctx.strokeStyle = '#8a6410'; ctx.lineWidth = 2;
+  ctx.strokeRect(cx0 + 4, cy0 + 5, cw - 8, ch - 10);
+
+  // «+1» գրությունները
+  for (const p of pops) {
+    ctx.globalAlpha = Math.min(1, p.life);
+    ctx.fillStyle = '#6ee7b7';
+    ctx.font = 'bold 22px Arial, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(p.text, p.x, p.y);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function confetti() {
+  const stuff = ['🎉', '🛗', '⭐', '💛', '🎊', '✨'];
+  for (let k = 0; k < 34; k++) {
+    const s = document.createElement('span');
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.cssText = 'position:fixed;top:-50px;z-index:9;pointer-events:none;left:' + (Math.random() * 100) + 'vw;font-size:' + (16 + Math.random() * 20) + 'px;transition:transform ' + (2 + Math.random() * 2) + 's linear';
+    document.body.appendChild(s);
+    requestAnimationFrame(() => { s.style.transform = 'translateY(115vh) rotate(720deg)'; });
+    setTimeout(() => s.remove(), 4600);
+  }
+}
+
+let hudTick = 0;
+function loop(ts) {
+  const dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0;
+  lastTs = ts;
+  update(dt);
+  draw();
+  hudTick += dt;
+  if (hudTick > 0.25 && state === 'play') { hudTick = 0; syncHud(); }
+  requestAnimationFrame(loop);
+}
+
+// ——— Մեկնարկի էկրանը ———
+document.getElementById('ovTitle').textContent = T.title;
+document.getElementById('ovText').textContent = T.h1 + '\n' + T.h2;
+document.getElementById('ovBest').textContent = best > 0 ? T.best + best : '';
+document.getElementById('ovTap').textContent = T.start;
+elCtrls.hidden = true;
+car.y = floorY(1);
+elScore.textContent = T.sc + '0';
+elTime.textContent = T.tm + '60' + T.sec;
+requestAnimationFrame(loop);
+</script>

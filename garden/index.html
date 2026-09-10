@@ -444,7 +444,7 @@ function drawPot(p, t) {
   const pop = p.pop > 0 ? 1 + p.pop * 0.18 : 1;
 
   // ցողունն ու բույսը
-  const grow = [0, 0.28, 0.55, 0.8][p.stage] * H;
+  const grow = [0, 0.22, 0.4, 0.5][p.stage] * H;   // բույսի բարձրությունը՝ ըստ աստիճանի
   const topY = soilY - grow;
   if (p.stage === 0) {
     // հատիկը հողի մեջ

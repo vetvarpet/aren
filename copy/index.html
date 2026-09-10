@@ -1,0 +1,405 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Copy 🎨</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#1d2347, #2a1f45);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    height: 100dvh;
+    padding: 12px;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;             /* էջը երբեք չի սահում՝ ոչ վեր-վար, ոչ կողք */
+    touch-action: manipulation;
+  }
+
+  h1 { font-size: clamp(1.05rem, 4.4vw, 1.6rem); color: #ffd76e; text-align: center; }
+  .stats { display: flex; gap: 16px; font-size: 0.95rem; color: #9a9ec7; }
+  .stats b { color: #6ee7b7; }
+
+  /* ——— Խաղատախտակը՝ 5×5 վանդակ ——— */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    width: min(92vw, 56vh, 400px);
+  }
+  /* Վանդակը քառակուսի ենք պահում հին ձևով (padding-ի հնարքով),
+     որ ամենահին հեռախոսներում էլ ճիշտ երևա */
+  .cell {
+    padding-top: 100%;
+    border-radius: 12px;
+    background: #2b2f52;
+    border: 2px solid #474d80;
+    transition: background 0.15s, transform 0.12s, border-color 0.15s;
+    touch-action: manipulation;   /* արագ սեղմելիս էկրանը չմեծանա */
+    cursor: pointer;
+  }
+  .cell.pick { transform: scale(1.06); border-color: #fffdf5; }
+
+  /* Ժամանակի շերտիկը՝ ցույց է տալիս, թե ինչքան ես դեռ նայելու */
+  #barBox {
+    width: min(92vw, 56vh, 400px);
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.14);
+    overflow: hidden;
+  }
+  #bar { height: 100%; width: 100%; background: #ffd76e; border-radius: 999px; }
+
+  #hint { font-size: 1rem; color: #ffd76e; min-height: 1.4em; text-align: center; }
+
+  .btn {
+    border: 2px solid #6a5f9e;
+    border-radius: 999px;
+    padding: 11px 24px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: bold;
+    background: #3d3560;
+    color: #f5eede;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .btn.big { background: #ffd76e; color: #23405c; border-color: #c9820e; }
+
+  /* ——— Վահանակները (մենյու և խաղի վերջ) ——— */
+  .panel {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 16px;
+    text-align: center;
+    background: rgba(16, 18, 40, 0.94);
+  }
+  /* ԿԱՐԵՎՈՐ․ hidden-ը պարտվում է display:flex-ին, դրա համար ուժեղացնում ենք */
+  .panel[hidden] { display: none !important; }
+  #check[hidden] { display: none !important; }
+  #bestBox[hidden] { display: none !important; }
+
+  .panel h2 { font-size: clamp(1.1rem, 5vw, 1.7rem); color: #ffd76e; }
+  .panel p { font-size: 0.95rem; color: #c8cbe8; max-width: 320px; }
+
+  /* Երկու փոքրիկ նկար կողք-կողքի՝ քոնը և ճիշտը */
+  .compare { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .mini { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .mini span { font-size: 0.8rem; color: #9a9ec7; }
+  .minigrid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 3px;
+    width: min(38vw, 132px);
+  }
+  .minigrid div { padding-top: 100%; border-radius: 5px; background: #2b2f52; }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:30;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<h1 id="title">Golden Copy 🎨</h1>
+<div class="stats"><span id="roundLbl">Փուլ՝ <b id="round">1</b></span><span id="bestBox" hidden>Ռեկորդ՝ <b id="best">0</b></span></div>
+<div class="board" id="board"></div>
+<div id="barBox"><div id="bar"></div></div>
+<div id="hint"></div>
+<button class="btn" id="check">✓ Ստուգել</button>
+
+<div class="panel" id="menu">
+  <h2 id="mTitle">Golden Copy 🎨</h2>
+  <p id="mSub">Հիշիր նկարը և կրկնիր այն</p>
+  <p id="mBest"></p>
+  <button class="btn big" id="startBtn">▶ Սկսել</button>
+</div>
+
+<div class="panel" id="over" hidden>
+  <h2 id="oTitle"></h2>
+  <div class="compare">
+    <div class="mini"><span id="oYours"></span><div class="minigrid" id="gYours"></div></div>
+    <div class="mini"><span id="oRight"></span><div class="minigrid" id="gRight"></div></div>
+  </div>
+  <p id="oSub"></p>
+  <p id="oRec" style="color:#ffd76e"></p>
+  <button class="btn big" id="againBtn">🔄 Նորից</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN COPY 🎨 — հիշողության նկարչություն
+//  5×5 վանդակ։ Մի քանի վանդակ վառվում է 3 վայրկյան, հետո՝ մարում։
+//  Դու նույն վանդակներն ես սեղմում ու ✓-ով ստուգում։
+//  Ամեն ճիշտ փուլից հետո մեկ վանդակ ավելանում է։
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { title: 'Golden Copy 🎨', sub: 'Հիշիր նկարը և կրկնիր այն', start: '▶ Սկսել', round: 'Փուլ՝ ', best: 'Ռեկորդ՝ ', watch: '👀 Լավ նայիր…', copy: 'Հիմա կրկնիր 🎨', need: (a, b) => 'Ընտրեցիր ' + a + ' / ' + b, check: '✓ Ստուգել', good: 'Ճի՛շտ է 🎉', over: 'Այ քեզ բան, նույնը չեղավ 😿', overSub: n => 'Անցար ' + n + ' փուլ', yours: 'Քո նկարը', right: 'Ճիշտ նկարը', newRec: 'ՆՈՐ ՌԵԿՈՐԴ 🏆', again: '🔄 Նորից' },
+  ru: { title: 'Golden Copy 🎨', sub: 'Запомни узор и повтори его', start: '▶ Начать', round: 'Раунд: ', best: 'Рекорд: ', watch: '👀 Смотри внимательно…', copy: 'Теперь повтори 🎨', need: (a, b) => 'Выбрал ' + a + ' / ' + b, check: '✓ Проверить', good: 'Правильно! 🎉', over: 'Ой, не совпало 😿', overSub: n => 'Ты прошёл ' + n + ' раундов', yours: 'Твой узор', right: 'Правильный узор', newRec: 'НОВЫЙ РЕКОРД 🏆', again: '🔄 Ещё раз' },
+  en: { title: 'Golden Copy 🎨', sub: 'Remember the pattern and copy it', start: '▶ Start', round: 'Round: ', best: 'Best: ', watch: '👀 Look carefully…', copy: 'Now copy it 🎨', need: (a, b) => 'Picked ' + a + ' / ' + b, check: '✓ Check', good: 'Correct! 🎉', over: 'Oops, not the same 😿', overSub: n => 'You finished ' + n + ' rounds', yours: 'Your pattern', right: 'The right pattern', newRec: 'NEW RECORD 🏆', again: '🔄 Again' },
+  es: { title: 'Golden Copy 🎨', sub: 'Recuerda el dibujo y cópialo', start: '▶ Empezar', round: 'Ronda: ', best: 'Récord: ', watch: '👀 Mira bien…', copy: 'Ahora cópialo 🎨', need: (a, b) => 'Elegiste ' + a + ' / ' + b, check: '✓ Comprobar', good: '¡Correcto! 🎉', over: 'Uy, no es igual 😿', overSub: n => 'Pasaste ' + n + ' rondas', yours: 'Tu dibujo', right: 'El dibujo correcto', newRec: '¡NUEVO RÉCORD! 🏆', again: '🔄 Otra vez' },
+  fr: { title: 'Golden Copy 🎨', sub: 'Retiens le motif et recopie-le', start: '▶ Commencer', round: 'Manche : ', best: 'Record : ', watch: '👀 Regarde bien…', copy: 'Maintenant recopie 🎨', need: (a, b) => 'Choisi ' + a + ' / ' + b, check: '✓ Vérifier', good: 'Bravo, c’est juste ! 🎉', over: 'Oups, ce n’est pas pareil 😿', overSub: n => 'Tu as passé ' + n + ' manches', yours: 'Ton motif', right: 'Le bon motif', newRec: 'NOUVEAU RECORD 🏆', again: '🔄 Encore' },
+  de: { title: 'Golden Copy 🎨', sub: 'Merk dir das Muster und baue es nach', start: '▶ Los geht’s', round: 'Runde: ', best: 'Rekord: ', watch: '👀 Schau genau hin…', copy: 'Jetzt nachbauen 🎨', need: (a, b) => 'Gewählt ' + a + ' / ' + b, check: '✓ Prüfen', good: 'Richtig! 🎉', over: 'Ups, nicht gleich 😿', overSub: n => 'Du hast ' + n + ' Runden geschafft', yours: 'Dein Muster', right: 'Das richtige Muster', newRec: 'NEUER REKORD 🏆', again: '🔄 Nochmal' },
+  ja: { title: 'Golden Copy 🎨', sub: 'もようを おぼえて まねしてね', start: '▶ スタート', round: 'ラウンド：', best: 'ベスト：', watch: '👀 よく見て…', copy: 'つぎは まねしてね 🎨', need: (a, b) => 'えらんだ ' + a + ' / ' + b, check: '✓ こたえあわせ', good: 'せいかい！ 🎉', over: 'あれれ、ちがったね 😿', overSub: n => n + 'ラウンド すすんだよ', yours: 'きみの もよう', right: 'ただしい もよう', newRec: '新記録 🏆', again: '🔄 もう一回' },
+  zh: { title: 'Golden Copy 🎨', sub: '记住图案，然后照着做', start: '▶ 开始', round: '回合：', best: '纪录：', watch: '👀 仔细看…', copy: '现在照着做 🎨', need: (a, b) => '已选 ' + a + ' / ' + b, check: '✓ 检查', good: '答对了！🎉', over: '哎呀，不一样 😿', overSub: n => '你过了' + n + '回合', yours: '你的图案', right: '正确的图案', newRec: '新纪录 🏆', again: '🔄 再来一次' },
+  it: { title: 'Golden Copy 🎨', sub: 'Ricorda il disegno e copialo', start: '▶ Inizia', round: 'Round: ', best: 'Record: ', watch: '👀 Guarda bene…', copy: 'Ora copialo 🎨', need: (a, b) => 'Scelti ' + a + ' / ' + b, check: '✓ Controlla', good: 'Giusto! 🎉', over: 'Ops, non è uguale 😿', overSub: n => 'Hai fatto ' + n + ' round', yours: 'Il tuo disegno', right: 'Il disegno giusto', newRec: 'NUOVO RECORD 🏆', again: '🔄 Ancora' },
+  ka: { title: 'Golden Copy 🎨', sub: 'დაიმახსოვრე ნახატი და გაიმეორე', start: '▶ დაწყება', round: 'რაუნდი: ', best: 'რეკორდი: ', watch: '👀 კარგად დააკვირდი…', copy: 'ახლა გაიმეორე 🎨', need: (a, b) => 'არჩეული ' + a + ' / ' + b, check: '✓ შემოწმება', good: 'სწორია! 🎉', over: 'ვაი, არ დაემთხვა 😿', overSub: n => 'გაიარე ' + n + ' რაუნდი', yours: 'შენი ნახატი', right: 'სწორი ნახატი', newRec: 'ახალი რეკორდი 🏆', again: '🔄 თავიდან' },
+  hi: { title: 'Golden Copy 🎨', sub: 'पैटर्न याद करो और वैसा ही बनाओ', start: '▶ शुरू करो', round: 'राउंड: ', best: 'रिकॉर्ड: ', watch: '👀 ध्यान से देखो…', copy: 'अब वैसा ही बनाओ 🎨', need: (a, b) => 'चुने ' + a + ' / ' + b, check: '✓ जाँचो', good: 'सही! 🎉', over: 'अरे, एक जैसा नहीं 😿', overSub: n => 'तुमने ' + n + ' राउंड पूरे किए', yours: 'तुम्हारा पैटर्न', right: 'सही पैटर्न', newRec: 'नया रिकॉर्ड 🏆', again: '🔄 फिर से' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+// ——— Էջի բոլոր գրությունները դնում ենք ընտրված լեզվով ———
+const $ = id => document.getElementById(id);
+document.title = T.title;
+$('title').textContent = T.title;
+$('mTitle').textContent = T.title;
+$('mSub').textContent = T.sub;
+$('startBtn').textContent = T.start;
+$('check').textContent = T.check;
+$('againBtn').textContent = T.again;
+$('oYours').textContent = T.yours;
+$('oRight').textContent = T.right;
+
+// Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// Հեռախոսը հպումից հետո ուղարկում է նաև «ուրվական» մկնիկի ազդանշան։
+// Եթե հենց նոր մատով դիպել ես՝ մկնիկինը չենք հաշվում։
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); }, { passive: true });
+function ghost(e) { return e && e.pointerType === 'mouse' && Date.now() - lastTouchAt < 700; }
+
+// ——— Ձայները ———
+// Ձայնային ֆայլեր չկան. համակարգիչն ինքն է «երգում»։
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, delay, vol, type) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sShow = () => tone(660, 0.1);                                        // նկարը հայտնվեց
+const sTap = () => tone(520, 0.07, 0, 0.12);                               // վանդակ սեղմեցիր
+const sOff = () => tone(300, 0.07, 0, 0.1);                                // վանդակը ետ վերցրիր
+const sGood = () => { tone(660, 0.12); tone(880, 0.16, 0.1); };            // ճիշտ փուլ
+const sBad = () => tone(200, 0.35, 0, 0.16, 'sawtooth');                   // սխալ
+const sWin = () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.22, k * 0.11, 0.18));
+
+// ——— Խաղի վիճակը ———
+const SIZE = 5;                  // 5×5 վանդակ
+const CELLS = SIZE * SIZE;
+const COLORS = ['#ff6b6b', '#4aa3d8', '#6ecb7e', '#ffd166', '#c58ae0', '#ff9f68', '#5fd6c8'];
+let state = 'menu';              // menu → show → input → over
+let round = 1;                   // ո՞ր փուլում ենք
+let pattern = [];                // ճիշտ նկարը (վանդակների համարները)
+let picked = [];                 // իմ ընտրածները
+let showTimer = 0;               // 3 վայրկյանի ժամացույցը
+let endedAt = 0;                 // խաղի վերջում պատահական դիպչելը նորը չսկսի
+let best = 0;
+try { best = Number(localStorage.getItem('aren-copy-best') || 0); } catch (e) {}
+
+const board = $('board');
+const cells = [];
+for (let i = 0; i < CELLS; i++) {
+  const c = document.createElement('div');
+  c.className = 'cell';
+  c.dataset.i = i;
+  c.addEventListener('pointerdown', (e) => { if (!ghost(e)) tapCell(i); });
+  board.appendChild(c);
+  cells.push(c);
+}
+
+function roundColor() { return COLORS[(round - 1) % COLORS.length]; }
+
+function showBest() {
+  if (best > 0) {
+    $('best').textContent = best;
+    $('bestBox').hidden = false;
+    $('bestBox').innerHTML = T.best + '<b id="best">' + best + '</b>';
+  }
+  $('mBest').textContent = best > 0 ? T.best + best : '';
+  $('roundLbl').innerHTML = T.round + '<b id="round">' + round + '</b>';
+}
+
+// Վանդակները մաքրում ենք
+function clearBoard() {
+  for (const c of cells) {
+    c.style.background = '';
+    c.style.borderColor = '';
+    c.classList.remove('pick');
+  }
+}
+
+// ——— Նոր փուլ ———
+function newRound() {
+  state = 'show';
+  picked = [];
+  clearBoard();
+  $('check').hidden = true;
+  $('hint').textContent = T.watch;
+  showBest();
+
+  // Պատահական վանդակներ ենք ընտրում՝ առանց կրկնության
+  const howMany = Math.min(CELLS - 2, 3 + round);
+  const bag = [];
+  for (let i = 0; i < CELLS; i++) bag.push(i);
+  for (let i = bag.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [bag[i], bag[j]] = [bag[j], bag[i]];
+  }
+  pattern = bag.slice(0, howMany).sort((a, b) => a - b);
+
+  const col = roundColor();
+  for (const i of pattern) { cells[i].style.background = col; cells[i].style.borderColor = '#fffdf5'; }
+  sShow();
+
+  // Ժամանակի շերտիկը 3 վայրկյանում դատարկվում է
+  const bar = $('bar');
+  bar.style.transition = 'none';
+  bar.style.width = '100%';
+  void bar.offsetWidth;               // ստիպում ենք դիտարկիչին թարմացնել
+  bar.style.transition = 'width 3s linear';
+  bar.style.width = '0%';
+
+  clearTimeout(showTimer);
+  showTimer = setTimeout(() => {
+    if (state !== 'show') return;
+    clearBoard();
+    state = 'input';
+    $('check').hidden = false;
+    $('hint').textContent = T.copy;
+  }, 3000);
+}
+
+// ——— Վանդակ սեղմեցինք ———
+function tapCell(i) {
+  initAudio();
+  if (state !== 'input') return;
+  const k = picked.indexOf(i);
+  const col = roundColor();
+  if (k >= 0) {
+    picked.splice(k, 1);
+    cells[i].style.background = '';
+    cells[i].style.borderColor = '';
+    cells[i].classList.remove('pick');
+    sOff();
+  } else {
+    picked.push(i);
+    cells[i].style.background = col;
+    cells[i].classList.add('pick');
+    sTap();
+  }
+  $('hint').textContent = T.need(picked.length, pattern.length);
+}
+
+// ——— ✓ Ստուգում ———
+function check() {
+  initAudio();
+  if (state !== 'input') return;
+  const mine = [...picked].sort((a, b) => a - b);
+  const same = mine.length === pattern.length && mine.every((v, k) => v === pattern[k]);
+
+  if (same) {
+    state = 'show';                    // մի պահ սպասում ենք, հետո՝ նոր փուլ
+    $('check').hidden = true;
+    $('hint').textContent = T.good;
+    sGood();
+    round++;
+    showBest();
+    clearTimeout(showTimer);
+    showTimer = setTimeout(newRound, 900);
+  } else {
+    gameOver(mine);
+  }
+}
+
+// ——— Խաղի վերջ. կողք-կողքի ցույց ենք տալիս քոնը և ճիշտը ———
+function gameOver(mine) {
+  clearTimeout(showTimer);
+  state = 'over';
+  endedAt = Date.now();
+  sBad();
+
+  const done = round - 1;              // քանի փուլ ես անցել
+  let record = false;
+  if (done > best) {
+    best = done;
+    record = true;
+    try { localStorage.setItem('aren-copy-best', best); } catch (e) {}
+    sWin();
+  }
+
+  drawMini($('gYours'), mine, roundColor());
+  drawMini($('gRight'), pattern, roundColor());
+  $('oTitle').textContent = T.over;
+  $('oSub').textContent = T.overSub(done);
+  $('oRec').textContent = record ? T.newRec : '';
+  $('over').hidden = false;
+  showBest();
+}
+
+// Փոքրիկ 5×5 նկար վահանակի մեջ
+function drawMini(box, list, col) {
+  box.innerHTML = '';
+  for (let i = 0; i < CELLS; i++) {
+    const d = document.createElement('div');
+    if (list.indexOf(i) >= 0) d.style.background = col;
+    box.appendChild(d);
+  }
+}
+
+function startGame() {
+  initAudio();
+  $('menu').hidden = true;
+  $('over').hidden = true;
+  round = 1;
+  newRound();
+}
+
+// ——— Կոճակները (pointerdown, ոչ թե click՝ որ հեռախոսում արագ լինի) ———
+$('startBtn').addEventListener('pointerdown', (e) => { if (!ghost(e)) startGame(); });
+$('check').addEventListener('pointerdown', (e) => { if (!ghost(e)) check(); });
+$('againBtn').addEventListener('pointerdown', (e) => {
+  if (ghost(e)) return;
+  if (Date.now() - endedAt < 1100) return;   // մի պահ շունչ քաշիր
+  startGame();
+});
+// Համակարգչի ստեղները՝ ՊՐՈԲԵԼ կամ Enter
+document.addEventListener('keydown', (e) => {
+  if (e.code !== 'Space' && e.code !== 'Enter') return;
+  e.preventDefault();
+  if (state === 'menu') { startGame(); return; }
+  if (state === 'over') { if (Date.now() - endedAt >= 1100) startGame(); return; }
+  if (state === 'input') check();
+});
+
+showBest();
+$('hint').textContent = T.sub;
+</script>

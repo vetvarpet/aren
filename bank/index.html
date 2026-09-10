@@ -1,0 +1,379 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Bank 🏦</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#1e2c4a, #12203a);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 100dvh;
+    padding: 8px;
+    padding-top: 44px;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+  h1 { font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd76e; }
+  .hud { display: flex; gap: 14px; font-size: 0.95rem; color: #9ab0d0; flex-wrap: wrap; justify-content: center; }
+  .hud b { color: #6ee7b7; }
+  .hud .tm { color: #ffd76e; }
+
+  /* Հաճախորդի պատուհանը */
+  .desk {
+    width: min(96vw, 420px);
+    background: #26375c;
+    border: 3px solid #3d558a;
+    border-radius: 18px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .desk svg { flex: 0 0 auto; width: 62px; height: 62px; }
+  .bubble {
+    flex: 1 1 auto;
+    background: #f5eede;
+    color: #1e2c4a;
+    border-radius: 14px;
+    padding: 8px 10px;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  .bubble .big { font-size: 1.15rem; font-weight: bold; }
+  .bubble .pay { color: #1a7a4a; }
+
+  /* Ինչքան ես արդեն տվել */
+  .total {
+    width: min(96vw, 420px);
+    background: #14203a;
+    border: 3px solid #3d558a;
+    border-radius: 16px;
+    padding: 8px;
+    text-align: center;
+    font-size: 1.35rem;
+    font-weight: bold;
+    color: #ffd76e;
+  }
+  .total.wrong { animation: sh 0.4s; border-color: #e63946; color: #ff8b8b; }
+  .total.right { border-color: #6ee7b7; color: #6ee7b7; }
+  @keyframes sh { 20% { transform: translateX(-9px); } 40% { transform: translateX(9px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+
+  /* Դրամները՝ միշտ տողադարձվում են, 390px-ից դուրս չեն գալիս */
+  .coins {
+    width: min(96vw, 420px);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .coin {
+    font-family: inherit;
+    font-weight: bold;
+    font-size: 0.95rem;
+    padding: 12px 2px;
+    border-radius: 12px;
+    border: 3px solid #7a6a2a;
+    background: #d9b23c;
+    color: #2a2208;
+    cursor: pointer;
+    touch-action: manipulation;
+    min-width: 0;
+  }
+  .coin.note { background: #4ea86e; border-color: #256a42; color: #06210f; }
+  .coin:active { transform: scale(0.94); }
+  .coin.undo { background: #3d558a; border-color: #6a86c9; color: #f5eede; }
+
+  #msg { font-size: 0.95rem; color: #ffd76e; min-height: 2.4em; text-align: center; max-width: 380px; }
+  #startBtn {
+    border: 2px solid #6a86c9;
+    border-radius: 999px;
+    padding: 10px 26px;
+    font-size: 1.05rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #33477a;
+    color: #f5eede;
+    touch-action: manipulation;
+  }
+  /* hidden-ը պարտվում է display:flex/grid-ին, ուստի ուժեղացնում ենք */
+  #startBtn[hidden], .coins[hidden], .desk[hidden], .total[hidden], .hud span[hidden] { display: none !important; }
+
+  .confetti {
+    position: fixed;
+    top: -50px;
+    z-index: 9;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<h1>Golden Bank 🏦</h1>
+<div class="hud"><span id="scoreBox"></span><span class="tm" id="timeBox"></span><span id="bestBox" hidden></span></div>
+
+<div class="desk" id="desk" hidden>
+  <svg viewBox="0 0 60 60" aria-hidden="true">
+    <circle cx="30" cy="22" r="14" fill="#f0c48a"/>
+    <path d="M16 20 Q30 4 44 20 Q40 12 30 11 Q20 12 16 20 Z" fill="#5a3b23"/>
+    <circle cx="24" cy="23" r="2.2" fill="#241505"/>
+    <circle cx="36" cy="23" r="2.2" fill="#241505"/>
+    <path d="M24 30 q6 5 12 0" stroke="#241505" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M12 58 Q12 40 30 38 Q48 40 48 58 Z" fill="#e07a5f"/>
+  </svg>
+  <div class="bubble" id="bubble"></div>
+</div>
+
+<div class="total" id="totalBox" hidden></div>
+<div class="coins" id="coins" hidden></div>
+<div id="msg"></div>
+<button id="startBtn">▶ Սկսել</button>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ԲԱՆԿ 🏦 — դու գանձապահն ես
+//  Հաճախորդը գնում է մի բան, օրինակ՝ 340 դրամով, և տալիս է 500 դրամ։
+//  Դու պիտի ետ տաս ճիշտ մանրը՝ 500 − 340 = 160 դրամ։
+//  Սեղմիր դրամների կոճակները, մինչև գումարը ճիշտ լինի։
+//  Շատ տվեցիր՝ սխալ է, նորից փորձիր։ 60 վայրկյան ունես։
+// ——————————————————————————————————————
+
+const GAME_SECONDS = 60;
+const MONEY = [500, 100, 50, 20, 10, 5, 1];   // դրամանիշները
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { h1: 'Golden Bank 🏦', score: 'Սպասարկած՝ ', time: ' վրկ', rec: 'Ռեկորդ՝ ', intro: 'Հաշվի՛ր մանրը և ետ տուր ճիշտ գումարը 💰', buys: 'Գնում է', pays: 'Տալիս է', gave: 'Տվեցիր՝ ', ok: 'Ճի՜շտ է, շնորհակալություն 😊', bad: 'Շա՜տ շատ է, նորից փորձիր 😅', undo: '↩ Ետ', result: n => 'Սպասարկեցիր ' + n + ' հաճախորդ', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ 🎉', start: '▶ Սկսել', again: '🔄 Նորից' },
+  ru: { h1: 'Golden Bank 🏦', score: 'Обслужено: ', time: ' сек', rec: 'Рекорд: ', intro: 'Посчитай сдачу и отдай ровно столько 💰', buys: 'Покупает', pays: 'Даёт', gave: 'Ты отдал: ', ok: 'Верно, спасибо 😊', bad: 'Слишком много, попробуй ещё 😅', undo: '↩ Назад', result: n => 'Ты обслужил ' + n + ' покупателей', newRec: ' — НОВЫЙ РЕКОРД 🎉', start: '▶ Старт', again: '🔄 Ещё раз' },
+  en: { h1: 'Golden Bank 🏦', score: 'Served: ', time: ' s', rec: 'Best: ', intro: 'Work out the change and hand back exactly that 💰', buys: 'Buys', pays: 'Pays', gave: 'You gave: ', ok: 'Correct, thank you 😊', bad: 'Too much, try again 😅', undo: '↩ Undo', result: n => 'You served ' + n + ' customers', newRec: ' — NEW RECORD 🎉', start: '▶ Start', again: '🔄 Again' },
+  es: { h1: 'Golden Bank 🏦', score: 'Atendidos: ', time: ' s', rec: 'Récord: ', intro: 'Calcula el cambio y devuelve justo esa cantidad 💰', buys: 'Compra', pays: 'Paga', gave: 'Diste: ', ok: '¡Correcto, gracias! 😊', bad: 'Demasiado, inténtalo otra vez 😅', undo: '↩ Deshacer', result: n => 'Atendiste a ' + n + ' clientes', newRec: ' — ¡NUEVO RÉCORD! 🎉', start: '▶ Empezar', again: '🔄 Otra vez' },
+  fr: { h1: 'Golden Bank 🏦', score: 'Servis : ', time: ' s', rec: 'Record : ', intro: 'Calcule la monnaie et rends exactement ce montant 💰', buys: 'Achète', pays: 'Paie', gave: 'Tu as rendu : ', ok: 'Exact, merci 😊', bad: 'Trop, réessaie 😅', undo: '↩ Annuler', result: n => 'Tu as servi ' + n + ' clients', newRec: ' — NOUVEAU RECORD 🎉', start: '▶ Commencer', again: '🔄 Encore' },
+  de: { h1: 'Golden Bank 🏦', score: 'Bedient: ', time: ' s', rec: 'Rekord: ', intro: 'Rechne das Wechselgeld aus und gib genau so viel zurück 💰', buys: 'Kauft', pays: 'Zahlt', gave: 'Du gabst: ', ok: 'Richtig, danke 😊', bad: 'Zu viel, versuch es nochmal 😅', undo: '↩ Zurück', result: n => 'Du hast ' + n + ' Kunden bedient', newRec: ' — NEUER REKORD 🎉', start: '▶ Start', again: '🔄 Nochmal' },
+  ja: { h1: 'Golden Bank 🏦', score: 'たいおう：', time: '秒', rec: 'ベスト：', intro: 'おつりを計算して、ぴったり返そう 💰', buys: 'かうもの', pays: 'はらう', gave: 'わたした：', ok: 'せいかい、ありがとう 😊', bad: 'おおすぎるよ、もう一回 😅', undo: '↩ もどす', result: n => n + '人のお客さんにたいおうしたよ', newRec: ' — 新記録 🎉', start: '▶ スタート', again: '🔄 もう一回' },
+  zh: { h1: 'Golden Bank 🏦', score: '已服务：', time: '秒', rec: '纪录：', intro: '算出找零，正好找给顾客 💰', buys: '买', pays: '付', gave: '你找了：', ok: '正确，谢谢 😊', bad: '太多了，再试试 😅', undo: '↩ 撤销', result: n => '你服务了 ' + n + ' 位顾客', newRec: ' — 新纪录 🎉', start: '▶ 开始', again: '🔄 再来' },
+  it: { h1: 'Golden Bank 🏦', score: 'Serviti: ', time: ' s', rec: 'Record: ', intro: 'Calcola il resto e ridai esattamente quella cifra 💰', buys: 'Compra', pays: 'Paga', gave: 'Hai dato: ', ok: 'Giusto, grazie 😊', bad: 'Troppo, riprova 😅', undo: '↩ Annulla', result: n => 'Hai servito ' + n + ' clienti', newRec: ' — NUOVO RECORD 🎉', start: '▶ Inizia', again: '🔄 Ancora' },
+  ka: { h1: 'Golden Bank 🏦', score: 'მომსახურდა: ', time: ' წმ', rec: 'რეკორდი: ', intro: 'დათვალე ხურდა და ზუსტად ის დააბრუნე 💰', buys: 'ყიდულობს', pays: 'იხდის', gave: 'დააბრუნე: ', ok: 'სწორია, გმადლობთ 😊', bad: 'ძალიან ბევრია, სცადე თავიდან 😅', undo: '↩ უკან', result: n => 'მოემსახურე ' + n + ' მომხმარებელს', newRec: ' — ახალი რეკორდი 🎉', start: '▶ დაწყება', again: '🔄 თავიდან' },
+  hi: { h1: 'Golden Bank 🏦', score: 'ग्राहक: ', time: ' से', rec: 'रिकॉर्ड: ', intro: 'बाकी पैसे गिनो और बिलकुल उतने ही लौटाओ 💰', buys: 'खरीदता है', pays: 'देता है', gave: 'तुमने दिया: ', ok: 'सही है, धन्यवाद 😊', bad: 'बहुत ज़्यादा, फिर कोशिश करो 😅', undo: '↩ वापस', result: n => 'तुमने ' + n + ' ग्राहकों की मदद की', newRec: ' — नया रिकॉर्ड 🎉', start: '▶ शुरू', again: '🔄 फिर से' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.querySelector('h1').textContent = T.h1;
+
+// Ապրանքները միայն էմոջի են՝ բոլոր լեզուներով նույնն են
+const ITEMS = ['🍎', '🍞', '🧀', '🍫', '✏️', '🎈', '🧦', '📗', '🍦', '⚽', '🧸', '🍌'];
+
+const scoreBox = document.getElementById('scoreBox');
+const timeBox = document.getElementById('timeBox');
+const bestBox = document.getElementById('bestBox');
+const msgEl = document.getElementById('msg');
+const startBtn = document.getElementById('startBtn');
+const deskEl = document.getElementById('desk');
+const bubble = document.getElementById('bubble');
+const totalBox = document.getElementById('totalBox');
+const coinsEl = document.getElementById('coins');
+
+let state = 'ready';    // ready → play → over
+let endAt = 0, endedAt = 0;
+let clockIv = null;
+let score = 0;
+let price = 0, paid = 0, given = 0, stack = [];
+let best = 0;
+try { best = Number(localStorage.getItem('aren-bank-best') || 0); } catch (e) {}
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.18, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sCoin = () => { tone(1100, 0.05, 'square', 0.12); tone(1600, 0.06, 'square', 0.1, 0.04); };
+const sOk = () => [784, 988, 1319].forEach((f, k) => tone(f, 0.14, 'triangle', 0.2, k * 0.08));
+const sBad = () => { tone(180, 0.22, 'sawtooth', 0.18); tone(120, 0.26, 'sawtooth', 0.15, 0.1); };
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.25, 'triangle', 0.2, k * 0.13));
+
+// Ուրվականային մկնիկի իրադարձությունները հպումից հետո՝ անտեսում ենք
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); }, { passive: true });
+function isGhost(e) { return e.pointerType === 'mouse' && Date.now() - lastTouchAt < 700; }
+function bindTap(el, fn) {
+  el.addEventListener('pointerdown', (e) => {
+    if (isGhost(e)) return;
+    e.preventDefault();
+    initAudio();
+    fn(e);
+  });
+}
+
+// ——— Դրամի կոճակները ———
+MONEY.forEach(v => {
+  const b = document.createElement('button');
+  b.className = 'coin' + (v >= 100 ? ' note' : '');
+  b.textContent = v + ' ֏';
+  b.dataset.v = v;
+  coinsEl.appendChild(b);
+  bindTap(b, () => giveMoney(v));
+});
+const undoBtn = document.createElement('button');
+undoBtn.className = 'coin undo';
+undoBtn.id = 'undoBtn';
+coinsEl.appendChild(undoBtn);
+bindTap(undoBtn, () => {
+  if (state !== 'play' || !stack.length) return;
+  given -= stack.pop();
+  tone(500, 0.07, 'sine', 0.12);
+  showTotal();
+});
+
+function hud() {
+  scoreBox.innerHTML = T.score + '<b>' + score + '</b>';
+  const left = state === 'play' ? Math.max(0, Math.ceil((endAt - Date.now()) / 1000)) : GAME_SECONDS;
+  timeBox.textContent = left + T.time;
+  if (best > 0) { bestBox.innerHTML = T.rec + '<b>' + best + '</b>'; bestBox.hidden = false; }
+}
+
+function showTotal() {
+  totalBox.textContent = T.gave + given + ' ֏';
+}
+
+// Նոր հաճախորդ՝ գին և վճարած թուղթ
+function newCustomer() {
+  const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+  price = (Math.floor(Math.random() * 92) + 3) * 5;        // 15-ից 470, հնգյակներով
+  if (Math.random() < 0.3) price += Math.floor(Math.random() * 4) + 1;   // երբեմն՝ մանր պոչիկ
+  const notes = [50, 100, 200, 500, 1000];
+  paid = notes.find(n => n > price);
+  given = 0; stack = [];
+  bubble.innerHTML = '<span class="big">' + item + ' ' + T.buys + ' ' + price + ' ֏</span><br>' +
+    '<span class="pay">💵 ' + T.pays + ' ' + paid + ' ֏</span>';
+  showTotal();
+  totalBox.classList.remove('wrong', 'right');
+}
+
+function giveMoney(v) {
+  if (state !== 'play') return;
+  const change = paid - price;
+  given += v;
+  stack.push(v);
+  showTotal();
+  if (given === change) {
+    // ճիշտ մանրը՝ +1 հաճախորդ
+    score++;
+    sOk();
+    msgEl.textContent = T.ok;
+    totalBox.classList.add('right');
+    hud();
+    setTimeout(() => { if (state === 'play') newCustomer(); }, 420);
+  } else if (given > change) {
+    // շատ տվեցիր՝ ցնցվում է և զրոյացնում
+    sBad();
+    msgEl.textContent = T.bad;
+    totalBox.classList.remove('wrong');
+    void totalBox.offsetWidth;   // անիմացիան նորից գործարկելու հնարքը
+    totalBox.classList.add('wrong');
+    given = 0; stack = [];
+    setTimeout(() => { totalBox.classList.remove('wrong'); showTotal(); }, 380);
+  } else {
+    sCoin();
+  }
+}
+
+function start() {
+  initAudio();
+  state = 'play';
+  score = 0;
+  endAt = Date.now() + GAME_SECONDS * 1000;
+  msgEl.textContent = '';
+  startBtn.hidden = true;
+  deskEl.hidden = false;
+  totalBox.hidden = false;
+  coinsEl.hidden = false;
+  newCustomer();
+  hud();
+  tone(660, 0.18, 'triangle', 0.18);
+  clearInterval(clockIv);
+  clockIv = setInterval(() => {
+    hud();
+    if (Date.now() >= endAt) finish();
+  }, 250);
+}
+
+function finish() {
+  state = 'over';
+  endedAt = Date.now();
+  clearInterval(clockIv);
+  coinsEl.hidden = true;
+  deskEl.hidden = true;
+  totalBox.hidden = true;
+  let txt = T.result(score);
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('aren-bank-best', best); } catch (e) {}
+    txt += T.newRec;
+    sWin();
+    confetti();
+  } else {
+    tone(400, 0.3, 'sine', 0.15);
+  }
+  msgEl.textContent = txt;
+  startBtn.textContent = T.again;
+  startBtn.hidden = false;
+  hud();
+}
+
+// Խաղն ավարտվելուց հետո ~1.1 վրկ սպասում ենք, որ պատահական հպումը նորից չսկսի
+bindTap(startBtn, () => {
+  if (state === 'over' && Date.now() - endedAt < 1100) return;
+  start();
+});
+
+function confetti() {
+  const stuff = ['💰', '🪙', '🎉', '💛', '🎊', '✨'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+msgEl.textContent = T.intro;
+startBtn.textContent = T.start;
+undoBtn.textContent = T.undo;
+hud();
+</script>

@@ -15,10 +15,96 @@
     animation: fall linear forwards;
   }
   @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+
+  /* ——— Ձկների գիրքը 📖 ——— */
+  /* «hidden» պիտակը պարտվում է display:flex/grid-ին — այս երկու տողը պարտադիր են */
+  #bookBtn[hidden], #bookOverlay[hidden] { display: none !important; }
+  #bookBtn {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 11;
+    background: rgba(20,26,34,0.78);
+    color: #ffd166;
+    border: 2px solid rgba(255,255,255,0.45);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  #bookOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 12;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    background: rgba(6,20,32,0.88);
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif;
+    color: #f5eede;
+    touch-action: manipulation;
+  }
+  .book-card {
+    width: min(94vw, 520px);
+    max-height: 86vh;
+    overflow-y: auto;
+    background: linear-gradient(#123c55, #0b2233);
+    border: 3px solid #ffd166;
+    border-radius: 18px;
+    padding: 14px;
+  }
+  .book-head { display: flex; align-items: center; gap: 10px; }
+  .book-head h2 { font-size: clamp(1rem, 4.4vw, 1.3rem); color: #ffd166; flex: 1; min-width: 0; }
+  #bookClose {
+    border: none;
+    border-radius: 999px;
+    background: #ffd166;
+    color: #123c55;
+    font-family: inherit;
+    font-weight: bold;
+    font-size: 1rem;
+    padding: 6px 12px;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  #bookCount { margin-top: 6px; font-size: 1.05rem; color: #6ee7b7; font-weight: bold; }
+  #bookGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+  }
+  @media (min-width: 460px) { #bookGrid { grid-template-columns: repeat(4, 1fr); } }
+  .book-item {
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 8px 4px;
+    text-align: center;
+    min-width: 0;                 /* որ նեղ էկրանին դուրս չգա */
+    overflow: hidden;
+  }
+  .book-item canvas { width: 100%; height: auto; display: block; }
+  .book-item span { display: block; font-size: 0.76rem; margin-top: 4px; overflow-wrap: break-word; }
+  .book-item.locked span { opacity: 0.55; }
 </style>
 
 <a href="../" style="position:fixed;top:64px;left:12px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
 <canvas id="game"></canvas>
+
+<button id="bookBtn" hidden>📖</button>
+<div id="bookOverlay" hidden>
+  <div class="book-card">
+    <div class="book-head">
+      <h2 id="bookTitle"></h2>
+      <button id="bookClose">✖</button>
+    </div>
+    <div id="bookCount"></div>
+    <div id="bookGrid"></div>
+  </div>
+</div>
 
 <script>
 // ——————————————————————————————————————
@@ -32,17 +118,17 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { gold: '+5 ՈՍԿԵ ՁՈՒԿ', bootTxt: 'Կոշիկ… +0', scoreLbl: 'Միավոր՝ ', secLbl: ' վրկ', timeup: 'Ժամանակը վերջացավ', rec: '  ·  Ռեկորդ՝ ', title: 'Golden Fishing', h1: 'Սեղմիր՝ կարթը գցելու, մատով ուղղորդիր', h2: 'Ոսկե ձուկ = +5 · Կոշիկ = 0 · 60 վայրկյան', yourBest: 'Ռեկորդդ՝ ', tapAgain: 'Սեղմիր՝ նորից ձկնորսելու', tapStart: 'Սեղմիր՝ սկսելու' },
-  ru: { gold: '+5 ЗОЛОТАЯ РЫБКА', bootTxt: 'Ботинок… +0', scoreLbl: 'Очки: ', secLbl: ' сек', timeup: 'Время вышло', rec: '  ·  Рекорд: ', title: 'Golden Fishing', h1: 'Нажми, чтобы закинуть крючок, веди пальцем', h2: 'Золотая рыбка = +5 · Ботинок = 0 · 60 секунд', yourBest: 'Твой рекорд: ', tapAgain: 'Нажми — рыбачить снова', tapStart: 'Нажми — начать' },
-  en: { gold: '+5 GOLDEN FISH', bootTxt: 'Boot… +0', scoreLbl: 'Score: ', secLbl: ' s', timeup: 'Time is up', rec: '  ·  Best: ', title: 'Golden Fishing', h1: 'Tap to cast the hook, steer it with your finger', h2: 'Golden fish = +5 · Boot = 0 · 60 seconds', yourBest: 'Your best: ', tapAgain: 'Tap to fish again', tapStart: 'Tap to start' },
-  es: { gold: '+5 ¡PEZ DORADO!', bootTxt: 'Una bota… +0', scoreLbl: 'Puntos: ', secLbl: ' s', timeup: 'Se acabó el tiempo', rec: '  ·  Récord: ', title: 'Golden Fishing', h1: 'Toca para lanzar el anzuelo y guíalo con el dedo', h2: 'Pez dorado = +5 · Bota = 0 · 60 segundos', yourBest: 'Tu récord: ', tapAgain: 'Toca para pescar otra vez', tapStart: 'Toca para empezar' },
-  fr: { gold: '+5 POISSON DORÉ !', bootTxt: 'Une botte… +0', scoreLbl: 'Points : ', secLbl: ' s', timeup: 'Temps écoulé', rec: '  ·  Record : ', title: 'Golden Fishing', h1: 'Touche pour lancer l’hameçon, guide-le avec le doigt', h2: 'Poisson doré = +5 · Botte = 0 · 60 secondes', yourBest: 'Ton record : ', tapAgain: 'Touche pour repêcher', tapStart: 'Touche pour commencer' },
-  de: { gold: '+5 GOLDFISCH!', bootTxt: 'Ein Stiefel… +0', scoreLbl: 'Punkte: ', secLbl: ' s', timeup: 'Die Zeit ist um', rec: '  ·  Rekord: ', title: 'Golden Fishing', h1: 'Tippe, um den Haken auszuwerfen, und lenke ihn mit dem Finger', h2: 'Goldfisch = +5 · Stiefel = 0 · 60 Sekunden', yourBest: 'Dein Rekord: ', tapAgain: 'Tippe, um weiterzuangeln', tapStart: 'Tippe zum Starten' },
-  ja: { gold: '+5 金の魚！', bootTxt: 'ながぐつ… +0', scoreLbl: 'スコア：', secLbl: '秒', timeup: '時間切れ', rec: '  ·  ベスト：', title: 'Golden Fishing', h1: 'タップで針を投げて、指で動かそう', h2: '金の魚 = +5 · ながぐつ = 0 · 60秒', yourBest: 'ベスト記録：', tapAgain: 'タップでもう一回つる', tapStart: 'タップでスタート' },
-  zh: { gold: '+5 金鱼！', bootTxt: '旧靴子… +0', scoreLbl: '得分：', secLbl: '秒', timeup: '时间到', rec: '  ·  纪录：', title: 'Golden Fishing', h1: '点一下抛钩，用手指控制', h2: '金鱼 = +5 · 靴子 = 0 · 60秒', yourBest: '你的纪录：', tapAgain: '点一下再钓', tapStart: '点一下开始' },
-  it: { gold: '+5 PESCE DORATO!', bootTxt: 'Uno stivale… +0', scoreLbl: 'Punti: ', secLbl: ' s', timeup: 'Tempo scaduto', rec: '  ·  Record: ', title: 'Golden Fishing', h1: 'Tocca per lanciare l’amo e guidalo col dito', h2: 'Pesce dorato = +5 · Stivale = 0 · 60 secondi', yourBest: 'Il tuo record: ', tapAgain: 'Tocca per pescare ancora', tapStart: 'Tocca per iniziare' },
-  ka: { gold: '+5 ოქროს თევზი!', bootTxt: 'ჩექმა… +0', scoreLbl: 'ქულა: ', secLbl: ' წმ', timeup: 'დრო ამოიწურა', rec: '  ·  რეკორდი: ', title: 'Golden Fishing', h1: 'დააჭირე ანკესის ჩასაგდებად და თითით მართე', h2: 'ოქროს თევზი = +5 · ჩექმა = 0 · 60 წამი', yourBest: 'შენი რეკორდი: ', tapAgain: 'დააჭირე ისევ სათევზაოდ', tapStart: 'დააჭირე დასაწყებად' },
-  hi: { gold: '+5 सुनहरी मछली!', bootTxt: 'पुराना जूता… +0', scoreLbl: 'स्कोर: ', secLbl: ' से', timeup: 'समय खत्म', rec: '  ·  रिकॉर्ड: ', title: 'Golden Fishing', h1: 'काँटा डालने के लिए टैप करो, उँगली से चलाओ', h2: 'सुनहरी मछली = +5 · जूता = 0 · 60 सेकंड', yourBest: 'तुम्हारा रिकॉर्ड: ', tapAgain: 'फिर से मछली पकड़ने के लिए टैप करो', tapStart: 'शुरू करने के लिए टैप करो' },
+  hy: { gold: '+5 ՈՍԿԵ ՁՈՒԿ', bootTxt: 'Կոշիկ… +0', scoreLbl: 'Միավոր՝ ', secLbl: ' վրկ', timeup: 'Ժամանակը վերջացավ', rec: '  ·  Ռեկորդ՝ ', title: 'Golden Fishing', h1: 'Սեղմիր՝ կարթը գցելու, մատով ուղղորդիր', h2: 'Ոսկե ձուկ = +5 · Կոշիկ = 0 · 60 վայրկյան', yourBest: 'Ռեկորդդ՝ ', tapAgain: 'Սեղմիր՝ նորից ձկնորսելու', tapStart: 'Սեղմիր՝ սկսելու', bookTitle: '📖 Ձկների գիրքը', newFish: 'ՆՈՐ ՁՈՒԿ ԳՐՔՈՒՄ!', unknown: '???', fishNames: { small: 'Կապույտ ձկնիկ', med: 'Նարնջագույն ձուկ', gold: 'Ոսկե ձուկ', boot: 'Հին կոշիկ' } },
+  ru: { gold: '+5 ЗОЛОТАЯ РЫБКА', bootTxt: 'Ботинок… +0', scoreLbl: 'Очки: ', secLbl: ' сек', timeup: 'Время вышло', rec: '  ·  Рекорд: ', title: 'Golden Fishing', h1: 'Нажми, чтобы закинуть крючок, веди пальцем', h2: 'Золотая рыбка = +5 · Ботинок = 0 · 60 секунд', yourBest: 'Твой рекорд: ', tapAgain: 'Нажми — рыбачить снова', tapStart: 'Нажми — начать', bookTitle: '📖 Книга рыб', newFish: 'НОВАЯ РЫБА В КНИГЕ!', unknown: '???', fishNames: { small: 'Синяя рыбка', med: 'Оранжевая рыба', gold: 'Золотая рыбка', boot: 'Старый ботинок' } },
+  en: { gold: '+5 GOLDEN FISH', bootTxt: 'Boot… +0', scoreLbl: 'Score: ', secLbl: ' s', timeup: 'Time is up', rec: '  ·  Best: ', title: 'Golden Fishing', h1: 'Tap to cast the hook, steer it with your finger', h2: 'Golden fish = +5 · Boot = 0 · 60 seconds', yourBest: 'Your best: ', tapAgain: 'Tap to fish again', tapStart: 'Tap to start', bookTitle: '📖 Fish book', newFish: 'NEW FISH IN THE BOOK!', unknown: '???', fishNames: { small: 'Little blue fish', med: 'Orange fish', gold: 'Golden fish', boot: 'Old boot' } },
+  es: { gold: '+5 ¡PEZ DORADO!', bootTxt: 'Una bota… +0', scoreLbl: 'Puntos: ', secLbl: ' s', timeup: 'Se acabó el tiempo', rec: '  ·  Récord: ', title: 'Golden Fishing', h1: 'Toca para lanzar el anzuelo y guíalo con el dedo', h2: 'Pez dorado = +5 · Bota = 0 · 60 segundos', yourBest: 'Tu récord: ', tapAgain: 'Toca para pescar otra vez', tapStart: 'Toca para empezar', bookTitle: '📖 Libro de peces', newFish: '¡NUEVO PEZ EN EL LIBRO!', unknown: '???', fishNames: { small: 'Pececito azul', med: 'Pez naranja', gold: 'Pez dorado', boot: 'Bota vieja' } },
+  fr: { gold: '+5 POISSON DORÉ !', bootTxt: 'Une botte… +0', scoreLbl: 'Points : ', secLbl: ' s', timeup: 'Temps écoulé', rec: '  ·  Record : ', title: 'Golden Fishing', h1: 'Touche pour lancer l’hameçon, guide-le avec le doigt', h2: 'Poisson doré = +5 · Botte = 0 · 60 secondes', yourBest: 'Ton record : ', tapAgain: 'Touche pour repêcher', tapStart: 'Touche pour commencer', bookTitle: '📖 Livre des poissons', newFish: 'NOUVEAU POISSON DANS LE LIVRE !', unknown: '???', fishNames: { small: 'Petit poisson bleu', med: 'Poisson orange', gold: 'Poisson doré', boot: 'Vieille botte' } },
+  de: { gold: '+5 GOLDFISCH!', bootTxt: 'Ein Stiefel… +0', scoreLbl: 'Punkte: ', secLbl: ' s', timeup: 'Die Zeit ist um', rec: '  ·  Rekord: ', title: 'Golden Fishing', h1: 'Tippe, um den Haken auszuwerfen, und lenke ihn mit dem Finger', h2: 'Goldfisch = +5 · Stiefel = 0 · 60 Sekunden', yourBest: 'Dein Rekord: ', tapAgain: 'Tippe, um weiterzuangeln', tapStart: 'Tippe zum Starten', bookTitle: '📖 Fischbuch', newFish: 'NEUER FISCH IM BUCH!', unknown: '???', fishNames: { small: 'Blauer Fisch', med: 'Oranger Fisch', gold: 'Goldfisch', boot: 'Alter Stiefel' } },
+  ja: { gold: '+5 金の魚！', bootTxt: 'ながぐつ… +0', scoreLbl: 'スコア：', secLbl: '秒', timeup: '時間切れ', rec: '  ·  ベスト：', title: 'Golden Fishing', h1: 'タップで針を投げて、指で動かそう', h2: '金の魚 = +5 · ながぐつ = 0 · 60秒', yourBest: 'ベスト記録：', tapAgain: 'タップでもう一回つる', tapStart: 'タップでスタート', bookTitle: '📖 さかな図鑑', newFish: 'ずかんに あたらしいさかな！', unknown: '???', fishNames: { small: 'あおいさかな', med: 'オレンジのさかな', gold: '金の魚', boot: 'ふるいながぐつ' } },
+  zh: { gold: '+5 金鱼！', bootTxt: '旧靴子… +0', scoreLbl: '得分：', secLbl: '秒', timeup: '时间到', rec: '  ·  纪录：', title: 'Golden Fishing', h1: '点一下抛钩，用手指控制', h2: '金鱼 = +5 · 靴子 = 0 · 60秒', yourBest: '你的纪录：', tapAgain: '点一下再钓', tapStart: '点一下开始', bookTitle: '📖 鱼类图鉴', newFish: '图鉴收录了新鱼！', unknown: '???', fishNames: { small: '小蓝鱼', med: '橙色鱼', gold: '金鱼', boot: '旧靴子' } },
+  it: { gold: '+5 PESCE DORATO!', bootTxt: 'Uno stivale… +0', scoreLbl: 'Punti: ', secLbl: ' s', timeup: 'Tempo scaduto', rec: '  ·  Record: ', title: 'Golden Fishing', h1: 'Tocca per lanciare l’amo e guidalo col dito', h2: 'Pesce dorato = +5 · Stivale = 0 · 60 secondi', yourBest: 'Il tuo record: ', tapAgain: 'Tocca per pescare ancora', tapStart: 'Tocca per iniziare', bookTitle: '📖 Libro dei pesci', newFish: 'NUOVO PESCE NEL LIBRO!', unknown: '???', fishNames: { small: 'Pesciolino blu', med: 'Pesce arancione', gold: 'Pesce dorato', boot: 'Stivale vecchio' } },
+  ka: { gold: '+5 ოქროს თევზი!', bootTxt: 'ჩექმა… +0', scoreLbl: 'ქულა: ', secLbl: ' წმ', timeup: 'დრო ამოიწურა', rec: '  ·  რეკორდი: ', title: 'Golden Fishing', h1: 'დააჭირე ანკესის ჩასაგდებად და თითით მართე', h2: 'ოქროს თევზი = +5 · ჩექმა = 0 · 60 წამი', yourBest: 'შენი რეკორდი: ', tapAgain: 'დააჭირე ისევ სათევზაოდ', tapStart: 'დააჭირე დასაწყებად', bookTitle: '📖 თევზების წიგნი', newFish: 'ახალი თევზი წიგნში!', unknown: '???', fishNames: { small: 'ლურჯი თევზი', med: 'ნარინჯისფერი თევზი', gold: 'ოქროს თევზი', boot: 'ძველი ჩექმა' } },
+  hi: { gold: '+5 सुनहरी मछली!', bootTxt: 'पुराना जूता… +0', scoreLbl: 'स्कोर: ', secLbl: ' से', timeup: 'समय खत्म', rec: '  ·  रिकॉर्ड: ', title: 'Golden Fishing', h1: 'काँटा डालने के लिए टैप करो, उँगली से चलाओ', h2: 'सुनहरी मछली = +5 · जूता = 0 · 60 सेकंड', yourBest: 'तुम्हारा रिकॉर्ड: ', tapAgain: 'फिर से मछली पकड़ने के लिए टैप करो', tapStart: 'शुरू करने के लिए टैप करो', bookTitle: '📖 मछली किताब', newFish: 'किताब में नई मछली!', unknown: '???', fishNames: { small: 'नीली मछली', med: 'नारंगी मछली', gold: 'सुनहरी मछली', boot: 'पुराना जूता' } },
 };
 const T = TRL[ggLang] || TRL.hy;
 const canvas = document.getElementById('game');
@@ -102,6 +188,28 @@ function spawnFish(startInside) {
 }
 for (let i = 0; i < 10; i++) spawnFish(true);
 
+// ——— Ձկների գիրքը 📖 ———
+// Ամեն տեսակ, որ գոնե մեկ անգամ բռնել ես, ընդմիշտ գրվում է գրքում։
+const SPECIES = [
+  { id: 'small', color: '#5bc0de', r: 14 },
+  { id: 'med',   color: '#f0864a', r: 20 },
+  { id: 'gold',  color: '#ffd700', r: 16 },
+  { id: 'boot',  color: '#6b5a4a', r: 18 },
+];
+let book = [];
+try {
+  const raw = JSON.parse(localStorage.getItem('aren-fish-book') || '[]');
+  if (Array.isArray(raw)) book = raw;
+} catch (e) { book = []; }
+function haveSpecies(id) { return book.indexOf(id) >= 0; }
+function bookCollected() { return SPECIES.filter(sp => haveSpecies(sp.id)).length; }
+function recordCatch(id) {
+  if (haveSpecies(id)) return false;
+  book.push(id);
+  try { localStorage.setItem('aren-fish-book', JSON.stringify(book)); } catch (e) {}
+  return true;   // նոր տեսակ է՝ կարելի է ուրախանալ
+}
+
 // ——— Կարթը ———
 const hook = { x: 0, y: 0, state: 'idle', caught: null };   // idle → drop → reel
 let boatX;
@@ -122,6 +230,8 @@ function startGame() {
 // ——— Կառավարումը ———
 let aimX = null;
 canvas.addEventListener('pointerdown', (e) => {
+  // գիրքը բաց է կամ հենց նոր փակվեց — խաղը չսկսվի պատահաբար
+  if (!bookOverlay.hidden || Date.now() - bookClosedAt < 700) return;
   e.preventDefault();
   initAudio();
   if (!playing) { startGame(); return; }
@@ -193,6 +303,10 @@ function update() {
       if (hook.caught) {
         const pts = { small: 1, med: 2, gold: 5, boot: 0 }[hook.caught.type];
         score += pts;
+        // առաջին անգամ բռնեցի՞ր այս տեսակը — գիրքն այն հիշում է ընդմիշտ
+        if (recordCatch(hook.caught.type)) {
+          popups.push({ x: boatX, y: WATER - 96, life: 90, text: T.newFish });
+        }
         if (hook.caught.type === 'gold') { sGold(); popups.push({ x: boatX, y: WATER - 60, life: 70, text: T.gold }); }
         else if (hook.caught.type === 'boot') { sBoot(); popups.push({ x: boatX, y: WATER - 60, life: 70, text: T.bootTxt }); }
         else { sCatch(); popups.push({ x: boatX, y: WATER - 60, life: 60, text: '+' + pts }); }
@@ -207,45 +321,52 @@ function update() {
 }
 
 // ——— Նկարելը ———
+// Ձկան (կամ կոշիկի) պատկերը՝ մեկ տեղում, որ և՛ ջրում, և՛ գրքում նույնը լինի։
+// dark = true նշանակում է սև ուրվագիծ՝ դեռ չբռնած տեսակի համար։
+const FISH_COLORS = { small: '#5bc0de', med: '#f0864a', gold: '#ffd700', boot: '#6b5a4a' };
+function paintFish(c, type, r, color, dark) {
+  if (type === 'boot') {
+    // հին կոշիկ 🥾 (նկարում ենք ձեռքով)
+    c.fillStyle = color;
+    c.beginPath();
+    c.roundRect(-12, -16, 14, 26, 4);
+    c.roundRect(-12, 2, 26, 10, 4);
+    c.fill();
+    c.fillStyle = dark ? color : '#4a3d30';
+    c.fillRect(-12, 10, 28, 4);
+    return;
+  }
+  c.fillStyle = color;
+  // մարմինը
+  c.beginPath();
+  c.ellipse(0, 0, r * 1.3, r * 0.8, 0, 0, Math.PI * 2);
+  c.fill();
+  // պոչը
+  c.beginPath();
+  c.moveTo(-r * 1.2, 0);
+  c.lineTo(-r * 2, -r * 0.7);
+  c.lineTo(-r * 2, r * 0.7);
+  c.closePath();
+  c.fill();
+  if (!dark) {
+    // աչքը
+    c.fillStyle = '#fff';
+    c.beginPath(); c.arc(r * 0.6, -r * 0.2, r * 0.25, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#222';
+    c.beginPath(); c.arc(r * 0.68, -r * 0.2, r * 0.12, 0, Math.PI * 2); c.fill();
+  }
+}
+
 function drawFish(f) {
   ctx.save();
   ctx.translate(f.x, f.y);
   if (f.spd < 0 || (f.spd === 0 && f.dir < 0)) ctx.scale(-1, 1);
-
-  if (f.type === 'boot') {
-    // հին կոշիկ 🥾 (նկարում ենք ձեռքով)
-    ctx.fillStyle = '#6b5a4a';
-    ctx.beginPath();
-    ctx.roundRect(-12, -16, 14, 26, 4);
-    ctx.roundRect(-12, 2, 26, 10, 4);
-    ctx.fill();
-    ctx.fillStyle = '#4a3d30';
-    ctx.fillRect(-12, 10, 28, 4);
-  } else {
-    const colors = { small: '#5bc0de', med: '#f0864a', gold: '#ffd700' };
-    ctx.fillStyle = colors[f.type];
-    // մարմինը
-    ctx.beginPath();
-    ctx.ellipse(0, 0, f.r * 1.3, f.r * 0.8, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // պոչը
-    ctx.beginPath();
-    ctx.moveTo(-f.r * 1.2, 0);
-    ctx.lineTo(-f.r * 2, -f.r * 0.7);
-    ctx.lineTo(-f.r * 2, f.r * 0.7);
-    ctx.closePath();
-    ctx.fill();
-    // աչքը
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(f.r * 0.6, -f.r * 0.2, f.r * 0.25, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#222';
-    ctx.beginPath(); ctx.arc(f.r * 0.68, -f.r * 0.2, f.r * 0.12, 0, Math.PI * 2); ctx.fill();
-    // ոսկե ձուկը փայլում է
-    if (f.type === 'gold') {
-      const tw = (Math.sin(frame * 0.3) + 1) / 2;
-      ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + tw * 0.5) + ')';
-      ctx.beginPath(); ctx.arc(0, -f.r * 1.3, 3 + tw * 2, 0, Math.PI * 2); ctx.fill();
-    }
+  paintFish(ctx, f.type, f.r, FISH_COLORS[f.type], false);
+  // ոսկե ձուկը փայլում է
+  if (f.type === 'gold') {
+    const tw = (Math.sin(frame * 0.3) + 1) / 2;
+    ctx.fillStyle = 'rgba(255,255,255,' + (0.3 + tw * 0.5) + ')';
+    ctx.beginPath(); ctx.arc(0, -f.r * 1.3, 3 + tw * 2, 0, Math.PI * 2); ctx.fill();
   }
   ctx.restore();
 }
@@ -389,7 +510,63 @@ function confetti() {
   }
 }
 
+// ——————————————————————————————————————
+//  ԳՐՔԻ ԷԿՐԱՆԸ 📖
+//  Բռնածները՝ գույնով ու անունով, չբռնածները՝ մուգ ուրվագիծ ու «???»
+// ——————————————————————————————————————
+const bookBtn = document.getElementById('bookBtn');
+const bookOverlay = document.getElementById('bookOverlay');
+const bookGrid = document.getElementById('bookGrid');
+const bookCount = document.getElementById('bookCount');
+const bookClose = document.getElementById('bookClose');
+document.getElementById('bookTitle').textContent = T.bookTitle;
+
+function renderBook() {
+  bookCount.textContent = bookCollected() + '/' + SPECIES.length;
+  bookGrid.innerHTML = '';
+  SPECIES.forEach(sp => {
+    const got = haveSpecies(sp.id);
+    const item = document.createElement('div');
+    item.className = got ? 'book-item' : 'book-item locked';
+    const cv = document.createElement('canvas');
+    cv.width = 120; cv.height = 66;
+    const c = cv.getContext('2d');
+    c.translate(66, 33);            // կենտրոնում ենք՝ պոչի համար տեղ թողնելով
+    paintFish(c, sp.id, sp.r, got ? sp.color : '#08161f', !got);
+    const nm = document.createElement('span');
+    nm.textContent = got ? T.fishNames[sp.id] : T.unknown;
+    item.appendChild(cv);
+    item.appendChild(nm);
+    bookGrid.appendChild(item);
+  });
+}
+
+// Հեռախոսը հպումից հետո «ուրվական» մկնիկ է ուղարկում — հիշում ենք հպման պահը
+let lastTouchAt = 0;
+let bookClosedAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); }, { passive: true });
+function ghost(e) { return e.pointerType === 'mouse' && Date.now() - lastTouchAt < 700; }
+
+function openBook() { renderBook(); bookOverlay.hidden = false; }
+function closeBook() { bookOverlay.hidden = true; bookClosedAt = Date.now(); }
+
+bookBtn.addEventListener('pointerdown', (e) => {
+  if (ghost(e)) return;
+  e.preventDefault(); e.stopPropagation();
+  openBook();
+});
+bookClose.addEventListener('pointerdown', (e) => {
+  if (ghost(e)) return;
+  e.preventDefault(); e.stopPropagation();
+  closeBook();
+});
+bookOverlay.addEventListener('pointerdown', (e) => {
+  if (e.target === bookOverlay) { e.preventDefault(); closeBook(); }   // կողքին սեղմելով էլ է փակվում
+});
+
 function loop() {
+  // 📖 կոճակը միայն մենյուի էկրանին է երևում
+  if (bookBtn.hidden !== playing) bookBtn.hidden = playing;
   update();
   draw();
   requestAnimationFrame(loop);

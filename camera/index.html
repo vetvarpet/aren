@@ -1,0 +1,524 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Camera 📷</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2b3550, #16202f);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 100dvh;
+    padding: 8px;
+    padding-top: 44px;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+  h1 { font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd76e; }
+  .hud { display: flex; gap: 14px; font-size: 0.95rem; color: #9ab0d0; flex-wrap: wrap; justify-content: center; }
+  .hud b { color: #6ee7b7; }
+  .hud .sh { color: #ffd76e; }
+
+  .screen {
+    position: relative;
+    width: min(96vw, 440px);
+  }
+  canvas#view {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    border: 4px solid #4a5a80;
+    background: #bfe3ef;
+    touch-action: none;   /* առանց սրա մատի շարժը էջը կսահեցնի */
+  }
+  /* Ֆոտոխցիկի սպիտակ բռնկումը. opacity-ն 0 է, որ անիմացիայից հետո չմնա էկրանին */
+  .screen.flash::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: #fff;
+    opacity: 0;
+    animation: fl 0.22s;
+    pointer-events: none;
+  }
+  @keyframes fl { from { opacity: 0.9; } to { opacity: 0; } }
+
+  #shutter {
+    border: 4px solid #8a94b8;
+    border-radius: 999px;
+    width: 74px; height: 74px;
+    font-size: 1.7rem;
+    background: #e63946;
+    color: #fff;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  #shutter:active { transform: scale(0.92); }
+
+  #panel {
+    width: min(96vw, 440px);
+    background: rgba(12,18,30,0.92);
+    border: 3px solid #4a5a80;
+    border-radius: 18px;
+    padding: 12px;
+    text-align: center;
+  }
+  #panel h2 { font-size: 1.05rem; color: #ffd76e; margin-bottom: 6px; }
+  #panel p { font-size: 0.9rem; color: #cbd8ee; line-height: 1.4; }
+
+  /* Ֆոտոալբոմի ժապավենը՝ վերջում */
+  .album { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0; }
+  .shot {
+    background: #f5eede;
+    border-radius: 6px;
+    padding: 3px 3px 1px;
+    width: 54px;
+  }
+  .shot canvas { display: block; width: 48px; height: 40px; border-radius: 4px; background: #bfe3ef; }
+  .shot span { display: block; font-size: 0.5rem; color: #1e2c4a; height: 0.9em; }
+
+  #msg { font-size: 0.95rem; color: #ffd76e; min-height: 1.4em; text-align: center; }
+  #startBtn {
+    border: 2px solid #6a86c9;
+    border-radius: 999px;
+    padding: 10px 26px;
+    font-size: 1.05rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #33477a;
+    color: #f5eede;
+    touch-action: manipulation;
+  }
+  /* hidden-ը պարտվում է display:flex/block-ին, ուստի ուժեղացնում ենք */
+  #panel[hidden], #shutter[hidden], #startBtn[hidden], .hud span[hidden], .album[hidden], .screen[hidden] { display: none !important; }
+
+  .confetti {
+    position: fixed;
+    top: -50px;
+    z-index: 9;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<h1>Golden Camera 📷</h1>
+<div class="hud"><span id="scoreBox"></span><span class="sh" id="shotBox"></span><span id="bestBox" hidden></span></div>
+<div class="screen" id="screen"><canvas id="view"></canvas></div>
+<div id="panel">
+  <h2 id="panelTitle"></h2>
+  <p id="panelText"></p>
+  <div class="album" id="album" hidden></div>
+</div>
+<button id="shutter" hidden>📸</button>
+<div id="msg"></div>
+<button id="startBtn">▶ Սկսել</button>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ՖՈՏՈԽՑԻԿ 📷 — կենդանիների լուսանկարիչ
+//  Կենդանիները քայլում են էկրանով մեկ։ Մեջտեղում տեսադաշտի շրջանակն է։
+//  Սեղմիր 📸 հենց այն պահին, երբ կենդանին շրջանակի ճիշտ կենտրոնում է.
+//    ուղիղ կենտրոն = 3 միավոր · մոտիկ = 1 միավոր · դատարկ շրջանակ = 0
+//  Ունես ընդամենը 12 կադր։ Վերջում կտեսնես քո ֆոտոալբոմը։
+// ——————————————————————————————————————
+
+const SHOTS = 12;
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { h1: 'Golden Camera 📷', score: 'Միավոր՝ ', shots: 'Կադր՝ ', rec: 'Ռեկորդ՝ ', title: 'Լուսանկարի՛ր կենդանիներին', intro: 'Սեղմիր 📸 այն պահին, երբ կենդանին շրջանակի կենտրոնում է։ Ուղիղ կենտրոն = 3 · մոտիկ = 1 · դատարկ = 0', perfect: 'Կատարյա՜լ կադր +3 ⭐⭐⭐', good: 'Լավն է +1 ⭐', miss: 'Դատարկ կադր 😅', overT: 'Ահա քո ալբոմը 📷', result: n => 'Հավաքեցիր ' + n + ' միավոր', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ 🎉', start: '▶ Սկսել', again: '🔄 Նորից' },
+  ru: { h1: 'Golden Camera 📷', score: 'Очки: ', shots: 'Кадры: ', rec: 'Рекорд: ', title: 'Фотографируй животных', intro: 'Нажми 📸, когда зверь в центре рамки. Точно в центре = 3 · рядом = 1 · пусто = 0', perfect: 'Идеальный кадр +3 ⭐⭐⭐', good: 'Неплохо +1 ⭐', miss: 'Пустой кадр 😅', overT: 'Вот твой альбом 📷', result: n => 'Ты набрал ' + n + ' очков', newRec: ' — НОВЫЙ РЕКОРД 🎉', start: '▶ Старт', again: '🔄 Ещё раз' },
+  en: { h1: 'Golden Camera 📷', score: 'Score: ', shots: 'Shots: ', rec: 'Best: ', title: 'Photograph the animals', intro: 'Tap 📸 when an animal is in the middle of the frame. Dead centre = 3 · close = 1 · empty = 0', perfect: 'Perfect shot +3 ⭐⭐⭐', good: 'Nice one +1 ⭐', miss: 'Empty frame 😅', overT: 'Here is your album 📷', result: n => 'You scored ' + n + ' points', newRec: ' — NEW RECORD 🎉', start: '▶ Start', again: '🔄 Again' },
+  es: { h1: 'Golden Camera 📷', score: 'Puntos: ', shots: 'Fotos: ', rec: 'Récord: ', title: 'Fotografía a los animales', intro: 'Toca 📸 cuando el animal esté en el centro del marco. Justo al centro = 3 · cerca = 1 · vacío = 0', perfect: '¡Foto perfecta! +3 ⭐⭐⭐', good: '¡Bien! +1 ⭐', miss: 'Marco vacío 😅', overT: 'Aquí está tu álbum 📷', result: n => 'Hiciste ' + n + ' puntos', newRec: ' — ¡NUEVO RÉCORD! 🎉', start: '▶ Empezar', again: '🔄 Otra vez' },
+  fr: { h1: 'Golden Camera 📷', score: 'Points : ', shots: 'Photos : ', rec: 'Record : ', title: 'Photographie les animaux', intro: 'Touche 📸 quand l’animal est au centre du cadre. Pile au centre = 3 · proche = 1 · vide = 0', perfect: 'Photo parfaite +3 ⭐⭐⭐', good: 'Bien joué +1 ⭐', miss: 'Cadre vide 😅', overT: 'Voici ton album 📷', result: n => 'Tu as fait ' + n + ' points', newRec: ' — NOUVEAU RECORD 🎉', start: '▶ Commencer', again: '🔄 Encore' },
+  de: { h1: 'Golden Camera 📷', score: 'Punkte: ', shots: 'Bilder: ', rec: 'Rekord: ', title: 'Fotografiere die Tiere', intro: 'Tippe 📸, wenn das Tier in der Mitte des Rahmens ist. Genau mittig = 3 · nah = 1 · leer = 0', perfect: 'Perfektes Foto +3 ⭐⭐⭐', good: 'Gut +1 ⭐', miss: 'Leerer Rahmen 😅', overT: 'Hier ist dein Album 📷', result: n => 'Du hast ' + n + ' Punkte geholt', newRec: ' — NEUER REKORD 🎉', start: '▶ Start', again: '🔄 Nochmal' },
+  ja: { h1: 'Golden Camera 📷', score: 'スコア：', shots: 'のこり：', rec: 'ベスト：', title: 'どうぶつをさつえいしよう', intro: 'どうぶつがわくの真ん中にきたら📸をタップ。ど真ん中=3 · ちかい=1 · からっぽ=0', perfect: 'かんぺきな一枚 +3 ⭐⭐⭐', good: 'いいね +1 ⭐', miss: 'なにもうつってない 😅', overT: 'きみのアルバム 📷', result: n => n + 'ポイントとったよ', newRec: ' — 新記録 🎉', start: '▶ スタート', again: '🔄 もう一回' },
+  zh: { h1: 'Golden Camera 📷', score: '得分：', shots: '底片：', rec: '纪录：', title: '给动物拍照', intro: '动物到取景框正中时点 📸。正中间=3 · 接近=1 · 空框=0', perfect: '完美一张 +3 ⭐⭐⭐', good: '不错 +1 ⭐', miss: '空镜头 😅', overT: '这是你的相册 📷', result: n => '你得了 ' + n + ' 分', newRec: ' — 新纪录 🎉', start: '▶ 开始', again: '🔄 再来' },
+  it: { h1: 'Golden Camera 📷', score: 'Punti: ', shots: 'Scatti: ', rec: 'Record: ', title: 'Fotografa gli animali', intro: 'Tocca 📸 quando l’animale è al centro del riquadro. Al centro = 3 · vicino = 1 · vuoto = 0', perfect: 'Scatto perfetto +3 ⭐⭐⭐', good: 'Bello +1 ⭐', miss: 'Riquadro vuoto 😅', overT: 'Ecco il tuo album 📷', result: n => 'Hai fatto ' + n + ' punti', newRec: ' — NUOVO RECORD 🎉', start: '▶ Inizia', again: '🔄 Ancora' },
+  ka: { h1: 'Golden Camera 📷', score: 'ქულა: ', shots: 'კადრი: ', rec: 'რეკორდი: ', title: 'გადაუღე ცხოველებს', intro: 'დააჭირე 📸-ს, როცა ცხოველი ჩარჩოს შუაშია. ზუსტად შუაში = 3 · ახლოს = 1 · ცარიელი = 0', perfect: 'იდეალური კადრი +3 ⭐⭐⭐', good: 'კარგია +1 ⭐', miss: 'ცარიელი კადრი 😅', overT: 'აი შენი ალბომი 📷', result: n => 'დააგროვე ' + n + ' ქულა', newRec: ' — ახალი რეკორდი 🎉', start: '▶ დაწყება', again: '🔄 თავიდან' },
+  hi: { h1: 'Golden Camera 📷', score: 'स्कोर: ', shots: 'शॉट: ', rec: 'रिकॉर्ड: ', title: 'जानवरों की फोटो लो', intro: 'जब जानवर फ्रेम के बीच में हो तब 📸 दबाओ। बिलकुल बीच = 3 · पास = 1 · खाली = 0', perfect: 'शानदार फोटो +3 ⭐⭐⭐', good: 'बढ़िया +1 ⭐', miss: 'खाली फ्रेम 😅', overT: 'यह रहा तुम्हारा एल्बम 📷', result: n => 'तुमने ' + n + ' अंक बनाए', newRec: ' — नया रिकॉर्ड 🎉', start: '▶ शुरू', again: '🔄 फिर से' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.querySelector('h1').textContent = T.h1;
+
+const cv = document.getElementById('view');
+const ctx = cv.getContext('2d');
+const screenEl = document.getElementById('screen');
+const scoreBox = document.getElementById('scoreBox');
+const shotBox = document.getElementById('shotBox');
+const bestBox = document.getElementById('bestBox');
+const panel = document.getElementById('panel');
+const panelTitle = document.getElementById('panelTitle');
+const panelText = document.getElementById('panelText');
+const albumEl = document.getElementById('album');
+const shutter = document.getElementById('shutter');
+const msgEl = document.getElementById('msg');
+const startBtn = document.getElementById('startBtn');
+
+let W = 400, H = 264, DPR = 1;
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = cv.clientWidth || 400;
+  H = Math.round(W * 0.66);
+  cv.style.height = H + 'px';
+  cv.width = Math.round(W * DPR);
+  cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener('resize', resize);
+
+let state = 'ready';    // ready → play → over
+let endedAt = 0;
+let score = 0, shotsLeft = SHOTS, frame = 0;
+let animals = [], photos = [];
+let best = 0;
+try { best = Number(localStorage.getItem('aren-camera-best') || 0); } catch (e) {}
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.18, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sClick = () => { tone(1400, 0.03, 'square', 0.14); tone(700, 0.05, 'square', 0.12, 0.03); };
+const sPerfect = () => [880, 1100, 1320, 1760].forEach((f, k) => tone(f, 0.13, 'triangle', 0.18, k * 0.07));
+const sGood = () => { tone(880, 0.1, 'triangle', 0.16); tone(1100, 0.12, 'triangle', 0.14, 0.07); };
+const sMiss = () => { tone(200, 0.2, 'sawtooth', 0.16); tone(140, 0.24, 'sawtooth', 0.13, 0.09); };
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.25, 'triangle', 0.2, k * 0.13));
+
+// Ուրվականային մկնիկի իրադարձությունները հպումից հետո՝ անտեսում ենք
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); }, { passive: true });
+function isGhost(e) { return e.pointerType === 'mouse' && Date.now() - lastTouchAt < 700; }
+function bindTap(el, fn) {
+  el.addEventListener('pointerdown', (e) => {
+    if (isGhost(e)) return;
+    e.preventDefault();
+    initAudio();
+    fn(e);
+  });
+}
+
+// ——— Կենդանիները (բոլորը ձևերով են նկարած, ոչ մի էմոջի կտավի վրա) ———
+const KINDS = ['cat', 'fox', 'bird', 'turtle', 'deer', 'rabbit'];
+
+function drawAnimal(c, kind, x, y, s, dir, walk) {
+  c.save();
+  c.translate(x, y);
+  c.scale(dir, 1);
+  const leg = Math.sin(walk) * s * 0.18;
+
+  if (kind === 'bird') {
+    c.fillStyle = '#4aa3df';
+    c.beginPath(); c.ellipse(0, 0, s * 0.85, s * 0.6, 0, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.arc(s * 0.7, -s * 0.45, s * 0.42, 0, Math.PI * 2); c.fill();        // գլուխը
+    c.fillStyle = '#2b7bb5';
+    c.beginPath(); c.ellipse(-s * 0.1, 0, s * 0.5, s * 0.3, Math.sin(walk) * 0.5, 0, Math.PI * 2); c.fill();   // թևը
+    c.fillStyle = '#ffb703';
+    c.beginPath(); c.moveTo(s * 1.05, -s * 0.5); c.lineTo(s * 1.6, -s * 0.35); c.lineTo(s * 1.05, -s * 0.2); c.closePath(); c.fill();
+    c.fillStyle = '#2b7bb5';
+    c.beginPath(); c.moveTo(-s * 0.8, 0); c.lineTo(-s * 1.6, -s * 0.4); c.lineTo(-s * 1.5, s * 0.35); c.closePath(); c.fill();  // պոչը
+    c.fillStyle = '#fff'; c.beginPath(); c.arc(s * 0.82, -s * 0.55, s * 0.12, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#241505'; c.beginPath(); c.arc(s * 0.85, -s * 0.55, s * 0.06, 0, Math.PI * 2); c.fill();
+    c.restore(); return;
+  }
+  if (kind === 'turtle') {
+    c.fillStyle = '#7cc36a';
+    c.beginPath(); c.ellipse(s * 0.95, -s * 0.1, s * 0.35, s * 0.3, 0, 0, Math.PI * 2); c.fill();   // գլուխը
+    c.fillStyle = '#5e9c4f';
+    c.fillRect(-s * 0.6, s * 0.3, s * 0.35, s * 0.35 + leg);
+    c.fillRect(s * 0.3, s * 0.3, s * 0.35, s * 0.35 - leg);
+    c.fillStyle = '#3f7a34';
+    c.beginPath(); c.ellipse(0, 0, s, s * 0.72, 0, Math.PI, 0); c.fill();                 // զրահը
+    c.fillStyle = '#2c5a26';
+    for (let k = -1; k <= 1; k++) { c.beginPath(); c.arc(k * s * 0.45, -s * 0.18, s * 0.18, 0, Math.PI * 2); c.fill(); }
+    c.fillStyle = '#241505'; c.beginPath(); c.arc(s * 1.1, -s * 0.18, s * 0.06, 0, Math.PI * 2); c.fill();
+    c.restore(); return;
+  }
+
+  const skin = { cat: '#e79b3f', fox: '#e0562b', deer: '#a97142', rabbit: '#f2ece0' }[kind];
+  const dark = { cat: '#c47c25', fox: '#b83f18', deer: '#8a5a30', rabbit: '#d8cfbe' }[kind];
+  // ոտքերը
+  c.strokeStyle = dark;
+  c.lineWidth = s * 0.2;
+  c.lineCap = 'round';
+  c.beginPath();
+  c.moveTo(-s * 0.5, s * 0.4); c.lineTo(-s * 0.5, s * 0.9 + leg);
+  c.moveTo(s * 0.5, s * 0.4); c.lineTo(s * 0.5, s * 0.9 - leg);
+  c.stroke();
+  // մարմինը
+  c.fillStyle = skin;
+  c.beginPath(); c.ellipse(0, 0, s, s * 0.6, 0, 0, Math.PI * 2); c.fill();
+  // գլուխը
+  c.beginPath(); c.arc(s * 0.95, -s * 0.55, s * 0.45, 0, Math.PI * 2); c.fill();
+  // ականջները
+  if (kind === 'rabbit') {
+    c.beginPath(); c.ellipse(s * 0.8, -s * 1.25, s * 0.14, s * 0.5, -0.1, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.ellipse(s * 1.15, -s * 1.2, s * 0.14, s * 0.5, 0.2, 0, Math.PI * 2); c.fill();
+  } else if (kind === 'deer') {
+    c.strokeStyle = '#6b4a2a'; c.lineWidth = s * 0.1;
+    c.beginPath();
+    c.moveTo(s * 0.75, -s * 0.9); c.lineTo(s * 0.6, -s * 1.5); c.moveTo(s * 0.68, -s * 1.2); c.lineTo(s * 0.35, -s * 1.35);
+    c.moveTo(s * 1.15, -s * 0.9); c.lineTo(s * 1.3, -s * 1.5); c.moveTo(s * 1.22, -s * 1.2); c.lineTo(s * 1.55, -s * 1.35);
+    c.stroke();
+  } else {
+    c.beginPath(); c.moveTo(s * 0.65, -s * 0.85); c.lineTo(s * 0.75, -s * 1.35); c.lineTo(s * 1.0, -s * 0.9); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(s * 1.0, -s * 0.9); c.lineTo(s * 1.3, -s * 1.3); c.lineTo(s * 1.35, -s * 0.8); c.closePath(); c.fill();
+  }
+  // պոչը
+  c.fillStyle = kind === 'fox' ? '#f0f0f0' : dark;
+  if (kind === 'fox') {
+    c.beginPath(); c.ellipse(-s * 1.25, -s * 0.15, s * 0.55, s * 0.3, -0.4, 0, Math.PI * 2); c.fill();
+  } else if (kind === 'rabbit') {
+    c.beginPath(); c.arc(-s * 1.05, 0, s * 0.22, 0, Math.PI * 2); c.fill();
+  } else {
+    c.strokeStyle = dark; c.lineWidth = s * 0.16;
+    c.beginPath(); c.moveTo(-s * 0.95, -s * 0.1); c.quadraticCurveTo(-s * 1.5, -s * 0.6 + Math.sin(walk) * s * 0.2, -s * 1.3, -s * 0.9); c.stroke();
+  }
+  // դունչն ու աչքը
+  c.fillStyle = '#fff'; c.beginPath(); c.arc(s * 1.08, -s * 0.62, s * 0.12, 0, Math.PI * 2); c.fill();
+  c.fillStyle = '#241505'; c.beginPath(); c.arc(s * 1.12, -s * 0.62, s * 0.06, 0, Math.PI * 2); c.fill();
+  c.fillStyle = '#241505'; c.beginPath(); c.arc(s * 1.35, -s * 0.45, s * 0.08, 0, Math.PI * 2); c.fill();
+  c.restore();
+}
+
+function frameBox() {
+  const fw = Math.min(118, W * 0.34);
+  const fh = H * 0.62;
+  return { cx: W / 2, cy: H * 0.52, w: fw, h: fh };
+}
+
+function spawnAnimal(startInside) {
+  const kind = KINDS[Math.floor(Math.random() * KINDS.length)];
+  const dir = Math.random() < 0.5 ? 1 : -1;
+  const s = (kind === 'deer' ? 16 : kind === 'turtle' ? 13 : 14) + Math.random() * 4;
+  const y = H * 0.52 + Math.random() * H * 0.22;   // բոլորը քայլում են խոտի վրա
+  animals.push({
+    kind: kind, dir: dir, s: s, y: y,
+    x: startInside ? Math.random() * W : (dir === 1 ? -s * 2.5 : W + s * 2.5),
+    spd: (kind === 'turtle' ? 0.5 : kind === 'bird' ? 1.9 : 0.9 + Math.random() * 1.1) * dir,
+    walk: Math.random() * 6,
+  });
+}
+
+function hud() {
+  scoreBox.innerHTML = T.score + '<b>' + score + '</b>';
+  shotBox.textContent = T.shots + shotsLeft + ' / ' + SHOTS;
+  if (best > 0) { bestBox.innerHTML = T.rec + '<b>' + best + '</b>'; bestBox.hidden = false; }
+}
+
+// ——— 📸 կրակոցը ———
+function snap() {
+  if (state !== 'play' || shotsLeft <= 0) return;
+  shotsLeft--;
+  const f = frameBox();
+  let bestA = null, bestD = 1e9;
+  for (const a of animals) {
+    if (Math.abs(a.y - f.cy) > f.h / 2) continue;          // շրջանակից վեր կամ վար է
+    const d = Math.abs(a.x - f.cx);
+    if (d < bestD) { bestD = d; bestA = a; }
+  }
+  let pts = 0;
+  if (bestA && bestD <= 12) pts = 3;
+  else if (bestA && bestD <= 46) pts = 1;
+  score += pts;
+  photos.push({ kind: bestA && pts > 0 ? bestA.kind : null, pts: pts });
+
+  screenEl.classList.remove('flash');
+  void screenEl.offsetWidth;   // անիմացիան նորից գործարկելու հնարքը
+  screenEl.classList.add('flash');
+  sClick();
+  if (pts === 3) { sPerfect(); msgEl.textContent = T.perfect; }
+  else if (pts === 1) { sGood(); msgEl.textContent = T.good; }
+  else { sMiss(); msgEl.textContent = T.miss; }
+  hud();
+  if (shotsLeft <= 0) setTimeout(() => { if (state === 'play') finish(); }, 500);
+}
+
+// ——— Ալբոմը՝ վերջում ———
+function showAlbum() {
+  albumEl.innerHTML = '';
+  for (const ph of photos) {
+    const box = document.createElement('div');
+    box.className = 'shot';
+    const c = document.createElement('canvas');
+    c.width = 96; c.height = 80;
+    const cc = c.getContext('2d');
+    cc.fillStyle = '#bfe3ef'; cc.fillRect(0, 0, 96, 80);
+    cc.fillStyle = '#8fd07a'; cc.fillRect(0, 56, 96, 24);
+    if (ph.kind) drawAnimal(cc, ph.kind, 48, 44, 16, 1, 0);
+    box.appendChild(c);
+    const st = document.createElement('span');
+    st.textContent = ph.pts === 3 ? '⭐⭐⭐' : ph.pts === 1 ? '⭐' : '·';
+    box.appendChild(st);
+    albumEl.appendChild(box);
+  }
+  albumEl.hidden = false;
+}
+
+function start() {
+  initAudio();
+  screenEl.hidden = false;   // ալբոմից հետո տեսարանը նորից ենք ցույց տալիս
+  resize();
+  state = 'play';
+  score = 0;
+  shotsLeft = SHOTS;
+  photos = [];
+  animals = [];
+  for (let i = 0; i < 3; i++) spawnAnimal(true);
+  panel.hidden = true;
+  albumEl.hidden = true;
+  startBtn.hidden = true;
+  shutter.hidden = false;
+  msgEl.textContent = '';
+  hud();
+  tone(660, 0.18, 'triangle', 0.18);
+}
+
+function finish() {
+  state = 'over';
+  endedAt = Date.now();
+  shutter.hidden = true;
+  screenEl.hidden = true;    // էկրանին տեղ ենք բացում ֆոտոալբոմի համար
+  let txt = T.result(score);
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('aren-camera-best', best); } catch (e) {}
+    txt += T.newRec;
+    sWin();
+    confetti();
+  } else {
+    tone(400, 0.3, 'sine', 0.15);
+  }
+  panelTitle.textContent = T.overT;
+  panelText.textContent = txt;
+  panel.hidden = false;
+  showAlbum();
+  startBtn.textContent = T.again;
+  startBtn.hidden = false;
+  msgEl.textContent = '';
+  hud();
+}
+
+bindTap(shutter, snap);
+// Խաղն ավարտվելուց հետո ~1.1 վրկ սպասում ենք, որ պատահական հպումը նորից չսկսի
+bindTap(startBtn, () => {
+  if (state === 'over' && Date.now() - endedAt < 1100) return;
+  start();
+});
+
+// ——— Նկարում ենք տեսարանը ———
+function draw() {
+  frame++;
+  if (screenEl.hidden) { requestAnimationFrame(draw); return; }
+  // երկինքն ու խոտը
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#bfe3ef'); sky.addColorStop(1, '#e9f6de');
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#ffd166';
+  ctx.beginPath(); ctx.arc(W * 0.86, H * 0.16, 16, 0, Math.PI * 2); ctx.fill();
+  // հեռվի բլուրները
+  ctx.fillStyle = '#9fd08a';
+  ctx.beginPath();
+  ctx.moveTo(0, H * 0.55);
+  for (let x = 0; x <= W; x += 20) ctx.lineTo(x, H * 0.5 + Math.sin(x * 0.02) * 10);
+  ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#7cc36a';
+  ctx.fillRect(0, H * 0.72, W, H * 0.28);
+
+  // կենդանիները
+  for (const a of animals) {
+    a.x += a.spd;
+    a.walk += Math.abs(a.spd) * 0.18;
+    drawAnimal(ctx, a.kind, a.x, a.y, a.s, a.spd >= 0 ? 1 : -1, a.walk);
+  }
+  animals = animals.filter(a => a.x > -120 && a.x < W + 120);
+  if (state === 'play' && animals.length < 3 && frame % 40 === 0) spawnAnimal(false);
+  if (state !== 'play' && animals.length < 2 && frame % 60 === 0) spawnAnimal(false);
+
+  // տեսադաշտի շրջանակը
+  const f = frameBox();
+  const x0 = f.cx - f.w / 2, y0 = f.cy - f.h / 2;
+  ctx.fillStyle = 'rgba(20,26,34,0.28)';
+  ctx.fillRect(0, 0, x0, H);
+  ctx.fillRect(x0 + f.w, 0, W - x0 - f.w, H);
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 3;
+  const cor = 16;
+  [[x0, y0, 1, 1], [x0 + f.w, y0, -1, 1], [x0, y0 + f.h, 1, -1], [x0 + f.w, y0 + f.h, -1, -1]].forEach(p => {
+    ctx.beginPath();
+    ctx.moveTo(p[0] + p[2] * cor, p[1]);
+    ctx.lineTo(p[0], p[1]);
+    ctx.lineTo(p[0], p[1] + p[3] * cor);
+    ctx.stroke();
+  });
+  // կենտրոնի նշանը
+  ctx.strokeStyle = 'rgba(230,57,70,0.85)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(f.cx, f.cy - 10); ctx.lineTo(f.cx, f.cy + 10);
+  ctx.moveTo(f.cx - 10, f.cy); ctx.lineTo(f.cx + 10, f.cy);
+  ctx.stroke();
+
+  requestAnimationFrame(draw);
+}
+
+function confetti() {
+  const stuff = ['📷', '⭐', '🎉', '💛', '🎊', '✨'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+resize();
+panelTitle.textContent = T.title;
+panelText.textContent = T.intro;
+startBtn.textContent = T.start;
+for (let i = 0; i < 3; i++) spawnAnimal(true);
+hud();
+requestAnimationFrame(draw);
+</script>

@@ -32,17 +32,17 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { hud: (p, l) => 'Տեղ՝ ' + p + '/4 · Մակ. ' + l + '/10', words: ['', 'ԱՌԱՋԻՆ ՏԵՂ', 'Երկրորդ տեղ', 'Երրորդ տեղ', 'Չորրորդ տեղ'], champ: 'ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ — 10 մակարդակ', unlocked: l => 'Բացվեց մակարդակ ' + l + '-ը', must1: 'Առաջինը պիտի գաս,', must2: 'որ մակարդակն անցնես', title: 'Մրցարշավ', lvl: l => 'Մակարդակ ' + l + '/10', gas: 'Գազը դու ես տալիս՝ կանաչ կոճակը', careful: 'Զգույշ յուղից ու պատնեշներից', tapStart: 'Սեղմիր՝ մեկնարկելու' },
-  ru: { hud: (p, l) => 'Место ' + p + '/4 · Ур. ' + l + '/10', words: ['', 'ПЕРВОЕ МЕСТО', 'Второе место', 'Третье место', 'Четвёртое место'], champ: 'ТЫ ЧЕМПИОН — 10 уровней', unlocked: l => 'Открыт уровень ' + l, must1: 'Нужно прийти первым,', must2: 'чтобы пройти уровень', title: 'Гонка', lvl: l => 'Уровень ' + l + '/10', gas: 'Газ жмёшь ты — зелёная кнопка', careful: 'Осторожно: масло и барьеры', tapStart: 'Нажми — старт' },
-  en: { hud: (p, l) => 'Place ' + p + '/4 · Lv. ' + l + '/10', words: ['', 'FIRST PLACE', 'Second place', 'Third place', 'Fourth place'], champ: 'YOU ARE THE CHAMPION — 10 levels', unlocked: l => 'Level ' + l + ' unlocked', must1: 'You must finish first', must2: 'to pass the level', title: 'Race', lvl: l => 'Level ' + l + '/10', gas: 'You control the gas — the green button', careful: 'Watch out for oil and barriers', tapStart: 'Tap to start' },
-  es: { hud: (p, l) => 'Puesto ' + p + '/4 · Niv. ' + l + '/10', words: ['', '¡PRIMER PUESTO!', 'Segundo puesto', 'Tercer puesto', 'Cuarto puesto'], champ: 'ERES EL CAMPEÓN — 10 niveles', unlocked: l => 'Nivel ' + l + ' desbloqueado', must1: 'Tienes que llegar primero', must2: 'para pasar el nivel', title: 'Carrera', lvl: l => 'Nivel ' + l + '/10', gas: 'Tú das el gas — el botón verde', careful: 'Cuidado con el aceite y las barreras', tapStart: 'Toca para empezar' },
-  fr: { hud: (p, l) => 'Place ' + p + '/4 · Niv. ' + l + '/10', words: ['', 'PREMIÈRE PLACE !', 'Deuxième place', 'Troisième place', 'Quatrième place'], champ: 'TU ES LE CHAMPION — 10 niveaux', unlocked: l => 'Niveau ' + l + ' débloqué', must1: 'Il faut finir premier', must2: 'pour passer le niveau', title: 'Course', lvl: l => 'Niveau ' + l + '/10', gas: 'C’est toi qui accélères — le bouton vert', careful: 'Attention à l’huile et aux barrières', tapStart: 'Touche pour commencer' },
-  de: { hud: (p, l) => 'Platz ' + p + '/4 · Lv. ' + l + '/10', words: ['', 'ERSTER PLATZ!', 'Zweiter Platz', 'Dritter Platz', 'Vierter Platz'], champ: 'DU BIST DER CHAMPION — 10 Level', unlocked: l => 'Level ' + l + ' freigeschaltet', must1: 'Du musst Erster werden,', must2: 'um das Level zu schaffen', title: 'Rennen', lvl: l => 'Level ' + l + '/10', gas: 'Du gibst Gas — der grüne Knopf', careful: 'Vorsicht vor Öl und Hindernissen', tapStart: 'Tippe zum Starten' },
-  ja: { hud: (p, l) => '順位 ' + p + '/4 · レベル ' + l + '/10', words: ['', '1位だ！', '2位', '3位', '4位'], champ: 'チャンピオンだ！ — 全10レベル', unlocked: l => 'レベル' + l + 'がアンロック', must1: '1位にならないと', must2: '次のレベルに進めないよ', title: 'レース', lvl: l => 'レベル ' + l + '/10', gas: 'アクセルは緑のボタン', careful: 'オイルとバリアに気をつけて', tapStart: 'タップでスタート' },
-  zh: { hud: (p, l) => '名次 ' + p + '/4 · 第' + l + '/10关', words: ['', '第一名！', '第二名', '第三名', '第四名'], champ: '你是冠军 — 通关10关', unlocked: l => '第' + l + '关解锁了', must1: '必须拿第一名', must2: '才能过关', title: '赛车', lvl: l => '第' + l + '/10关', gas: '油门是绿色按钮', careful: '小心油渍和路障', tapStart: '点一下开始' },
-  it: { hud: (p, l) => 'Posto ' + p + '/4 · Liv. ' + l + '/10', words: ['', 'PRIMO POSTO!', 'Secondo posto', 'Terzo posto', 'Quarto posto'], champ: 'SEI IL CAMPIONE — 10 livelli', unlocked: l => 'Livello ' + l + ' sbloccato', must1: 'Devi arrivare primo', must2: 'per passare il livello', title: 'Corsa', lvl: l => 'Livello ' + l + '/10', gas: 'Il gas lo dai tu — il pulsante verde', careful: 'Attento all’olio e alle barriere', tapStart: 'Tocca per partire' },
-  ka: { hud: (p, l) => 'ადგილი ' + p + '/4 · დონე ' + l + '/10', words: ['', 'ᲞᲘᲠᲕᲔᲚᲘ ᲐᲓᲒᲘᲚᲘ!', 'მეორე ადგილი', 'მესამე ადგილი', 'მეოთხე ადგილი'], champ: 'ᲨᲔᲜ ᲩᲔᲛᲞᲘᲝᲜᲘ ᲮᲐᲠ — 10 დონე', unlocked: l => 'გაიხსნა დონე ' + l, must1: 'პირველი უნდა მოხვიდე,', must2: 'რომ დონე გაიარო', title: 'რბოლა', lvl: l => 'დონე ' + l + '/10', gas: 'გაზს შენ აჭერ — მწვანე ღილაკი', careful: 'ფრთხილად: ზეთი და ბარიერები', tapStart: 'დააჭირე — სტარტი' },
-  hi: { hud: (p, l) => 'स्थान ' + p + '/4 · लेवल ' + l + '/10', words: ['', 'पहला स्थान!', 'दूसरा स्थान', 'तीसरा स्थान', 'चौथा स्थान'], champ: 'तुम चैंपियन हो — 10 लेवल', unlocked: l => 'लेवल ' + l + ' खुल गया', must1: 'पहले आना ज़रूरी है,', must2: 'तभी लेवल पास होगा', title: 'रेस', lvl: l => 'लेवल ' + l + '/10', gas: 'गैस तुम दबाते हो — हरा बटन', careful: 'तेल और बैरियर से सावधान', tapStart: 'शुरू करने के लिए टैप करो' },
+  hy: { hud: (p, l) => 'Տեղ՝ ' + p + '/4 · Մակ. ' + l + '/10', words: ['', 'ԱՌԱՋԻՆ ՏԵՂ', 'Երկրորդ տեղ', 'Երրորդ տեղ', 'Չորրորդ տեղ'], champ: 'ԴՈՒ ՉԵՄՊԻՈՆ ԵՍ — 10 մակարդակ', unlocked: l => 'Բացվեց մակարդակ ' + l + '-ը', must1: 'Առաջինը պիտի գաս,', must2: 'որ մակարդակն անցնես', title: 'Մրցարշավ', lvl: l => 'Մակարդակ ' + l + '/10', gas: 'Գազը դու ես տալիս՝ կանաչ կոճակը', careful: 'Զգույշ յուղից ու պատնեշներից', tapStart: 'Սեղմիր՝ մեկնարկելու', wx: { clear: 'Արև', rain: 'Անձրև', fog: 'Մառախուղ' } },
+  ru: { hud: (p, l) => 'Место ' + p + '/4 · Ур. ' + l + '/10', words: ['', 'ПЕРВОЕ МЕСТО', 'Второе место', 'Третье место', 'Четвёртое место'], champ: 'ТЫ ЧЕМПИОН — 10 уровней', unlocked: l => 'Открыт уровень ' + l, must1: 'Нужно прийти первым,', must2: 'чтобы пройти уровень', title: 'Гонка', lvl: l => 'Уровень ' + l + '/10', gas: 'Газ жмёшь ты — зелёная кнопка', careful: 'Осторожно: масло и барьеры', tapStart: 'Нажми — старт', wx: { clear: 'Солнце', rain: 'Дождь', fog: 'Туман' } },
+  en: { hud: (p, l) => 'Place ' + p + '/4 · Lv. ' + l + '/10', words: ['', 'FIRST PLACE', 'Second place', 'Third place', 'Fourth place'], champ: 'YOU ARE THE CHAMPION — 10 levels', unlocked: l => 'Level ' + l + ' unlocked', must1: 'You must finish first', must2: 'to pass the level', title: 'Race', lvl: l => 'Level ' + l + '/10', gas: 'You control the gas — the green button', careful: 'Watch out for oil and barriers', tapStart: 'Tap to start', wx: { clear: 'Sunny', rain: 'Rain', fog: 'Fog' } },
+  es: { hud: (p, l) => 'Puesto ' + p + '/4 · Niv. ' + l + '/10', words: ['', '¡PRIMER PUESTO!', 'Segundo puesto', 'Tercer puesto', 'Cuarto puesto'], champ: 'ERES EL CAMPEÓN — 10 niveles', unlocked: l => 'Nivel ' + l + ' desbloqueado', must1: 'Tienes que llegar primero', must2: 'para pasar el nivel', title: 'Carrera', lvl: l => 'Nivel ' + l + '/10', gas: 'Tú das el gas — el botón verde', careful: 'Cuidado con el aceite y las barreras', tapStart: 'Toca para empezar', wx: { clear: 'Sol', rain: 'Lluvia', fog: 'Niebla' } },
+  fr: { hud: (p, l) => 'Place ' + p + '/4 · Niv. ' + l + '/10', words: ['', 'PREMIÈRE PLACE !', 'Deuxième place', 'Troisième place', 'Quatrième place'], champ: 'TU ES LE CHAMPION — 10 niveaux', unlocked: l => 'Niveau ' + l + ' débloqué', must1: 'Il faut finir premier', must2: 'pour passer le niveau', title: 'Course', lvl: l => 'Niveau ' + l + '/10', gas: 'C’est toi qui accélères — le bouton vert', careful: 'Attention à l’huile et aux barrières', tapStart: 'Touche pour commencer', wx: { clear: 'Soleil', rain: 'Pluie', fog: 'Brouillard' } },
+  de: { hud: (p, l) => 'Platz ' + p + '/4 · Lv. ' + l + '/10', words: ['', 'ERSTER PLATZ!', 'Zweiter Platz', 'Dritter Platz', 'Vierter Platz'], champ: 'DU BIST DER CHAMPION — 10 Level', unlocked: l => 'Level ' + l + ' freigeschaltet', must1: 'Du musst Erster werden,', must2: 'um das Level zu schaffen', title: 'Rennen', lvl: l => 'Level ' + l + '/10', gas: 'Du gibst Gas — der grüne Knopf', careful: 'Vorsicht vor Öl und Hindernissen', tapStart: 'Tippe zum Starten', wx: { clear: 'Sonne', rain: 'Regen', fog: 'Nebel' } },
+  ja: { hud: (p, l) => '順位 ' + p + '/4 · レベル ' + l + '/10', words: ['', '1位だ！', '2位', '3位', '4位'], champ: 'チャンピオンだ！ — 全10レベル', unlocked: l => 'レベル' + l + 'がアンロック', must1: '1位にならないと', must2: '次のレベルに進めないよ', title: 'レース', lvl: l => 'レベル ' + l + '/10', gas: 'アクセルは緑のボタン', careful: 'オイルとバリアに気をつけて', tapStart: 'タップでスタート', wx: { clear: 'はれ', rain: 'あめ', fog: 'きり' } },
+  zh: { hud: (p, l) => '名次 ' + p + '/4 · 第' + l + '/10关', words: ['', '第一名！', '第二名', '第三名', '第四名'], champ: '你是冠军 — 通关10关', unlocked: l => '第' + l + '关解锁了', must1: '必须拿第一名', must2: '才能过关', title: '赛车', lvl: l => '第' + l + '/10关', gas: '油门是绿色按钮', careful: '小心油渍和路障', tapStart: '点一下开始', wx: { clear: '晴天', rain: '下雨', fog: '大雾' } },
+  it: { hud: (p, l) => 'Posto ' + p + '/4 · Liv. ' + l + '/10', words: ['', 'PRIMO POSTO!', 'Secondo posto', 'Terzo posto', 'Quarto posto'], champ: 'SEI IL CAMPIONE — 10 livelli', unlocked: l => 'Livello ' + l + ' sbloccato', must1: 'Devi arrivare primo', must2: 'per passare il livello', title: 'Corsa', lvl: l => 'Livello ' + l + '/10', gas: 'Il gas lo dai tu — il pulsante verde', careful: 'Attento all’olio e alle barriere', tapStart: 'Tocca per partire', wx: { clear: 'Sole', rain: 'Pioggia', fog: 'Nebbia' } },
+  ka: { hud: (p, l) => 'ადგილი ' + p + '/4 · დონე ' + l + '/10', words: ['', 'ᲞᲘᲠᲕᲔᲚᲘ ᲐᲓᲒᲘᲚᲘ!', 'მეორე ადგილი', 'მესამე ადგილი', 'მეოთხე ადგილი'], champ: 'ᲨᲔᲜ ᲩᲔᲛᲞᲘᲝᲜᲘ ᲮᲐᲠ — 10 დონე', unlocked: l => 'გაიხსნა დონე ' + l, must1: 'პირველი უნდა მოხვიდე,', must2: 'რომ დონე გაიარო', title: 'რბოლა', lvl: l => 'დონე ' + l + '/10', gas: 'გაზს შენ აჭერ — მწვანე ღილაკი', careful: 'ფრთხილად: ზეთი და ბარიერები', tapStart: 'დააჭირე — სტარტი', wx: { clear: 'მზე', rain: 'წვიმა', fog: 'ნისლი' } },
+  hi: { hud: (p, l) => 'स्थान ' + p + '/4 · लेवल ' + l + '/10', words: ['', 'पहला स्थान!', 'दूसरा स्थान', 'तीसरा स्थान', 'चौथा स्थान'], champ: 'तुम चैंपियन हो — 10 लेवल', unlocked: l => 'लेवल ' + l + ' खुल गया', must1: 'पहले आना ज़रूरी है,', must2: 'तभी लेवल पास होगा', title: 'रेस', lvl: l => 'लेवल ' + l + '/10', gas: 'गैस तुम दबाते हो — हरा बटन', careful: 'तेल और बैरियर से सावधान', tapStart: 'शुरू करने के लिए टैप करो', wx: { clear: 'धूप', rain: 'बारिश', fog: 'कोहरा' } },
 };
 const T = TRL[ggLang] || TRL.hy;
 const canvas = document.getElementById('game');
@@ -93,8 +93,31 @@ function laneX(i) {                    // 4 գոտի. 0-ն ձախն է
   return W / 2 - rw / 2 + rw * (i + 0.5) / 4;
 }
 
+// ——— Եղանակը 🌦 ———
+// Ամեն մակարդակ իր եղանակն ունի ու հերթով փոխվում է՝ արև → անձրև → մառախուղ։
+// Անձրևին անիվները սահում են, մառախուղին՝ հեռուն չես տեսնում։
+const WEATHERS = ['clear', 'rain', 'fog'];
+function weatherFor(l) { return WEATHERS[(l - 1) % WEATHERS.length]; }
+let weather = weatherFor(level);
+let drops = [];                        // անձրևի կաթիլները
+function makeDrops() {
+  drops = [];
+  if (weather !== 'rain') return;
+  for (let i = 0; i < 90; i++) {
+    drops.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      len: 10 + Math.random() * 18,
+      spd: 12 + Math.random() * 10,
+    });
+  }
+}
+makeDrops();
+// փոքրիկ պատուհան՝ ստուգելու համար, թե հիմա ինչ եղանակ է
+window.ggWeather = () => weather;
+
 // ——— Մեքենաները ———
-const player = { x: 0, progress: 0, speed: 0 };
+const player = { x: 0, progress: 0, speed: 0, vx: 0 };
 const RIVALS = [
   { color: '#e63946', lane: 0 },
   { color: '#2ecc71', lane: 1 },
@@ -109,6 +132,9 @@ function reset() {
   player.x = laneX(2);
   player.progress = 0;
   player.speed = 0;
+  player.vx = 0;
+  weather = weatherFor(level);   // նոր մակարդակ՝ նոր եղանակ
+  makeDrops();
   rivals = RIVALS.map(r => ({
     color: r.color,
     lane: r.lane,
@@ -197,14 +223,32 @@ function update() {
     if (countT === 165) { beep(880, 880, 0.4, 'square', 0.25); state = 'race'; }
   }
 
+  // անձրևը թափվում է միշտ՝ նույնիսկ երբ դեռ չես մեկնարկել
+  for (const d of drops) {
+    d.y += d.spd;
+    d.x -= 1.6;                       // քամին թեքում է կաթիլները
+    if (d.y > H) { d.y = -20; d.x = Math.random() * W; }
+    if (d.x < -20) d.x = W + 10;
+  }
+
   if (state !== 'race') return;
 
   // ԳԱԶԸ ՔՈ ՁԵՌՔԻՆ Է. սեղմած ես՝ արագանում ես, թողեցիր՝ դանդաղում
+  // անձրևին ճանապարհը թաց է — արգելակը թույլ է բռնում
+  const wet = weather === 'rain';
   if (keys.gas) player.speed = Math.min(9.5, player.speed + 0.14);
-  else player.speed = Math.max(0, player.speed - 0.12);
+  else player.speed = Math.max(0, player.speed - (wet ? 0.06 : 0.12));
 
-  if (keys.left) player.x -= 4.6;
-  if (keys.right) player.x += 4.6;
+  // Ղեկը. չոր եղանակին ուղիղ է լսում, անձրևին՝ սահում ու ուշանում է
+  const want = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
+  const targetVx = want * 4.6;
+  if (wet) {
+    player.vx += (targetVx - player.vx) * 0.14;   // անիվները դանդաղ են «բռնում»
+    player.vx *= 0.985;                           // ու մի քիչ շարունակում են սահել
+  } else {
+    player.vx = targetVx;
+  }
+  player.x += player.vx;
   const rw = roadW();
   player.x = Math.max(W / 2 - rw / 2 + 20, Math.min(W / 2 + rw / 2 - 20, player.x));
   player.progress += player.speed;
@@ -360,6 +404,9 @@ function draw() {
   // դու՝ սպիտակ սպորտայինով 🏎
   if (state !== 'ready') drawCar(player.x, py, '#f7f9fc', true);
 
+  // ——— Եղանակը էկրանին (ամեն ինչ նկարած է, էմոջի չկա) ———
+  drawWeather(py);
+
   // ——— Վահանակը (էմոջի չկա՝ ամեն ինչ նկարած է) ———
   // տեղը
   const place = 1 + rivals.filter(r => r.progress > player.progress).length;
@@ -372,6 +419,20 @@ function draw() {
   ctx.fillStyle = '#ffd166';
   ctx.textAlign = 'left';
   ctx.fillText(hudText, 26, 12 + hudFont * 1.35);
+
+  // եղանակի պիտակը՝ նկարած պատկեր + բառը քո լեզվով
+  const wxFont = hudFont * 0.82;
+  ctx.font = 'bold ' + wxFont + 'px "Noto Sans Armenian", Arial, sans-serif';
+  const wxLabel = T.wx[weather];
+  const wxH = hudFont * 1.75;
+  const wxY = 12 + hudFont * 2 + 8;
+  const wxW = ctx.measureText(wxLabel).width + wxH + 22;
+  ctx.fillStyle = 'rgba(20,26,34,0.72)';
+  ctx.beginPath(); ctx.roundRect(12, wxY, wxW, wxH, 10); ctx.fill();
+  drawWeatherIcon(12 + wxH * 0.55, wxY + wxH / 2, wxH * 0.3);
+  ctx.fillStyle = '#cde7f5';
+  ctx.textAlign = 'left';
+  ctx.fillText(wxLabel, 12 + wxH, wxY + wxH / 2 + wxFont * 0.35);
 
   // առաջընթացի ձողիկը՝ աջ եզրին
   const bx = W - 26, bh = H * 0.5, by = H * 0.12;
@@ -466,6 +527,81 @@ function draw() {
     ctx.font = 'bold ' + Math.min(110, W * 0.25) + 'px Arial, sans-serif';
     ctx.fillText(n > 0 ? n : 'GO', W / 2, H / 2);
   }
+}
+
+// Անձրևի շերտիկները և մառախուղի մութ շրջանակը
+function drawWeather(py) {
+  if (weather === 'rain') {
+    ctx.strokeStyle = 'rgba(205,228,255,0.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (const d of drops) {
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x - 3, d.y + d.len);   // թեք գիծ՝ ինչպես թափվող կաթիլ
+    }
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(20,32,54,0.20)';   // ամպամած մուգ շերտ
+    ctx.fillRect(0, 0, W, H);
+  } else if (weather === 'fog') {
+    // մառախուղը կլոր «պատուհան» է թողնում մեքենայի շուրջը, մնացածը՝ մուգ
+    const near = Math.min(W, H) * 0.07;
+    const far = Math.min(W, H) * 0.45;
+    const g = ctx.createRadialGradient(player.x, py, near, player.x, py, far);
+    g.addColorStop(0, 'rgba(198,205,215,0)');
+    g.addColorStop(0.55, 'rgba(150,160,175,0.5)');
+    g.addColorStop(1, 'rgba(32,38,48,0.93)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  }
+}
+
+// Եղանակի փոքրիկ պատկերը՝ արև, ամպ-անձրև կամ մառախուղ
+function drawWeatherIcon(x, y, r) {
+  ctx.save();
+  ctx.translate(x, y);
+  if (weather === 'clear') {
+    ctx.fillStyle = '#ffd166';
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.6, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#ffd166';
+    ctx.lineWidth = 2;
+    for (let k = 0; k < 8; k++) {
+      const a = k * Math.PI / 4;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * r * 0.8, Math.sin(a) * r * 0.8);
+      ctx.lineTo(Math.cos(a) * r * 1.15, Math.sin(a) * r * 1.15);
+      ctx.stroke();
+    }
+  } else {
+    // ամպը՝ երեք կլորիկ ու մի ուղղանկյուն
+    ctx.fillStyle = weather === 'fog' ? '#b9c2cf' : '#cfd8e6';
+    ctx.beginPath();
+    ctx.arc(-r * 0.45, -r * 0.1, r * 0.42, 0, Math.PI * 2);
+    ctx.arc(0, -r * 0.35, r * 0.52, 0, Math.PI * 2);
+    ctx.arc(r * 0.5, -r * 0.1, r * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(-r * 0.9, -r * 0.15, r * 1.85, r * 0.5);
+    if (weather === 'rain') {
+      ctx.strokeStyle = '#7ec8f5';
+      ctx.lineWidth = 2;
+      for (let k = -1; k <= 1; k++) {
+        ctx.beginPath();
+        ctx.moveTo(k * r * 0.5, r * 0.45);
+        ctx.lineTo(k * r * 0.5 - r * 0.15, r * 0.95);
+        ctx.stroke();
+      }
+    } else {
+      // մառախուղը՝ հորիզոնական մոխրագույն շերտիկներ
+      ctx.strokeStyle = 'rgba(220,228,238,0.85)';
+      ctx.lineWidth = 2;
+      for (let k = 0; k < 3; k++) {
+        ctx.beginPath();
+        ctx.moveTo(-r * 0.9 + (k % 2) * r * 0.25, r * 0.45 + k * r * 0.28);
+        ctx.lineTo(r * 0.85 - (k % 2) * r * 0.2, r * 0.45 + k * r * 0.28);
+        ctx.stroke();
+      }
+    }
+  }
+  ctx.restore();
 }
 
 // Ոսկե գավաթ առաջին տեղի համար 🏆 (նկարում ենք ձեռքով)

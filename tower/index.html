@@ -35,17 +35,17 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { title: 'GOLDEN TOWER', sub: 'Դիպչիր՝ բլոկը գցելու', best: 'Ռեկորդ՝ ', floors: 'Հարկ՝ ', perfect: 'ՃՇԳՐԻ՜Տ', over: 'Աշտարակը պատրաստ է', overSub: n => n + ' հարկ · Դիպչիր՝ նորից խաղալու', newRec: 'ՆՈՐ ՌԵԿՈՐԴ 🏆' },
-  ru: { title: 'GOLDEN TOWER', sub: 'Нажми, чтобы бросить блок', best: 'Рекорд: ', floors: 'Этаж: ', perfect: 'ИДЕАЛЬНО!', over: 'Башня готова', overSub: n => n + ' этажей · Нажми, чтобы играть снова', newRec: 'НОВЫЙ РЕКОРД 🏆' },
-  en: { title: 'GOLDEN TOWER', sub: 'Tap to drop the block', best: 'Best: ', floors: 'Floor: ', perfect: 'PERFECT!', over: 'The tower is done', overSub: n => n + ' floors · Tap to play again', newRec: 'NEW RECORD 🏆' },
-  es: { title: 'GOLDEN TOWER', sub: 'Toca para soltar el bloque', best: 'Récord: ', floors: 'Piso: ', perfect: '¡PERFECTO!', over: 'La torre está lista', overSub: n => n + ' pisos · Toca para jugar otra vez', newRec: '¡NUEVO RÉCORD! 🏆' },
-  fr: { title: 'GOLDEN TOWER', sub: 'Touche pour lâcher le bloc', best: 'Record : ', floors: 'Étage : ', perfect: 'PARFAIT !', over: 'La tour est finie', overSub: n => n + ' étages · Touche pour rejouer', newRec: 'NOUVEAU RECORD 🏆' },
-  de: { title: 'GOLDEN TOWER', sub: 'Tippe, um den Block fallen zu lassen', best: 'Rekord: ', floors: 'Etage: ', perfect: 'PERFEKT!', over: 'Der Turm ist fertig', overSub: n => n + ' Etagen · Tippe, um nochmal zu spielen', newRec: 'NEUER REKORD 🏆' },
-  ja: { title: 'GOLDEN TOWER', sub: 'タップでブロックを落とす', best: 'ベスト：', floors: 'かい：', perfect: 'パーフェクト！', over: 'タワーかんせい', overSub: n => n + '階だったよ · タップでもう一回', newRec: '新記録 🏆' },
-  zh: { title: 'GOLDEN TOWER', sub: '点一下放下积木', best: '纪录：', floors: '层数：', perfect: '完美！', over: '塔盖好了', overSub: n => '一共' + n + '层 · 点一下再玩', newRec: '新纪录 🏆' },
-  it: { title: 'GOLDEN TOWER', sub: 'Tocca per far cadere il blocco', best: 'Record: ', floors: 'Piano: ', perfect: 'PERFETTO!', over: 'La torre è pronta', overSub: n => n + ' piani · Tocca per giocare ancora', newRec: 'NUOVO RECORD 🏆' },
-  ka: { title: 'GOLDEN TOWER', sub: 'დააჭირე — ჩამოაგდე ბლოკი', best: 'რეკორდი: ', floors: 'სართული: ', perfect: 'იდეალურია!', over: 'კოშკი მზადაა', overSub: n => n + ' სართული · დააჭირე — ითამაშე კიდევ', newRec: 'ახალი რეკორდი 🏆' },
-  hi: { title: 'GOLDEN TOWER', sub: 'ब्लॉक गिराने के लिए छुओ', best: 'रिकॉर्ड: ', floors: 'मंज़िल: ', perfect: 'एकदम सही!', over: 'मीनार बन गई', overSub: n => n + ' मंज़िलें · फिर खेलने के लिए छुओ', newRec: 'नया रिकॉर्ड 🏆' },
+  hy: { title: 'GOLDEN TOWER', sub: 'Դիպչիր՝ բլոկը գցելու', best: 'Ռեկորդ՝ ', floors: 'Հարկ՝ ', perfect: 'ՃՇԳՐԻ՜Տ', over: 'Աշտարակը պատրաստ է', overSub: n => n + ' հարկ · Դիպչիր՝ նորից խաղալու', newRec: 'ՆՈՐ ՌԵԿՈՐԴ 🏆', wind: 'ՔԱՄԻ' },
+  ru: { title: 'GOLDEN TOWER', sub: 'Нажми, чтобы бросить блок', best: 'Рекорд: ', floors: 'Этаж: ', perfect: 'ИДЕАЛЬНО!', over: 'Башня готова', overSub: n => n + ' этажей · Нажми, чтобы играть снова', newRec: 'НОВЫЙ РЕКОРД 🏆', wind: 'ВЕТЕР' },
+  en: { title: 'GOLDEN TOWER', sub: 'Tap to drop the block', best: 'Best: ', floors: 'Floor: ', perfect: 'PERFECT!', over: 'The tower is done', overSub: n => n + ' floors · Tap to play again', newRec: 'NEW RECORD 🏆', wind: 'WIND' },
+  es: { title: 'GOLDEN TOWER', sub: 'Toca para soltar el bloque', best: 'Récord: ', floors: 'Piso: ', perfect: '¡PERFECTO!', over: 'La torre está lista', overSub: n => n + ' pisos · Toca para jugar otra vez', newRec: '¡NUEVO RÉCORD! 🏆', wind: 'VIENTO' },
+  fr: { title: 'GOLDEN TOWER', sub: 'Touche pour lâcher le bloc', best: 'Record : ', floors: 'Étage : ', perfect: 'PARFAIT !', over: 'La tour est finie', overSub: n => n + ' étages · Touche pour rejouer', newRec: 'NOUVEAU RECORD 🏆', wind: 'VENT' },
+  de: { title: 'GOLDEN TOWER', sub: 'Tippe, um den Block fallen zu lassen', best: 'Rekord: ', floors: 'Etage: ', perfect: 'PERFEKT!', over: 'Der Turm ist fertig', overSub: n => n + ' Etagen · Tippe, um nochmal zu spielen', newRec: 'NEUER REKORD 🏆', wind: 'WIND' },
+  ja: { title: 'GOLDEN TOWER', sub: 'タップでブロックを落とす', best: 'ベスト：', floors: 'かい：', perfect: 'パーフェクト！', over: 'タワーかんせい', overSub: n => n + '階だったよ · タップでもう一回', newRec: '新記録 🏆', wind: 'かぜ' },
+  zh: { title: 'GOLDEN TOWER', sub: '点一下放下积木', best: '纪录：', floors: '层数：', perfect: '完美！', over: '塔盖好了', overSub: n => '一共' + n + '层 · 点一下再玩', newRec: '新纪录 🏆', wind: '风' },
+  it: { title: 'GOLDEN TOWER', sub: 'Tocca per far cadere il blocco', best: 'Record: ', floors: 'Piano: ', perfect: 'PERFETTO!', over: 'La torre è pronta', overSub: n => n + ' piani · Tocca per giocare ancora', newRec: 'NUOVO RECORD 🏆', wind: 'VENTO' },
+  ka: { title: 'GOLDEN TOWER', sub: 'დააჭირე — ჩამოაგდე ბლოკი', best: 'რეკორდი: ', floors: 'სართული: ', perfect: 'იდეალურია!', over: 'კოშკი მზადაა', overSub: n => n + ' სართული · დააჭირე — ითამაშე კიდევ', newRec: 'ახალი რეკორდი 🏆', wind: 'ქარი' },
+  hi: { title: 'GOLDEN TOWER', sub: 'ब्लॉक गिराने के लिए छुओ', best: 'रिकॉर्ड: ', floors: 'मंज़िल: ', perfect: 'एकदम सही!', over: 'मीनार बन गई', overSub: n => n + ' मंज़िलें · फिर खेलने के लिए छुओ', newRec: 'नया रिकॉर्ड 🏆', wind: 'हवा' },
 };
 const T = TRL[ggLang] || TRL.hy;
 
@@ -74,6 +74,21 @@ let popups = [];              // «ՃՇԳՐԻՏ» գրությունները
 let combo = 0;
 let endedAt = 0;              // որ խաղի վերջում պատահական դիպչելը նորը չսկսի
 let frame = 0;
+
+// ——— ՔԱՄԻՆ 🌬️ ———
+// Ինչքան բարձր ես բարձրանում, այնքան ուժեղ է քամին։
+// Առաջին ~5 հարկը գրեթե անդորր է, հետո քամին սկսում է
+// ճոճվող բլոկը մի կողմ հրել — ճոճքն այլևս հավասար չէ։
+let windDir = 1;              // 1 = հրում է աջ, -1 = ձախ
+let wind = 0;                 // հիմա գործող քամին (սահուն է փոխվում)
+let windTarget = 0;           // ուր է ձգտում քամին
+
+// Քամու ուժը՝ 0-ից 1
+function windPower() {
+  const floors = Math.max(0, stack.length - 1);
+  if (floors < 5) return floors * 0.02;              // մեղմ զեփյուռ
+  return Math.min(1, 0.1 + (floors - 5) * 0.055);    // հետո՝ ուժեղանում է
+}
 let best = 0;
 try { best = Number(localStorage.getItem('aren-tower-best') || 0); } catch (e) {}
 
@@ -115,6 +130,9 @@ function newGame() {
   falling = [];
   popups = [];
   combo = 0;
+  windDir = Math.random() < 0.5 ? -1 : 1;   // ամեն նոր խաղում քամին այլ կողմից է
+  wind = 0;
+  windTarget = 0;
   state = 'play';
 }
 
@@ -123,7 +141,17 @@ function swingBlock() {
   const top = stack[stack.length - 1];
   const w = top.w;
   const amp = Math.max(20, W * 0.44 - w / 2);
-  const x = W / 2 + Math.sin(phase) * amp - w / 2;
+  const s = Math.sin(phase);
+
+  // Քամին երկու բան է անում.
+  // 1) ամբողջ ճոճքը մի քիչ տանում է իր կողմը,
+  // 2) իր կողմում ճոճքն ավելի լայն է, դիմացինում՝ ավելի նեղ։
+  const cx = W / 2 + wind * amp * 0.30;
+  const stretch = 1 + wind * s * 0.35;
+  let x = cx + s * amp * stretch - w / 2;
+
+  // բլոկը երբեք էկրանից դուրս չի գնում
+  x = Math.max(2, Math.min(W - w - 2, x));
   return { x, w, y: floorY(stack.length) };
 }
 
@@ -160,6 +188,9 @@ function drop() {
     sCut();
   }
   sDrop();
+
+  // Բարձրում քամին քմահաճ է — երբեմն հանկարծ ուղղությունը փոխում է
+  if (stack.length - 1 > 5 && Math.random() < 0.22) windDir = -windDir;
 
   phase = 0;   // նոր բլոկը սկսում է ճոճվել մեջտեղից
   // տեսախցիկը բարձրանում է, որ աշտարակի գագաթը միշտ երևա
@@ -219,6 +250,40 @@ function drawText(txt, x, y, size, color, align) {
   ctx.fillText(txt, x, y);
 }
 
+// ——— Քամու ցուցիչը HUD-ում՝ սլաք + ուժի սյունիկներ (ամեն ինչ ձևերով) ———
+function drawWind() {
+  const p = Math.abs(wind);
+  const dir = wind < 0 ? -1 : 1;
+  const bars = Math.min(5, Math.round(p * 5 + 0.4));
+  const cx = W / 2, y = 46;
+
+  drawText(T.wind, cx, 28, 13, 'rgba(30,40,70,0.7)');
+
+  // սլաքը ցույց է տալիս, թե քամին ուր է հրում բլոկը
+  ctx.save();
+  ctx.translate(cx - 46, y);
+  ctx.scale(dir, 1);
+  ctx.strokeStyle = 'rgba(30,40,70,0.8)';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-11, 0); ctx.lineTo(6, 0);
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(30,40,70,0.8)';
+  ctx.beginPath();
+  ctx.moveTo(13, 0); ctx.lineTo(4, -6); ctx.lineTo(4, 6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // հինգ սյունիկ՝ ինչքան լցված, այնքան ուժեղ է քամին
+  for (let i = 0; i < 5; i++) {
+    const h = 5 + i * 2.6;
+    ctx.fillStyle = i < bars ? (bars >= 4 ? '#e0553f' : 'rgba(30,40,70,0.8)') : 'rgba(30,40,70,0.2)';
+    ctx.fillRect(cx - 22 + i * 11, y + 7 - h, 7, h);
+  }
+}
+
 function update() {
   frame++;
 
@@ -255,6 +320,10 @@ function update() {
 
   // տեսախցիկը սահուն է շարժվում
   cam += (camTarget - cam) * 0.08;
+
+  // քամին էլ սահուն է ուժեղանում-թուլանում, կտրուկ չի ցատկում
+  windTarget = windDir * windPower();
+  wind += (windTarget - wind) * 0.05;
 
   // գետինը
   const groundY = H - 70 + cam;
@@ -313,6 +382,7 @@ function update() {
   if (state === 'play') {
     drawText(T.floors + score, W / 2, 92, 30, 'rgba(30,40,70,0.85)');
     drawText(T.best + best, W - 16, 30, 16, 'rgba(30,40,70,0.7)', 'right');
+    drawWind();
   }
   if (state === 'menu') {
     drawText(T.title, W / 2, H * 0.32, Math.min(54, W * 0.12), 'rgba(30,40,70,0.9)');

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Wire 💡</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #0e1524; }
+  canvas { display: block; touch-action: none; }
+  nav { position: fixed; top: 10px; left: 10px; z-index: 10; }
+  nav a {
+    color: #f5eede; text-decoration: none; font-family: Arial, sans-serif;
+    background: rgba(20,26,34,0.75); border: 2px solid rgba(255,255,255,0.4);
+    padding: 5px 12px; border-radius: 999px; font-size: 0.78rem;
+  }
+  #btns[hidden] { display: none !important; }
+  #btns { position: fixed; bottom: 16px; right: 14px; z-index: 10; display: flex; gap: 10px; }
+  #btns button {
+    font-family: inherit; font-size: 1.3rem;
+    width: 58px; height: 58px; border-radius: 50%;
+    border: 3px solid #8a6a1f; background: #ffd166; color: #2e2410;
+    cursor: pointer; font-weight: bold;
+  }
+  #btns button#bClear { background: #2a2f55; color: #eef0ff; border-color: #3d4380; }
+</style>
+
+<nav><a href="../">← Golden Games</a></nav>
+<canvas id="cv"></canvas>
+<div id="btns" hidden>
+  <button id="bClear">↺</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN WIRE 💡 — մարտկոցից լամպին լար քաշիր
+//  Մատով քաշիր մի բռնիչից մյուսը։ Երբ հոսանքի ճամփան փակվի
+//  մարտկոցի + -ից լամպով մինչև − ՝ լամպը վառվում է։
+//  Բայց եթե + -ը ուղիղ հասնի − -ին առանց լամպի՝ կարճ միացում է ⚡
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { title: 'Golden Wire 💡', nomore: 'Լարերդ վերջացան 🔌', how1: 'Մատով լար քաշիր բռնիչից բռնիչ', how2: 'Հոսանքը + -ից պիտի անցնի լամպով և գնա −', how3: 'Կապույտ բանալիներին հպիր՝ միացնելու', tap: 'Հպիր՝ սկսելու', lvl: n => 'Մակարդակ ' + n, wires: 'Լար՝ ', short: 'Կարճ միացում ⚡', far: 'Շատ հեռու է 📏', win: 'Լամպը վառվե՜ց 💡', done: 'Բոլոր լամպերը վառեցիր 🏆' },
+  ru: { title: 'Golden Wire 💡', nomore: 'Провода закончились 🔌', how1: 'Тяни пальцем провод от контакта к контакту', how2: 'Ток идёт от + через лампу к −', how3: 'Нажми на синий выключатель, чтобы включить', tap: 'Коснись, чтобы начать', lvl: n => 'Уровень ' + n, wires: 'Провод: ', short: 'Короткое замыкание ⚡', far: 'Слишком далеко 📏', win: 'Лампа загорелась! 💡', done: 'Ты зажёг все лампы 🏆' },
+  en: { title: 'Golden Wire 💡', nomore: 'No wire left 🔌', how1: 'Drag a wire from terminal to terminal', how2: 'Current goes from + through the lamp to −', how3: 'Tap the blue switches to close them', tap: 'Tap to start', lvl: n => 'Level ' + n, wires: 'Wire: ', short: 'Short circuit ⚡', far: 'Too far 📏', win: 'The lamp lit up! 💡', done: 'You lit every lamp 🏆' },
+  es: { title: 'Golden Wire 💡', nomore: 'No queda cable 🔌', how1: 'Arrastra un cable de un borne a otro', how2: 'La corriente va del + por la lámpara al −', how3: 'Toca los interruptores azules para cerrarlos', tap: 'Toca para empezar', lvl: n => 'Nivel ' + n, wires: 'Cable: ', short: '¡Cortocircuito! ⚡', far: 'Demasiado lejos 📏', win: '¡La lámpara se encendió! 💡', done: 'Encendiste todas las lámparas 🏆' },
+  fr: { title: 'Golden Wire 💡', nomore: 'Plus de fil 🔌', how1: 'Tire un fil d’une borne à l’autre', how2: 'Le courant va du + par la lampe vers le −', how3: 'Touche les interrupteurs bleus pour les fermer', tap: 'Touche pour commencer', lvl: n => 'Niveau ' + n, wires: 'Fil : ', short: 'Court-circuit ⚡', far: 'Trop loin 📏', win: 'La lampe s’est allumée ! 💡', done: 'Tu as allumé toutes les lampes 🏆' },
+  de: { title: 'Golden Wire 💡', nomore: 'Kein Kabel mehr 🔌', how1: 'Zieh ein Kabel von Kontakt zu Kontakt', how2: 'Der Strom geht von + durch die Lampe zum −', how3: 'Tippe die blauen Schalter an, um sie zu schließen', tap: 'Tippe zum Starten', lvl: n => 'Level ' + n, wires: 'Kabel: ', short: 'Kurzschluss ⚡', far: 'Zu weit 📏', win: 'Die Lampe leuchtet! 💡', done: 'Du hast alle Lampen angezündet 🏆' },
+  ja: { title: 'Golden Wire 💡', nomore: '線がもうないよ 🔌', how1: 'ゆびでたんしからたんしへ線をひこう', how2: '電気は + からランプをとおって − へ', how3: '青いスイッチをタップして入れよう', tap: 'タップでスタート', lvl: n => 'レベル' + n, wires: '線：', short: 'ショートした！⚡', far: 'とおすぎるよ 📏', win: 'ランプがついた！💡', done: 'ぜんぶのランプをつけたね 🏆' },
+  zh: { title: 'Golden Wire 💡', nomore: '电线用完啦 🔌', how1: '用手指从一个接头拉线到另一个接头', how2: '电流要从 + 经过灯泡再回到 −', how3: '点一下蓝色开关把它合上', tap: '点一下开始', lvl: n => '第' + n + '关', wires: '电线：', short: '短路啦 ⚡', far: '太远了 📏', win: '灯亮了！💡', done: '所有的灯都点亮了 🏆' },
+  it: { title: 'Golden Wire 💡', nomore: 'Filo finito 🔌', how1: 'Trascina un filo da un morsetto all’altro', how2: 'La corrente va dal + attraverso la lampada al −', how3: 'Tocca gli interruttori blu per chiuderli', tap: 'Tocca per iniziare', lvl: n => 'Livello ' + n, wires: 'Filo: ', short: 'Cortocircuito ⚡', far: 'Troppo lontano 📏', win: 'La lampada si è accesa! 💡', done: 'Hai acceso tutte le lampade 🏆' },
+  ka: { title: 'Golden Wire 💡', nomore: 'მავთული აღარ გაქვს 🔌', how1: 'თითით გაიყვანე მავთული კონტაქტიდან კონტაქტამდე', how2: 'დენი + -დან ნათურაზე გადის და − -ში ბრუნდება', how3: 'დააჭირე ლურჯ ჩამრთველებს, რომ ჩართო', tap: 'შეეხე დასაწყებად', lvl: n => 'დონე ' + n, wires: 'მავთული: ', short: 'მოკლე ჩართვა ⚡', far: 'ძალიან შორსაა 📏', win: 'ნათურა აინთო! 💡', done: 'ყველა ნათურა აანთე 🏆' },
+  hi: { title: 'Golden Wire 💡', nomore: 'तार खत्म हो गए 🔌', how1: 'उँगली से एक सिरे से दूसरे सिरे तक तार खींचो', how2: 'बिजली + से लैंप होकर − तक जाती है', how3: 'नीले स्विच को टैप करके चालू करो', tap: 'शुरू करने के लिए टैप करो', lvl: n => 'स्तर ' + n, wires: 'तार: ', short: 'शॉर्ट सर्किट ⚡', far: 'बहुत दूर है 📏', win: 'लैंप जल गया! 💡', done: 'तुमने सारे लैंप जला दिए 🏆' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W = 0, H = 0;
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sWire = () => tone(480, 0.06, 'square', 0.06);
+const sClick = () => tone(700, 0.05, 'square', 0.07);
+const sNo = () => tone(150, 0.18, 'sawtooth', 0.12);
+const sZap = () => { tone(90, 0.35, 'sawtooth', 0.2); tone(1200, 0.08, 'square', 0.12, 0.02); };
+const sWin = () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.22, 'triangle', 0.16, k * 0.09));
+
+// ——— Մակարդակները ———
+// bat՝ մարտկոցի կենտրոնը, lamp՝ լամպի կենտրոնը, j՝ ազատ բռնիչները,
+// sw՝ բանալիները (j-ի համարներով), max՝ ամենաերկար լարը, wires՝ քանի լար ունես
+const LEVELS = [
+  { bat: [0.50, 0.86], lamp: [0.50, 0.18], j: [], sw: [], max: 0.85, wires: 2 },
+  { bat: [0.50, 0.88], lamp: [0.50, 0.14], j: [[0.13, 0.50], [0.87, 0.50]], sw: [], max: 0.55, wires: 4 },
+  { bat: [0.24, 0.88], lamp: [0.72, 0.16], j: [[0.12, 0.58], [0.46, 0.62], [0.88, 0.56], [0.60, 0.88]], sw: [], max: 0.48, wires: 6 },
+  { bat: [0.50, 0.88], lamp: [0.50, 0.12], j: [[0.14, 0.62], [0.14, 0.34], [0.86, 0.62], [0.86, 0.34]], sw: [[0, 1]], max: 0.42, wires: 6 },
+  { bat: [0.22, 0.86], lamp: [0.78, 0.20], j: [[0.10, 0.60], [0.34, 0.44], [0.58, 0.60], [0.60, 0.30], [0.90, 0.52], [0.46, 0.86]], sw: [[1, 3]], max: 0.36, wires: 7 },
+  { bat: [0.50, 0.90], lamp: [0.50, 0.10], j: [[0.12, 0.72], [0.12, 0.42], [0.34, 0.28], [0.66, 0.28], [0.88, 0.42], [0.88, 0.72], [0.50, 0.56]], sw: [[2, 3]], max: 0.38, wires: 6 },
+  { bat: [0.18, 0.88], lamp: [0.82, 0.14], j: [[0.10, 0.62], [0.30, 0.48], [0.50, 0.66], [0.52, 0.36], [0.72, 0.50], [0.90, 0.40], [0.44, 0.88], [0.72, 0.80]], sw: [[1, 3], [4, 5]], max: 0.34, wires: 6 },
+  { bat: [0.50, 0.92], lamp: [0.50, 0.08], j: [[0.10, 0.76], [0.10, 0.48], [0.26, 0.26], [0.50, 0.40], [0.74, 0.26], [0.90, 0.48], [0.90, 0.76], [0.30, 0.62], [0.70, 0.62]], sw: [[2, 3], [3, 4]], max: 0.36, wires: 6 },
+];
+let level = 1;
+try { level = Number(localStorage.getItem('aren-wire-level') || 1); } catch (e) {}
+if (!(level >= 1) || level > LEVELS.length) level = 1;
+
+// ——— Խաղի վիճակը ———
+let state = 'menu';       // menu | build | short | lit | done
+let endedAt = 0;
+let board = { x: 0, y: 0, s: 100 };
+let nodes = [];           // 0՝ +, 1՝ −, 2 ու 3՝ լամպի բռնիչները, հետո՝ ազատները
+let wires = [];           // {a,b,bad}
+let switches = [];        // {a,b,on}
+let maxLen = 1, wireBudget = 2;
+let bat = { nx: 0.5, ny: 0.5 }, lamp = { nx: 0.5, ny: 0.2 };
+let drag = null;          // {from, x, y}
+let msg = '', msgAt = 0;
+let glow = 0;
+
+function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; layout(); }
+window.addEventListener('resize', resize);
+
+function layout() {
+  const s = Math.max(160, Math.min(W - 20, H - 170));
+  board = { s: s, x: (W - s) / 2, y: Math.max(60, (H - s) / 2 - 8) };
+  for (const n of nodes) { n.x = board.x + n.nx * board.s; n.y = board.y + n.ny * board.s; }
+}
+
+function newLevel() {
+  const L = LEVELS[Math.min(level, LEVELS.length) - 1];
+  nodes = [];
+  // 0՝ մարտկոցի +, 1՝ մարտկոցի −
+  nodes.push({ nx: L.bat[0] + 0.11, ny: L.bat[1], t: 'p' });
+  nodes.push({ nx: L.bat[0] - 0.11, ny: L.bat[1], t: 'm' });
+  // 2 ու 3՝ լամպի ոտիկները
+  nodes.push({ nx: L.lamp[0] - 0.09, ny: L.lamp[1] + 0.05, t: 'a' });
+  nodes.push({ nx: L.lamp[0] + 0.09, ny: L.lamp[1] + 0.05, t: 'b' });
+  for (const p of L.j) nodes.push({ nx: p[0], ny: p[1], t: 'n' });
+  switches = L.sw.map(s => ({ a: s[0] + 4, b: s[1] + 4, on: false }));
+  wires = [];
+  maxLen = L.max; wireBudget = L.wires;
+  bat = { nx: L.bat[0], ny: L.bat[1] };
+  lamp = { nx: L.lamp[0], ny: L.lamp[1] };
+  glow = 0;
+  state = 'build';
+  document.getElementById('btns').hidden = false;
+  layout();
+}
+
+// ——— Հոսանքի ստուգումը ———
+// Իրար կպած բռնիչները մի «ընտանիք» են (union-find)
+function circuit() {
+  const n = nodes.length;
+  const par = [];
+  for (let i = 0; i < n; i++) par.push(i);
+  function find(a) { while (par[a] !== a) { par[a] = par[par[a]]; a = par[a]; } return a; }
+  function uni(a, b) { a = find(a); b = find(b); if (a !== b) par[a] = b; }
+  for (const w of wires) if (!w.bad) uni(w.a, w.b);
+  for (const s of switches) if (s.on) uni(s.a, s.b);
+  const shorted = find(0) === find(1);   // + -ը հասավ − -ին առանց լամպի ⚡
+  uni(2, 3);                             // լամպի ներսի թելիկը
+  const closed = find(0) === find(1);
+  return { shorted: shorted, lit: closed && !shorted };
+}
+
+function afterChange() {
+  const c = circuit();
+  if (c.shorted) {
+    if (wires.length) wires[wires.length - 1].bad = true;
+    state = 'short';
+    endedAt = Date.now();
+    msg = T.short; msgAt = Date.now();
+    sZap();
+    return;
+  }
+  if (c.lit) {
+    state = 'lit';
+    endedAt = Date.now();
+    sWin();
+    if (level < LEVELS.length) {
+      level++;
+      try { localStorage.setItem('aren-wire-level', String(level)); } catch (e) {}
+      setTimeout(newLevel, 1600);
+    } else {
+      try { localStorage.setItem('aren-wire-level', String(LEVELS.length)); } catch (e) {}
+      setTimeout(() => { state = 'done'; endedAt = Date.now(); document.getElementById('btns').hidden = true; }, 1800);
+    }
+  }
+}
+
+// ——— Ո՞ր բռնիչին ես դիպել ———
+function nodeAt(x, y) {
+  const r = board.s * 0.06;
+  let best = -1, bd = r;
+  for (let i = 0; i < nodes.length; i++) {
+    const d = Math.hypot(x - nodes[i].x, y - nodes[i].y);
+    if (d < bd) { bd = d; best = i; }
+  }
+  return best;
+}
+function switchAt(x, y) {
+  for (let i = 0; i < switches.length; i++) {
+    const a = nodes[switches[i].a], b = nodes[switches[i].b];
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    if (Math.hypot(x - mx, y - my) < board.s * 0.055) return i;
+  }
+  return -1;
+}
+function wireAt(x, y) {
+  for (let i = wires.length - 1; i >= 0; i--) {
+    const a = nodes[wires[i].a], b = nodes[wires[i].b];
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    if (Math.hypot(x - mx, y - my) < board.s * 0.05) return i;
+  }
+  return -1;
+}
+function hasWire(a, b) {
+  return wires.some(w => (w.a === a && w.b === b) || (w.a === b && w.b === a));
+}
+
+// ——— Հպումը ———
+cv.addEventListener('pointerdown', (e) => {
+  initAudio();
+  const x = e.clientX, y = e.clientY;
+  if (state === 'menu' || state === 'done') {
+    if (Date.now() - endedAt < 1100) return;   // որ պատահական հպումը նորից չսկսի
+    if (state === 'done') level = 1;
+    newLevel();
+    return;
+  }
+  if (state !== 'build') return;
+  const si = switchAt(x, y);
+  if (si >= 0) { switches[si].on = !switches[si].on; sClick(); afterChange(); return; }
+  const ni = nodeAt(x, y);
+  if (ni >= 0) { drag = { from: ni, x: x, y: y }; return; }
+  const wi = wireAt(x, y);
+  if (wi >= 0) { wires.splice(wi, 1); sClick(); return; }
+});
+cv.addEventListener('pointermove', (e) => {
+  if (!drag) return;
+  drag.x = e.clientX; drag.y = e.clientY;
+});
+function endDrag() {
+  if (!drag) return;
+  const to = nodeAt(drag.x, drag.y);
+  const from = drag.from;
+  drag = null;
+  if (to < 0 || to === from) return;
+  if (hasWire(from, to)) return;
+  const d = Math.hypot(nodes[to].x - nodes[from].x, nodes[to].y - nodes[from].y);
+  if (d > maxLen * board.s) { msg = T.far; msgAt = Date.now(); sNo(); return; }
+  if (wires.filter(w => !w.bad).length >= wireBudget) { msg = T.nomore; msgAt = Date.now(); sNo(); return; }
+  wires.push({ a: from, b: to, bad: false });
+  sWire();
+  afterChange();
+}
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', () => { drag = null; });
+
+document.getElementById('bClear').addEventListener('pointerdown', () => {
+  if (state !== 'build') return;
+  initAudio();
+  wires = [];
+  for (const s of switches) s.on = false;
+  sClick();
+});
+
+// ——— Քայլը ———
+function step() {
+  if (state === 'short' && Date.now() - endedAt > 900) {
+    wires = wires.filter(w => !w.bad);
+    state = 'build';
+  }
+  if (state === 'lit') glow = Math.min(1, glow + 0.06);
+}
+
+// ——— Նկարելը ———
+// Էմոջին կտավի վրա չենք նկարում (այնտեղ վատ է երևում) — մնում է միայն DOM-ի տեքստում
+function plain(s) {
+  return String(s).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2B00}-\u{2BFF}\u{200D}]/gu, '').replace(/\s+/g, ' ').trim();
+}
+function drawText(txt, x, y, size, color, bold) {
+  ctx.fillStyle = color;
+  ctx.font = (bold ? 'bold ' : '') + size + 'px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(plain(txt), x, y);
+}
+function bx(nx) { return board.x + nx * board.s; }
+function by(ny) { return board.y + ny * board.s; }
+
+function drawBattery() {
+  const x = bx(bat.nx), y = by(bat.ny), w = board.s * 0.22, h = board.s * 0.12;
+  ctx.fillStyle = '#2b3350';
+  ctx.fillRect(x - w / 2, y - h / 2, w, h);
+  ctx.fillStyle = '#c8543f';
+  ctx.fillRect(x - w / 2, y - h / 2, w / 2, h);
+  ctx.strokeStyle = '#0b1020'; ctx.lineWidth = 3;
+  ctx.strokeRect(x - w / 2, y - h / 2, w, h);
+  drawText('−', x - w * 0.25, y + h * 0.18, h * 0.7, '#eef0ff', true);
+  drawText('+', x + w * 0.25, y + h * 0.18, h * 0.62, '#ffd166', true);
+}
+function drawLamp(lit) {
+  const x = bx(lamp.nx), y = by(lamp.ny), r = board.s * 0.075;
+  if (lit) {
+    const g = ctx.createRadialGradient(x, y, r * 0.4, x, y, r * 4.5);
+    g.addColorStop(0, 'rgba(255,225,120,' + (0.55 * glow) + ')');
+    g.addColorStop(1, 'rgba(255,225,120,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, r * 4.5, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.fillStyle = lit ? '#ffe98a' : '#3b4362';
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = lit ? '#ffd166' : '#5a6488'; ctx.lineWidth = 3; ctx.stroke();
+  // թելիկը՝ ներսում
+  ctx.strokeStyle = lit ? '#c9761b' : '#7c86ab';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(x - r * 0.45, y + r * 0.5);
+  ctx.lineTo(x - r * 0.2, y - r * 0.2);
+  ctx.lineTo(x, y + r * 0.25);
+  ctx.lineTo(x + r * 0.2, y - r * 0.2);
+  ctx.lineTo(x + r * 0.45, y + r * 0.5);
+  ctx.stroke();
+  // ցոկոլը
+  ctx.fillStyle = '#8a93a8';
+  ctx.fillRect(x - r * 0.5, y + r * 0.72, r, r * 0.5);
+}
+function drawSwitch(s) {
+  const a = nodes[s.a], b = nodes[s.b];
+  const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+  const ang = Math.atan2(b.y - a.y, b.x - a.x);
+  const len = Math.hypot(b.x - a.x, b.y - a.y);
+  ctx.save();
+  ctx.translate(mx, my); ctx.rotate(ang);
+  ctx.fillStyle = 'rgba(40,60,110,0.85)';
+  ctx.fillRect(-len / 2, -board.s * 0.035, len, board.s * 0.07);
+  ctx.strokeStyle = s.on ? '#6ee7b7' : '#5c7fd6';
+  ctx.lineWidth = Math.max(4, board.s * 0.016);
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-len / 2, 0);
+  if (s.on) { ctx.lineTo(len / 2, 0); }
+  else { ctx.lineTo(len * 0.1, -len * 0.28); }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function draw() {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#0e1524'); g.addColorStop(1, '#161f38');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  // տախտակը
+  ctx.fillStyle = '#132038';
+  ctx.strokeStyle = '#24365c'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  const r = 18;
+  ctx.moveTo(board.x + r, board.y);
+  ctx.arcTo(board.x + board.s, board.y, board.x + board.s, board.y + board.s, r);
+  ctx.arcTo(board.x + board.s, board.y + board.s, board.x, board.y + board.s, r);
+  ctx.arcTo(board.x, board.y + board.s, board.x, board.y, r);
+  ctx.arcTo(board.x, board.y, board.x + board.s, board.y, r);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+
+  if (state !== 'menu' && state !== 'done') {
+    const c = circuit();
+    // լարերը
+    ctx.lineCap = 'round';
+    for (const w of wires) {
+      const a = nodes[w.a], b = nodes[w.b];
+      ctx.strokeStyle = w.bad ? (Math.floor(Date.now() / 120) % 2 ? '#ff5f5f' : '#ffb0b0') : '#6b4a1c';
+      ctx.lineWidth = Math.max(7, board.s * 0.026);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      if (!w.bad) {
+        ctx.strokeStyle = c.lit ? '#ffd166' : '#c9963f';
+        ctx.lineWidth = Math.max(4, board.s * 0.014);
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+    }
+    // քաշվող լարը
+    if (drag) {
+      const a = nodes[drag.from];
+      const d = Math.hypot(drag.x - a.x, drag.y - a.y);
+      ctx.strokeStyle = d > maxLen * board.s ? 'rgba(255,110,110,0.7)' : 'rgba(255,209,102,0.7)';
+      ctx.lineWidth = Math.max(4, board.s * 0.014);
+      ctx.setLineDash([9, 7]);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(drag.x, drag.y); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    for (const s of switches) drawSwitch(s);
+    drawBattery();
+    drawLamp(c.lit);
+    // բռնիչները
+    for (const n of nodes) {
+      ctx.fillStyle = n.t === 'p' ? '#ffd166' : n.t === 'm' ? '#9fb0d8' : '#e0b055';
+      ctx.beginPath(); ctx.arc(n.x, n.y, board.s * 0.022, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#0b1020'; ctx.lineWidth = 2; ctx.stroke();
+    }
+    // HUD
+    drawText(T.lvl(level), W / 2, 34, Math.min(19, W * 0.05), '#ffd166', true);
+    drawText(T.wires + Math.max(0, wireBudget - wires.filter(w => !w.bad).length), W / 2, 55, Math.min(15, W * 0.04), '#9ec7e8');
+  }
+
+  if (msg && Date.now() - msgAt < 1100) {
+    drawText(msg, W / 2, board.y + board.s * 0.5, Math.min(24, W * 0.06), '#ff9b8a', true);
+  }
+  if (state === 'lit') {
+    drawText(T.win, W / 2, board.y + board.s * 0.62, Math.min(26, W * 0.065), '#6ee7b7', true);
+  }
+  if (state === 'menu' || state === 'done') {
+    ctx.fillStyle = 'rgba(8, 12, 28, 0.72)';
+    ctx.fillRect(0, 0, W, H);
+    drawText(T.title, W / 2, H * 0.24, Math.min(36, W * 0.085), '#ffd166', true);
+    if (state === 'done') drawText(T.done, W / 2, H * 0.33, Math.min(20, W * 0.05), '#6ee7b7', true);
+    drawText(T.how1, W / 2, H * 0.42, Math.min(16, W * 0.043), '#eef0ff');
+    drawText(T.how2, W / 2, H * 0.48, Math.min(16, W * 0.043), '#eef0ff');
+    drawText(T.how3, W / 2, H * 0.54, Math.min(16, W * 0.043), '#eef0ff');
+    drawText(T.lvl(level), W / 2, H * 0.64, Math.min(17, W * 0.045), '#9a9ec7');
+    if (Math.floor(Date.now() / 600) % 2) drawText(T.tap, W / 2, H * 0.73, Math.min(17, W * 0.045), '#6ee7b7');
+  }
+}
+
+function loop() { step(); draw(); requestAnimationFrame(loop); }
+resize();
+loop();
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>

@@ -103,6 +103,36 @@
   .black.learn-target { background: linear-gradient(#d9b35a, #8a6a1f); animation: glow 0.9s infinite; color: #2e2410; }
   #learnBtn.active { background: #ffd76e; color: #2e2410; border-color: #ffe9a8; }
 
+  /* ——— Ձախ ձեռքի ակորդների բարձիկները 🤚 ——— */
+  /* «hidden»-ը պարտվում է display:grid-ին, դրա համար այս տողը պարտադիր է */
+  #chordPads[hidden] { display: none !important; }
+  #chordPads {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .pad {
+    background: linear-gradient(#4a4170, #2c2549);
+    border: 2px solid #6a5f9e;
+    border-radius: 10px;
+    padding: 8px 2px;
+    text-align: center;
+    line-height: 1.15;
+    min-width: 0;                 /* որ նեղ հեռախոսում դուրս չգա էկրանից */
+    overflow: hidden;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .pad b { display: block; font-size: clamp(0.68rem, 2.7vw, 1rem); color: #ffd76e; }
+  .pad small { display: block; font-size: clamp(0.46rem, 1.8vw, 0.68rem); opacity: 0.72; }
+  .pad.on { background: linear-gradient(#ffe9a8, #ffd76e); }
+  .pad.on b, .pad.on small { color: #2e2410; }
+  .pad.chord-target { border-color: #ffd76e; animation: glow 0.9s infinite; }
+  #handsBtn.active { background: #ffd76e; color: #2e2410; border-color: #ffe9a8; }
+  /* երկու ձեռքի ռեժիմում ստեղները մի քիչ ցածրանում են՝ բարձիկներին տեղ տալու */
+  .piano-body.two #keys { height: min(26vh, 190px); }
+
   #learnBar[hidden] { display: none; }   /* թաքնվածը իսկապես թաքնված է */
   #learnBar {
     display: flex;
@@ -145,6 +175,7 @@
   <button id="recBtn">⏺ Ձայնագրել</button>
   <button id="playBtn" disabled>▶ Լսել իմ մեղեդին</button>
   <button id="learnBtn">🎓 Սովորել</button>
+  <button id="handsBtn">🤚 Երկու ձեռք</button>
 </div>
 
 <div id="learnBar" hidden>
@@ -162,6 +193,7 @@
 </div>
 
 <div class="piano-body">
+  <div id="chordPads" hidden></div>
   <div id="keys"></div>
 </div>
 
@@ -186,17 +218,17 @@ document.addEventListener('touchend', (e) => {
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { h1: 'Golden Piano 🎹', rec: '⏺ Ձայնագրել', stop: '⏹ Կանգնեցնել', playMine: '▶ Լսել իմ մեղեդին', learnBtn: '🎓 Սովորել', listen: '👂 Լսել', choose: 'Ընտրիր երգը 👇', prog: (t, i, n) => t + ' — նոտա ' + i + '/' + n, bravo: t => '🏆 Բրավո՜։ Դու սովորեցիր «' + t + '»', hint: 'Նվագիր մատով կամ ստեղնաշարով՝ A S D F G H J K L ; — սևերը՝ W E T Y U O P', songs: { star: '🌟 Աստղիկը', birthday: '🎂 Ծնունդդ շնորհավոր', jingle: '🔔 Զանգակները', tango: '💃 Արենի տանգոն', joy: '🎼 Ուրախության ձոնը', lamb: '🐑 Փոքրիկ գառնուկը' }, notes: null },
-  ru: { h1: 'Golden Piano 🎹', rec: '⏺ Записать', stop: '⏹ Стоп', playMine: '▶ Моя мелодия', learnBtn: '🎓 Учиться', listen: '👂 Послушать', choose: 'Выбери песню 👇', prog: (t, i, n) => t + ' — нота ' + i + '/' + n, bravo: t => '🏆 Браво! Ты выучил «' + t + '»', hint: 'Играй пальцем или клавишами: A S D F G H J K L ; — чёрные: W E T Y U O P', songs: { star: '🌟 Звёздочка', birthday: '🎂 С днём рождения', jingle: '🔔 Бубенцы', tango: '💃 Танго Арена', joy: '🎼 Ода к радости', lamb: '🐑 Ягнёнок Мэри' }, notes: ['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си','До²','До#²','Ре²','Ре#²','Ми²'] },
-  en: { h1: 'Golden Piano 🎹', rec: '⏺ Record', stop: '⏹ Stop', playMine: '▶ Play my melody', learnBtn: '🎓 Learn', listen: '👂 Listen', choose: 'Pick a song 👇', prog: (t, i, n) => t + ' — note ' + i + '/' + n, bravo: t => '🏆 Bravo! You learned “' + t + '”', hint: 'Play with fingers or keys: A S D F G H J K L ; — black keys: W E T Y U O P', songs: { star: '🌟 Twinkle', birthday: '🎂 Happy Birthday', jingle: '🔔 Jingle Bells', tango: '💃 Aren’s Tango', joy: '🎼 Ode to Joy', lamb: '🐑 Mary’s Little Lamb' }, notes: ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Re²','Re#²','Mi²'] },
-  es: { h1: 'Golden Piano 🎹', rec: '⏺ Grabar', stop: '⏹ Parar', playMine: '▶ Mi melodía', learnBtn: '🎓 Aprender', listen: '👂 Escuchar', choose: 'Elige una canción 👇', prog: (t, i, n) => t + ' — nota ' + i + '/' + n, bravo: t => '🏆 ¡Bravo! Aprendiste «' + t + '»', hint: 'Toca con el dedo o el teclado: A S D F G H J K L ; — negras: W E T Y U O P', songs: { star: '🌟 Estrellita', birthday: '🎂 Cumpleaños feliz', jingle: '🔔 Cascabeles', tango: '💃 El tango de Aren', joy: '🎼 Himno de la alegría', lamb: '🐑 El corderito' }, notes: ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Re²','Re#²','Mi²'] },
-  fr: { h1: 'Golden Piano 🎹', rec: '⏺ Enregistrer', stop: '⏹ Stop', playMine: '▶ Ma mélodie', learnBtn: '🎓 Apprendre', listen: '👂 Écouter', choose: 'Choisis une chanson 👇', prog: (t, i, n) => t + ' — note ' + i + '/' + n, bravo: t => '🏆 Bravo ! Tu as appris « ' + t + ' »', hint: 'Joue avec le doigt ou le clavier : A S D F G H J K L ; — noires : W E T Y U O P', songs: { star: '🌟 Petite étoile', birthday: '🎂 Joyeux anniversaire', jingle: '🔔 Vive le vent', tango: '💃 Le tango d’Aren', joy: '🎼 Hymne à la joie', lamb: '🐑 Le petit agneau' }, notes: ['Do','Do#','Ré','Ré#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Ré²','Ré#²','Mi²'] },
-  de: { h1: 'Golden Piano 🎹', rec: '⏺ Aufnehmen', stop: '⏹ Stopp', playMine: '▶ Meine Melodie', learnBtn: '🎓 Lernen', listen: '👂 Anhören', choose: 'Such dir ein Lied aus 👇', prog: (t, i, n) => t + ' — Note ' + i + '/' + n, bravo: t => '🏆 Bravo! Du hast „' + t + '“ gelernt', hint: 'Spiel mit dem Finger oder der Tastatur: A S D F G H J K L ; — schwarze: W E T Y U O P', songs: { star: '🌟 Funkel, funkel', birthday: '🎂 Zum Geburtstag viel Glück', jingle: '🔔 Jingle Bells', tango: '💃 Arens Tango', joy: '🎼 Ode an die Freude', lamb: '🐑 Marys Lämmchen' }, notes: ['C','C#','D','D#','E','F','F#','G','G#','A','A#','H','C²','C#²','D²','D#²','E²'] },
-  ja: { h1: 'Golden Piano 🎹', rec: '⏺ ろくおん', stop: '⏹ ストップ', playMine: '▶ 自分のメロディ', learnBtn: '🎓 レッスン', listen: '👂 きく', choose: '曲をえらんでね 👇', prog: (t, i, n) => t + ' — 音 ' + i + '/' + n, bravo: t => '🏆 ブラボー！「' + t + '」をおぼえたよ', hint: '指かキーボードでひこう：A S D F G H J K L ; — 黒鍵：W E T Y U O P', songs: { star: '🌟 きらきら星', birthday: '🎂 ハッピーバースデー', jingle: '🔔 ジングルベル', tango: '💃 アレンのタンゴ', joy: '🎼 よろこびのうた', lamb: '🐑 メリーさんのひつじ' }, notes: ['ド','ド#','レ','レ#','ミ','ファ','ファ#','ソ','ソ#','ラ','ラ#','シ','ド²','ド#²','レ²','レ#²','ミ²'] },
-  zh: { h1: 'Golden Piano 🎹', rec: '⏺ 录音', stop: '⏹ 停止', playMine: '▶ 我的旋律', learnBtn: '🎓 学琴', listen: '👂 听一听', choose: '选一首歌 👇', prog: (t, i, n) => t + ' — 第' + i + '/' + n + '个音', bravo: t => '🏆 太棒了！你学会了《' + t + '》', hint: '用手指或键盘弹：A S D F G H J K L ; — 黑键：W E T Y U O P', songs: { star: '🌟 小星星', birthday: '🎂 生日快乐', jingle: '🔔 铃儿响叮当', tango: '💃 阿伦的探戈', joy: '🎼 欢乐颂', lamb: '🐑 玛丽的小羊羔' }, notes: ['1','1#','2','2#','3','4','4#','5','5#','6','6#','7','1²','1#²','2²','2#²','3²'] },
-  it: { h1: 'Golden Piano 🎹', rec: '⏺ Registra', stop: '⏹ Stop', playMine: '▶ La mia melodia', learnBtn: '🎓 Impara', listen: '👂 Ascolta', choose: 'Scegli una canzone 👇', prog: (t, i, n) => t + ' — nota ' + i + '/' + n, bravo: t => '🏆 Bravo! Hai imparato “' + t + '”', hint: 'Suona con le dita o la tastiera: A S D F G H J K L ; — tasti neri: W E T Y U O P', songs: { star: '🌟 Brilla stellina', birthday: '🎂 Tanti auguri', jingle: '🔔 Jingle Bells', tango: '💃 Il tango di Aren', joy: '🎼 Inno alla gioia', lamb: '🐑 L’agnellino di Mary' }, notes: ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Re²','Re#²','Mi²'] },
-  ka: { h1: 'Golden Piano 🎹', rec: '⏺ ჩაწერა', stop: '⏹ გაჩერება', playMine: '▶ ჩემი მელოდია', learnBtn: '🎓 სწავლა', listen: '👂 მოსმენა', choose: 'აირჩიე სიმღერა 👇', prog: (t, i, n) => t + ' — ნოტა ' + i + '/' + n, bravo: t => '🏆 ყოჩაღ! შენ ისწავლე „' + t + '“', hint: 'დაუკარი თითით ან კლავიატურით: A S D F G H J K L ; — შავები: W E T Y U O P', songs: { star: '🌟 პატარა ვარსკვლავი', birthday: '🎂 გილოცავ დაბადების დღეს', jingle: '🔔 ეჟვნები', tango: '💃 არენის ტანგო', joy: '🎼 სიხარულის ოდა', lamb: '🐑 მერის ბატკანი' }, notes: ['დო','დო#','რე','რე#','მი','ფა','ფა#','სოლ','სოლ#','ლა','ლა#','სი','დო²','დო#²','რე²','რე#²','მი²'] },
-  hi: { h1: 'Golden Piano 🎹', rec: '⏺ रिकॉर्ड', stop: '⏹ रोको', playMine: '▶ मेरी धुन', learnBtn: '🎓 सीखो', listen: '👂 सुनो', choose: 'एक गाना चुनो 👇', prog: (t, i, n) => t + ' — सुर ' + i + '/' + n, bravo: t => '🏆 शाबाश! तुमने “' + t + '” सीख लिया', hint: 'उँगली या कीबोर्ड से बजाओ: A S D F G H J K L ; — काली कुंजियाँ: W E T Y U O P', songs: { star: '🌟 टिमटिम तारा', birthday: '🎂 जन्मदिन मुबारक', jingle: '🔔 जिंगल बेल्स', tango: '💃 अरेन का टैंगो', joy: '🎼 खुशी का गीत', lamb: '🐑 मैरी का मेमना' }, notes: ['सा','सा#','रे','रे#','ग','म','म#','प','प#','ध','ध#','नि','सा²','सा#²','रे²','रे#²','ग²'] },
+  hy: { h1: 'Golden Piano 🎹', rec: '⏺ Ձայնագրել', stop: '⏹ Կանգնեցնել', playMine: '▶ Լսել իմ մեղեդին', learnBtn: '🎓 Սովորել', listen: '👂 Լսել', choose: 'Ընտրիր երգը 👇', prog: (t, i, n) => t + ' — նոտա ' + i + '/' + n, bravo: t => '🏆 Բրավո՜։ Դու սովորեցիր «' + t + '»', hint: 'Նվագիր մատով կամ ստեղնաշարով՝ A S D F G H J K L ; — սևերը՝ W E T Y U O P', songs: { star: '🌟 Աստղիկը', birthday: '🎂 Ծնունդդ շնորհավոր', jingle: '🔔 Զանգակները', tango: '💃 Արենի տանգոն', joy: '🎼 Ուրախության ձոնը', lamb: '🐑 Փոքրիկ գառնուկը' }, notes: null, twoHands: '🤚 Երկու ձեռք', maj: 'մաժ', min: 'մին', handsHint: 'Ձախ ձեռքով՝ ակորդների բարձիկները, աջով՝ մեղեդին 🤚' },
+  ru: { h1: 'Golden Piano 🎹', rec: '⏺ Записать', stop: '⏹ Стоп', playMine: '▶ Моя мелодия', learnBtn: '🎓 Учиться', listen: '👂 Послушать', choose: 'Выбери песню 👇', prog: (t, i, n) => t + ' — нота ' + i + '/' + n, bravo: t => '🏆 Браво! Ты выучил «' + t + '»', hint: 'Играй пальцем или клавишами: A S D F G H J K L ; — чёрные: W E T Y U O P', songs: { star: '🌟 Звёздочка', birthday: '🎂 С днём рождения', jingle: '🔔 Бубенцы', tango: '💃 Танго Арена', joy: '🎼 Ода к радости', lamb: '🐑 Ягнёнок Мэри' }, notes: ['До','До#','Ре','Ре#','Ми','Фа','Фа#','Соль','Соль#','Ля','Ля#','Си','До²','До#²','Ре²','Ре#²','Ми²'], twoHands: '🤚 Две руки', maj: 'маж', min: 'мин', handsHint: 'Левая рука — аккорды, правая — мелодия 🤚' },
+  en: { h1: 'Golden Piano 🎹', rec: '⏺ Record', stop: '⏹ Stop', playMine: '▶ Play my melody', learnBtn: '🎓 Learn', listen: '👂 Listen', choose: 'Pick a song 👇', prog: (t, i, n) => t + ' — note ' + i + '/' + n, bravo: t => '🏆 Bravo! You learned “' + t + '”', hint: 'Play with fingers or keys: A S D F G H J K L ; — black keys: W E T Y U O P', songs: { star: '🌟 Twinkle', birthday: '🎂 Happy Birthday', jingle: '🔔 Jingle Bells', tango: '💃 Aren’s Tango', joy: '🎼 Ode to Joy', lamb: '🐑 Mary’s Little Lamb' }, notes: ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Re²','Re#²','Mi²'], twoHands: '🤚 Two hands', maj: 'maj', min: 'min', handsHint: 'Left hand plays the chord pads, right hand the melody 🤚' },
+  es: { h1: 'Golden Piano 🎹', rec: '⏺ Grabar', stop: '⏹ Parar', playMine: '▶ Mi melodía', learnBtn: '🎓 Aprender', listen: '👂 Escuchar', choose: 'Elige una canción 👇', prog: (t, i, n) => t + ' — nota ' + i + '/' + n, bravo: t => '🏆 ¡Bravo! Aprendiste «' + t + '»', hint: 'Toca con el dedo o el teclado: A S D F G H J K L ; — negras: W E T Y U O P', songs: { star: '🌟 Estrellita', birthday: '🎂 Cumpleaños feliz', jingle: '🔔 Cascabeles', tango: '💃 El tango de Aren', joy: '🎼 Himno de la alegría', lamb: '🐑 El corderito' }, notes: ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Re²','Re#²','Mi²'], twoHands: '🤚 Dos manos', maj: 'may', min: 'men', handsHint: 'La mano izquierda toca los acordes, la derecha la melodía 🤚' },
+  fr: { h1: 'Golden Piano 🎹', rec: '⏺ Enregistrer', stop: '⏹ Stop', playMine: '▶ Ma mélodie', learnBtn: '🎓 Apprendre', listen: '👂 Écouter', choose: 'Choisis une chanson 👇', prog: (t, i, n) => t + ' — note ' + i + '/' + n, bravo: t => '🏆 Bravo ! Tu as appris « ' + t + ' »', hint: 'Joue avec le doigt ou le clavier : A S D F G H J K L ; — noires : W E T Y U O P', songs: { star: '🌟 Petite étoile', birthday: '🎂 Joyeux anniversaire', jingle: '🔔 Vive le vent', tango: '💃 Le tango d’Aren', joy: '🎼 Hymne à la joie', lamb: '🐑 Le petit agneau' }, notes: ['Do','Do#','Ré','Ré#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Ré²','Ré#²','Mi²'], twoHands: '🤚 Deux mains', maj: 'maj', min: 'min', handsHint: 'La main gauche joue les accords, la droite la mélodie 🤚' },
+  de: { h1: 'Golden Piano 🎹', rec: '⏺ Aufnehmen', stop: '⏹ Stopp', playMine: '▶ Meine Melodie', learnBtn: '🎓 Lernen', listen: '👂 Anhören', choose: 'Such dir ein Lied aus 👇', prog: (t, i, n) => t + ' — Note ' + i + '/' + n, bravo: t => '🏆 Bravo! Du hast „' + t + '“ gelernt', hint: 'Spiel mit dem Finger oder der Tastatur: A S D F G H J K L ; — schwarze: W E T Y U O P', songs: { star: '🌟 Funkel, funkel', birthday: '🎂 Zum Geburtstag viel Glück', jingle: '🔔 Jingle Bells', tango: '💃 Arens Tango', joy: '🎼 Ode an die Freude', lamb: '🐑 Marys Lämmchen' }, notes: ['C','C#','D','D#','E','F','F#','G','G#','A','A#','H','C²','C#²','D²','D#²','E²'], twoHands: '🤚 Zwei Hände', maj: 'Dur', min: 'moll', handsHint: 'Linke Hand spielt die Akkorde, rechte die Melodie 🤚' },
+  ja: { h1: 'Golden Piano 🎹', rec: '⏺ ろくおん', stop: '⏹ ストップ', playMine: '▶ 自分のメロディ', learnBtn: '🎓 レッスン', listen: '👂 きく', choose: '曲をえらんでね 👇', prog: (t, i, n) => t + ' — 音 ' + i + '/' + n, bravo: t => '🏆 ブラボー！「' + t + '」をおぼえたよ', hint: '指かキーボードでひこう：A S D F G H J K L ; — 黒鍵：W E T Y U O P', songs: { star: '🌟 きらきら星', birthday: '🎂 ハッピーバースデー', jingle: '🔔 ジングルベル', tango: '💃 アレンのタンゴ', joy: '🎼 よろこびのうた', lamb: '🐑 メリーさんのひつじ' }, notes: ['ド','ド#','レ','レ#','ミ','ファ','ファ#','ソ','ソ#','ラ','ラ#','シ','ド²','ド#²','レ²','レ#²','ミ²'], twoHands: '🤚 りょうて', maj: '長', min: '短', handsHint: 'ひだり手はコード、みぎ手はメロディ 🤚' },
+  zh: { h1: 'Golden Piano 🎹', rec: '⏺ 录音', stop: '⏹ 停止', playMine: '▶ 我的旋律', learnBtn: '🎓 学琴', listen: '👂 听一听', choose: '选一首歌 👇', prog: (t, i, n) => t + ' — 第' + i + '/' + n + '个音', bravo: t => '🏆 太棒了！你学会了《' + t + '》', hint: '用手指或键盘弹：A S D F G H J K L ; — 黑键：W E T Y U O P', songs: { star: '🌟 小星星', birthday: '🎂 生日快乐', jingle: '🔔 铃儿响叮当', tango: '💃 阿伦的探戈', joy: '🎼 欢乐颂', lamb: '🐑 玛丽的小羊羔' }, notes: ['1','1#','2','2#','3','4','4#','5','5#','6','6#','7','1²','1#²','2²','2#²','3²'], twoHands: '🤚 双手', maj: '大', min: '小', handsHint: '左手弹和弦，右手弹旋律 🤚' },
+  it: { h1: 'Golden Piano 🎹', rec: '⏺ Registra', stop: '⏹ Stop', playMine: '▶ La mia melodia', learnBtn: '🎓 Impara', listen: '👂 Ascolta', choose: 'Scegli una canzone 👇', prog: (t, i, n) => t + ' — nota ' + i + '/' + n, bravo: t => '🏆 Bravo! Hai imparato “' + t + '”', hint: 'Suona con le dita o la tastiera: A S D F G H J K L ; — tasti neri: W E T Y U O P', songs: { star: '🌟 Brilla stellina', birthday: '🎂 Tanti auguri', jingle: '🔔 Jingle Bells', tango: '💃 Il tango di Aren', joy: '🎼 Inno alla gioia', lamb: '🐑 L’agnellino di Mary' }, notes: ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si','Do²','Do#²','Re²','Re#²','Mi²'], twoHands: '🤚 Due mani', maj: 'magg', min: 'min', handsHint: 'La mano sinistra suona gli accordi, la destra la melodia 🤚' },
+  ka: { h1: 'Golden Piano 🎹', rec: '⏺ ჩაწერა', stop: '⏹ გაჩერება', playMine: '▶ ჩემი მელოდია', learnBtn: '🎓 სწავლა', listen: '👂 მოსმენა', choose: 'აირჩიე სიმღერა 👇', prog: (t, i, n) => t + ' — ნოტა ' + i + '/' + n, bravo: t => '🏆 ყოჩაღ! შენ ისწავლე „' + t + '“', hint: 'დაუკარი თითით ან კლავიატურით: A S D F G H J K L ; — შავები: W E T Y U O P', songs: { star: '🌟 პატარა ვარსკვლავი', birthday: '🎂 გილოცავ დაბადების დღეს', jingle: '🔔 ეჟვნები', tango: '💃 არენის ტანგო', joy: '🎼 სიხარულის ოდა', lamb: '🐑 მერის ბატკანი' }, notes: ['დო','დო#','რე','რე#','მი','ფა','ფა#','სოლ','სოლ#','ლა','ლა#','სი','დო²','დო#²','რე²','რე#²','მი²'], twoHands: '🤚 ორი ხელი', maj: 'მაჟ', min: 'მინ', handsHint: 'მარცხენა ხელი — აკორდები, მარჯვენა — მელოდია 🤚' },
+  hi: { h1: 'Golden Piano 🎹', rec: '⏺ रिकॉर्ड', stop: '⏹ रोको', playMine: '▶ मेरी धुन', learnBtn: '🎓 सीखो', listen: '👂 सुनो', choose: 'एक गाना चुनो 👇', prog: (t, i, n) => t + ' — सुर ' + i + '/' + n, bravo: t => '🏆 शाबाश! तुमने “' + t + '” सीख लिया', hint: 'उँगली या कीबोर्ड से बजाओ: A S D F G H J K L ; — काली कुंजियाँ: W E T Y U O P', songs: { star: '🌟 टिमटिम तारा', birthday: '🎂 जन्मदिन मुबारक', jingle: '🔔 जिंगल बेल्स', tango: '💃 अरेन का टैंगो', joy: '🎼 खुशी का गीत', lamb: '🐑 मैरी का मेमना' }, notes: ['सा','सा#','रे','रे#','ग','म','म#','प','प#','ध','ध#','नि','सा²','सा#²','रे²','रे#²','ग²'], twoHands: '🤚 दो हाथ', maj: 'मेज', min: 'माइ', handsHint: 'बायाँ हाथ कॉर्ड बजाता है, दायाँ हाथ धुन 🤚' },
 };
 const T = TRL[ggLang] || TRL.hy;
 
@@ -207,6 +239,7 @@ document.getElementById('recBtn').textContent = T.rec;
 document.getElementById('playBtn').textContent = T.playMine;
 document.getElementById('learnBtn').textContent = T.learnBtn;
 document.getElementById('learnListen').textContent = T.listen;
+document.getElementById('handsBtn').textContent = T.twoHands;
 document.querySelectorAll('#songs button').forEach(b => {
   if (T.songs[b.dataset.song]) b.textContent = T.songs[b.dataset.song];
 });
@@ -260,6 +293,34 @@ function placeBlacks() {
   });
 }
 placeBlacks();
+
+// ——— Ակորդները՝ ձախ ձեռքի համար 🤚 ———
+// Ակորդը 3 նոտա է միասին։ Նվագում ենք մեկ օկտավա ցածր (CHORD_DROP),
+// որ ձայնը հաստ լինի, ինչպես իսկական ձախ ձեռքը դաշնամուրի ձախ կողմում։
+const CHORD_DROP = 12;
+const CHORDS = [
+  { root: 0, min: false, semis: [0, 4, 7] },     // Դո-մաժոր
+  { root: 5, min: false, semis: [5, 9, 12] },    // Ֆա-մաժոր
+  { root: 7, min: false, semis: [7, 11, 14] },   // Սոլ-մաժոր
+  { root: 9, min: true,  semis: [9, 12, 16] },   // Լա-մինոր
+  { root: 2, min: true,  semis: [2, 5, 9] },     // Ռե-մինոր
+  { root: 4, min: true,  semis: [4, 7, 11] },    // Մի-մինոր
+];
+
+const padsBox = document.getElementById('chordPads');
+const padEls = [];
+CHORDS.forEach((c, k) => {
+  const el = document.createElement('div');
+  el.className = 'pad';
+  el.dataset.k = k;
+  const nm = document.createElement('b');
+  nm.textContent = NOTES[c.root].name;            // արմատ նոտայի անունը՝ քո լեզվով
+  const kind = document.createElement('small');
+  kind.textContent = c.min ? T.min : T.maj;       // մաժոր՝ ուրախ, մինոր՝ թախծոտ
+  el.appendChild(nm); el.appendChild(kind);
+  padsBox.appendChild(el);
+  padEls[k] = el;
+});
 
 // ——— Ձայնը ———
 let audioCtx = null;
@@ -315,6 +376,38 @@ function pressKey(i) {
   if (learn && learn.seq && !demo) checkLearn(i);
 }
 
+// Ակորդի բարձիկը սեղմելիս 3 նոտան հնչում է գրեթե միասին
+function pressChord(k) {
+  const c = CHORDS[k];
+  c.semis.forEach((s, n) => setTimeout(() => playTone(s - CHORD_DROP), n * 14));
+  const el = padEls[k];
+  el.classList.add('on');
+  setTimeout(() => el.classList.remove('on'), 230);
+  if (recording) recorded.push({ c: k, dt: performance.now() - recStart });
+}
+
+// Բարձիկները՝ pointerdown-ով (հեռախոսում «ուրվական» սեղմում չլինի)
+padsBox.addEventListener('pointerdown', (e) => {
+  const el = e.target.closest('.pad');
+  if (el) { initAudio(); pressChord(Number(el.dataset.k)); }
+});
+
+// Երկու ձեռքի ռեժիմի բանալին 🤚
+let twoHands = false;
+const handsBtn = document.getElementById('handsBtn');
+const pianoBody = document.querySelector('.piano-body');
+const hintEl = document.querySelector('.hint');
+handsBtn.addEventListener('pointerdown', () => {
+  initAudio();
+  twoHands = !twoHands;
+  handsBtn.classList.toggle('active', twoHands);
+  padsBox.hidden = !twoHands;
+  pianoBody.classList.toggle('two', twoHands);
+  hintEl.textContent = twoHands ? T.handsHint : T.hint;
+  if (!twoHands) padEls.forEach(el => el.classList.remove('chord-target'));
+  else if (learn && learn.seq) showTarget();   // դասը շարունակվում է, ակորդն էլ վառվի
+});
+
 // Մատով / մկնիկով
 keysBox.addEventListener('pointerdown', (e) => {
   const el = e.target.closest('.white, .black');
@@ -352,7 +445,9 @@ recBtn.addEventListener('click', () => {
 function playSequence(seq) {
   stopPlayback();
   for (const note of seq) {
-    playTimers.push(setTimeout(() => pressKey(note.i), note.dt));
+    playTimers.push(setTimeout(() => {
+      if (note.c !== undefined) pressChord(note.c); else pressKey(note.i);
+    }, note.dt));
   }
 }
 function stopPlayback() {
@@ -474,6 +569,31 @@ function exitLearn() {
 
 function clearGlow() {
   keyEls.forEach(el => el.classList.remove('learn-target'));
+  padEls.forEach(el => el.classList.remove('chord-target'));
+}
+
+// Երգը բաժանում ենք տակտերի (4 հաշիվ = 1 տակտ) ու ամեն տակտի համար
+// ընտրում այն ակորդը, որ տակտի ամենաշատ նոտան է իր մեջ պահում։
+function chordsForSong(song) {
+  const bars = {};
+  song.notes.forEach(([i, b]) => {
+    const bar = Math.floor(b / 4);
+    if (!bars[bar]) bars[bar] = [];
+    bars[bar].push(NOTES[i].semi % 12);
+  });
+  const best = {};
+  for (const bar in bars) {
+    let bestK = 0, bestScore = -1;
+    CHORDS.forEach((c, k) => {
+      const set = c.semis.map(s => s % 12);
+      let sc = 0;
+      bars[bar].forEach(s => { if (set.indexOf(s) >= 0) sc++; });
+      if (sc > bestScore) { bestScore = sc; bestK = k; }
+    });
+    best[bar] = bestK;
+  }
+  // ամեն նոտայի դիմաց գրում ենք իր տակտի ակորդը
+  return song.notes.map(([i, b]) => best[Math.floor(b / 4)]);
 }
 
 function startLesson(btn) {
@@ -482,6 +602,7 @@ function startLesson(btn) {
   learn.songKey = btn.dataset.song;
   learn.title = btn.textContent;
   learn.seq = song.notes.map(([i]) => i);   // միայն նոտաները, առանց ռիթմի
+  learn.chords = chordsForSong(song);       // ձախ ձեռքի ակորդը՝ ամեն տակտի համար
   learn.idx = 0;
   learnBar.hidden = false;
   learnListen.hidden = false;
@@ -492,6 +613,8 @@ function startLesson(btn) {
 function showTarget() {
   clearGlow();
   keyEls[learn.seq[learn.idx]].classList.add('learn-target');
+  // երկու ձեռքի ռեժիմում վառվում է նաև այս տակտի ակորդը՝ ձախ ձեռքի համար
+  if (twoHands && learn.chords) padEls[learn.chords[learn.idx]].classList.add('chord-target');
   learnText.textContent = T.prog(learn.title, learn.idx + 1, learn.seq.length);
 }
 

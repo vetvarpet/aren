@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Traffic 🚦</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #12331f; }
+  body {
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif;
+    color: #eefaf0;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    overflow-x: hidden;
+  }
+  canvas { display: block; position: fixed; inset: 0; width: 100vw; height: 100dvh; touch-action: none; }
+
+  #hud {
+    position: fixed; top: 48px; left: 10px; right: 10px; z-index: 6;
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    background: rgba(10, 26, 16, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px; padding: 7px 14px;
+    pointer-events: none;
+  }
+  #scoreTxt { font-size: 1.02rem; color: #ffd76e; }
+  #tipTxt { font-size: 0.76rem; color: #a8d8b4; text-align: right; }
+
+  /* Ուշադրություն. hidden-ը պարտվում է display:flex-ին, դրա համար ուժեղացնում ենք */
+  #ov[hidden] { display: none !important; }
+  #ov {
+    position: fixed; inset: 0; z-index: 8;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+    text-align: center; padding: 24px 18px;
+    background: rgba(6, 18, 10, 0.87);
+  }
+  #ovTitle { font-size: 1.7rem; color: #ffd76e; }
+  #ovText { font-size: 0.95rem; color: #cfeed8; line-height: 1.5; max-width: 340px; white-space: pre-line; }
+  #ovBest { font-size: 1rem; color: #6ee7b7; }
+  #ovTap { margin-top: 10px; font-size: 1.1rem; color: #6ee7b7; }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="hud"><div id="scoreTxt"></div><div id="tipTxt"></div></div>
+<div id="ov">
+  <div id="ovTitle"></div>
+  <div id="ovText"></div>
+  <div id="ovBest"></div>
+  <div id="ovTap"></div>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN TRAFFIC 🚦
+//  Խաչմերուկ։ Մեքենաները գալիս են 4 կողմից։
+//  Հպիր լուսակրին՝ կանաչ ու կարմիր փոխելու։
+//  Կարմիրի մոտ մեքենան կանգնում է, կանաչի մոտ՝ գնում։
+//  Եթե խաչվող կողմերից երկու մեքենա բախվեն՝ խաղը վերջանում է։
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { title: 'Golden Traffic 🚦', h1: 'Հպի՛ր լուսակրին՝ կանաչ կամ կարմիր անելու', h2: 'Ամեն անվտանգ անցած մեքենա՝ +1 · բախումը՝ խաղի վերջ', start: 'Հպի՛ր՝ սկսելու', again: 'Հպի՛ր՝ նորից խաղալու', crash: 'Բա՜խ… վթար եղավ', sc: 'Անցած մեքենա՝ ', tip: 'Հպիր լուսակրին', best: 'Ռեկորդդ՝ ' },
+  ru: { title: 'Golden Traffic 🚦', h1: 'Нажимай на светофор — зелёный или красный', h2: 'Каждая проехавшая машина: +1 · авария — конец игры', start: 'Нажми, чтобы начать', again: 'Нажми, чтобы играть снова', crash: 'Бах… авария', sc: 'Проехало машин: ', tip: 'Нажми на светофор', best: 'Твой рекорд: ' },
+  en: { title: 'Golden Traffic 🚦', h1: 'Tap a traffic light to make it green or red', h2: 'Each car that passes safely: +1 · a crash ends the game', start: 'Tap to start', again: 'Tap to play again', crash: 'Crash… game over', sc: 'Cars passed: ', tip: 'Tap a traffic light', best: 'Your best: ' },
+  es: { title: 'Golden Traffic 🚦', h1: 'Toca un semáforo para ponerlo verde o rojo', h2: 'Cada coche que pasa bien: +1 · un choque termina el juego', start: 'Toca para empezar', again: 'Toca para jugar otra vez', crash: '¡Choque! Fin del juego', sc: 'Coches que pasaron: ', tip: 'Toca un semáforo', best: 'Tu récord: ' },
+  fr: { title: 'Golden Traffic 🚦', h1: 'Touche un feu pour le mettre au vert ou au rouge', h2: 'Chaque voiture qui passe : +1 · un accident termine la partie', start: 'Touche pour commencer', again: 'Touche pour rejouer', crash: 'Boum… accident', sc: 'Voitures passées : ', tip: 'Touche un feu', best: 'Ton record : ' },
+  de: { title: 'Golden Traffic 🚦', h1: 'Tippe eine Ampel an — grün oder rot', h2: 'Jedes Auto, das sicher durchkommt: +1 · ein Unfall beendet das Spiel', start: 'Tippe zum Starten', again: 'Tippe, um nochmal zu spielen', crash: 'Krach… Unfall', sc: 'Autos durchgelassen: ', tip: 'Tippe eine Ampel an', best: 'Dein Rekord: ' },
+  ja: { title: 'Golden Traffic 🚦', h1: 'しんごうを タップして あお か あか に', h2: 'ぶじに とおった くるま +1 · しょうとつで おわり', start: 'タップでスタート', again: 'タップでもう一回', crash: 'ドン… じこ', sc: 'とおった くるま：', tip: 'しんごうをタップ', best: 'ベスト記録：' },
+  zh: { title: 'Golden Traffic 🚦', h1: '点红绿灯，把它变绿或变红', h2: '每安全通过一辆车 +1 · 撞车就结束', start: '点一下开始', again: '点一下再玩一次', crash: '砰… 撞车了', sc: '通过的车：', tip: '点一下红绿灯', best: '你的纪录：' },
+  it: { title: 'Golden Traffic 🚦', h1: 'Tocca un semaforo per farlo verde o rosso', h2: 'Ogni auto che passa bene: +1 · uno scontro finisce il gioco', start: 'Tocca per iniziare', again: 'Tocca per giocare ancora', crash: 'Bum… incidente', sc: 'Auto passate: ', tip: 'Tocca un semaforo', best: 'Il tuo record: ' },
+  ka: { title: 'Golden Traffic 🚦', h1: 'დააჭირე შუქნიშანს — მწვანე ან წითელი', h2: 'ყოველი უსაფრთხოდ გასული მანქანა: +1 · შეჯახება — თამაშის დასასრული', start: 'დააჭირე დასაწყებად', again: 'დააჭირე ისევ სათამაშოდ', crash: 'ბახ… ავარია', sc: 'გასული მანქანები: ', tip: 'დააჭირე შუქნიშანს', best: 'შენი რეკორდი: ' },
+  hi: { title: 'Golden Traffic 🚦', h1: 'ट्रैफ़िक लाइट पर टैप करो — हरी या लाल', h2: 'हर सुरक्षित निकली गाड़ी: +1 · टक्कर से खेल खत्म', start: 'शुरू करने के लिए टैप करो', again: 'फिर से खेलने के लिए टैप करो', crash: 'धड़ाम… टक्कर', sc: 'निकली गाड़ियाँ: ', tip: 'लाइट पर टैप करो', best: 'तुम्हारा रिकॉर्ड: ' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const ov = document.getElementById('ov');
+const elScore = document.getElementById('scoreTxt');
+
+// ուղղությունները. 0 = վերևից ներքև, 1 = ներքևից վերև, 2 = ձախից աջ, 3 = աջից ձախ
+const DOWN = 0, UP = 1, RIGHT = 2, LEFT = 3;
+const isVert = (d) => d === DOWN || d === UP;
+
+let W = 0, H = 0, DPR = 1, cx = 0, cy = 0, RW = 0, CARL = 34, CARW = 20;
+let lightXY = [];   // լուսակիրների կենտրոնները (հպումը այստեղ ենք ստուգում)
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  RW = Math.min(96, Math.max(66, W * 0.24));   // ճանապարհի լայնությունը
+  cx = W / 2;
+  cy = 108 + (H - 108) / 2;
+  CARW = RW * 0.32; CARL = RW * 0.5;
+  const off = RW / 2 + 30;
+  // ամեն ուղղության լուսակիրը՝ խաչմերուկի իր անկյունում
+  lightXY = [
+    { x: cx - off, y: cy - off },   // վերևից եկողների համար
+    { x: cx + off, y: cy + off },   // ներքևից եկողների
+    { x: cx - off, y: cy + off },   // ձախից եկողների
+    { x: cx + off, y: cy - off },   // աջից եկողների
+  ];
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sGreen = () => [660, 880].forEach((f, k) => tone(f, 0.1, 'triangle', 0.14, k * 0.07));
+const sRed = () => tone(330, 0.13, 'square', 0.1);
+const sPass = () => tone(720, 0.07, 'sine', 0.1);
+const sCrash = () => { tone(90, 0.5, 'sawtooth', 0.28); tone(160, 0.35, 'square', 0.2, 0.05); };
+const sEnd = () => [523, 415, 330, 262].forEach((f, k) => tone(f, 0.24, 'triangle', 0.18, k * 0.13));
+
+// ——— Խաղի վիճակը ———
+let state = 'menu', endedAt = 0;
+let cars = [], lights = [true, true, false, false], score = 0;
+let spawnIn = 0, elapsed = 0, lastTs = 0, boom = null;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-traffic-best') || 0); } catch (e) {}
+
+const CARCOLORS = ['#e8543f', '#3f8ee8', '#f0b429', '#5fc46b', '#c76ee8', '#e8a05f'];
+
+// Ո՞ր գծով է գնում այս ուղղությունը (որ հակառակ հոսքերը իրար չդիպչեն)
+function laneOf(d) {
+  const q = RW * 0.25;
+  if (d === DOWN) return cx - q;
+  if (d === UP) return cx + q;
+  if (d === RIGHT) return cy + q;
+  return cy - q;
+}
+
+function spawnCar() {
+  const d = Math.floor(Math.random() * 4);
+  const spd = 62 + Math.min(60, elapsed * 1.1) + Math.random() * 22;
+  const c = { d, spd, base: spd, x: 0, y: 0, col: CARCOLORS[Math.floor(Math.random() * CARCOLORS.length)] };
+  if (d === DOWN) { c.x = laneOf(d); c.y = -CARL; }
+  else if (d === UP) { c.x = laneOf(d); c.y = H + CARL; }
+  else if (d === RIGHT) { c.x = -CARL; c.y = laneOf(d); }
+  else { c.x = W + CARL; c.y = laneOf(d); }
+  // շատ մոտ մեքենա կա՞ մուտքի մոտ — այդ դեպքում սպասում ենք
+  for (const o of cars) {
+    if (o.d === d && Math.hypot(o.x - c.x, o.y - c.y) < CARL * 2.6) return;
+  }
+  cars.push(c);
+}
+
+// Մեքենայի «քիթը» ուղղության վրա
+function nose(c) {
+  if (c.d === DOWN) return c.y + CARL / 2;
+  if (c.d === UP) return c.y - CARL / 2;
+  if (c.d === RIGHT) return c.x + CARL / 2;
+  return c.x - CARL / 2;
+}
+// Կանգառի գիծը (խաչմերուկից առաջ)
+function stopLine(d) {
+  const e = RW / 2 + 4;
+  if (d === DOWN) return cy - e;
+  if (d === UP) return cy + e;
+  if (d === RIGHT) return cx - e;
+  return cx + e;
+}
+const inBox = (c) => Math.abs(c.x - cx) < RW / 2 + CARL / 2 && Math.abs(c.y - cy) < RW / 2 + CARL / 2;
+
+function rectOf(c) {
+  const w = isVert(c.d) ? CARW : CARL;
+  const h = isVert(c.d) ? CARL : CARW;
+  return { l: c.x - w / 2, r: c.x + w / 2, t: c.y - h / 2, b: c.y + h / 2 };
+}
+function hits(a, b) {
+  const A = rectOf(a), B = rectOf(b);
+  return A.l < B.r && A.r > B.l && A.t < B.b && A.b > B.t;
+}
+
+function startGame() {
+  score = 0; cars = []; elapsed = 0; spawnIn = 0.3; boom = null;
+  lights = [true, true, false, false];
+  state = 'play'; ov.hidden = true;
+  document.getElementById('tipTxt').textContent = T.tip;
+  syncHud();
+}
+
+function endGame() {
+  state = 'over'; endedAt = Date.now();
+  sCrash();
+  setTimeout(sEnd, 420);
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('aren-traffic-best', best); } catch (e) {}
+    confetti();
+  }
+  document.getElementById('ovTitle').textContent = T.crash;
+  document.getElementById('ovText').textContent = T.sc + score;
+  document.getElementById('ovBest').textContent = T.best + best;
+  document.getElementById('ovTap').textContent = T.again;
+  setTimeout(() => { if (state === 'over') ov.hidden = false; }, 650);
+}
+
+function syncHud() { elScore.textContent = T.sc + score; }
+
+// ——— Հպումները ———
+// Հպումից հետո հեռախոսը «ուրվական» մկնիկի իրադարձություն է ուղարկում,
+// դրա համար հիշում ենք վերջին հպումը ու անտեսում մկնիկը
+let lastTouchAt = 0;
+function isGhost(e) {
+  if (e.pointerType === 'touch') { lastTouchAt = Date.now(); return false; }
+  return Date.now() - lastTouchAt < 700;
+}
+cv.addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return;
+  e.preventDefault();
+  initAudio();
+  if (state !== 'play') return;
+  let bestI = -1, bestD = 46;
+  for (let i = 0; i < 4; i++) {
+    const d = Math.hypot(lightXY[i].x - e.clientX, lightXY[i].y - e.clientY);
+    if (d < bestD) { bestD = d; bestI = i; }
+  }
+  if (bestI < 0) return;
+  lights[bestI] = !lights[bestI];
+  lights[bestI] ? sGreen() : sRed();
+}, { passive: false });
+cv.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+cv.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+ov.addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return;
+  initAudio();
+  if (state === 'over' && Date.now() - endedAt < 1100) return;   // սպասիր, որ պատահական չսկսես
+  startGame();
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// ——— Խաղի քայլը ———
+function update(dt) {
+  if (state !== 'play') return;
+  elapsed += dt;
+
+  // դժվարանում է. մեքենաները ավելի հաճախ են գալիս
+  spawnIn -= dt;
+  if (spawnIn <= 0) {
+    spawnCar();
+    spawnIn = Math.max(0.55, 1.7 - elapsed * 0.022);
+  }
+
+  for (const c of cars) {
+    // կանգնե՞լ. կարմիր լույս կամ առջևի մեքենա
+    let stop = false;
+    const sl = stopLine(c.d);
+    const n = nose(c);
+    const before = (c.d === DOWN || c.d === RIGHT) ? n <= sl : n >= sl;
+    const gap = Math.abs(sl - n);
+    if (!lights[c.d] && before && gap < Math.max(14, c.base * dt * 1.6)) stop = true;
+    for (const o of cars) {
+      if (o === c || o.d !== c.d) continue;
+      const ahead = (c.d === DOWN) ? (o.y > c.y) : (c.d === UP) ? (o.y < c.y) : (c.d === RIGHT) ? (o.x > c.x) : (o.x < c.x);
+      if (ahead && Math.hypot(o.x - c.x, o.y - c.y) < CARL * 1.35) stop = true;
+    }
+    c.spd = stop ? 0 : c.base;
+    if (c.d === DOWN) c.y += c.spd * dt;
+    else if (c.d === UP) c.y -= c.spd * dt;
+    else if (c.d === RIGHT) c.x += c.spd * dt;
+    else c.x -= c.spd * dt;
+  }
+
+  // բախո՞ւմ — խաչվող ուղղություններից երկու մեքենա խաչմերուկում
+  for (let i = 0; i < cars.length; i++) {
+    for (let j = i + 1; j < cars.length; j++) {
+      const a = cars[i], b = cars[j];
+      if (isVert(a.d) === isVert(b.d)) continue;
+      if (!inBox(a) || !inBox(b)) continue;
+      if (hits(a, b)) {
+        boom = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, t: 0 };
+        endGame();
+        return;
+      }
+    }
+  }
+
+  // դուրս եկածները՝ +1
+  const before = cars.length;
+  cars = cars.filter(c => {
+    const out = c.y < -CARL * 2 || c.y > H + CARL * 2 || c.x < -CARL * 2 || c.x > W + CARL * 2;
+    return !out;
+  });
+  if (cars.length < before) {
+    score += before - cars.length;
+    sPass();
+    syncHud();
+  }
+}
+
+// ——— Նկարելը (էմոջի չենք նկարում, միայն ձևեր) ———
+function drawCar(c) {
+  ctx.save();
+  ctx.translate(c.x, c.y);
+  if (!isVert(c.d)) ctx.rotate(Math.PI / 2);
+  const w = CARW, l = CARL;
+  ctx.fillStyle = c.col;
+  ctx.beginPath(); ctx.roundRect(-w / 2, -l / 2, w, l, w * 0.28); ctx.fill();
+  // ապակիները
+  ctx.fillStyle = 'rgba(200,235,255,0.85)';
+  ctx.beginPath(); ctx.roundRect(-w * 0.34, -l * 0.34, w * 0.68, l * 0.22, 3); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(-w * 0.34, l * 0.12, w * 0.68, l * 0.22, 3); ctx.fill();
+  // անիվները
+  ctx.fillStyle = '#22282f';
+  ctx.fillRect(-w / 2 - 2, -l * 0.32, 3, l * 0.2);
+  ctx.fillRect(w / 2 - 1, -l * 0.32, 3, l * 0.2);
+  ctx.fillRect(-w / 2 - 2, l * 0.14, 3, l * 0.2);
+  ctx.fillRect(w / 2 - 1, l * 0.14, 3, l * 0.2);
+  ctx.restore();
+}
+
+function drawLight(i) {
+  const p = lightXY[i];
+  const green = lights[i];
+  ctx.fillStyle = '#2b3138';
+  ctx.beginPath(); ctx.roundRect(p.x - 12, p.y - 24, 24, 48, 7); ctx.fill();
+  ctx.strokeStyle = '#0e1216'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(p.x - 12, p.y - 24, 24, 48, 7); ctx.stroke();
+  // կարմիրը վերևում, կանաչը՝ ներքևում
+  ctx.fillStyle = green ? '#4a2020' : '#ff4d4d';
+  ctx.beginPath(); ctx.arc(p.x, p.y - 11, 8, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = green ? '#4cf07a' : '#1e4028';
+  ctx.beginPath(); ctx.arc(p.x, p.y + 11, 8, 0, Math.PI * 2); ctx.fill();
+  // վառվող լույսի փայլը
+  ctx.fillStyle = green ? 'rgba(76,240,122,0.22)' : 'rgba(255,77,77,0.22)';
+  ctx.beginPath(); ctx.arc(p.x, p.y + (green ? 11 : -11), 15, 0, Math.PI * 2); ctx.fill();
+}
+
+function draw() {
+  ctx.fillStyle = '#2f6b3f';   // խոտը
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#26592f';
+  for (let i = 0; i < 40; i++) {
+    const gx = (i * 131) % W, gy = (i * 197) % H;
+    ctx.fillRect(gx, gy, 10, 5);
+  }
+  // ճանապարհները
+  ctx.fillStyle = '#3d4450';
+  ctx.fillRect(cx - RW / 2, 0, RW, H);
+  ctx.fillRect(0, cy - RW / 2, W, RW);
+  // կենտրոնի կետագծերը
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 3;
+  ctx.setLineDash([12, 12]);
+  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, cy - RW / 2); ctx.moveTo(cx, cy + RW / 2); ctx.lineTo(cx, H); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(cx - RW / 2, cy); ctx.moveTo(cx + RW / 2, cy); ctx.lineTo(W, cy); ctx.stroke();
+  ctx.setLineDash([]);
+  // խաչմերուկը
+  ctx.fillStyle = '#464e5b';
+  ctx.fillRect(cx - RW / 2, cy - RW / 2, RW, RW);
+  // կանգառի գծերը
+  ctx.fillStyle = 'rgba(255,255,255,0.75)';
+  ctx.fillRect(cx - RW / 2, cy - RW / 2 - 5, RW / 2, 4);
+  ctx.fillRect(cx, cy + RW / 2 + 1, RW / 2, 4);
+  ctx.fillRect(cx - RW / 2 - 5, cy, 4, RW / 2);
+  ctx.fillRect(cx + RW / 2 + 1, cy - RW / 2, 4, RW / 2);
+
+  for (const c of cars) drawCar(c);
+  for (let i = 0; i < 4; i++) drawLight(i);
+
+  // վթարի «բում»-ը
+  if (boom) {
+    boom.t += 0.05;
+    const r = 12 + boom.t * 55;
+    ctx.fillStyle = 'rgba(255,180,60,' + Math.max(0, 0.75 - boom.t * 0.5) + ')';
+    ctx.beginPath(); ctx.arc(boom.x, boom.y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,90,60,' + Math.max(0, 0.9 - boom.t * 0.5) + ')';
+    ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.arc(boom.x, boom.y, r * 0.7, 0, Math.PI * 2); ctx.stroke();
+  }
+}
+
+function confetti() {
+  const stuff = ['🎉', '🚦', '⭐', '💛', '🎊', '✨'];
+  for (let k = 0; k < 34; k++) {
+    const s = document.createElement('span');
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.cssText = 'position:fixed;top:-50px;z-index:9;pointer-events:none;left:' + (Math.random() * 100) + 'vw;font-size:' + (16 + Math.random() * 20) + 'px;transition:transform ' + (2 + Math.random() * 2) + 's linear';
+    document.body.appendChild(s);
+    requestAnimationFrame(() => { s.style.transform = 'translateY(115vh) rotate(720deg)'; });
+    setTimeout(() => s.remove(), 4600);
+  }
+}
+
+function loop(ts) {
+  const dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0;
+  lastTs = ts;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ——— Մեկնարկի էկրանը ———
+document.getElementById('ovTitle').textContent = T.title;
+document.getElementById('ovText').textContent = T.h1 + '\n' + T.h2;
+document.getElementById('ovBest').textContent = best > 0 ? T.best + best : '';
+document.getElementById('ovTap').textContent = T.start;
+document.getElementById('tipTxt').textContent = T.tip;
+elScore.textContent = T.sc + '0';
+requestAnimationFrame(loop);
+</script>

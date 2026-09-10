@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Wind 🍃</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #7fb6dd; }
+  canvas { display: block; touch-action: none; }
+  nav { position: fixed; top: 10px; left: 10px; z-index: 10; }
+  nav a {
+    color: #f5eede; text-decoration: none; font-family: Arial, sans-serif;
+    background: rgba(20,26,34,0.75); border: 2px solid rgba(255,255,255,0.4);
+    padding: 5px 12px; border-radius: 999px; font-size: 0.78rem;
+  }
+  #hint[hidden] { display: none !important; }
+  #hint {
+    position: fixed; bottom: 14px; left: 0; right: 0; z-index: 10;
+    display: flex; justify-content: center; pointer-events: none;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif;
+    color: #ffffff; font-size: 0.85rem; text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  }
+</style>
+
+<nav><a href="../">← Golden Games</a></nav>
+<canvas id="cv"></canvas>
+<div id="hint" hidden></div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN WIND 🍃 — թղթի թերթիկը թռչում է քամու մեջ
+//  Քամին հրում է աջ, ձգողականությունը՝ ներքև։
+//  Հպիր ու պահիր՝ թերթիկը փչում ես վերև։
+//  Նպատակը՝ հասնել բաց պատուհանին՝ ճյուղերին ու թռչուններին չդիպչելով։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { title: 'Golden Wind 🍃', how1: 'Հպիր ու պահիր՝ թերթիկը բարձրանա', how2: 'Քամին ինքն է տանում աջ', how3: 'Մտիր բաց պատուհանը 🪟', tap: 'Հպիր՝ սկսելու', hold: 'Պահիր՝ վերև 👆', lvl: n => 'Մակարդակ ' + n, crash: 'Խփվեց 🍂 Փորձիր նորից', fell: 'Ընկա՜վ 🍂 Փորձիր նորից', win: 'Պատուհանում ես 🎉', done: 'Բոլոր պատուհանները գտար 🏆' },
+  ru: { title: 'Golden Wind 🍃', how1: 'Нажми и держи — листок поднимется', how2: 'Ветер сам несёт вправо', how3: 'Влети в открытое окно 🪟', tap: 'Коснись, чтобы начать', hold: 'Держи — вверх 👆', lvl: n => 'Уровень ' + n, crash: 'Врезался 🍂 Попробуй ещё', fell: 'Упал! 🍂 Попробуй ещё', win: 'Ты в окне! 🎉', done: 'Ты нашёл все окна 🏆' },
+  en: { title: 'Golden Wind 🍃', how1: 'Tap and hold to puff the paper up', how2: 'The wind carries it right by itself', how3: 'Fly into the open window 🪟', tap: 'Tap to start', hold: 'Hold to go up 👆', lvl: n => 'Level ' + n, crash: 'Bumped! 🍂 Try again', fell: 'It fell! 🍂 Try again', win: 'You made the window! 🎉', done: 'You found every window 🏆' },
+  es: { title: 'Golden Wind 🍃', how1: 'Toca y mantén para soplar el papel hacia arriba', how2: 'El viento lo lleva a la derecha', how3: 'Entra por la ventana abierta 🪟', tap: 'Toca para empezar', hold: 'Mantén para subir 👆', lvl: n => 'Nivel ' + n, crash: '¡Chocó! 🍂 Inténtalo otra vez', fell: '¡Se cayó! 🍂 Inténtalo otra vez', win: '¡Entraste por la ventana! 🎉', done: 'Encontraste todas las ventanas 🏆' },
+  fr: { title: 'Golden Wind 🍃', how1: 'Touche et garde le doigt pour souffler le papier vers le haut', how2: 'Le vent le pousse vers la droite', how3: 'Entre par la fenêtre ouverte 🪟', tap: 'Touche pour commencer', hold: 'Garde le doigt pour monter 👆', lvl: n => 'Niveau ' + n, crash: 'Il a heurté ! 🍂 Réessaie', fell: 'Il est tombé ! 🍂 Réessaie', win: 'Tu es dans la fenêtre ! 🎉', done: 'Tu as trouvé toutes les fenêtres 🏆' },
+  de: { title: 'Golden Wind 🍃', how1: 'Tippe und halte, um das Blatt nach oben zu pusten', how2: 'Der Wind trägt es von selbst nach rechts', how3: 'Flieg in das offene Fenster 🪟', tap: 'Tippe zum Starten', hold: 'Halten für nach oben 👆', lvl: n => 'Level ' + n, crash: 'Angestoßen! 🍂 Versuch es nochmal', fell: 'Es fiel! 🍂 Versuch es nochmal', win: 'Du bist im Fenster! 🎉', done: 'Du hast alle Fenster gefunden 🏆' },
+  ja: { title: 'Golden Wind 🍃', how1: 'おしっぱなしで紙をふき上げよう', how2: 'かぜが右へはこんでくれるよ', how3: 'あいている窓に入ろう 🪟', tap: 'タップでスタート', hold: 'おしたままで上へ 👆', lvl: n => 'レベル' + n, crash: 'ぶつかった！🍂 もう一回', fell: 'おちちゃった！🍂 もう一回', win: '窓に入れた！🎉', done: 'ぜんぶの窓を見つけたね 🏆' },
+  zh: { title: 'Golden Wind 🍃', how1: '按住屏幕，把纸吹上去', how2: '风会自己把它往右带', how3: '飞进打开的窗户 🪟', tap: '点一下开始', hold: '按住往上飞 👆', lvl: n => '第' + n + '关', crash: '撞到啦！🍂 再试一次', fell: '掉下去了！🍂 再试一次', win: '进窗户啦！🎉', done: '所有的窗户都找到了 🏆' },
+  it: { title: 'Golden Wind 🍃', how1: 'Tocca e tieni premuto per soffiare il foglio in alto', how2: 'Il vento lo porta a destra da solo', how3: 'Entra dalla finestra aperta 🪟', tap: 'Tocca per iniziare', hold: 'Tieni premuto per salire 👆', lvl: n => 'Livello ' + n, crash: 'Ha sbattuto! 🍂 Riprova', fell: 'È caduto! 🍂 Riprova', win: 'Sei nella finestra! 🎉', done: 'Hai trovato tutte le finestre 🏆' },
+  ka: { title: 'Golden Wind 🍃', how1: 'შეეხე და დაიჭირე — ფურცელი ზემოთ წავა', how2: 'ქარი თავად მიაქვს მარჯვნივ', how3: 'შეფრინდი ღია ფანჯარაში 🪟', tap: 'შეეხე დასაწყებად', hold: 'დაიჭირე ზემოთ 👆', lvl: n => 'დონე ' + n, crash: 'დაეჯახა! 🍂 კიდევ სცადე', fell: 'ჩავარდა! 🍂 კიდევ სცადე', win: 'ფანჯარაში ხარ! 🎉', done: 'ყველა ფანჯარა იპოვე 🏆' },
+  hi: { title: 'Golden Wind 🍃', how1: 'दबाकर रखो — काग़ज़ ऊपर उड़ेगा', how2: 'हवा उसे खुद दाईं ओर ले जाती है', how3: 'खुली खिड़की में उड़ो 🪟', tap: 'शुरू करने के लिए टैप करो', hold: 'ऊपर जाने के लिए दबाए रखो 👆', lvl: n => 'स्तर ' + n, crash: 'टकरा गया! 🍂 फिर कोशिश करो', fell: 'गिर गया! 🍂 फिर कोशिश करो', win: 'तुम खिड़की में हो! 🎉', done: 'तुमने सारी खिड़कियाँ ढूँढ लीं 🏆' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W = 0, H = 0, S = 1;
+function resize() {
+  W = cv.width = innerWidth; H = cv.height = innerHeight;
+  S = H / 700;
+}
+window.addEventListener('resize', resize);
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sPuff = () => tone(620 + Math.random() * 120, 0.07, 'sine', 0.05);
+const sBump = () => tone(170, 0.22, 'sawtooth', 0.14);
+const sFall = () => { tone(300, 0.25, 'sine', 0.12); tone(160, 0.3, 'sine', 0.12, 0.1); };
+const sWin = () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.2, 'triangle', 0.16, k * 0.09));
+
+// ——— Մակարդակները ———
+// bands՝ քամու գոտիներ [վերևից, ներքևից, աջ ուժ, վար/վեր ուժ]
+// obs՝ ճյուղեր [x, y, լայնք, հաստ], birds՝ թռչուններ [x, y, մեծություն, ճոճ, արագ]
+// win՝ պատուհանի բացվածքը [վերևից, ներքևից], sway՝ քամու քմահաճույքը
+const LEVELS = [
+  { bands: [[0.00, 1.00, 0.045, 0.000]], obs: [], birds: [], win: [0.28, 0.74], sway: 0.15 },
+  { bands: [[0.00, 1.00, 0.050, 0.000]], obs: [[0.42, 0.64, 0.18, 0.045]], birds: [], win: [0.20, 0.58], sway: 0.20 },
+  { bands: [[0.00, 0.50, 0.052, 0.010], [0.50, 1.00, 0.048, -0.008]], obs: [[0.34, 0.22, 0.16, 0.045], [0.60, 0.66, 0.18, 0.045]], birds: [], win: [0.36, 0.68], sway: 0.25 },
+  { bands: [[0.00, 1.00, 0.055, 0.000]], obs: [[0.30, 0.58, 0.14, 0.045], [0.62, 0.24, 0.16, 0.045]], birds: [[0.50, 0.44, 0.030, 0.10, 1.4]], win: [0.60, 0.86], sway: 0.30 },
+  { bands: [[0.00, 0.40, 0.050, 0.016], [0.40, 1.00, 0.056, -0.006]], obs: [[0.26, 0.30, 0.14, 0.045], [0.52, 0.70, 0.16, 0.045], [0.72, 0.40, 0.12, 0.045]], birds: [[0.44, 0.52, 0.030, 0.12, 1.2]], win: [0.14, 0.42], sway: 0.35 },
+  { bands: [[0.00, 0.34, 0.058, 0.018], [0.34, 0.70, 0.050, 0.000], [0.70, 1.00, 0.062, -0.012]], obs: [[0.24, 0.62, 0.14, 0.045], [0.46, 0.28, 0.16, 0.045], [0.68, 0.62, 0.16, 0.045]], birds: [[0.36, 0.44, 0.030, 0.14, 1.3], [0.62, 0.46, 0.030, 0.12, 1.7]], win: [0.24, 0.50], sway: 0.40 },
+  { bands: [[0.00, 0.45, 0.060, 0.020], [0.45, 1.00, 0.058, -0.010]], obs: [[0.20, 0.34, 0.13, 0.045], [0.40, 0.68, 0.15, 0.045], [0.58, 0.30, 0.15, 0.045], [0.76, 0.66, 0.13, 0.045]], birds: [[0.50, 0.50, 0.032, 0.16, 1.5], [0.70, 0.44, 0.030, 0.10, 2.0]], win: [0.52, 0.78], sway: 0.50 },
+  { bands: [[0.00, 0.30, 0.066, 0.024], [0.30, 0.62, 0.054, -0.004], [0.62, 1.00, 0.068, -0.016]], obs: [[0.18, 0.60, 0.13, 0.045], [0.36, 0.26, 0.14, 0.045], [0.54, 0.62, 0.14, 0.045], [0.72, 0.28, 0.14, 0.045]], birds: [[0.30, 0.44, 0.032, 0.16, 1.6], [0.52, 0.44, 0.030, 0.14, 2.1], [0.74, 0.50, 0.030, 0.12, 1.2]], win: [0.30, 0.54], sway: 0.60 },
+];
+let level = 1;
+try { level = Number(localStorage.getItem('aren-wind-level') || 1); } catch (e) {}
+if (!(level >= 1) || level > LEVELS.length) level = 1;
+
+// ——— Խաղի վիճակը ———
+const WALLX = 0.90;             // պատը՝ էկրանի աջ մասում
+let state = 'menu';             // menu | play | crash | win | done
+let endedAt = 0;
+let holding = false;
+let paper = { x: 0, y: 0, vx: 0, vy: 0, rot: 0 };
+let birds = [];
+let msg = '', msgAt = 0;
+let t0 = 0, frame = 0;
+let leaves = [];                // ֆոնի փոքրիկ տերևները
+
+function curLevel() { return LEVELS[Math.min(level, LEVELS.length) - 1]; }
+
+function newLevel() {
+  const L = curLevel();
+  paper = { x: W * 0.09, y: H * 0.5, vx: 0, vy: 0, rot: 0 };
+  birds = L.birds.map(b => ({ x: b[0], y: b[1], r: b[2], amp: b[3], spd: b[4], ph: Math.random() * 6.28 }));
+  leaves = [];
+  for (let i = 0; i < 14; i++) leaves.push({ x: Math.random(), y: Math.random(), s: 0.4 + Math.random() * 0.8 });
+  t0 = Date.now();
+  state = 'play';
+  document.getElementById('hint').hidden = false;
+  document.getElementById('hint').textContent = T.hold;
+}
+
+// Այս y-ի վրա ի՞նչ քամի է փչում
+function windAt(ny, gust) {
+  const L = curLevel();
+  for (const b of L.bands) {
+    if (ny >= b[0] && ny <= b[1]) return [b[2] * gust, b[3] * gust];
+  }
+  const last = L.bands[L.bands.length - 1];
+  return [last[2] * gust, last[3] * gust];
+}
+
+// ——— Հպումը ———
+cv.addEventListener('pointerdown', (e) => {
+  initAudio();
+  if (state === 'menu' || state === 'done' || state === 'crash') {
+    if (Date.now() - endedAt < 1100) return;   // փոքրիկ դադար, որ պատահական հպումը չսկսի
+    if (state === 'done') level = 1;
+    newLevel();
+    return;
+  }
+  if (state === 'play') { holding = true; sPuff(); }
+});
+function release() { holding = false; }
+cv.addEventListener('pointerup', release);
+cv.addEventListener('pointercancel', release);
+cv.addEventListener('pointerleave', release);
+
+function crash(kind) {
+  state = 'crash';
+  endedAt = Date.now();
+  holding = false;
+  msg = kind === 'fall' ? T.fell : T.crash;
+  msgAt = Date.now();
+  if (kind === 'fall') sFall(); else sBump();
+  document.getElementById('hint').hidden = true;
+}
+
+function win() {
+  state = 'win';
+  endedAt = Date.now();
+  holding = false;
+  sWin();
+  document.getElementById('hint').hidden = true;
+  if (level < LEVELS.length) {
+    level++;
+    try { localStorage.setItem('aren-wind-level', String(level)); } catch (e) {}
+    setTimeout(newLevel, 1500);
+  } else {
+    try { localStorage.setItem('aren-wind-level', String(LEVELS.length)); } catch (e) {}
+    setTimeout(() => { state = 'done'; endedAt = Date.now(); }, 1800);
+  }
+}
+
+// ——— Քայլը ———
+function step() {
+  frame++;
+  const L = curLevel();
+  const tt = (Date.now() - t0) / 1000;
+  const gust = 1 + L.sway * Math.sin(tt * 1.1) * Math.cos(tt * 0.37);
+
+  // ֆոնի տերևները միշտ թռչում են
+  for (const lf of leaves) {
+    lf.x += 0.0016 * lf.s * gust;
+    lf.y += Math.sin((frame + lf.s * 100) * 0.02) * 0.0008;
+    if (lf.x > 1.05) { lf.x = -0.05; lf.y = Math.random(); }
+  }
+  // թռչունները ճոճվում են
+  for (const b of birds) b.cy = b.y + Math.sin(tt * b.spd + b.ph) * b.amp;
+
+  if (state !== 'play') return;
+
+  const r = paper.x / W, ny = paper.y / H;
+  const [wx, wy] = windAt(ny, gust);
+  paper.vx += wx * S;
+  paper.vy += (0.115 + wy) * S;
+  if (holding) paper.vy -= 0.30 * S;
+  paper.vx *= 0.99;
+  paper.vy *= 0.97;
+  paper.x += paper.vx;
+  paper.y += paper.vy;
+  paper.rot = Math.max(-0.7, Math.min(0.7, paper.vy * 0.06 + Math.sin(frame * 0.06) * 0.12));
+
+  const pr = 11 * S;
+  // վերևի ու ձախի եզրերը՝ փափուկ, ետ են վերադարձնում
+  if (paper.y < pr) { paper.y = pr; paper.vy = Math.abs(paper.vy) * 0.4; }
+  if (paper.x < pr) { paper.x = pr; paper.vx = Math.abs(paper.vx) * 0.4; }
+  // ներքև ընկավ՝ պարտվեցիր
+  if (paper.y > H * 0.955) { crash('fall'); return; }
+
+  // ճյուղերը
+  for (const o of L.obs) {
+    const ox = o[0] * W, oy = o[1] * H, ow = o[2] * W, oh = o[3] * H;
+    const cx = Math.max(ox, Math.min(paper.x, ox + ow));
+    const cy = Math.max(oy, Math.min(paper.y, oy + oh));
+    if (Math.hypot(paper.x - cx, paper.y - cy) < pr) { crash('bump'); return; }
+  }
+  // թռչունները
+  for (const b of birds) {
+    const bx = b.x * W, by = b.cy * H, br = b.r * H;
+    if (Math.hypot(paper.x - bx, paper.y - by) < pr + br) { crash('bump'); return; }
+  }
+  // պատն ու պատուհանը
+  const wallX = WALLX * W;
+  const inWin = ny > L.win[0] && ny < L.win[1];
+  if (!inWin && paper.x + pr > wallX) {
+    paper.x = wallX - pr;
+    paper.vx = -Math.abs(paper.vx) * 0.5 - 0.6;
+  }
+  if (inWin && paper.x > wallX + W * 0.03) { win(); return; }
+}
+
+// ——— Նկարելը ———
+// Էմոջին կտավի վրա չենք նկարում (այնտեղ վատ է երևում) — մնում է միայն DOM-ի տեքստում
+function plain(s) {
+  return String(s).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2B00}-\u{2BFF}\u{200D}]/gu, '').replace(/\s+/g, ' ').trim();
+}
+function drawText(txt, x, y, size, color, bold) {
+  ctx.fillStyle = color;
+  ctx.font = (bold ? 'bold ' : '') + size + 'px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(plain(txt), x, y);
+}
+function arrow(x, y, len, thick, color) {
+  ctx.strokeStyle = color; ctx.lineWidth = thick; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x, y); ctx.lineTo(x + len, y);
+  ctx.moveTo(x + len, y); ctx.lineTo(x + len - thick * 2.2, y - thick * 1.6);
+  ctx.moveTo(x + len, y); ctx.lineTo(x + len - thick * 2.2, y + thick * 1.6);
+  ctx.stroke();
+}
+function drawPaper(x, y, rot) {
+  ctx.save();
+  ctx.translate(x, y); ctx.rotate(rot);
+  const w = 20 * S, h = 26 * S;
+  ctx.fillStyle = '#fdfaf0';
+  ctx.strokeStyle = '#c9bda0'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-w / 2, -h / 2);
+  ctx.lineTo(w / 2, -h / 2 + 2);
+  ctx.lineTo(w / 2 - 2, h / 2);
+  ctx.lineTo(-w / 2 + 1, h / 2 - 3);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = '#d8cfb8'; ctx.lineWidth = 1.5;
+  for (let i = -1; i <= 1; i++) {
+    ctx.beginPath();
+    ctx.moveTo(-w / 2 + 3, i * 6 * S);
+    ctx.lineTo(w / 2 - 4, i * 6 * S);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawBird(x, y, r, flap) {
+  ctx.fillStyle = '#2f3a4d';
+  ctx.beginPath(); ctx.ellipse(x, y, r * 1.1, r * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#2f3a4d'; ctx.lineWidth = Math.max(3, r * 0.35); ctx.lineCap = 'round';
+  const up = Math.sin(flap) * r;
+  ctx.beginPath();
+  ctx.moveTo(x - r * 0.2, y - r * 0.2);
+  ctx.lineTo(x - r * 1.5, y - r * 0.2 - up);
+  ctx.moveTo(x + r * 0.2, y - r * 0.2);
+  ctx.lineTo(x + r * 1.5, y - r * 0.2 - up);
+  ctx.stroke();
+  ctx.fillStyle = '#f3a43c';
+  ctx.beginPath();
+  ctx.moveTo(x + r * 1.0, y);
+  ctx.lineTo(x + r * 1.6, y + r * 0.15);
+  ctx.lineTo(x + r * 1.0, y + r * 0.3);
+  ctx.closePath(); ctx.fill();
+}
+function drawBranch(o) {
+  const x = o[0] * W, y = o[1] * H, w = o[2] * W, h = o[3] * H;
+  ctx.fillStyle = '#6b4a2a';
+  ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = '#3f7a34';
+  for (let i = 0; i < 5; i++) {
+    const lx = x + (i + 0.5) * (w / 5);
+    ctx.beginPath();
+    ctx.ellipse(lx, y - h * 0.5, w * 0.08, h * 0.7, (i % 2 ? 0.5 : -0.5), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(lx, y + h * 1.5, w * 0.08, h * 0.7, (i % 2 ? -0.5 : 0.5), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function draw() {
+  const L = curLevel();
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#6aa9d8'); g.addColorStop(1, '#bfe0f2');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // ամպերը
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  for (let i = 0; i < 3; i++) {
+    const cxp = ((i * 0.37 + frame * 0.0004) % 1.2 - 0.1) * W;
+    const cyp = H * (0.12 + i * 0.09);
+    for (let k = 0; k < 3; k++) {
+      ctx.beginPath();
+      ctx.arc(cxp + k * 22 * S, cyp + (k === 1 ? -8 * S : 0), (k === 1 ? 22 : 16) * S, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  // քամու սլաքները՝ ամեն գոտում
+  const tt = (Date.now() - t0) / 1000;
+  const gust = 1 + L.sway * Math.sin(tt * 1.1) * Math.cos(tt * 0.37);
+  for (const b of L.bands) {
+    const mid = (b[0] + b[1]) / 2 * H;
+    const strength = b[2] * gust;
+    const len = Math.max(16, strength * 900 * S * 0.5);
+    for (let k = 0; k < 3; k++) {
+      const ax = ((frame * (0.6 + strength * 12) + k * 220) % (W * 0.8));
+      const ay = mid + (k - 1) * (b[1] - b[0]) * H * 0.24;
+      arrow(ax, ay, len, Math.max(2, 3 * S), 'rgba(255,255,255,0.45)');
+      if (b[3] > 0.004) arrow(ax, ay + 10 * S, len * 0.5, 2, 'rgba(255,255,255,0.28)');
+    }
+  }
+  // ֆոնի տերևները
+  ctx.fillStyle = 'rgba(76,140,62,0.55)';
+  for (const lf of leaves) {
+    ctx.beginPath();
+    ctx.ellipse(lf.x * W, lf.y * H, 5 * S * lf.s, 3 * S * lf.s, lf.x * 9, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // հողն ու խոտը
+  ctx.fillStyle = '#4c8c3e';
+  ctx.fillRect(0, H * 0.96, W, H * 0.04);
+
+  // ճյուղերը
+  for (const o of L.obs) drawBranch(o);
+  // թռչունները
+  for (const b of birds) drawBird(b.x * W, (b.cy === undefined ? b.y : b.cy) * H, b.r * H, tt * 8);
+
+  // պատը՝ պատուհանով
+  const wallX = WALLX * W, wallW = W - wallX;
+  ctx.fillStyle = '#8d6a4f';
+  ctx.fillRect(wallX, 0, wallW, H);
+  ctx.fillStyle = '#7a5a42';
+  for (let y = 0; y < H; y += 22 * S) {
+    ctx.fillRect(wallX, y, wallW, 2);
+  }
+  const wy0 = L.win[0] * H, wy1 = L.win[1] * H;
+  const wg = ctx.createLinearGradient(wallX, wy0, wallX, wy1);
+  wg.addColorStop(0, '#2a2140'); wg.addColorStop(1, '#4a3a66');
+  ctx.fillStyle = wg;
+  ctx.fillRect(wallX, wy0, wallW, wy1 - wy0);
+  ctx.strokeStyle = '#f5eede'; ctx.lineWidth = Math.max(3, 4 * S);
+  ctx.strokeRect(wallX + 2, wy0, wallW - 2, wy1 - wy0);
+  ctx.fillStyle = 'rgba(255,220,140,0.65)';
+  ctx.fillRect(wallX + 6, wy0 + 8, wallW - 14, 6);
+
+  // թերթիկը
+  if (state !== 'menu' && state !== 'done') drawPaper(paper.x, paper.y, paper.rot);
+
+  // HUD
+  if (state !== 'menu' && state !== 'done') {
+    drawText(T.lvl(level), W / 2, 34, Math.min(19, W * 0.05), '#ffffff', true);
+  }
+  if (msg && Date.now() - msgAt < 1400) {
+    drawText(msg, W / 2, H * 0.32, Math.min(24, W * 0.06), '#ff5f5f', true);
+  }
+  if (state === 'win') {
+    drawText(T.win, W / 2, H * 0.3, Math.min(26, W * 0.065), '#1d6b3a', true);
+  }
+  if (state === 'menu' || state === 'done') {
+    ctx.fillStyle = 'rgba(10, 20, 40, 0.62)';
+    ctx.fillRect(0, 0, W, H);
+    drawText(T.title, W / 2, H * 0.24, Math.min(36, W * 0.085), '#ffe9a8', true);
+    if (state === 'done') drawText(T.done, W / 2, H * 0.33, Math.min(20, W * 0.05), '#a8f0c0', true);
+    drawText(T.how1, W / 2, H * 0.42, Math.min(16, W * 0.043), '#ffffff');
+    drawText(T.how2, W / 2, H * 0.48, Math.min(16, W * 0.043), '#ffffff');
+    drawText(T.how3, W / 2, H * 0.54, Math.min(16, W * 0.043), '#ffffff');
+    drawText(T.lvl(level), W / 2, H * 0.64, Math.min(17, W * 0.045), '#cfd8ff');
+    if (Math.floor(Date.now() / 600) % 2) drawText(T.tap, W / 2, H * 0.73, Math.min(17, W * 0.045), '#a8f0c0');
+  }
+}
+
+function loop() { step(); draw(); requestAnimationFrame(loop); }
+resize();
+document.getElementById('hint').hidden = true;
+loop();
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>

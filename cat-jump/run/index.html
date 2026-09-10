@@ -67,17 +67,17 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { score: 'Միավոր՝ ', best: 'Ռեկորդ՝ ', title: 'Golden Cat 🐱', sub: 'Դիպչիր՝ թռչելու · Ագռավ տեսար՝ ՄԻ՛ թռչիր', ouch: 'Ա՜խ, բախվեցիր 😿', overSub: n => 'Հավաքեցիր ' + n + ' միավոր · Դիպչիր՝ նորից խաղալու' },
-  ru: { score: 'Очки: ', best: 'Рекорд: ', title: 'Golden Cat 🐱', sub: 'Нажми — прыжок · Увидел ворону — НЕ прыгай', ouch: 'Ой, столкнулся 😿', overSub: n => 'Набрал ' + n + ' очков · Нажми, чтобы играть снова' },
-  en: { score: 'Score: ', best: 'Best: ', title: 'Golden Cat 🐱', sub: 'Tap to jump · See a crow — DON’T jump', ouch: 'Ouch, you crashed 😿', overSub: n => 'You got ' + n + ' points · Tap to play again' },
-  es: { score: 'Puntos: ', best: 'Récord: ', title: 'Golden Cat 🐱', sub: 'Toca para saltar · ¿Un cuervo? NO saltes', ouch: 'Ay, chocaste 😿', overSub: n => 'Hiciste ' + n + ' puntos · Toca para jugar otra vez' },
-  fr: { score: 'Points : ', best: 'Record : ', title: 'Golden Cat 🐱', sub: 'Touche pour sauter · Un corbeau ? NE saute PAS', ouch: 'Aïe, tu t’es cogné 😿', overSub: n => 'Tu as fait ' + n + ' points · Touche pour rejouer' },
-  de: { score: 'Punkte: ', best: 'Rekord: ', title: 'Golden Cat 🐱', sub: 'Tippe zum Springen · Krähe in Sicht? NICHT springen', ouch: 'Autsch, zusammengestoßen 😿', overSub: n => 'Du hast ' + n + ' Punkte · Tippe, um nochmal zu spielen' },
-  ja: { score: 'スコア：', best: 'ベスト：', title: 'Golden Cat 🐱', sub: 'タップでジャンプ · カラスが来たらジャンプしない！', ouch: 'いたっ、ぶつかった 😿', overSub: n => n + 'ポイントだったよ · タップでもう一回' },
-  zh: { score: '得分：', best: '纪录：', title: 'Golden Cat 🐱', sub: '点一下就跳 · 看到乌鸦千万别跳', ouch: '哎呀，撞到了 😿', overSub: n => '你得了' + n + '分 · 点一下再玩一次' },
-  it: { score: 'Punti: ', best: 'Record: ', title: 'Golden Cat 🐱', sub: 'Tocca per saltare · Vedi un corvo? NON saltare', ouch: 'Ahi, ti sei scontrato 😿', overSub: n => 'Hai fatto ' + n + ' punti · Tocca per rigiocare' },
-  ka: { score: 'ქულა: ', best: 'რეკორდი: ', title: 'Golden Cat 🐱', sub: 'დააჭირე ასახტომად · ყვავი დაინახე? ნუ ახტები', ouch: 'ვაი, დაეჯახე 😿', overSub: n => 'დააგროვე ' + n + ' ქულა · დააჭირე თავიდან სათამაშოდ' },
-  hi: { score: 'स्कोर: ', best: 'रिकॉर्ड: ', title: 'Golden Cat 🐱', sub: 'कूदने के लिए टैप करो · कौवा दिखे तो मत कूदो', ouch: 'आउच, टकरा गए 😿', overSub: n => 'तुमने ' + n + ' अंक बनाए · फिर से खेलने के लिए टैप करो' },
+  hy: { score: 'Միավոր՝ ', best: 'Ռեկորդ՝ ', title: 'Golden Cat 🐱', sub: 'Դիպչիր՝ թռչելու · Ագռավ տեսար՝ ՄԻ՛ թռչիր', ouch: 'Ա՜խ, բախվեցիր 😿', overSub: n => 'Հավաքեցիր ' + n + ' միավոր · Դիպչիր՝ նորից խաղալու', boss: 'ՀՍԿԱ ԱԳՌԱՎ!', bossTip: 'Երեք հարձակում — ամեն անգամ ՎԵՐ ԹՌԻՐ' },
+  ru: { score: 'Очки: ', best: 'Рекорд: ', title: 'Golden Cat 🐱', sub: 'Нажми — прыжок · Увидел ворону — НЕ прыгай', ouch: 'Ой, столкнулся 😿', overSub: n => 'Набрал ' + n + ' очков · Нажми, чтобы играть снова', boss: 'ГИГАНТСКАЯ ВОРОНА!', bossTip: 'Три атаки — каждый раз ПРЫГАЙ' },
+  en: { score: 'Score: ', best: 'Best: ', title: 'Golden Cat 🐱', sub: 'Tap to jump · See a crow — DON’T jump', ouch: 'Ouch, you crashed 😿', overSub: n => 'You got ' + n + ' points · Tap to play again', boss: 'GIANT CROW!', bossTip: 'Three dives — JUMP over each one' },
+  es: { score: 'Puntos: ', best: 'Récord: ', title: 'Golden Cat 🐱', sub: 'Toca para saltar · ¿Un cuervo? NO saltes', ouch: 'Ay, chocaste 😿', overSub: n => 'Hiciste ' + n + ' puntos · Toca para jugar otra vez', boss: '¡CUERVO GIGANTE!', bossTip: 'Tres ataques — SALTA cada vez' },
+  fr: { score: 'Points : ', best: 'Record : ', title: 'Golden Cat 🐱', sub: 'Touche pour sauter · Un corbeau ? NE saute PAS', ouch: 'Aïe, tu t’es cogné 😿', overSub: n => 'Tu as fait ' + n + ' points · Touche pour rejouer', boss: 'CORBEAU GÉANT !', bossTip: 'Trois attaques — SAUTE à chaque fois' },
+  de: { score: 'Punkte: ', best: 'Rekord: ', title: 'Golden Cat 🐱', sub: 'Tippe zum Springen · Krähe in Sicht? NICHT springen', ouch: 'Autsch, zusammengestoßen 😿', overSub: n => 'Du hast ' + n + ' Punkte · Tippe, um nochmal zu spielen', boss: 'RIESENKRÄHE!', bossTip: 'Drei Angriffe — SPRING jedes Mal' },
+  ja: { score: 'スコア：', best: 'ベスト：', title: 'Golden Cat 🐱', sub: 'タップでジャンプ · カラスが来たらジャンプしない！', ouch: 'いたっ、ぶつかった 😿', overSub: n => n + 'ポイントだったよ · タップでもう一回', boss: 'きょだいガラス！', bossTip: '３かい こうげき — ジャンプで よけろ' },
+  zh: { score: '得分：', best: '纪录：', title: 'Golden Cat 🐱', sub: '点一下就跳 · 看到乌鸦千万别跳', ouch: '哎呀，撞到了 😿', overSub: n => '你得了' + n + '分 · 点一下再玩一次', boss: '巨型乌鸦！', bossTip: '三次俯冲 — 每次都要跳' },
+  it: { score: 'Punti: ', best: 'Record: ', title: 'Golden Cat 🐱', sub: 'Tocca per saltare · Vedi un corvo? NON saltare', ouch: 'Ahi, ti sei scontrato 😿', overSub: n => 'Hai fatto ' + n + ' punti · Tocca per rigiocare', boss: 'CORVO GIGANTE!', bossTip: 'Tre attacchi — SALTA ogni volta' },
+  ka: { score: 'ქულა: ', best: 'რეკორდი: ', title: 'Golden Cat 🐱', sub: 'დააჭირე ასახტომად · ყვავი დაინახე? ნუ ახტები', ouch: 'ვაი, დაეჯახე 😿', overSub: n => 'დააგროვე ' + n + ' ქულა · დააჭირე თავიდან სათამაშოდ', boss: 'გიგანტური ყვავი!', bossTip: 'სამი შეტევა — ყოველ ჯერზე ახტი' },
+  hi: { score: 'स्कोर: ', best: 'रिकॉर्ड: ', title: 'Golden Cat 🐱', sub: 'कूदने के लिए टैप करो · कौवा दिखे तो मत कूदो', ouch: 'आउच, टकरा गए 😿', overSub: n => 'तुमने ' + n + ' अंक बनाए · फिर से खेलने के लिए टैप करो', boss: 'विशाल कौवा!', bossTip: 'तीन हमले — हर बार कूदो' },
 };
 const T = TRL[ggLang] || TRL.hy;
 const canvas = document.getElementById('game');
@@ -135,6 +135,16 @@ let lives = 3;                // ❤️❤️❤️ երեք կյանք
 let invincible = 0;           // հարվածից հետո մի պահ անխոցելի ես (թարթում ես)
 let frame = 0;
 
+// ——— ՀՍԿԱ ԱԳՌԱՎԸ 🪶 (բոսը) ———
+// Ամեն 20 արկղը մեկ դուրս է գալիս մի ահռելի ագռավ։
+// Աջից ներս է սլանում, կախվում է օդում, հետո երեք անգամ
+// սուրում է դեպի քեզ՝ գետնի մոտով։ Ամեն սուրալու ժամանակ ՎԵՐ ԹՌԻՐ։
+// Երեքն էլ դիմացար՝ +10 միավոր, փոքրիկ շեփոր ու խաղը մի քիչ արագանում է։
+let boss = null;              // երբ null է՝ բոս չկա
+let boxesPassed = 0;          // քանի արկղ ես անցել ընդհանուր
+const BOSS_EVERY = 20;        // այսքան արկղը մեկ՝ բոս
+const BOSS_DIVES = 3;         // քանի հարձակում է անում
+
 // ——— Գիշեր-ցերեկի հերթափոխը ———
 // 0-20 միավոր՝ ցերեկ, 20-40՝ գիշեր, 40-70՝ ցերեկ, 70-80՝ գիշեր, 80-ից՝ ցերեկ
 function isNightNow() {
@@ -173,6 +183,13 @@ function resize() {
 
   cat.x = Math.max(70, Math.min(130, W * 0.16));
   if (!cat.jumping) { cat.y = GROUND; cat.vy = 0; }
+
+  // եթե հսկա ագռավը հենց հիմա օդում է, նրա տեղերն էլ ենք նորից հաշվում
+  if (boss) {
+    boss.hoverX = W - 130;
+    boss.hoverY = Math.max(70, GROUND - 175);
+    boss.attackY = GROUND - 34;
+  }
 
   // ամպերը նորից ենք ցրում երկնքով
   clouds = [];
@@ -245,6 +262,21 @@ function sound(name) {
   if (name === 'hurt') {
     // սիրտ կորցնելը՝ կարճ «ա՛յ» (դեռ չմեռար, շարունակիր)
     beep(330, 140, 'square', 0.2, 0.3);
+  }
+  if (name === 'bosscall') {
+    // հսկա ագռավի կռռոցը՝ խռպոտ ու ցածր «կռա՛ա»
+    beep(300, 120, 'sawtooth', 0.35, 0.28);
+    beep(200, 90, 'square', 0.3, 0.2, 0.22);
+  }
+  if (name === 'bossdive') {
+    // սուրալը՝ վերևից ներքև սահող սուլոց
+    beep(700, 180, 'square', 0.3, 0.2);
+  }
+  if (name === 'fanfare') {
+    // բոսին դիմացար՝ փոքրիկ շեփոր «տա-տա-տա՜»
+    beep(659, 659, 'triangle', 0.13, 0.32);
+    beep(784, 784, 'triangle', 0.13, 0.32, 0.13);
+    beep(1047, 1047, 'triangle', 0.35, 0.36, 0.26);
   }
   if (name === 'win') {
     // հաղթանակի շեփորները՝ «տա-տա-տա-տաաա՜»
@@ -334,6 +366,8 @@ function restart() {
   invincible = 0;
   score = 0;
   speed = 5;
+  boss = null;                // հսկա ագռավը գնում է հանգստանալու
+  boxesPassed = 0;
   cat.y = GROUND;
   cat.vy = 0;
   cat.jumping = false;
@@ -564,6 +598,198 @@ function drawBird(b) {
   ctx.fill();
 
   ctx.restore();
+}
+
+// ——— ՀՍԿԱ ԱԳՌԱՎԸ 🪶 ———
+// Նույն ագռավն է, բայց շա՜տ մեծ ու չար։ Նկարում ենք միայն ձևերով։
+function spawnBoss() {
+  boss = {
+    x: W + 200,                    // սկզբում էկրանից դուրս է՝ աջում
+    y: 80,
+    hoverX: W - 130,               // օդում կախվելու տեղը
+    hoverY: Math.max(70, GROUND - 175),
+    attackY: GROUND - 34,          // սուրալիս այսքան ցածր է իջնում
+    phase: 'enter',                // enter → hover → dive → back → leave
+    t: 0,
+    dives: 0,                      // քանի հարձակում է արել
+  };
+  sound('bosscall');
+}
+
+function updateBoss() {
+  const b = boss;
+  b.t++;
+
+  if (b.phase === 'enter') {
+    // աջից ներս է սլանում
+    b.x += (b.hoverX - b.x) * 0.06 - 1.5;
+    b.y += (b.hoverY - b.y) * 0.06;
+    if (b.x <= b.hoverX + 4) { b.phase = 'hover'; b.t = 0; }
+  } else if (b.phase === 'hover') {
+    // օդում կախված է ու թևերով «սպառնում» — սա նախազգուշացումն է
+    b.x += (b.hoverX - b.x) * 0.1;
+    b.y = b.hoverY + Math.sin(b.t * 0.12) * 10;
+    if (b.t > 55) { b.phase = 'dive'; b.t = 0; sound('bossdive'); }
+  } else if (b.phase === 'dive') {
+    // սուրում է ձախ՝ գետնի մոտով. հենց հիմա պիտի վեր թռչես
+    b.x -= speed + 5;
+    b.y += (b.attackY - b.y) * 0.12;
+    if (b.x < -160) {
+      b.dives++;
+      if (b.dives >= BOSS_DIVES) {
+        // Դիմացա՜ր բոլոր հարձակումներին 🎉
+        b.phase = 'leave';
+        b.t = 0;
+        score += 10;
+        speed += 0.4;                       // խաղը մի քիչ արագանում է
+        popups.push({ x: cat.x + 20, y: cat.y - 95, life: 60, text: '+10' });
+        sound('fanfare');
+        if (score > best) { best = score; localStorage.setItem('cat-best', best); }
+      } else {
+        // նորից գնում է աջ ծայրը ու պատրաստվում է հաջորդ սուրալուն
+        b.phase = 'back';
+        b.t = 0;
+        b.x = W + 180;
+        b.y = b.hoverY - 40;
+      }
+    }
+  } else if (b.phase === 'back') {
+    b.x += (b.hoverX - b.x) * 0.09 - 1;
+    b.y += (b.hoverY - b.y) * 0.09;
+    if (b.x <= b.hoverX + 4) { b.phase = 'hover'; b.t = 0; }
+  } else if (b.phase === 'leave') {
+    // հաղթված ագռավը վեր-աջ է փախչում
+    b.x += 8;
+    b.y -= 4.5;
+    if (b.x > W + 260 || b.y < -160) boss = null;
+    return;
+  }
+
+  // Բախվեցի՞նք — վտանգավոր է միայն սուրալու պահին
+  if (b.phase === 'dive' && invincible <= 0) {
+    const catLeft = cat.x - 26 * CAT_SIZE, catRight = cat.x + 38 * CAT_SIZE;
+    const catBottom = cat.y, catTop = cat.y - 64 * CAT_SIZE;
+    // Բախման վանդակը ագռավից փոքր է ու ցածր՝ որ թռիչքն ազնիվ լինի.
+    // բավական է վեր թռչես, ու հսկան կանցնի տակովդ։
+    const hit = catRight > b.x - 24 && catLeft < b.x + 24 &&
+                catBottom > b.y - 20 && catTop < b.y + 26;
+    if (hit) {
+      lives--;
+      if (lives <= 0) {
+        sound('crash');
+        gameOver = true;
+        running = false;
+      } else {
+        sound('hurt');
+        invincible = 90;
+      }
+    }
+  }
+}
+
+function drawBoss() {
+  const b = boss;
+  ctx.save();
+  ctx.translate(b.x, b.y);
+  ctx.scale(3, 3);                           // սովորական ագռավից 3 անգամ մեծ
+
+  const flap = Math.sin(frame * (b.phase === 'dive' ? 0.5 : 0.25)) * 12;
+
+  // հետևի թևը
+  ctx.fillStyle = '#3a3a48';
+  ctx.beginPath();
+  ctx.moveTo(2, -2);
+  ctx.lineTo(16, -8 + flap * 0.7);
+  ctx.lineTo(4, 3);
+  ctx.closePath();
+  ctx.fill();
+
+  // պոչը
+  ctx.beginPath();
+  ctx.moveTo(12, 0);
+  ctx.lineTo(24, -5);
+  ctx.lineTo(24, 5);
+  ctx.closePath();
+  ctx.fill();
+
+  // մարմինը
+  ctx.fillStyle = '#4a4a5a';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 16, 9, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // առջևի թևը թափահարում է (մի քիչ բաց գույն է՝ որ շարժումը երևա)
+  ctx.fillStyle = '#5e5e73';
+  ctx.beginPath();
+  ctx.moveTo(-2, -2);
+  ctx.lineTo(-14, -10 - flap);
+  ctx.lineTo(6, -4);
+  ctx.closePath();
+  ctx.fill();
+
+  // ճանկերը՝ ներքևից
+  ctx.strokeStyle = '#f5a623';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(-4, 8); ctx.lineTo(-6, 12);
+  ctx.moveTo(2, 8); ctx.lineTo(4, 12);
+  ctx.stroke();
+
+  // կտուցը՝ մեծ ու սուր
+  ctx.fillStyle = '#f5a623';
+  ctx.beginPath();
+  ctx.moveTo(-15, -1); ctx.lineTo(-27, 2); ctx.lineTo(-15, 5);
+  ctx.closePath();
+  ctx.fill();
+
+  // աչքը՝ կարմիր ու չար
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(-9, -3, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#e63946';
+  ctx.beginPath();
+  ctx.arc(-10, -3, 1.6, 0, Math.PI * 2);
+  ctx.fill();
+
+  // զայրացած հոնքը
+  ctx.strokeStyle = '#23232e';
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.moveTo(-13, -7); ctx.lineTo(-5, -4.5);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// Բոսի գրությունն ու մնացած հարձակումների կետիկները
+function drawBossHud() {
+  const b = boss;
+  if (b.phase === 'leave') return;
+
+  // Գրությունը դնում ենք կերպարի կոճակներից ցածր, որ ոչինչ չծածկվի
+  const wy = Math.min(190, H * 0.34);
+
+  // նախազգուշացումը թարթում է, որ աչքի զարնի
+  if (b.phase === 'enter' || b.phase === 'hover') {
+    ctx.globalAlpha = 0.55 + Math.sin(frame * 0.25) * 0.45;
+    ctx.fillStyle = '#e63946';
+    ctx.font = 'bold 26px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(T.boss, W / 2, wy);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = mixColor([35, 64, 92], [234, 243, 255], night);
+    ctx.font = '15px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.fillText(T.bossTip, W / 2, wy + 26);
+  }
+
+  // մնացած հարձակումները՝ երեք փետուր-կետիկ
+  for (let i = 0; i < BOSS_DIVES; i++) {
+    ctx.fillStyle = i < BOSS_DIVES - b.dives ? '#e63946' : 'rgba(70,70,95,0.4)';
+    ctx.beginPath();
+    ctx.ellipse(W / 2 + (i - 1) * 22, wy + 48, 7, 4.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 // ——— Նկարում ենք ձուկը ———
@@ -817,9 +1043,12 @@ function update() {
       if (c.x < -60) c.x = W + 60;
     }
 
+    // հսկա ագռավի հերթը (երբ բոս կա, նոր արկղ չենք ուղարկում)
+    if (boss) updateBoss();
+
     // նոր խոչընդոտ ենք ավելացնում
     const last = boxes[boxes.length - 1];
-    if (!last || last.x < W - 260 - Math.random() * 220) {
+    if (!boss && (!last || last.x < W - 260 - Math.random() * 220)) {
       // Ագռավները միայն ԳԻՇԵՐՆ են դուրս գալիս ու ԲԱՐՁՐԻՑ են թռչում.
       // թռար՝ կխփվես նրան, տեղում մնացիր՝ կանցնի գլխիդ վրայով 😉
       if (night > 0.5 && Math.random() < 0.3) {
@@ -873,6 +1102,9 @@ function update() {
       if (!b.passed && b.x + b.w < cat.x - 30) {
         b.passed = true;
         score++;
+        // ամեն 20 արկղը մեկ՝ հսկա ագռավը դուրս է գալիս 🪶
+        boxesPassed++;
+        if (!boss && !won && boxesPassed % BOSS_EVERY === 0) spawnBoss();
         // մինչև 40 միավոր՝ հանգիստ տեմպ, 40-ից հետո ամեն 5 միավորը արագացնում է
         if (score >= 40 && score % 5 === 0) speed += 0.5;
         if (score > best) {
@@ -912,9 +1144,11 @@ function update() {
   drawWorld();
   for (const b of boxes) b.type === 'bird' ? drawBird(b) : drawBox(b);
   for (const f of fishes) drawFish(f);
+  if (boss) drawBoss();
   drawCat();
   drawPopups();
   drawScore();
+  if (boss) drawBossHud();
 
   if (!running && !gameOver && !won) {
     drawCenterText(T.title, T.sub);

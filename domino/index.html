@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Domino 🁢</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #23180f; }
+  canvas { display: block; touch-action: none; }
+  nav { position: fixed; top: 10px; left: 10px; z-index: 10; }
+  nav a {
+    color: #f5eede; text-decoration: none; font-family: Arial, sans-serif;
+    background: rgba(20,26,34,0.75); border: 2px solid rgba(255,255,255,0.4);
+    padding: 5px 12px; border-radius: 999px; font-size: 0.78rem;
+  }
+  #btns[hidden] { display: none !important; }
+  #btns { position: fixed; bottom: 16px; right: 14px; z-index: 10; display: flex; gap: 10px; }
+  #btns button {
+    font-family: inherit; font-size: 1.3rem;
+    width: 58px; height: 58px; border-radius: 50%;
+    border: 3px solid #8a6a1f; background: #ffd166; color: #2e2410;
+    cursor: pointer; font-weight: bold;
+  }
+  #btns button#bClear { background: #2a2f55; color: #eef0ff; border-color: #3d4380; }
+</style>
+
+<nav><a href="../">← Golden Games</a></nav>
+<canvas id="cv"></canvas>
+<div id="btns" hidden>
+  <button id="bClear">↺</button>
+  <button id="bGo">▶</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN DOMINO 🁢 — շարիր դոմինոները ու տապալիր զանգը
+//  Հպիր տախտակին՝ կանգնած դոմինո դնելու։ Դոմինոները սահմանափակ են։
+//  Հետո սեղմիր ▶ ՝ առաջինը հրվում է։ Եթե հեռավորությունը ճիշտ է՝
+//  շղթան գնում է մինչև ոսկե զանգը։ Շատ հեռու դնես՝ շղթան կկանգնի։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { title: 'Golden Domino 🁢', how1: 'Հպիր տախտակին՝ դոմինո դնելու', how2: 'Իրար մոտ դիր, թե չէ շղթան կկանգնի', how3: 'Սեղմիր ▶ ու տապալիր ոսկե զանգը', tap: 'Հպիր՝ սկսելու', lvl: n => 'Մակարդակ ' + n, left: 'Դոմինո՝ ', stop: 'Շղթան կանգնեց 😕', nomore: 'Դոմինոն վերջացավ 🁢', bad: 'Այստեղ չի տեղավորվում', win: 'Զանգը հնչե՜ց 🔔', done: 'Բոլոր զանգերը հնչեցրիր 🏆' },
+  ru: { title: 'Golden Domino 🁢', how1: 'Нажимай на доску, чтобы ставить домино', how2: 'Ставь их близко, иначе цепочка встанет', how3: 'Нажми ▶ и урони золотой колокол', tap: 'Коснись, чтобы начать', lvl: n => 'Уровень ' + n, left: 'Домино: ', stop: 'Цепочка остановилась 😕', nomore: 'Домино закончились 🁢', bad: 'Сюда не поместится', win: 'Колокол зазвонил! 🔔', done: 'Ты позвонил во все колокола 🏆' },
+  en: { title: 'Golden Domino 🁢', how1: 'Tap the board to stand a domino up', how2: 'Keep them close or the chain will stop', how3: 'Press ▶ and topple the golden bell', tap: 'Tap to start', lvl: n => 'Level ' + n, left: 'Dominoes: ', stop: 'The chain stopped 😕', nomore: 'No dominoes left 🁢', bad: 'It does not fit here', win: 'The bell rang! 🔔', done: 'You rang every bell 🏆' },
+  es: { title: 'Golden Domino 🁢', how1: 'Toca el tablero para poner una ficha de pie', how2: 'Ponlas cerca o la cadena se parará', how3: 'Pulsa ▶ y tumba la campana dorada', tap: 'Toca para empezar', lvl: n => 'Nivel ' + n, left: 'Fichas: ', stop: 'La cadena se paró 😕', nomore: 'No quedan fichas 🁢', bad: 'Aquí no cabe', win: '¡La campana sonó! 🔔', done: 'Hiciste sonar todas las campanas 🏆' },
+  fr: { title: 'Golden Domino 🁢', how1: 'Touche le plateau pour poser un domino debout', how2: 'Mets-les près, sinon la chaîne s’arrête', how3: 'Appuie sur ▶ et fais tomber la cloche dorée', tap: 'Touche pour commencer', lvl: n => 'Niveau ' + n, left: 'Dominos : ', stop: 'La chaîne s’est arrêtée 😕', nomore: 'Plus de dominos 🁢', bad: 'Ça ne rentre pas ici', win: 'La cloche a sonné ! 🔔', done: 'Tu as fait sonner toutes les cloches 🏆' },
+  de: { title: 'Golden Domino 🁢', how1: 'Tippe auf das Brett, um einen Stein aufzustellen', how2: 'Stell sie nah zusammen, sonst stoppt die Kette', how3: 'Drück ▶ und kipp die goldene Glocke um', tap: 'Tippe zum Starten', lvl: n => 'Level ' + n, left: 'Steine: ', stop: 'Die Kette blieb stehen 😕', nomore: 'Keine Steine mehr 🁢', bad: 'Hier passt es nicht', win: 'Die Glocke hat geläutet! 🔔', done: 'Du hast alle Glocken geläutet 🏆' },
+  ja: { title: 'Golden Domino 🁢', how1: 'ボードをタップしてドミノを立てよう', how2: 'ちかくに置かないとチェーンが止まるよ', how3: '▶ をおして金のベルをたおそう', tap: 'タップでスタート', lvl: n => 'レベル' + n, left: 'ドミノ：', stop: 'チェーンが止まった 😕', nomore: 'ドミノがもうないよ 🁢', bad: 'ここには置けないよ', win: 'ベルが鳴った！🔔', done: 'ぜんぶのベルを鳴らしたね 🏆' },
+  zh: { title: 'Golden Domino 🁢', how1: '点一下棋盘立起一块多米诺', how2: '要放近一点，不然连锁会停', how3: '按 ▶ 撞倒金色的铃铛', tap: '点一下开始', lvl: n => '第' + n + '关', left: '多米诺：', stop: '连锁停住了 😕', nomore: '多米诺用完啦 🁢', bad: '这里放不下', win: '铃铛响了！🔔', done: '所有的铃铛都响过了 🏆' },
+  it: { title: 'Golden Domino 🁢', how1: 'Tocca il tabellone per mettere in piedi un domino', how2: 'Mettili vicini o la catena si ferma', how3: 'Premi ▶ e fai cadere la campana dorata', tap: 'Tocca per iniziare', lvl: n => 'Livello ' + n, left: 'Domino: ', stop: 'La catena si è fermata 😕', nomore: 'Domino finiti 🁢', bad: 'Qui non ci sta', win: 'La campana ha suonato! 🔔', done: 'Hai suonato tutte le campane 🏆' },
+  ka: { title: 'Golden Domino 🁢', how1: 'შეეხე დაფას, რომ დომინო დადგა', how2: 'ახლოს დადგი, თორემ ჯაჭვი გაჩერდება', how3: 'დააჭირე ▶ და დააგდე ოქროს ზარი', tap: 'შეეხე დასაწყებად', lvl: n => 'დონე ' + n, left: 'დომინო: ', stop: 'ჯაჭვი გაჩერდა 😕', nomore: 'დომინო აღარ გაქვს 🁢', bad: 'აქ არ ეტევა', win: 'ზარი დარეკა! 🔔', done: 'ყველა ზარი დარეკე 🏆' },
+  hi: { title: 'Golden Domino 🁢', how1: 'बोर्ड पर टैप करके डोमिनो खड़ा करो', how2: 'उन्हें पास रखो वरना चेन रुक जाएगी', how3: '▶ दबाओ और सुनहरी घंटी गिराओ', tap: 'शुरू करने के लिए टैप करो', lvl: n => 'स्तर ' + n, left: 'डोमिनो: ', stop: 'चेन रुक गई 😕', nomore: 'डोमिनो खत्म हो गए 🁢', bad: 'यहाँ जगह नहीं है', win: 'घंटी बज गई! 🔔', done: 'तुमने सारी घंटियाँ बजा दीं 🏆' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W = 0, H = 0;
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sPut = () => tone(520, 0.05, 'square', 0.06);
+const sTick = () => tone(180 + Math.random() * 90, 0.07, 'square', 0.09);
+const sNo = () => tone(140, 0.18, 'sawtooth', 0.12);
+const sStop = () => { tone(220, 0.2, 'sawtooth', 0.12); tone(140, 0.3, 'sine', 0.12, 0.1); };
+const sBell = () => [1047, 1568, 2093].forEach((f, k) => tone(f, 0.5, 'sine', 0.16, k * 0.06));
+const sWin = () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.22, 'triangle', 0.16, k * 0.09));
+
+// ——— Մակարդակները ———
+// start՝ հրողի տեղը, bell՝ զանգը, obs՝ արգելքները [x,y,լայն,բարձր],
+// count՝ քանի դոմինո ունես, reach՝ որքան հեռու է հասնում ընկնող դոմինոն
+const LEVELS = [
+  { start: [0.06, 0.50], bell: [0.90, 0.50], obs: [], count: 8, reach: 0.17 },
+  { start: [0.08, 0.18], bell: [0.90, 0.82], obs: [], count: 9, reach: 0.16 },
+  { start: [0.06, 0.50], bell: [0.92, 0.50], obs: [[0.40, 0.34, 0.16, 0.32]], count: 10, reach: 0.15 },
+  { start: [0.08, 0.10], bell: [0.88, 0.90], obs: [[0.30, 0.30, 0.40, 0.14]], count: 11, reach: 0.15 },
+  { start: [0.06, 0.86], bell: [0.92, 0.14], obs: [[0.26, 0.20, 0.14, 0.52], [0.60, 0.34, 0.14, 0.52]], count: 12, reach: 0.14 },
+  { start: [0.08, 0.50], bell: [0.90, 0.50], obs: [[0.30, 0.00, 0.12, 0.40], [0.30, 0.58, 0.12, 0.42], [0.62, 0.24, 0.12, 0.52]], count: 13, reach: 0.13 },
+  { start: [0.06, 0.12], bell: [0.90, 0.14], obs: [[0.26, 0.00, 0.12, 0.52], [0.56, 0.46, 0.12, 0.54]], count: 15, reach: 0.13 },
+  { start: [0.06, 0.90], bell: [0.92, 0.86], obs: [[0.22, 0.00, 0.12, 0.60], [0.46, 0.34, 0.12, 0.66], [0.70, 0.00, 0.12, 0.60]], count: 18, reach: 0.12 },
+];
+let level = 1;
+try { level = Number(localStorage.getItem('aren-domino-level') || 1); } catch (e) {}
+if (!(level >= 1) || level > LEVELS.length) level = 1;
+
+// ——— Խաղի վիճակը ———
+const FALL = 190;               // քանի միլիվայրկյան է ընկնում մի դոմինոն
+let state = 'menu';             // menu | build | run | win | fail | done
+let endedAt = 0, runAt = 0;
+let board = { x: 0, y: 0, s: 100 };
+let doms = [];                  // {nx,ny,fallAt,dir,done}
+let msg = '', msgAt = 0;
+let bellRing = 0;
+let reachPx = 40;
+
+function curLevel() { return LEVELS[Math.min(level, LEVELS.length) - 1]; }
+function bx(nx) { return board.x + nx * board.s; }
+function by(ny) { return board.y + ny * board.s; }
+
+function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; layout(); }
+window.addEventListener('resize', resize);
+function layout() {
+  const s = Math.max(160, Math.min(W - 16, H - 170));
+  board = { s: s, x: (W - s) / 2, y: Math.max(60, (H - s) / 2 - 8) };
+  reachPx = curLevel().reach * board.s;
+}
+
+function newLevel() {
+  doms = [];
+  bellRing = 0;
+  layout();
+  state = 'build';
+  document.getElementById('btns').hidden = false;
+}
+
+// ——— Երկրաչափություն ———
+// հատվա՞ծը կտրում է ուղղանկյունը (որ արգելքի հետևից շղթան չանցնի)
+function segRect(x1, y1, x2, y2, r) {
+  const rx0 = r[0], ry0 = r[1], rx1 = r[0] + r[2], ry1 = r[1] + r[3];
+  if (Math.max(x1, x2) < rx0 || Math.min(x1, x2) > rx1) return false;
+  if (Math.max(y1, y2) < ry0 || Math.min(y1, y2) > ry1) return false;
+  // եթե ծայրը ներսում է՝ արդեն կտրում է
+  const inside = (x, y) => x >= rx0 && x <= rx1 && y >= ry0 && y <= ry1;
+  if (inside(x1, y1) || inside(x2, y2)) return true;
+  const cross = (ax, ay, bx2, by2, cx, cy, dx, dy) => {
+    const d1 = (bx2 - ax) * (cy - ay) - (by2 - ay) * (cx - ax);
+    const d2 = (bx2 - ax) * (dy - ay) - (by2 - ay) * (dx - ax);
+    const d3 = (dx - cx) * (ay - cy) - (dy - cy) * (ax - cx);
+    const d4 = (dx - cx) * (by2 - cy) - (dy - cy) * (bx2 - cx);
+    return ((d1 > 0) !== (d2 > 0)) && ((d3 > 0) !== (d4 > 0));
+  };
+  return cross(x1, y1, x2, y2, rx0, ry0, rx1, ry0) || cross(x1, y1, x2, y2, rx1, ry0, rx1, ry1)
+      || cross(x1, y1, x2, y2, rx1, ry1, rx0, ry1) || cross(x1, y1, x2, y2, rx0, ry1, rx0, ry0);
+}
+function clearPath(x1, y1, x2, y2) {
+  for (const o of curLevel().obs) if (segRect(x1, y1, x2, y2, o)) return false;
+  return true;
+}
+function inObs(nx, ny, pad) {
+  for (const o of curLevel().obs) {
+    if (nx > o[0] - pad && nx < o[0] + o[2] + pad && ny > o[1] - pad && ny < o[1] + o[3] + pad) return true;
+  }
+  return false;
+}
+
+// ——— Հպումը՝ դոմինո դնել կամ վերցնել ———
+function place(nx, ny) {
+  const L = curLevel();
+  // արդեն դրված դոմինոյին հպվեցի՞ր՝ վերցնում ենք
+  for (let i = 0; i < doms.length; i++) {
+    if (Math.hypot(doms[i].nx - nx, doms[i].ny - ny) < L.reach * 0.30) {
+      doms.splice(i, 1); sPut(); return;
+    }
+  }
+  if (doms.length >= L.count) { msg = T.nomore; msgAt = Date.now(); sNo(); return; }
+  if (nx < 0.02 || nx > 0.98 || ny < 0.02 || ny > 0.98) return;
+  if (inObs(nx, ny, 0.012)) { msg = T.bad; msgAt = Date.now(); sNo(); return; }
+  doms.push({ nx: nx, ny: ny, fallAt: null, dir: 0, done: false });
+  sPut();
+}
+
+cv.addEventListener('pointerdown', (e) => {
+  initAudio();
+  if (state === 'menu' || state === 'done') {
+    if (Date.now() - endedAt < 1100) return;    // դադար, որ պատահական հպումը չսկսի
+    if (state === 'done') level = 1;
+    newLevel();
+    return;
+  }
+  if (state !== 'build') return;
+  place((e.clientX - board.x) / board.s, (e.clientY - board.y) / board.s);
+});
+
+document.getElementById('bClear').addEventListener('pointerdown', () => {
+  if (state !== 'build') return;
+  initAudio();
+  doms = []; sPut();
+});
+document.getElementById('bGo').addEventListener('pointerdown', () => {
+  if (state !== 'build') return;
+  initAudio();
+  state = 'run';
+  runAt = Date.now();
+  const L = curLevel();
+  let pushed = 0;
+  for (const d of doms) {
+    if (Math.hypot(d.nx - L.start[0], d.ny - L.start[1]) <= L.reach && clearPath(L.start[0], L.start[1], d.nx, d.ny)) {
+      d.fallAt = Date.now();
+      d.dir = Math.atan2(d.ny - L.start[1], d.nx - L.start[0]);
+      pushed++;
+    }
+  }
+  if (pushed) sTick();
+  document.getElementById('btns').hidden = true;
+});
+
+function chainStopped() {
+  state = 'fail';
+  endedAt = Date.now();
+  msg = T.stop; msgAt = Date.now();
+  sStop();
+  setTimeout(() => {
+    if (state === 'fail') {
+      for (const d of doms) { d.fallAt = null; d.done = false; }
+      state = 'build';
+      document.getElementById('btns').hidden = false;
+    }
+  }, 1400);
+}
+
+function winLevel() {
+  state = 'win';
+  endedAt = Date.now();
+  bellRing = 1;
+  sBell();
+  setTimeout(sWin, 260);
+  if (level < LEVELS.length) {
+    level++;
+    try { localStorage.setItem('aren-domino-level', String(level)); } catch (e) {}
+    setTimeout(newLevel, 1700);
+  } else {
+    try { localStorage.setItem('aren-domino-level', String(LEVELS.length)); } catch (e) {}
+    setTimeout(() => { state = 'done'; endedAt = Date.now(); document.getElementById('btns').hidden = true; }, 2000);
+  }
+}
+
+// ——— Քայլը ———
+function step() {
+  if (bellRing > 0) bellRing = Math.max(0, bellRing - 0.012);
+  if (state !== 'run') return;
+  const now = Date.now();
+  const L = curLevel();
+  let falling = 0;
+  for (const d of doms) {
+    if (d.fallAt === null) continue;
+    if (!d.done && now - d.fallAt >= FALL) {
+      d.done = true;
+      // ընկած դոմինոն հրում է իր կողքիններին
+      for (const o of doms) {
+        if (o.fallAt !== null) continue;
+        if (Math.hypot(o.nx - d.nx, o.ny - d.ny) <= L.reach && clearPath(d.nx, d.ny, o.nx, o.ny)) {
+          o.fallAt = now;
+          o.dir = Math.atan2(o.ny - d.ny, o.nx - d.nx);
+          sTick();
+        }
+      }
+      // զանգին հասա՞վ
+      if (Math.hypot(L.bell[0] - d.nx, L.bell[1] - d.ny) <= L.reach && clearPath(d.nx, d.ny, L.bell[0], L.bell[1])) {
+        winLevel();
+        return;
+      }
+    }
+    if (!d.done) falling++;
+  }
+  if (falling === 0 && now - runAt > 260) chainStopped();
+}
+
+// ——— Նկարելը ———
+// Էմոջին կտավի վրա չենք նկարում (այնտեղ վատ է երևում) — մնում է միայն DOM-ի տեքստում
+function plain(s) {
+  return String(s).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2B00}-\u{2BFF}\u{200D}]/gu, '').replace(/\s+/g, ' ').trim();
+}
+function drawText(txt, x, y, size, color, bold) {
+  ctx.fillStyle = color;
+  ctx.font = (bold ? 'bold ' : '') + size + 'px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(plain(txt), x, y);
+}
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function drawDomino(d) {
+  const DH = reachPx * 0.86, DW = DH * 0.52, DT = DH * 0.30;
+  const x = bx(d.nx), y = by(d.ny);
+  let p = 0;
+  if (d.fallAt !== null) p = Math.min(1, (Date.now() - d.fallAt) / FALL);
+  const len = DT + (DH - DT) * p;
+  const ang = d.fallAt !== null ? d.dir : 0;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(ang);
+  // ստվերը
+  ctx.fillStyle = 'rgba(0,0,0,0.32)';
+  roundRect(-DT * 0.4 + 3, -DW / 2 + 4, len, DW, DW * 0.22);
+  ctx.fill();
+  // ինքը՝ դոմինոն
+  ctx.fillStyle = p > 0.98 ? '#e6ddc8' : '#fbf6e6';
+  roundRect(-DT * 0.4, -DW / 2, len, DW, DW * 0.22);
+  ctx.fill();
+  ctx.strokeStyle = '#8d8267'; ctx.lineWidth = 2;
+  ctx.stroke();
+  // միջնագիծն ու կետերը
+  if (len > DW * 0.9) {
+    ctx.strokeStyle = '#b9ae92'; ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(-DT * 0.4 + len / 2, -DW / 2 + 3);
+    ctx.lineTo(-DT * 0.4 + len / 2, DW / 2 - 3);
+    ctx.stroke();
+    ctx.fillStyle = '#3b3524';
+    const pr = Math.max(1.4, DW * 0.10);
+    ctx.beginPath(); ctx.arc(-DT * 0.4 + len * 0.25, 0, pr, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-DT * 0.4 + len * 0.72, -DW * 0.2, pr, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-DT * 0.4 + len * 0.72, DW * 0.2, pr, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+function drawBell(x, y, r, ring) {
+  const sw = Math.sin(Date.now() / 60) * ring * 0.25;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(sw);
+  if (ring > 0) {
+    ctx.strokeStyle = 'rgba(255,225,140,' + (ring * 0.7) + ')';
+    ctx.lineWidth = 3;
+    for (let k = 1; k <= 3; k++) {
+      ctx.beginPath();
+      ctx.arc(0, 0, r * (1.4 + k * 0.7) * (1.3 - ring * 0.3), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+  ctx.fillStyle = '#ffd166';
+  ctx.strokeStyle = '#8a6a1f'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(-r, r * 0.7);
+  ctx.quadraticCurveTo(-r * 0.92, -r * 0.9, 0, -r);
+  ctx.quadraticCurveTo(r * 0.92, -r * 0.9, r, r * 0.7);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#e0a92e';
+  ctx.fillRect(-r * 1.1, r * 0.7, r * 2.2, r * 0.3);
+  ctx.beginPath(); ctx.arc(0, r * 1.15, r * 0.24, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+function drawStart(x, y, r) {
+  ctx.fillStyle = '#c8543f';
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#5d1f14'; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.fillStyle = '#ffe3d0';
+  ctx.beginPath();
+  ctx.moveTo(x - r * 0.3, y - r * 0.45);
+  ctx.lineTo(x + r * 0.55, y);
+  ctx.lineTo(x - r * 0.3, y + r * 0.45);
+  ctx.closePath(); ctx.fill();
+}
+
+function draw() {
+  const L = curLevel();
+  ctx.fillStyle = '#23180f';
+  ctx.fillRect(0, 0, W, H);
+  // տախտակը՝ փայտե սեղան
+  const g = ctx.createLinearGradient(board.x, board.y, board.x, board.y + board.s);
+  g.addColorStop(0, '#6b4a2a'); g.addColorStop(1, '#54371e');
+  ctx.fillStyle = g;
+  roundRect(board.x, board.y, board.s, board.s, 18);
+  ctx.fill();
+  ctx.strokeStyle = '#3a250f'; ctx.lineWidth = 3; ctx.stroke();
+  // փայտի գծիկները
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 2;
+  for (let i = 1; i < 8; i++) {
+    ctx.beginPath();
+    ctx.moveTo(board.x, board.y + board.s * i / 8);
+    ctx.lineTo(board.x + board.s, board.y + board.s * i / 8);
+    ctx.stroke();
+  }
+
+  if (state !== 'menu' && state !== 'done') {
+    // արգելքները
+    for (const o of L.obs) {
+      ctx.fillStyle = '#3d4380';
+      roundRect(bx(o[0]), by(o[1]), o[2] * board.s, o[3] * board.s, 8);
+      ctx.fill();
+      ctx.strokeStyle = '#232755'; ctx.lineWidth = 3; ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      roundRect(bx(o[0]) + 4, by(o[1]) + 4, o[2] * board.s - 8, Math.min(10, o[3] * board.s * 0.2), 5);
+      ctx.fill();
+    }
+    // հրողն ու հասանելիության շրջանը
+    drawStart(bx(L.start[0]), by(L.start[1]), reachPx * 0.22);
+    if (state === 'build') {
+      ctx.strokeStyle = 'rgba(255,209,102,0.30)';
+      ctx.setLineDash([6, 8]); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(bx(L.start[0]), by(L.start[1]), reachPx, 0, Math.PI * 2); ctx.stroke();
+      // վերջին դոմինոյի շուրջն էլ ցույց ենք տալիս, թե ուր է հասնում
+      if (doms.length) {
+        const d = doms[doms.length - 1];
+        ctx.beginPath(); ctx.arc(bx(d.nx), by(d.ny), reachPx, 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+    }
+    // դոմինոները
+    for (const d of doms) drawDomino(d);
+    // զանգը
+    drawBell(bx(L.bell[0]), by(L.bell[1]), reachPx * 0.26, bellRing);
+
+    // HUD
+    drawText(T.lvl(level), W / 2, 34, Math.min(19, W * 0.05), '#ffd166', true);
+    drawText(T.left + Math.max(0, L.count - doms.length), W / 2, 55, Math.min(15, W * 0.04), '#e8c98a');
+  }
+
+  if (msg && Date.now() - msgAt < 1200) {
+    drawText(msg, W / 2, board.y + board.s * 0.5, Math.min(24, W * 0.06), '#ff9b8a', true);
+  }
+  if (state === 'win') {
+    drawText(T.win, W / 2, board.y + board.s * 0.28, Math.min(26, W * 0.065), '#6ee7b7', true);
+  }
+  if (state === 'menu' || state === 'done') {
+    ctx.fillStyle = 'rgba(20, 12, 6, 0.72)';
+    ctx.fillRect(0, 0, W, H);
+    drawText(T.title, W / 2, H * 0.24, Math.min(34, W * 0.082), '#ffd166', true);
+    if (state === 'done') drawText(T.done, W / 2, H * 0.33, Math.min(20, W * 0.05), '#6ee7b7', true);
+    drawText(T.how1, W / 2, H * 0.42, Math.min(16, W * 0.043), '#eef0ff');
+    drawText(T.how2, W / 2, H * 0.48, Math.min(16, W * 0.043), '#eef0ff');
+    drawText(T.how3, W / 2, H * 0.54, Math.min(16, W * 0.043), '#eef0ff');
+    drawText(T.lvl(level), W / 2, H * 0.64, Math.min(17, W * 0.045), '#c8b08a');
+    if (Math.floor(Date.now() / 600) % 2) drawText(T.tap, W / 2, H * 0.73, Math.min(17, W * 0.045), '#6ee7b7');
+  }
+}
+
+function loop() { step(); draw(); requestAnimationFrame(loop); }
+resize();
+loop();
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>
