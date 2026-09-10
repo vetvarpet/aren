@@ -80,6 +80,7 @@ let frame = 0;
 // Առաջին ~5 հարկը գրեթե անդորր է, հետո քամին սկսում է
 // ճոճվող բլոկը մի կողմ հրել — ճոճքն այլևս հավասար չէ։
 let windDir = 1;              // 1 = հրում է աջ, -1 = ձախ
+let lastFlip = 0;             // ո՞ր հարկում է քամին վերջին անգամ ուղղությունը փոխել
 let wind = 0;                 // հիմա գործող քամին (սահուն է փոխվում)
 let windTarget = 0;           // ուր է ձգտում քամին
 
@@ -131,6 +132,7 @@ function newGame() {
   popups = [];
   combo = 0;
   windDir = Math.random() < 0.5 ? -1 : 1;   // ամեն նոր խաղում քամին այլ կողմից է
+  lastFlip = 0;
   wind = 0;
   windTarget = 0;
   state = 'play';
@@ -189,8 +191,10 @@ function drop() {
   }
   sDrop();
 
-  // Բարձրում քամին քմահաճ է — երբեմն հանկարծ ուղղությունը փոխում է
-  if (stack.length - 1 > 5 && Math.random() < 0.22) windDir = -windDir;
+  // Բարձրում քամին քմահաճ է — երբեմն ուղղությունը փոխում է,
+  // բայց ոչ շուտ քան 3 հարկը մեկ, որ շփոթեցնող չլինի
+  const fl = stack.length - 1;
+  if (fl > 5 && fl - lastFlip >= 3 && Math.random() < 0.3) { windDir = -windDir; lastFlip = fl; }
 
   phase = 0;   // նոր բլոկը սկսում է ճոճվել մեջտեղից
   // տեսախցիկը բարձրանում է, որ աշտարակի գագաթը միշտ երևա
@@ -257,11 +261,23 @@ function drawWind() {
   const bars = Math.min(5, Math.round(p * 5 + 0.4));
   const cx = W / 2, y = 46;
 
-  drawText(T.wind, cx, 28, 13, 'rgba(30,40,70,0.7)');
+  // բաց վահանակ՝ որ կռունկի պարանը գրության միջով չանցնի
+  ctx.fillStyle = 'rgba(255,255,255,0.32)';
+  ctx.beginPath();
+  const px = cx - 54, py = 14, pw = 108, ph = 44, pr = 12;
+  ctx.moveTo(px + pr, py);
+  ctx.arcTo(px + pw, py, px + pw, py + ph, pr);
+  ctx.arcTo(px + pw, py + ph, px, py + ph, pr);
+  ctx.arcTo(px, py + ph, px, py, pr);
+  ctx.arcTo(px, py, px + pw, py, pr);
+  ctx.closePath();
+  ctx.fill();
+
+  drawText(T.wind, cx, 30, 13, 'rgba(30,40,70,0.75)');
 
   // սլաքը ցույց է տալիս, թե քամին ուր է հրում բլոկը
   ctx.save();
-  ctx.translate(cx - 46, y);
+  ctx.translate(cx - 30, y);
   ctx.scale(dir, 1);
   ctx.strokeStyle = 'rgba(30,40,70,0.8)';
   ctx.lineWidth = 3;
@@ -280,7 +296,7 @@ function drawWind() {
   for (let i = 0; i < 5; i++) {
     const h = 5 + i * 2.6;
     ctx.fillStyle = i < bars ? (bars >= 4 ? '#e0553f' : 'rgba(30,40,70,0.8)') : 'rgba(30,40,70,0.2)';
-    ctx.fillRect(cx - 22 + i * 11, y + 7 - h, 7, h);
+    ctx.fillRect(cx - 8 + i * 11, y + 7 - h, 7, h);
   }
 }
 

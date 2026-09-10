@@ -242,10 +242,16 @@ function plain(s) {
   return String(s).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2B00}-\u{2BFF}\u{200D}]/gu, '').replace(/\s+/g, ' ').trim();
 }
 function drawText(txt, x, y, size, color, bold) {
+  const s = plain(txt);
+  const fam = '"Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
   ctx.fillStyle = color;
-  ctx.font = (bold ? 'bold ' : '') + size + 'px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+  ctx.font = (bold ? 'bold ' : '') + size + 'px ' + fam;
+  // Երկար նախադասությունը էկրանից դուրս չգա — մի քիչ փոքրացնում ենք
+  const maxW = W * 0.92;
+  const w = ctx.measureText(s).width;
+  if (w > maxW) ctx.font = (bold ? 'bold ' : '') + Math.max(9, size * maxW / w) + 'px ' + fam;
   ctx.textAlign = 'center';
-  ctx.fillText(plain(txt), x, y);
+  ctx.fillText(s, x, y);
 }
 function arrow(x, y, len, thick, color) {
   ctx.strokeStyle = color; ctx.lineWidth = thick; ctx.lineCap = 'round';
@@ -380,7 +386,7 @@ function draw() {
 
   // HUD
   if (state !== 'menu' && state !== 'done') {
-    drawText(T.lvl(level), W / 2, 34, Math.min(19, W * 0.05), '#ffffff', true);
+    drawText(T.lvl(level), W / 2, 74, Math.min(19, W * 0.05), '#ffffff', true);
   }
   if (msg && Date.now() - msgAt < 1400) {
     drawText(msg, W / 2, H * 0.32, Math.min(24, W * 0.06), '#ff5f5f', true);
@@ -389,7 +395,7 @@ function draw() {
     drawText(T.win, W / 2, H * 0.3, Math.min(26, W * 0.065), '#1d6b3a', true);
   }
   if (state === 'menu' || state === 'done') {
-    ctx.fillStyle = 'rgba(10, 20, 40, 0.62)';
+    ctx.fillStyle = 'rgba(10, 20, 40, 0.74)';
     ctx.fillRect(0, 0, W, H);
     drawText(T.title, W / 2, H * 0.24, Math.min(36, W * 0.085), '#ffe9a8', true);
     if (state === 'done') drawText(T.done, W / 2, H * 0.33, Math.min(20, W * 0.05), '#a8f0c0', true);

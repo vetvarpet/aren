@@ -119,8 +119,8 @@ function by(ny) { return board.y + ny * board.s; }
 function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; layout(); }
 window.addEventListener('resize', resize);
 function layout() {
-  const s = Math.max(160, Math.min(W - 16, H - 170));
-  board = { s: s, x: (W - s) / 2, y: Math.max(60, (H - s) / 2 - 8) };
+  const s = Math.max(160, Math.min(W - 16, H - 200));
+  board = { s: s, x: (W - s) / 2, y: Math.max(104, (H - s) / 2 - 4) };
   reachPx = curLevel().reach * board.s;
 }
 
@@ -280,10 +280,16 @@ function plain(s) {
   return String(s).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2B00}-\u{2BFF}\u{200D}]/gu, '').replace(/\s+/g, ' ').trim();
 }
 function drawText(txt, x, y, size, color, bold) {
+  const s = plain(txt);
+  const fam = '"Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
   ctx.fillStyle = color;
-  ctx.font = (bold ? 'bold ' : '') + size + 'px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+  ctx.font = (bold ? 'bold ' : '') + size + 'px ' + fam;
+  // Երկար նախադասությունը էկրանից դուրս չգա — մի քիչ փոքրացնում ենք
+  const maxW = W * 0.92;
+  const w = ctx.measureText(s).width;
+  if (w > maxW) ctx.font = (bold ? 'bold ' : '') + Math.max(9, size * maxW / w) + 'px ' + fam;
   ctx.textAlign = 'center';
-  ctx.fillText(plain(txt), x, y);
+  ctx.fillText(s, x, y);
 }
 function roundRect(x, y, w, h, r) {
   ctx.beginPath();
@@ -418,8 +424,8 @@ function draw() {
     drawBell(bx(L.bell[0]), by(L.bell[1]), reachPx * 0.26, bellRing);
 
     // HUD
-    drawText(T.lvl(level), W / 2, 34, Math.min(19, W * 0.05), '#ffd166', true);
-    drawText(T.left + Math.max(0, L.count - doms.length), W / 2, 55, Math.min(15, W * 0.04), '#e8c98a');
+    drawText(T.lvl(level), W / 2, 74, Math.min(19, W * 0.05), '#ffd166', true);
+    drawText(T.left + Math.max(0, L.count - doms.length), W / 2, 95, Math.min(15, W * 0.04), '#e8c98a');
   }
 
   if (msg && Date.now() - msgAt < 1200) {

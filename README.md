@@ -30,6 +30,16 @@ and iterating on the code together with Claude, one change at a time.
 | [`map`](./map/) | 🗺️ Golden Map (Հայաստանի քարտեզ) | Guess Armenia's provinces and cities on a stylized hand-drawn map |
 | [`story`](./story/) | 📖 Golden Story (Հեքիաթ) | Interactive branching tale of the golden cat with 7 different endings |
 | [`bridge`](./bridge/) | 🌉 Golden Bridge (Կամուրջ) | Draw planks over the gorge and see if the car makes it across |
+| [`detective`](./detective/) | 🔎 Golden Detective (Դետեկտիվ) | Objects are hidden in the room. Find the one I name — hints will help you. |
+| [`elevator`](./elevator/) | 🛗 Golden Elevator (Վերելակ) | You are the elevator operator. Pick people up and take them to their floor in 60 seconds. |
+| [`traffic`](./traffic/) | 🚦 Golden Traffic (Լուսացույցներ) | The crossroads is yours. Give green and red so the cars pass and never crash. |
+| [`garden`](./garden/) | 🌻 Golden Garden (Այգի) | Six pots: water the thirsty one, prune the overgrown one. Every flower opens differently. |
+| [`bank`](./bank/) | 🏦 Golden Bank (Բանկ) | The customer paid — hand back the exact change, and be quick. The clock is ticking. |
+| [`camera`](./camera/) | 📷 Golden Camera (Լուսանկարիչ) | Animals walk past. Press exactly when the animal is in the middle of the frame. |
+| [`wire`](./wire/) | 💡 Golden Wire (Լարեր) | Drag wires with your finger from the battery to the lamp. Circuit closed — the light comes on. |
+| [`wind`](./wind/) | 🍃 Golden Wind (Քամին) | The wind carries a sheet of paper. Puff from below and get it to the open window. |
+| [`domino`](./domino/) | 🁢 Golden Domino (Դոմինո) | Line up the tiles at the right spacing, then let the wave roll to the golden bell. |
+| [`copy`](./copy/) | 🎨 Golden Copy (Կրկնօրինակիր) | The picture shows for just 3 seconds. Then you rebuild it from memory. |
 | [`time`](./time/) | 🕰️ Golden Time (Ժամանակի մեքենա) | The site's whole story as a timeline, from the first flying cat to today |
 | [`museum`](./museum/) | 🏛️ Golden Museum (Թանգարան) | Memorial hall of deleted projects, pedestals, epitaphs and all |
 
