@@ -1,0 +1,543 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Garden 🌻</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2b4a2a, #16301f);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 100dvh;
+    padding: 10px;
+    padding-top: 44px;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+  h1 { font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd76e; }
+  .hud { display: flex; gap: 14px; font-size: 0.95rem; color: #a8c9a0; flex-wrap: wrap; justify-content: center; }
+  .hud b { color: #6ee7b7; }
+  .hud .tm { color: #ffd76e; }
+
+  /* Գործիքների երկու կոճակը՝ ջուր և մկրատ */
+  .tools { display: flex; gap: 10px; }
+  .tool {
+    border: 3px solid #4d6b45;
+    background: #21402a;
+    color: #f5eede;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 999px;
+    padding: 8px 16px;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .tool.on { border-color: #ffd76e; background: #3c6b3f; transform: scale(1.05); }
+
+  /* Այգին՝ 6 ծաղկաման (3×2) */
+  .garden {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5vmin;
+    width: min(96vw, 440px);
+  }
+  .pot { position: relative; touch-action: none; cursor: pointer; }
+  .pot canvas { display: block; width: 100%; height: auto; border-radius: 14px; background: #bfe3ef; touch-action: none; }
+  .pot.shake { animation: sh 0.35s; }
+  @keyframes sh { 25% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 75% { transform: translateX(-3px); } }
+  .badge {
+    position: absolute;
+    top: 3px; right: 3px;
+    font-size: 1rem;
+    background: rgba(20,26,34,0.7);
+    border-radius: 999px;
+    padding: 1px 5px;
+    pointer-events: none;
+  }
+
+  #msg { font-size: 0.95rem; color: #ffd76e; min-height: 2.6em; text-align: center; max-width: 380px; }
+  #startBtn {
+    border: 2px solid #6a9e5f;
+    border-radius: 999px;
+    padding: 10px 26px;
+    font-size: 1.05rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #35603a;
+    color: #f5eede;
+    touch-action: manipulation;
+  }
+  /* hidden-ը պարտվում է display:flex-ին, ուստի ուժեղացնում ենք */
+  #startBtn[hidden], .hud span[hidden], .tools[hidden] { display: none !important; }
+
+  .confetti {
+    position: fixed;
+    top: -50px;
+    z-index: 9;
+    pointer-events: none;
+    animation: fall linear forwards;
+  }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<h1>Golden Garden 🌻</h1>
+<div class="hud"><span id="scoreBox"></span><span class="tm" id="timeBox"></span><span id="bestBox" hidden></span></div>
+<div class="tools" id="tools">
+  <button class="tool on" id="toolWater">💧</button>
+  <button class="tool" id="toolPrune">✂️</button>
+</div>
+<div class="garden" id="garden"></div>
+<div id="msg"></div>
+<button id="startBtn">▶ Սկսել</button>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ԱՅԳԻ 🌻 — 6 ծաղկաման, 6 տարբեր ծաղիկ
+//  Ամեն ծաղկաման ասում է՝ ի՞նչ է ուզում.
+//    💧 = ծարավ է, ջրի՛ր        🌿 = փարթամացել է, էտի՛ր ✂️
+//  Ճիշտ գործիքը՝ բույսը մի աստիճան մեծանում է (հատիկ → ծիլ → կոկոն → ծաղիկ)։
+//  Սխալ գործիքը՝ մի աստիճան հետ է գնում։ 60 վայրկյանում ծաղկեցրու բոլոր 6-ը։
+// ——————————————————————————————————————
+
+const GAME_SECONDS = 60;
+const POTS = 6;
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { h1: 'Golden Garden 🌻', score: 'Ծաղկած՝ ', time: ' վրկ', rec: 'Ռեկորդ՝ ', intro: 'Ընտրի՛ր գործիքը, հետո հպի՛ր ծաղկամանին։ 💧 = ծարավ է · 🌿 = պետք է էտել', good: 'Ապրե՜ս 🌱', bad: 'Ուրիշ գործիք է պետք 😅', bloom: 'Ծաղկե՜ց 🌸', result: n => 'Ծաղկեցրիր ' + n + ' ծաղիկ', allDone: 'Բոլոր 6 ծաղիկը ծաղկեցին 🌻🎉', newRec: ' — ՆՈՐ ՌԵԿՈՐԴ 🎉', start: '▶ Սկսել', again: '🔄 Նորից' },
+  ru: { h1: 'Golden Garden 🌻', score: 'Расцвело: ', time: ' сек', rec: 'Рекорд: ', intro: 'Выбери инструмент и коснись горшка. 💧 = хочет пить · 🌿 = надо подстричь', good: 'Молодец 🌱', bad: 'Нужен другой инструмент 😅', bloom: 'Расцвёл 🌸', result: n => 'Ты вырастил ' + n + ' цветков', allDone: 'Все 6 цветов расцвели 🌻🎉', newRec: ' — НОВЫЙ РЕКОРД 🎉', start: '▶ Старт', again: '🔄 Ещё раз' },
+  en: { h1: 'Golden Garden 🌻', score: 'Bloomed: ', time: ' s', rec: 'Best: ', intro: 'Pick a tool, then tap a pot. 💧 = thirsty · 🌿 = needs pruning', good: 'Nice 🌱', bad: 'Wrong tool 😅', bloom: 'It bloomed 🌸', result: n => 'You bloomed ' + n + ' flowers', allDone: 'All 6 flowers bloomed 🌻🎉', newRec: ' — NEW RECORD 🎉', start: '▶ Start', again: '🔄 Again' },
+  es: { h1: 'Golden Garden 🌻', score: 'Florecidas: ', time: ' s', rec: 'Récord: ', intro: 'Elige una herramienta y toca una maceta. 💧 = sed · 🌿 = hay que podar', good: '¡Bien! 🌱', bad: 'Herramienta equivocada 😅', bloom: '¡Floreció! 🌸', result: n => 'Hiciste florecer ' + n + ' flores', allDone: '¡Las 6 flores florecieron! 🌻🎉', newRec: ' — ¡NUEVO RÉCORD! 🎉', start: '▶ Empezar', again: '🔄 Otra vez' },
+  fr: { h1: 'Golden Garden 🌻', score: 'Écloses : ', time: ' s', rec: 'Record : ', intro: 'Choisis un outil, puis touche un pot. 💧 = soif · 🌿 = à tailler', good: 'Bravo 🌱', bad: 'Mauvais outil 😅', bloom: 'Elle a fleuri 🌸', result: n => 'Tu as fait fleurir ' + n + ' fleurs', allDone: 'Les 6 fleurs ont fleuri 🌻🎉', newRec: ' — NOUVEAU RECORD 🎉', start: '▶ Commencer', again: '🔄 Encore' },
+  de: { h1: 'Golden Garden 🌻', score: 'Erblüht: ', time: ' s', rec: 'Rekord: ', intro: 'Wähle ein Werkzeug und tippe auf einen Topf. 💧 = durstig · 🌿 = muss geschnitten werden', good: 'Super 🌱', bad: 'Falsches Werkzeug 😅', bloom: 'Sie blüht 🌸', result: n => 'Du hast ' + n + ' Blumen zum Blühen gebracht', allDone: 'Alle 6 Blumen blühen 🌻🎉', newRec: ' — NEUER REKORD 🎉', start: '▶ Start', again: '🔄 Nochmal' },
+  ja: { h1: 'Golden Garden 🌻', score: 'さいた花：', time: '秒', rec: 'ベスト：', intro: 'どうぐをえらんで、はちをタップ。💧 = のどがかわいた · 🌿 = きってあげよう', good: 'いいね 🌱', bad: 'どうぐがちがうよ 😅', bloom: 'さいた 🌸', result: n => n + '本さかせたよ', allDone: '6本ぜんぶさいた 🌻🎉', newRec: ' — 新記録 🎉', start: '▶ スタート', again: '🔄 もう一回' },
+  zh: { h1: 'Golden Garden 🌻', score: '开花：', time: '秒', rec: '纪录：', intro: '先选工具，再点花盆。💧 = 口渴 · 🌿 = 该修剪了', good: '很棒 🌱', bad: '工具不对 😅', bloom: '开花啦 🌸', result: n => '你养开了 ' + n + ' 朵花', allDone: '6 朵花全开了 🌻🎉', newRec: ' — 新纪录 🎉', start: '▶ 开始', again: '🔄 再来' },
+  it: { h1: 'Golden Garden 🌻', score: 'Fiorite: ', time: ' s', rec: 'Record: ', intro: 'Scegli un attrezzo e tocca un vaso. 💧 = ha sete · 🌿 = da potare', good: 'Bravo 🌱', bad: 'Attrezzo sbagliato 😅', bloom: 'È fiorito 🌸', result: n => 'Hai fatto fiorire ' + n + ' fiori', allDone: 'Tutti e 6 i fiori sono fioriti 🌻🎉', newRec: ' — NUOVO RECORD 🎉', start: '▶ Inizia', again: '🔄 Ancora' },
+  ka: { h1: 'Golden Garden 🌻', score: 'აყვავდა: ', time: ' წმ', rec: 'რეკორდი: ', intro: 'აირჩიე იარაღი და შეეხე ქოთანს. 💧 = სწყურია · 🌿 = გასასხლავია', good: 'ყოჩაღ 🌱', bad: 'სხვა იარაღი სჭირდება 😅', bloom: 'აყვავდა 🌸', result: n => 'გაახარე ' + n + ' ყვავილი', allDone: 'ექვსივე ყვავილი აყვავდა 🌻🎉', newRec: ' — ახალი რეკორდი 🎉', start: '▶ დაწყება', again: '🔄 თავიდან' },
+  hi: { h1: 'Golden Garden 🌻', score: 'खिले: ', time: ' से', rec: 'रिकॉर्ड: ', intro: 'औज़ार चुनो, फिर गमले को छुओ। 💧 = प्यासा · 🌿 = काटना है', good: 'शाबाश 🌱', bad: 'गलत औज़ार 😅', bloom: 'खिल गया 🌸', result: n => 'तुमने ' + n + ' फूल खिलाए', allDone: 'छहों फूल खिल गए 🌻🎉', newRec: ' — नया रिकॉर्ड 🎉', start: '▶ शुरू', again: '🔄 फिर से' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.querySelector('h1').textContent = T.h1;
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.18, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sDrop = () => { tone(880, 0.08, 'sine', 0.16); tone(1200, 0.1, 'sine', 0.12, 0.05); };
+const sSnip = () => { tone(2000, 0.05, 'square', 0.1); tone(1500, 0.05, 'square', 0.1, 0.06); };
+const sBad = () => { tone(200, 0.18, 'sawtooth', 0.16); tone(140, 0.22, 'sawtooth', 0.14, 0.08); };
+const sBloom = () => [660, 880, 1100, 1320].forEach((f, k) => tone(f, 0.16, 'triangle', 0.18, k * 0.08));
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.25, 'triangle', 0.2, k * 0.13));
+
+// ——— Ծաղկատեսակները (բոլորը նկարած են, էմոջի չկա կտավի վրա) ———
+const SPECIES = [
+  { id: 'daisy',  petal: '#ffffff', heart: '#ffd93d', stem: '#3f8f4a' },
+  { id: 'sun',    petal: '#ffc300', heart: '#7a4a16', stem: '#4b8a3a' },
+  { id: 'tulip',  petal: '#e63946', heart: '#b02a35', stem: '#3f8f4a' },
+  { id: 'bell',   petal: '#6c8cff', heart: '#3f56c9', stem: '#4b8a3a' },
+  { id: 'star',   petal: '#b06cff', heart: '#ffe066', stem: '#3f8f4a' },
+  { id: 'rose',   petal: '#ff7aa8', heart: '#c9457a', stem: '#3f8f4a' },
+];
+
+const gardenEl = document.getElementById('garden');
+const scoreBox = document.getElementById('scoreBox');
+const timeBox = document.getElementById('timeBox');
+const bestBox = document.getElementById('bestBox');
+const msgEl = document.getElementById('msg');
+const startBtn = document.getElementById('startBtn');
+const toolsEl = document.getElementById('tools');
+const toolWater = document.getElementById('toolWater');
+const toolPrune = document.getElementById('toolPrune');
+
+let pots = [];
+let tool = 'water';        // ընտրված գործիքը՝ water կամ prune
+let state = 'ready';       // ready → play → over
+let endAt = 0, endedAt = 0;
+let clockIv = null, needTm = null;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-garden-best') || 0); } catch (e) {}
+
+// Ուրվականային մկնիկի իրադարձությունները հպումից հետո՝ անտեսում ենք
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); }, { passive: true });
+function isGhost(e) { return e.pointerType === 'mouse' && Date.now() - lastTouchAt < 700; }
+function bindTap(el, fn) {
+  el.addEventListener('pointerdown', (e) => {
+    if (isGhost(e)) return;
+    e.preventDefault();
+    initAudio();
+    fn(e);
+  });
+}
+
+// ——— Ծաղկամանները սարքում ենք ———
+function shuffled(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+for (let i = 0; i < POTS; i++) {
+  const box = document.createElement('div');
+  box.className = 'pot';
+  box.innerHTML = '<canvas></canvas><span class="badge"></span>';
+  gardenEl.appendChild(box);
+  const cv = box.querySelector('canvas');
+  const p = {
+    el: box, cv: cv, ctx: cv.getContext('2d'),
+    badge: box.querySelector('.badge'),
+    sp: SPECIES[i], stage: 0, need: 'water', pop: 0, wob: Math.random() * 6,
+  };
+  pots.push(p);
+  bindTap(box, () => care(i));
+}
+
+function sizeCanvases() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  for (const p of pots) {
+    const w = p.cv.clientWidth || 100;
+    const h = Math.round(w * 1.25);
+    p.cv.style.height = h + 'px';
+    p.cv.width = Math.round(w * dpr);
+    p.cv.height = Math.round(h * dpr);
+    p.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    p.w = w; p.h = h;
+  }
+}
+window.addEventListener('resize', sizeCanvases);
+
+// ——— Խաղի տրամաբանությունը ———
+function bloomedCount() { return pots.filter(p => p.stage >= 3).length; }
+
+function hud() {
+  scoreBox.innerHTML = T.score + '<b>' + bloomedCount() + ' / ' + POTS + '</b>';
+  const left = state === 'play' ? Math.max(0, Math.ceil((endAt - Date.now()) / 1000)) : GAME_SECONDS;
+  timeBox.textContent = left + T.time;
+  if (best > 0) { bestBox.innerHTML = T.rec + '<b>' + best + '</b>'; bestBox.hidden = false; }
+  for (const p of pots) p.badge.textContent = p.stage >= 3 ? '🌸' : (p.need === 'water' ? '💧' : '🌿');
+}
+
+function care(i) {
+  if (state !== 'play') return;
+  const p = pots[i];
+  if (p.stage >= 3) return;                 // արդեն ծաղկել է, հանգիստ թող
+  if (p.need === tool) {
+    p.stage++;
+    p.pop = 1;
+    if (p.stage >= 3) {
+      sBloom();
+      msgEl.textContent = T.bloom;
+      if (bloomedCount() === POTS) { finish(true); return; }
+    } else {
+      tool === 'water' ? sDrop() : sSnip();
+      msgEl.textContent = T.good;
+      p.need = Math.random() < 0.5 ? 'water' : 'prune';
+    }
+  } else {
+    p.stage = Math.max(0, p.stage - 1);     // սխալ գործիք՝ մի քայլ հետ
+    sBad();
+    msgEl.textContent = T.bad;
+    p.el.classList.remove('shake');
+    void p.el.offsetWidth;                  // անիմացիան նորից գործարկելու հնարքը
+    p.el.classList.add('shake');
+  }
+  hud();
+}
+
+// Ժամանակի ընթացքում բույսերն իրենք են փոխում իրենց ուզածը
+function shuffleNeeds() {
+  if (state !== 'play') { needTm = setTimeout(shuffleNeeds, 1200); return; }
+  const busy = pots.filter(p => p.stage < 3);
+  if (busy.length) {
+    const p = busy[Math.floor(Math.random() * busy.length)];
+    p.need = p.need === 'water' ? 'prune' : 'water';
+    hud();
+  }
+  needTm = setTimeout(shuffleNeeds, 1400 + Math.random() * 1600);
+}
+
+function start() {
+  initAudio();
+  state = 'play';
+  const sp = shuffled(SPECIES);
+  pots.forEach((p, i) => {
+    p.sp = sp[i];
+    p.stage = 0;
+    p.need = Math.random() < 0.5 ? 'water' : 'prune';
+    p.pop = 0;
+  });
+  endAt = Date.now() + GAME_SECONDS * 1000;
+  msgEl.textContent = '';
+  startBtn.hidden = true;
+  toolsEl.hidden = false;
+  hud();
+  tone(660, 0.18, 'triangle', 0.18);
+  clearInterval(clockIv);
+  clockIv = setInterval(() => {
+    hud();
+    if (Date.now() >= endAt) finish(false);
+  }, 250);
+  clearTimeout(needTm);
+  needTm = setTimeout(shuffleNeeds, 1600);
+}
+
+function finish(allBloomed) {
+  state = 'over';
+  endedAt = Date.now();
+  clearInterval(clockIv);
+  clearTimeout(needTm);
+  const n = bloomedCount();
+  let txt = allBloomed ? T.allDone : T.result(n);
+  if (n > best) {
+    best = n;
+    try { localStorage.setItem('aren-garden-best', best); } catch (e) {}
+    txt += T.newRec;
+    sWin();
+    confetti();
+  } else if (allBloomed) {
+    sWin();
+    confetti();
+  } else {
+    tone(400, 0.3, 'sine', 0.15);
+  }
+  msgEl.textContent = txt;
+  startBtn.textContent = T.again;
+  startBtn.hidden = false;
+  hud();
+}
+
+bindTap(toolWater, () => { tool = 'water'; toolWater.classList.add('on'); toolPrune.classList.remove('on'); tone(700, 0.06, 'sine', 0.12); });
+bindTap(toolPrune, () => { tool = 'prune'; toolPrune.classList.add('on'); toolWater.classList.remove('on'); tone(900, 0.06, 'sine', 0.12); });
+// Խաղն ավարտվելուց հետո ~1.1 վրկ սպասում ենք, որ պատահական հպումը նորից չսկսի
+bindTap(startBtn, () => {
+  if (state === 'over' && Date.now() - endedAt < 1100) return;
+  start();
+});
+
+// ——— Նկարելը ———
+function drawFlower(ctx, sp, x, y, s, t) {
+  if (sp.id === 'daisy') {
+    ctx.fillStyle = sp.petal;
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2 + t * 0.0004;
+      ctx.beginPath();
+      ctx.ellipse(x + Math.cos(a) * s * 0.75, y + Math.sin(a) * s * 0.75, s * 0.42, s * 0.25, a, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = sp.heart;
+    ctx.beginPath(); ctx.arc(x, y, s * 0.42, 0, Math.PI * 2); ctx.fill();
+  } else if (sp.id === 'sun') {
+    ctx.fillStyle = sp.petal;
+    for (let k = 0; k < 12; k++) {
+      const a = (k / 12) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + Math.cos(a - 0.2) * s * 1.15, y + Math.sin(a - 0.2) * s * 1.15);
+      ctx.lineTo(x + Math.cos(a + 0.2) * s * 1.15, y + Math.sin(a + 0.2) * s * 1.15);
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.fillStyle = sp.heart;
+    ctx.beginPath(); ctx.arc(x, y, s * 0.5, 0, Math.PI * 2); ctx.fill();
+  } else if (sp.id === 'tulip') {
+    ctx.fillStyle = sp.petal;
+    ctx.beginPath();
+    ctx.moveTo(x - s * 0.6, y + s * 0.5);
+    ctx.quadraticCurveTo(x - s * 0.8, y - s * 0.9, x - s * 0.2, y - s * 0.5);
+    ctx.quadraticCurveTo(x, y - s * 1.1, x + s * 0.2, y - s * 0.5);
+    ctx.quadraticCurveTo(x + s * 0.8, y - s * 0.9, x + s * 0.6, y + s * 0.5);
+    ctx.quadraticCurveTo(x, y + s * 0.9, x - s * 0.6, y + s * 0.5);
+    ctx.fill();
+    ctx.strokeStyle = sp.heart; ctx.lineWidth = Math.max(1, s * 0.1);
+    ctx.beginPath(); ctx.moveTo(x, y - s * 0.5); ctx.lineTo(x, y + s * 0.5); ctx.stroke();
+  } else if (sp.id === 'bell') {
+    for (let k = -1; k <= 1; k++) {
+      const bx = x + k * s * 0.7, by = y + Math.abs(k) * s * 0.3;
+      ctx.fillStyle = sp.petal;
+      ctx.beginPath();
+      ctx.moveTo(bx - s * 0.35, by - s * 0.3);
+      ctx.quadraticCurveTo(bx, by + s * 0.9, bx + s * 0.35, by - s * 0.3);
+      ctx.quadraticCurveTo(bx, by - s * 0.6, bx - s * 0.35, by - s * 0.3);
+      ctx.fill();
+      ctx.fillStyle = sp.heart;
+      ctx.beginPath(); ctx.arc(bx, by + s * 0.5, s * 0.1, 0, Math.PI * 2); ctx.fill();
+    }
+  } else if (sp.id === 'star') {
+    ctx.fillStyle = sp.petal;
+    ctx.beginPath();
+    for (let k = 0; k < 10; k++) {
+      const a = (k / 10) * Math.PI * 2 - Math.PI / 2;
+      const r = k % 2 === 0 ? s * 1.15 : s * 0.45;
+      k === 0 ? ctx.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r) : ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = sp.heart;
+    ctx.beginPath(); ctx.arc(x, y, s * 0.3, 0, Math.PI * 2); ctx.fill();
+  } else {   // rose — պարուրաձև վարդ
+    ctx.fillStyle = sp.petal;
+    ctx.beginPath(); ctx.arc(x, y, s, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = sp.heart;
+    ctx.lineWidth = Math.max(1.2, s * 0.16);
+    ctx.beginPath();
+    for (let a = 0; a < Math.PI * 4; a += 0.2) {
+      const r = s * 0.12 + (a / (Math.PI * 4)) * s * 0.8;
+      const px = x + Math.cos(a) * r, py = y + Math.sin(a) * r;
+      a === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawLeaf(ctx, x, y, s, dir, col) {
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.ellipse(x + dir * s * 0.8, y, s * 0.9, s * 0.38, dir * -0.4, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawPot(p, t) {
+  const ctx = p.ctx, W = p.w, H = p.h;
+  const dry = p.stage < 3 && p.need === 'water';
+  const wild = p.stage < 3 && p.need === 'prune';
+
+  // երկինքը
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, dry ? '#ffe3b0' : '#bfe3ef');
+  sky.addColorStop(1, '#e8f6d8');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
+
+  const potTop = H * 0.7;
+  const soilY = potTop + 3;
+  const cx = W / 2;
+  const sway = Math.sin(t * 0.002 + p.wob) * (wild ? 3 : 1.5);
+  const pop = p.pop > 0 ? 1 + p.pop * 0.18 : 1;
+
+  // ցողունն ու բույսը
+  const grow = [0, 0.28, 0.55, 0.8][p.stage] * H;
+  const topY = soilY - grow;
+  if (p.stage === 0) {
+    // հատիկը հողի մեջ
+    ctx.fillStyle = '#6b4a2a';
+    ctx.beginPath(); ctx.ellipse(cx, soilY - 4, W * 0.07, W * 0.05, 0.4, 0, Math.PI * 2); ctx.fill();
+  } else {
+    ctx.strokeStyle = p.sp.stem;
+    ctx.lineWidth = Math.max(3, W * 0.045);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx, soilY);
+    ctx.quadraticCurveTo(cx + sway, (soilY + topY) / 2, cx + sway * 1.6, topY);
+    ctx.stroke();
+    const lx = cx + sway * 0.7, ly = (soilY + topY) / 2;
+    drawLeaf(ctx, lx, ly, W * 0.14, 1, p.sp.stem);
+    drawLeaf(ctx, lx, ly + W * 0.14, W * 0.12, -1, p.sp.stem);
+    // փարթամացած՝ ավելորդ տերևներ
+    if (wild) {
+      drawLeaf(ctx, lx, ly - W * 0.16, W * 0.16, -1, '#2f6b32');
+      drawLeaf(ctx, lx, ly + W * 0.3, W * 0.15, 1, '#2f6b32');
+    }
+    const fx = cx + sway * 1.6, fy = topY;
+    if (p.stage === 1) {
+      // ծիլ՝ փոքրիկ կանաչ գլխիկ
+      ctx.fillStyle = '#5fbf5f';
+      ctx.beginPath(); ctx.ellipse(fx, fy, W * 0.09, W * 0.06, 0, 0, Math.PI * 2); ctx.fill();
+    } else if (p.stage === 2) {
+      // կոկոն՝ դեռ փակ
+      ctx.fillStyle = p.sp.petal;
+      ctx.beginPath(); ctx.ellipse(fx, fy, W * 0.1 * pop, W * 0.15 * pop, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = p.sp.stem;
+      ctx.beginPath(); ctx.ellipse(fx, fy + W * 0.1, W * 0.1, W * 0.06, 0, 0, Math.PI * 2); ctx.fill();
+    } else {
+      drawFlower(ctx, p.sp, fx, fy, W * 0.16 * pop, t);
+    }
+  }
+
+  // ծաղկամանը
+  ctx.fillStyle = '#c0673f';
+  ctx.beginPath();
+  ctx.moveTo(W * 0.2, potTop + 6);
+  ctx.lineTo(W * 0.8, potTop + 6);
+  ctx.lineTo(W * 0.7, H - 4);
+  ctx.lineTo(W * 0.3, H - 4);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#a9542f';
+  ctx.beginPath(); ctx.roundRect(W * 0.16, potTop - 4, W * 0.68, 12, 4); ctx.fill();
+  // հողը
+  ctx.fillStyle = dry ? '#8d6a45' : '#4a3524';
+  ctx.beginPath(); ctx.ellipse(cx, potTop, W * 0.32, 5, 0, 0, Math.PI * 2); ctx.fill();
+  // ծարավ հողի ճաքերը
+  if (dry) {
+    ctx.strokeStyle = '#6b4a2a'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx - W * 0.2, potTop); ctx.lineTo(cx - W * 0.05, potTop + 2);
+    ctx.moveTo(cx + W * 0.08, potTop - 2); ctx.lineTo(cx + W * 0.22, potTop + 1);
+    ctx.stroke();
+  }
+
+  if (p.pop > 0) p.pop = Math.max(0, p.pop - 0.05);
+}
+
+function loop(t) {
+  for (const p of pots) drawPot(p, t);
+  requestAnimationFrame(loop);
+}
+
+function confetti() {
+  const stuff = ['🌸', '🌻', '🌼', '🎉', '💛', '✨'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+msgEl.textContent = T.intro;
+startBtn.textContent = T.start;
+sizeCanvases();
+hud();
+requestAnimationFrame(loop);
+</script>
