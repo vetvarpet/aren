@@ -27,6 +27,8 @@
     text-align: center;
   }
   #menu[hidden] { display: none; }
+  #myBeat[hidden] { display: none !important; }
+  .drumsbtn { background: #6ee7b7 !important; color: #123326 !important; }
   h1 { font-size: clamp(1.3rem, 5vw, 2rem); color: #ffd76e; }
   .sub { color: #9a9ec7; }
   .best { color: #6ee7b7; font-size: 0.95rem; }
@@ -67,6 +69,7 @@
   <button class="songbtn" data-song="tango"></button>
   <button class="songbtn" data-song="joy"></button>
   <button class="songbtn" data-song="lamb"></button>
+  <button class="songbtn drumsbtn" id="myBeat" hidden></button>
 </div>
 <canvas id="game" hidden></canvas>
 
@@ -81,17 +84,17 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { sub: 'Ընտրիր երգը ու խփիր ռիթմով 👇', best: 'Ռեկորդ՝ ', score: 'Միավոր՝ ', combo: 'Կոմբո ×', perfect: 'ՃՇԳՐԻ՜Տ', good: 'Լավն է', miss: 'Վրիպե՜ց', done: 'Երգը վերջացա՜վ', tapMenu: 'Դիպչիր՝ երգ ընտրելու', newRec: 'ՆՈՐ ՌԵԿՈՐԴ 🏆', songs: { star: '🌟 Աստղիկը', birthday: '🎂 Ծնունդդ շնորհավոր', jingle: '🔔 Զանգակները', tango: '💃 Արենի տանգոն', joy: '🎼 Ուրախության ձոնը', lamb: '🐑 Փոքրիկ գառնուկը' } },
-  ru: { sub: 'Выбери песню и бей в ритм 👇', best: 'Рекорд: ', score: 'Очки: ', combo: 'Комбо ×', perfect: 'ИДЕАЛЬНО!', good: 'Хорошо!', miss: 'Мимо…', done: 'Песня закончилась!', tapMenu: 'Нажми, чтобы выбрать песню', newRec: 'НОВЫЙ РЕКОРД 🏆', songs: { star: '🌟 Звёздочка', birthday: '🎂 С днём рождения', jingle: '🔔 Бубенцы', tango: '💃 Танго Арена', joy: '🎼 Ода к радости', lamb: '🐑 Ягнёнок Мэри' } },
-  en: { sub: 'Pick a song and tap to the beat 👇', best: 'Best: ', score: 'Score: ', combo: 'Combo ×', perfect: 'PERFECT!', good: 'Good!', miss: 'Miss…', done: 'Song complete!', tapMenu: 'Tap to pick a song', newRec: 'NEW RECORD 🏆', songs: { star: '🌟 Twinkle', birthday: '🎂 Happy Birthday', jingle: '🔔 Jingle Bells', tango: '💃 Aren’s Tango', joy: '🎼 Ode to Joy', lamb: '🐑 Mary’s Little Lamb' } },
-  es: { sub: 'Elige una canción y toca al ritmo 👇', best: 'Récord: ', score: 'Puntos: ', combo: 'Combo ×', perfect: '¡PERFECTO!', good: '¡Bien!', miss: 'Fallo…', done: '¡Canción terminada!', tapMenu: 'Toca para elegir canción', newRec: '¡NUEVO RÉCORD! 🏆', songs: { star: '🌟 Estrellita', birthday: '🎂 Cumpleaños feliz', jingle: '🔔 Cascabeles', tango: '💃 El tango de Aren', joy: '🎼 Himno de la alegría', lamb: '🐑 El corderito' } },
-  fr: { sub: 'Choisis une chanson et tape en rythme 👇', best: 'Record : ', score: 'Points : ', combo: 'Combo ×', perfect: 'PARFAIT !', good: 'Bien !', miss: 'Raté…', done: 'Chanson terminée !', tapMenu: 'Touche pour choisir une chanson', newRec: 'NOUVEAU RECORD 🏆', songs: { star: '🌟 Petite étoile', birthday: '🎂 Joyeux anniversaire', jingle: '🔔 Vive le vent', tango: '💃 Le tango d’Aren', joy: '🎼 Hymne à la joie', lamb: '🐑 Le petit agneau' } },
-  de: { sub: 'Such dir ein Lied aus und tippe im Takt 👇', best: 'Rekord: ', score: 'Punkte: ', combo: 'Combo ×', perfect: 'PERFEKT!', good: 'Gut!', miss: 'Daneben…', done: 'Lied geschafft!', tapMenu: 'Tippe, um ein Lied zu wählen', newRec: 'NEUER REKORD 🏆', songs: { star: '🌟 Funkel, funkel', birthday: '🎂 Zum Geburtstag viel Glück', jingle: '🔔 Jingle Bells', tango: '💃 Arens Tango', joy: '🎼 Ode an die Freude', lamb: '🐑 Marys Lämmchen' } },
-  ja: { sub: '曲をえらんでリズムでタップ 👇', best: 'ベスト：', score: 'スコア：', combo: 'コンボ ×', perfect: 'パーフェクト！', good: 'グッド！', miss: 'ミス…', done: '曲クリア！', tapMenu: 'タップで曲をえらぶ', newRec: '新記録 🏆', songs: { star: '🌟 きらきら星', birthday: '🎂 ハッピーバースデー', jingle: '🔔 ジングルベル', tango: '💃 アレンのタンゴ', joy: '🎼 よろこびのうた', lamb: '🐑 メリーさんのひつじ' } },
-  zh: { sub: '选一首歌，跟着节奏点 👇', best: '纪录：', score: '得分：', combo: '连击 ×', perfect: '完美！', good: '不错！', miss: '错过了…', done: '歌曲完成！', tapMenu: '点一下选歌', newRec: '新纪录 🏆', songs: { star: '🌟 小星星', birthday: '🎂 生日快乐', jingle: '🔔 铃儿响叮当', tango: '💃 阿伦的探戈', joy: '🎼 欢乐颂', lamb: '🐑 玛丽的小羊羔' } },
-  it: { sub: 'Scegli una canzone e tocca a ritmo 👇', best: 'Record: ', score: 'Punti: ', combo: 'Combo ×', perfect: 'PERFETTO!', good: 'Bene!', miss: 'Mancato…', done: 'Canzone finita!', tapMenu: 'Tocca per scegliere una canzone', newRec: 'NUOVO RECORD 🏆', songs: { star: '🌟 Stellina', birthday: '🎂 Tanti auguri', jingle: '🔔 Jingle Bells', tango: '💃 Il tango di Aren', joy: '🎼 Inno alla gioia', lamb: '🐑 L’agnellino di Mary' } },
-  ka: { sub: 'აირჩიე სიმღერა და დაარტყი რიტმში 👇', best: 'რეკორდი: ', score: 'ქულა: ', combo: 'კომბო ×', perfect: 'იდეალურია!', good: 'კარგია!', miss: 'ააცდინე…', done: 'სიმღერა დასრულდა!', tapMenu: 'დააჭირე სიმღერის ასარჩევად', newRec: 'ახალი რეკორდი 🏆', songs: { star: '🌟 ვარსკვლავი', birthday: '🎂 გილოცავ დაბადების დღეს', jingle: '🔔 ეჟვნები', tango: '💃 არენის ტანგო', joy: '🎼 სიხარულის ოდა', lamb: '🐑 პატარა ბატკანი' } },
-  hi: { sub: 'गाना चुनो और ताल पर टैप करो 👇', best: 'रिकॉर्ड: ', score: 'स्कोर: ', combo: 'कॉम्बो ×', perfect: 'एकदम सही!', good: 'बढ़िया!', miss: 'चूक गए…', done: 'गाना पूरा हुआ!', tapMenu: 'गाना चुनने के लिए टैप करो', newRec: 'नया रिकॉर्ड 🏆', songs: { star: '🌟 ट्विंकल ट्विंकल', birthday: '🎂 जन्मदिन मुबारक', jingle: '🔔 जिंगल बेल्स', tango: '💃 अरेन का टैंगो', joy: '🎼 खुशी का गीत', lamb: '🐑 मैरी का मेमना' } },
+  hy: { mine: '🥁 Իմ ռիթմը (Drums-ից)', sub: 'Ընտրիր երգը ու խփիր ռիթմով 👇', best: 'Ռեկորդ՝ ', score: 'Միավոր՝ ', combo: 'Կոմբո ×', perfect: 'ՃՇԳՐԻ՜Տ', good: 'Լավն է', miss: 'Վրիպե՜ց', done: 'Երգը վերջացա՜վ', tapMenu: 'Դիպչիր՝ երգ ընտրելու', newRec: 'ՆՈՐ ՌԵԿՈՐԴ 🏆', songs: { star: '🌟 Աստղիկը', birthday: '🎂 Ծնունդդ շնորհավոր', jingle: '🔔 Զանգակները', tango: '💃 Արենի տանգոն', joy: '🎼 Ուրախության ձոնը', lamb: '🐑 Փոքրիկ գառնուկը' } },
+  ru: { mine: '🥁 Мой ритм (из Drums)', sub: 'Выбери песню и бей в ритм 👇', best: 'Рекорд: ', score: 'Очки: ', combo: 'Комбо ×', perfect: 'ИДЕАЛЬНО!', good: 'Хорошо!', miss: 'Мимо…', done: 'Песня закончилась!', tapMenu: 'Нажми, чтобы выбрать песню', newRec: 'НОВЫЙ РЕКОРД 🏆', songs: { star: '🌟 Звёздочка', birthday: '🎂 С днём рождения', jingle: '🔔 Бубенцы', tango: '💃 Танго Арена', joy: '🎼 Ода к радости', lamb: '🐑 Ягнёнок Мэри' } },
+  en: { mine: '🥁 My beat (from Drums)', sub: 'Pick a song and tap to the beat 👇', best: 'Best: ', score: 'Score: ', combo: 'Combo ×', perfect: 'PERFECT!', good: 'Good!', miss: 'Miss…', done: 'Song complete!', tapMenu: 'Tap to pick a song', newRec: 'NEW RECORD 🏆', songs: { star: '🌟 Twinkle', birthday: '🎂 Happy Birthday', jingle: '🔔 Jingle Bells', tango: '💃 Aren’s Tango', joy: '🎼 Ode to Joy', lamb: '🐑 Mary’s Little Lamb' } },
+  es: { mine: '🥁 Mi ritmo (de Drums)', sub: 'Elige una canción y toca al ritmo 👇', best: 'Récord: ', score: 'Puntos: ', combo: 'Combo ×', perfect: '¡PERFECTO!', good: '¡Bien!', miss: 'Fallo…', done: '¡Canción terminada!', tapMenu: 'Toca para elegir canción', newRec: '¡NUEVO RÉCORD! 🏆', songs: { star: '🌟 Estrellita', birthday: '🎂 Cumpleaños feliz', jingle: '🔔 Cascabeles', tango: '💃 El tango de Aren', joy: '🎼 Himno de la alegría', lamb: '🐑 El corderito' } },
+  fr: { mine: '🥁 Mon rythme (de Drums)', sub: 'Choisis une chanson et tape en rythme 👇', best: 'Record : ', score: 'Points : ', combo: 'Combo ×', perfect: 'PARFAIT !', good: 'Bien !', miss: 'Raté…', done: 'Chanson terminée !', tapMenu: 'Touche pour choisir une chanson', newRec: 'NOUVEAU RECORD 🏆', songs: { star: '🌟 Petite étoile', birthday: '🎂 Joyeux anniversaire', jingle: '🔔 Vive le vent', tango: '💃 Le tango d’Aren', joy: '🎼 Hymne à la joie', lamb: '🐑 Le petit agneau' } },
+  de: { mine: '🥁 Mein Beat (aus Drums)', sub: 'Such dir ein Lied aus und tippe im Takt 👇', best: 'Rekord: ', score: 'Punkte: ', combo: 'Combo ×', perfect: 'PERFEKT!', good: 'Gut!', miss: 'Daneben…', done: 'Lied geschafft!', tapMenu: 'Tippe, um ein Lied zu wählen', newRec: 'NEUER REKORD 🏆', songs: { star: '🌟 Funkel, funkel', birthday: '🎂 Zum Geburtstag viel Glück', jingle: '🔔 Jingle Bells', tango: '💃 Arens Tango', joy: '🎼 Ode an die Freude', lamb: '🐑 Marys Lämmchen' } },
+  ja: { mine: '🥁 わたしのリズム（Drumsから）', sub: '曲をえらんでリズムでタップ 👇', best: 'ベスト：', score: 'スコア：', combo: 'コンボ ×', perfect: 'パーフェクト！', good: 'グッド！', miss: 'ミス…', done: '曲クリア！', tapMenu: 'タップで曲をえらぶ', newRec: '新記録 🏆', songs: { star: '🌟 きらきら星', birthday: '🎂 ハッピーバースデー', jingle: '🔔 ジングルベル', tango: '💃 アレンのタンゴ', joy: '🎼 よろこびのうた', lamb: '🐑 メリーさんのひつじ' } },
+  zh: { mine: '🥁 我的节奏（来自 Drums）', sub: '选一首歌，跟着节奏点 👇', best: '纪录：', score: '得分：', combo: '连击 ×', perfect: '完美！', good: '不错！', miss: '错过了…', done: '歌曲完成！', tapMenu: '点一下选歌', newRec: '新纪录 🏆', songs: { star: '🌟 小星星', birthday: '🎂 生日快乐', jingle: '🔔 铃儿响叮当', tango: '💃 阿伦的探戈', joy: '🎼 欢乐颂', lamb: '🐑 玛丽的小羊羔' } },
+  it: { mine: '🥁 Il mio ritmo (da Drums)', sub: 'Scegli una canzone e tocca a ritmo 👇', best: 'Record: ', score: 'Punti: ', combo: 'Combo ×', perfect: 'PERFETTO!', good: 'Bene!', miss: 'Mancato…', done: 'Canzone finita!', tapMenu: 'Tocca per scegliere una canzone', newRec: 'NUOVO RECORD 🏆', songs: { star: '🌟 Stellina', birthday: '🎂 Tanti auguri', jingle: '🔔 Jingle Bells', tango: '💃 Il tango di Aren', joy: '🎼 Inno alla gioia', lamb: '🐑 L’agnellino di Mary' } },
+  ka: { mine: '🥁 ჩემი რიტმი (Drums-იდან)', sub: 'აირჩიე სიმღერა და დაარტყი რიტმში 👇', best: 'რეკორდი: ', score: 'ქულა: ', combo: 'კომბო ×', perfect: 'იდეალურია!', good: 'კარგია!', miss: 'ააცდინე…', done: 'სიმღერა დასრულდა!', tapMenu: 'დააჭირე სიმღერის ასარჩევად', newRec: 'ახალი რეკორდი 🏆', songs: { star: '🌟 ვარსკვლავი', birthday: '🎂 გილოცავ დაბადების დღეს', jingle: '🔔 ეჟვნები', tango: '💃 არენის ტანგო', joy: '🎼 სიხარულის ოდა', lamb: '🐑 პატარა ბატკანი' } },
+  hi: { mine: '🥁 मेरी ताल (Drums से)', sub: 'गाना चुनो और ताल पर टैप करो 👇', best: 'रिकॉर्ड: ', score: 'स्कोर: ', combo: 'कॉम्बो ×', perfect: 'एकदम सही!', good: 'बढ़िया!', miss: 'चूक गए…', done: 'गाना पूरा हुआ!', tapMenu: 'गाना चुनने के लिए टैप करो', newRec: 'नया रिकॉर्ड 🏆', songs: { star: '🌟 ट्विंकल ट्विंकल', birthday: '🎂 जन्मदिन मुबारक', jingle: '🔔 जिंगल बेल्स', tango: '💃 अरेन का टैंगो', joy: '🎼 खुशी का गीत', lamb: '🐑 मैरी का मेमना' } },
 };
 const T = TRL[ggLang] || TRL.hy;
 document.querySelector('.sub').textContent = T.sub;
@@ -205,10 +208,34 @@ function thud() {
   o.start(t); o.stop(t + 0.12);
 }
 
+// ——— Իմ ռիթմը 🥁 — Drums խաղում սարքածդ ռիթմը դառնում է Beat-ի երգ (Արենի միտքն է) ———
+// Drums-ի ցանցը 4 գործիք × 8 քայլ է. ամեն վառված վանդակ մի նոտա է դառնում։
+const DRUM_SEMI = [0, 4, 7, 12];   // բաս, ծափ, հայ-հեթ, զանգակ → չորս գոտի
+function loadMyBeat() {
+  let grid = null, bpm = 100;
+  try {
+    grid = JSON.parse(localStorage.getItem('aren-drums-pattern') || 'null');
+    bpm = Number(localStorage.getItem('aren-drums-bpm') || 100) || 100;
+  } catch (e) { return null; }
+  if (!Array.isArray(grid) || grid.length !== 4) return null;
+  const cells = [];
+  // Ռիթմը 4 անգամ ենք կրկնում, որ երգը բավականաչափ երկար լինի
+  for (let rep = 0; rep < 4; rep++) {
+    for (let c = 0; c < 8; c++) {
+      for (let r = 0; r < 4; r++) {
+        if (grid[r] && grid[r][c]) cells.push([DRUM_SEMI[r], rep * 8 + c]);
+      }
+    }
+  }
+  if (cells.length < 4) return null;   // դատարկ ռիթմով երգ չի ստացվում
+  return { beat: Math.max(180, Math.round(30000 / bpm)), notes: cells };
+}
+
 // ——— Երգը սկսելը ———
 let songNotes = [];   // [semi, ...] պահում ենք ձայնի համար
 function startSong(key) {
-  const song = SONGS[key];
+  const song = (key === 'mine') ? loadMyBeat() : SONGS[key];
+  if (!song) return;
   notes = song.notes.map(([idx, pos]) => ({
     semi: idx,
     lane: idx % 4,
@@ -225,10 +252,17 @@ function startSong(key) {
   canvas.hidden = false;
 }
 
-document.querySelectorAll('.songbtn').forEach(b => {
+document.querySelectorAll('.songbtn:not(#myBeat)').forEach(b => {
   b.textContent = T.songs[b.dataset.song];
-  b.addEventListener('click', () => { initAudio(); startSong(b.dataset.song); });
+  b.addEventListener('pointerdown', () => { initAudio(); startSong(b.dataset.song); });
 });
+// «Իմ ռիթմը» կոճակը երևում է միայն այն ժամանակ, երբ Drums-ում ռիթմ ես սարքել
+const myBtn = document.getElementById('myBeat');
+if (loadMyBeat()) {
+  myBtn.textContent = T.mine;
+  myBtn.hidden = false;
+  myBtn.addEventListener('pointerdown', () => { initAudio(); startSong('mine'); });
+}
 
 // ——— Խփոցը ———
 function hitLane(lane) {

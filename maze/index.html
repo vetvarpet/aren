@@ -194,6 +194,9 @@ const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => beep(f, f, 0.25
 const MELODY = [0, 3, 7, 12, 7, 3, 5, 7, 10, 7, 5, 3, 2, 3, 5, -1];
 const BASS   = [0, -1, 0, -1, 5, -1, 5, -1, 3, -1, 3, -1, 2, -1, 2, -1];
 let musicOn = true;
+// ——— Մութ ռեժիմ 🔦 — երևում է միայն շուրջդ, մնացածը խավար է ———
+let darkMode = false;
+try { darkMode = localStorage.getItem('aren-maze-dark') === '1'; } catch (e) {}
 let musicStarted = false;
 let stepIdx = 0;
 let musicTimer = null;
@@ -288,6 +291,8 @@ function metrics() {
 
 // ——— Ձայնի կոճակը (վերևի աջ անկյունում) ———
 function speakerBox() { return { x: W - 46, y: 58, r: 22 }; }
+// Մութ ռեժիմի կոճակը՝ բարձրախոսի կողքին (Արենի միտքն է 🔦)
+function torchBox() { return { x: W - 46, y: 108, r: 22 }; }
 
 // ——— Մատին հետևելը ———
 let finger = null;
@@ -297,6 +302,12 @@ canvas.addEventListener('pointerdown', (e) => {
   const sp = speakerBox();
   if (Math.hypot(e.clientX - sp.x, e.clientY - sp.y) < sp.r + 8) {
     musicOn = !musicOn;
+    return;
+  }
+  const tb = torchBox();
+  if (Math.hypot(e.clientX - tb.x, e.clientY - tb.y) < tb.r + 8) {
+    darkMode = !darkMode;
+    try { localStorage.setItem('aren-maze-dark', darkMode ? '1' : '0'); } catch (e2) {}
     return;
   }
   if (state === 'levelDone') { level = Math.min(MAX_LEVEL, level + 1); saveLevel(); newMaze(); return; }
@@ -473,6 +484,20 @@ function draw() {
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.arc(px, py + pr * 0.15, pr * 0.4, 0.2, Math.PI - 0.2); ctx.stroke();
 
+  // ——— Խավարը 🔦 — գնդակի շուրջը լուսավոր շրջան է, մնացածը մութ ———
+  if (darkMode && state === 'play') {
+    const lampR = cell * 2.6;
+    const g = ctx.createRadialGradient(px, py, lampR * 0.35, px, py, lampR);
+    g.addColorStop(0, 'rgba(10,14,30,0)');
+    g.addColorStop(0.65, 'rgba(10,14,30,0.55)');
+    g.addColorStop(1, 'rgba(10,14,30,0.97)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    // ելքը թույլ փայլում է հեռվից՝ որ լրիվ չկորչես
+    ctx.fillStyle = 'rgba(110,231,183,0.16)';
+    ctx.beginPath(); ctx.arc(ex + cell / 2, ey + cell / 2, cell * 0.75, 0, Math.PI * 2); ctx.fill();
+  }
+
   // ——— Վահանակը ———
   ctx.fillStyle = '#ffd76e';
   ctx.font = 'bold 21px "Noto Sans Armenian", Arial, sans-serif';
@@ -506,6 +531,22 @@ function draw() {
     ctx.moveTo(sp.x + 13, sp.y - 6); ctx.lineTo(sp.x + 5, sp.y + 6);
     ctx.stroke();
   }
+
+  // ջահի կոճակը՝ լապտեր նկարում ենք ձեռքով
+  const tb = torchBox();
+  ctx.fillStyle = darkMode ? 'rgba(255,209,102,0.9)' : 'rgba(61,53,96,0.9)';
+  ctx.beginPath(); ctx.arc(tb.x, tb.y, tb.r, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = darkMode ? '#c98a12' : '#6a5f9e';
+  ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = darkMode ? '#2e2410' : '#f5eede';
+  ctx.beginPath();
+  ctx.moveTo(tb.x - 3, tb.y - 9); ctx.lineTo(tb.x + 3, tb.y - 9);
+  ctx.lineTo(tb.x + 3, tb.y + 2); ctx.lineTo(tb.x - 3, tb.y + 2);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(tb.x - 8, tb.y + 11); ctx.lineTo(tb.x + 8, tb.y + 11);
+  ctx.lineTo(tb.x + 3, tb.y + 2); ctx.lineTo(tb.x - 3, tb.y + 2);
+  ctx.closePath(); ctx.fill();
 
   ctx.textAlign = 'center';
   if (!timerOn && state === 'play' && level === 1) {
