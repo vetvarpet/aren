@@ -6,20 +6,22 @@
 <title>Ոսկե Արշավ 🗺️ · Golden Games</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; background: #0f1424; overflow-x: hidden; }
+  html, body { margin: 0; padding: 0; background: #0f1424; }
   body {
     font-family: Arial, Helvetica, sans-serif;
     color: #f5eede;
-    /* ներքևի վահանակի համար տեղ ենք թողնում */
-    padding-bottom: 20px;
+    padding-bottom: 24px;
+    transition: padding-bottom 0.2s ease;
   }
+  /* բաց վահանակը ծածկում է ներքևի կանգառները — տեղ ենք ավելացնում, որ դրանք վեր սահեն */
+  body.panelOpen { padding-bottom: 210px; }
 
   /* ——— վերևի գոտին՝ վերնագիր ու առաջընթաց ——— */
   header {
     position: sticky; top: 0; z-index: 20;
     background: linear-gradient(#141a2c, rgba(20,26,44,0.88));
     border-bottom: 2px solid rgba(240,200,90,0.35);
-    padding: 46px 12px 10px;
+    padding: 46px 12px 9px;
     text-align: center;
   }
   header h1 { margin: 0; font-size: 1.12rem; color: #f0c85a; letter-spacing: 0.5px; }
@@ -29,13 +31,19 @@
            background: linear-gradient(90deg, #f0c85a, #ffe9a8); transition: width 0.6s ease; }
   .barTxt { margin-top: 5px; font-size: 0.72rem; color: #ffe9a8; }
   #allBtn {
-    margin-top: 7px; padding: 6px 14px; border-radius: 999px; cursor: pointer;
+    margin-top: 6px; padding: 6px 14px; border-radius: 999px; cursor: pointer;
     font-family: inherit; font-size: 0.72rem; color: #f5eede;
     background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.28);
   }
   #allBtn.on { background: rgba(240,200,90,0.18); border-color: #f0c85a; color: #ffe9a8; }
-  #allNote { margin-top: 5px; font-size: 0.66rem; color: #ffe9a8; opacity: 0.8; }
+  #allNote { margin-top: 4px; font-size: 0.66rem; color: #ffe9a8; opacity: 0.8; line-height: 1.35; }
   #allNote[hidden] { display: none !important; }
+  #endBtn {
+    margin: 6px 0 0 6px; padding: 6px 14px; border-radius: 999px; cursor: pointer;
+    font-family: inherit; font-size: 0.72rem; font-weight: bold; color: #10162a;
+    background: #f0c85a; border: 1.5px solid #f0c85a;
+  }
+  #endBtn[hidden] { display: none !important; }
 
   /* ——— քարտեզը ——— */
   #mapWrap { width: 100%; overflow-x: hidden; }
@@ -104,7 +112,8 @@
   <p id="hSub">Մեկ ճանապարհ · տասներկու կանգառ · մեկ ոսկե թագ</p>
   <div class="bar"><i id="barFill"></i></div>
   <div class="barTxt" id="barTxt">0/12</div>
-  <button id="allBtn">🔓 Բոլորը բացել</button>
+  <button id="allBtn">✨ Ժամանակավոր ոսկեզօծել</button>
+  <button id="endBtn" hidden>👑 Տեսնել վերջը</button>
   <div id="allNote" hidden></div>
 </header>
 
@@ -315,10 +324,10 @@ const TRL = {
     stop: n => 'ԿԱՆԳԱՌ ' + n, prog: (n, m) => n + '/' + m + ' կանգառ',
     go: '▶ Գնալ խաղալու', done: '✅ Կատարված է', locked: n => '🔒 Նախ ավարտիր ' + n + '-րդ կանգառը',
     now: v => 'Հիմա՝ ' + v, none: 'դեռ չես խաղացել', close: 'Փակել',
-    winT: 'Ոսկե Թագը տա՛ն է 👑',
+    winT: 'Ոսկե Թագը տո՛ւն եկավ 👑',
     winS: 'Դու անցար ամբողջ ճանապարհը ու թագը վերադարձրիր Golden Games-ին։ Ամբողջ քաղաքը տոնում է 🎉',
     home: '🏠 Գլխավոր',
-    allOpen: '🔓 Բոլորը բացել', allLock: '🔒 Ետ փակել', allNote: 'Ժամանակավոր՝ բոլոր կանգառները բաց են 🔓',
+    allOpen: '✨ Ժամանակավոր ոսկեզօծել', allLock: '🔒 Ետ փակել', allNote: 'Ժամանակավոր ✨ ռեկորդներդ տեղում են', seeEnd: '👑 Տեսնել վերջը',
     t: { collect: (n, u) => 'Հավաքիր ' + n + u, build: (n, u) => 'Կառուցիր ' + n + u, level: n => 'Հասիր ' + n + '-րդ մակարդակին', run: n => 'Վազիր ' + n + ' մ', chain: n => 'Կրկնիր ' + n + ' քայլ', letters: n => 'Ճիշտ պատասխանիր ' + n + ' տառի', win: 'Հաղթիր Մսրա Մելիքին' },
     u: { pt: ' միավոր', fl: ' հարկ', lvl: n => 'մակարդակ ' + n, m: ' մ', chain: ' քայլ' },
   },
@@ -332,7 +341,7 @@ const TRL = {
     winT: 'Золотая Корона дома 👑',
     winS: 'Ты прошёл всю дорогу и вернул корону в Golden Games. Весь город празднует 🎉',
     home: '🏠 На главную',
-    allOpen: '🔓 Открыть все', allLock: '🔒 Закрыть обратно', allNote: 'Временно: все привалы открыты 🔓',
+    allOpen: '✨ Временно позолотить', allLock: '🔒 Закрыть обратно', allNote: 'Временно ✨ рекорды не изменились', seeEnd: '👑 Посмотреть финал',
     t: { collect: (n, u) => 'Собери ' + n + u, build: (n, u) => 'Построй ' + n + u, level: n => 'Дойди до уровня ' + n, run: n => 'Пробеги ' + n + ' м', chain: n => 'Повтори ' + n + ' шагов', letters: n => 'Ответь верно на ' + n + ' букв', win: 'Победи Мсра Мелика' },
     u: { pt: ' очков', fl: ' этажей', lvl: n => 'уровень ' + n, m: ' м', chain: ' шагов' },
   },
@@ -346,7 +355,7 @@ const TRL = {
     winT: 'The Golden Crown is home 👑',
     winS: 'You walked the whole road and brought the crown back to Golden Games. The whole city is celebrating 🎉',
     home: '🏠 Home',
-    allOpen: '🔓 Open all', allLock: '🔒 Lock again', allNote: 'Temporarily: every stop is open 🔓',
+    allOpen: '✨ Gild it all for now', allLock: '🔒 Lock again', allNote: 'Temporary ✨ your records are untouched', seeEnd: '👑 See the ending',
     t: { collect: (n, u) => 'Collect ' + n + u, build: (n, u) => 'Build ' + n + u, level: n => 'Reach level ' + n, run: n => 'Run ' + n + ' m', chain: n => 'Repeat ' + n + ' steps', letters: n => 'Get ' + n + ' letters right', win: 'Beat Msra Melik' },
     u: { pt: ' points', fl: ' floors', lvl: n => 'level ' + n, m: ' m', chain: ' steps' },
   },
@@ -360,7 +369,7 @@ const TRL = {
     winT: 'La Corona Dorada está en casa 👑',
     winS: 'Recorriste todo el camino y devolviste la corona a Golden Games. ¡Toda la ciudad lo celebra! 🎉',
     home: '🏠 Inicio',
-    allOpen: '🔓 Abrir todo', allLock: '🔒 Cerrar otra vez', allNote: 'Temporalmente: todas las paradas están abiertas 🔓',
+    allOpen: '✨ Dorar todo un rato', allLock: '🔒 Cerrar otra vez', allNote: 'Temporal ✨ tus récords siguen igual', seeEnd: '👑 Ver el final',
     t: { collect: (n, u) => 'Consigue ' + n + u, build: (n, u) => 'Construye ' + n + u, level: n => 'Llega al nivel ' + n, run: n => 'Corre ' + n + ' m', chain: n => 'Repite ' + n + ' pasos', letters: n => 'Acierta ' + n + ' letras', win: 'Vence a Msra Melik' },
     u: { pt: ' puntos', fl: ' pisos', lvl: n => 'nivel ' + n, m: ' m', chain: ' pasos' },
   },
@@ -374,7 +383,7 @@ const TRL = {
     winT: 'La Couronne d’Or est rentrée 👑',
     winS: 'Tu as parcouru toute la route et rendu la couronne à Golden Games. Toute la ville fait la fête 🎉',
     home: '🏠 Accueil',
-    allOpen: '🔓 Tout ouvrir', allLock: '🔒 Refermer', allNote: 'Temporairement : toutes les étapes sont ouvertes 🔓',
+    allOpen: '✨ Tout dorer un instant', allLock: '🔒 Refermer', allNote: 'Temporaire ✨ tes records sont intacts', seeEnd: '👑 Voir la fin',
     t: { collect: (n, u) => 'Récolte ' + n + u, build: (n, u) => 'Construis ' + n + u, level: n => 'Atteins le niveau ' + n, run: n => 'Cours ' + n + ' m', chain: n => 'Répète ' + n + ' pas', letters: n => 'Trouve ' + n + ' lettres', win: 'Bats Msra Melik' },
     u: { pt: ' points', fl: ' étages', lvl: n => 'niveau ' + n, m: ' m', chain: ' pas' },
   },
@@ -388,7 +397,7 @@ const TRL = {
     winT: 'Die Goldene Krone ist zu Hause 👑',
     winS: 'Du bist den ganzen Weg gegangen und hast die Krone zu Golden Games zurückgebracht. Die ganze Stadt feiert 🎉',
     home: '🏠 Startseite',
-    allOpen: '🔓 Alle öffnen', allLock: '🔒 Wieder schließen', allNote: 'Vorübergehend: alle Stationen sind offen 🔓',
+    allOpen: '✨ Kurz alles vergolden', allLock: '🔒 Wieder schließen', allNote: 'Vorübergehend ✨ deine Rekorde bleiben', seeEnd: '👑 Das Ende ansehen',
     t: { collect: (n, u) => 'Sammle ' + n + u, build: (n, u) => 'Baue ' + n + u, level: n => 'Erreiche Level ' + n, run: n => 'Laufe ' + n + ' m', chain: n => 'Wiederhole ' + n + ' Schritte', letters: n => 'Triff ' + n + ' Buchstaben', win: 'Besiege Msra Melik' },
     u: { pt: ' Punkte', fl: ' Etagen', lvl: n => 'Level ' + n, m: ' m', chain: ' Schritte' },
   },
@@ -402,7 +411,7 @@ const TRL = {
     winT: '金のかんむりが帰ってきた 👑',
     winS: '道をぜんぶ歩いて、かんむりを Golden Games にもどしたよ。町ぜんたいがおまつりだ 🎉',
     home: '🏠 ホーム',
-    allOpen: '🔓 ぜんぶひらく', allLock: '🔒 もとにもどす', allNote: 'いまはぜんぶのちてんがひらいてるよ 🔓',
+    allOpen: '✨ ぜんぶ金いろにする', allLock: '🔒 もとにもどす', allNote: 'いまだけ ✨ きろくはそのまま', seeEnd: '👑 さいごをみる',
     t: { collect: (n, u) => n + u + 'あつめよう', build: (n, u) => n + u + 'つくろう', level: n => 'レベル' + n + 'までいこう', run: n => n + ' m はしろう', chain: n => n + 'ステップまねしよう', letters: n => n + 'もじせいかいしよう', win: 'ムスラ・メリクをたおそう' },
     u: { pt: 'ポイント', fl: '階', lvl: n => 'レベル' + n, m: ' m', chain: 'ステップ' },
   },
@@ -416,7 +425,7 @@ const TRL = {
     winT: '金冠回家了 👑',
     winS: '你走完了整条路，把金冠带回了 Golden Games。全城都在庆祝 🎉',
     home: '🏠 首页',
-    allOpen: '🔓 全部打开', allLock: '🔒 重新锁上', allNote: '临时：所有站点都已打开 🔓',
+    allOpen: '✨ 暂时全部镀金', allLock: '🔒 重新锁上', allNote: '临时 ✨ 纪录没有改变', seeEnd: '👑 看结局',
     t: { collect: (n, u) => '收集' + n + u, build: (n, u) => '建到' + n + u, level: n => '到达第' + n + '关', run: n => '跑' + n + ' 米', chain: n => '重复' + n + '步', letters: n => '答对' + n + '个字母', win: '打败姆斯拉·梅利克' },
     u: { pt: '分', fl: '层', lvl: n => '第' + n + '关', m: ' 米', chain: '步' },
   },
@@ -430,7 +439,7 @@ const TRL = {
     winT: 'La Corona d’Oro è a casa 👑',
     winS: 'Hai percorso tutta la strada e riportato la corona a Golden Games. Tutta la città festeggia 🎉',
     home: '🏠 Home',
-    allOpen: '🔓 Apri tutto', allLock: '🔒 Richiudi', allNote: 'Temporaneamente: tutte le tappe sono aperte 🔓',
+    allOpen: '✨ Dora tutto per ora', allLock: '🔒 Richiudi', allNote: 'Temporaneo ✨ i tuoi record restano', seeEnd: '👑 Vedi il finale',
     t: { collect: (n, u) => 'Raccogli ' + n + u, build: (n, u) => 'Costruisci ' + n + u, level: n => 'Arriva al livello ' + n, run: n => 'Corri ' + n + ' m', chain: n => 'Ripeti ' + n + ' passi', letters: n => 'Indovina ' + n + ' lettere', win: 'Batti Msra Melik' },
     u: { pt: ' punti', fl: ' piani', lvl: n => 'livello ' + n, m: ' m', chain: ' passi' },
   },
@@ -444,7 +453,7 @@ const TRL = {
     winT: 'ოქროს გვირგვინი სახლშია 👑',
     winS: 'მთელი გზა გაიარე და გვირგვინი Golden Games-ს დაუბრუნე. მთელი ქალაქი ზეიმობს 🎉',
     home: '🏠 მთავარი',
-    allOpen: '🔓 ყველას გახსნა', allLock: '🔒 ისევ დაკეტვა', allNote: 'დროებით: ყველა გაჩერება ღიაა 🔓',
+    allOpen: '✨ დროებით ყველაფრის მოოქროვება', allLock: '🔒 ისევ დაკეტვა', allNote: 'დროებით ✨ რეკორდები უცვლელია', seeEnd: '👑 ნახე დასასრული',
     t: { collect: (n, u) => 'შეაგროვე ' + n + u, build: (n, u) => 'ააშენე ' + n + u, level: n => 'მიაღწიე ' + n + '-ე დონეს', run: n => 'გაირბინე ' + n + ' მ', chain: n => 'გაიმეორე ' + n + ' ნაბიჯი', letters: n => 'სწორად უპასუხე ' + n + ' ასოს', win: 'დაამარცხე მსრა მელიქი' },
     u: { pt: ' ქულა', fl: ' სართული', lvl: n => n + '-ე დონე', m: ' მ', chain: ' ნაბიჯი' },
   },
@@ -458,7 +467,7 @@ const TRL = {
     winT: 'सुनहरा ताज घर आ गया 👑',
     winS: 'तुमने पूरा रास्ता पार किया और ताज Golden Games को लौटा दिया। पूरा शहर जश्न मना रहा है 🎉',
     home: '🏠 होम',
-    allOpen: '🔓 सब खोलो', allLock: '🔒 फिर से बंद', allNote: 'अभी के लिए: सारे पड़ाव खुले हैं 🔓',
+    allOpen: '✨ अभी के लिए सब सुनहरा', allLock: '🔒 फिर से बंद', allNote: 'अभी के लिए ✨ रिकॉर्ड वैसे ही', seeEnd: '👑 अंत देखो',
     t: { collect: (n, u) => n + u + ' इकट्ठा करो', build: (n, u) => n + u + ' बनाओ', level: n => 'लेवल ' + n + ' तक पहुँचो', run: n => n + ' मीटर दौड़ो', chain: n => n + ' कदम दोहराओ', letters: n => n + ' अक्षर सही करो', win: 'मसरा मेलिक को हराओ' },
     u: { pt: ' अंक', fl: ' मंज़िल', lvl: n => 'लेवल ' + n, m: ' मीटर', chain: ' कदम' },
   },
@@ -546,11 +555,14 @@ const panel = document.getElementById('panel');
 let openIndex = -1;
 let doneArr = [], reached = 0;
 
-// «Ժամանակավոր բոլորը բացի» — Արենի խնդրանքն է։
-// Բոլոր կանգառները դառնում են հասանելի, բայց ոսկեզօծվում են միայն իսկական ռեկորդից։
-let openAll = false;
-try { openAll = localStorage.getItem('aren-quest-openall') === '1'; } catch (e) {}
-function isOpen(i) { return openAll || i <= reached; }
+// «Ժամանակավոր բոլորը բացի ու ոսկեզօծի» — Արենի խնդրանքն է։
+// Այս ռեժիմում ամբողջ ճանապարհը ոսկի է դառնում ու վերջը կարելի է տեսնել,
+// բայց localStorage-ի իսկական ռեկորդներին ձեռք չենք տալիս — անջատում ես, ու
+// քարտեզը նորից ճշմարիտն է ցույց տալիս։
+let preview = false;
+try { preview = localStorage.getItem('aren-quest-openall') === '1'; } catch (e) {}
+let realArr = [];
+function isOpen(i) { return preview || i <= reached; }
 
 // ——— ճանապարհի վրայի կետերը ———
 // Ամեն կանգառ նստում է ճանապարհի վրա՝ հավասար հեռավորությամբ։
@@ -561,7 +573,8 @@ function stopPoint(i) {
 }
 
 function render() {
-  doneArr = STOPS.map(s => recordOf(s) >= s.goal);
+  realArr = STOPS.map(s => recordOf(s) >= s.goal);
+  doneArr = preview ? STOPS.map(() => true) : realArr.slice();
   // քանի կանգառ է անընդմեջ արված — այնքան է ճանապարհը բացվել
   reached = 0;
   while (reached < STOPS.length && doneArr[reached]) reached++;
@@ -572,11 +585,14 @@ function render() {
   document.getElementById('barFill').style.width = (reached / STOPS.length * 100) + '%';
   document.getElementById('barTxt').textContent = T.prog(reached, STOPS.length);
   const ab = document.getElementById('allBtn');
-  ab.textContent = openAll ? T.allLock : T.allOpen;
-  ab.classList.toggle('on', openAll);
+  ab.textContent = preview ? T.allLock : T.allOpen;
+  ab.classList.toggle('on', preview);
   const an = document.getElementById('allNote');
   an.textContent = T.allNote;
-  an.hidden = !openAll;
+  an.hidden = !preview;
+  const eb = document.getElementById('endBtn');
+  eb.textContent = T.seeEnd;
+  eb.hidden = reached < STOPS.length;
   document.title = T.title + ' · Golden Games';
   document.documentElement.lang = ggLang;
 
@@ -668,7 +684,7 @@ function openStop(i) {
   document.getElementById('pStop').textContent = T.stop(i + 1);
   document.getElementById('pGame').textContent = s.g;
   document.getElementById('pTask').textContent = taskText(s);
-  document.getElementById('pNow').textContent = doneArr[i] ? T.done : T.now(nowText(s, v));
+  document.getElementById('pNow').textContent = realArr[i] ? T.done : T.now(nowText(s, v));
   const go = document.getElementById('pGo');
   if (isOpen(i)) {
     go.textContent = T.go;
@@ -681,9 +697,10 @@ function openStop(i) {
   }
   document.getElementById('pClose').textContent = T.close;
   panel.hidden = false;
+  document.body.classList.add('panelOpen');
   tone(520, 0.1, 'sine');
 }
-function closePanel() { panel.hidden = true; openIndex = -1; }
+function closePanel() { panel.hidden = true; document.body.classList.remove('panelOpen'); openIndex = -1; }
 
 gStops.addEventListener('pointerdown', (e) => {
   if (e.pointerType === 'mouse' && ghost()) return;
@@ -694,11 +711,17 @@ gStops.addEventListener('pointerdown', (e) => {
 });
 document.getElementById('allBtn').addEventListener('pointerdown', (e) => {
   if (e.pointerType === 'mouse' && ghost()) return;
-  initAudio(); tone(openAll ? 440 : 700, 0.14, 'triangle');
-  openAll = !openAll;
-  try { localStorage.setItem('aren-quest-openall', openAll ? '1' : '0'); } catch (e) {}
+  initAudio(); tone(preview ? 440 : 700, 0.14, 'triangle');
+  preview = !preview;
+  try { localStorage.setItem('aren-quest-openall', preview ? '1' : '0'); } catch (e) {}
+  if (!preview) hideWin();
   render();
   if (openIndex >= 0) openStop(openIndex);   // բաց վահանակը թարմացնում ենք
+  if (preview) setTimeout(showWin, 420);     // ոսկեզօծեցինք — հիմա վերջը տես
+});
+document.getElementById('endBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  showWin();
 });
 document.getElementById('pClose').addEventListener('pointerdown', (e) => {
   if (e.pointerType === 'mouse' && ghost()) return;
@@ -818,7 +841,7 @@ if (seen) scrollToCurrent();
 // թագը վերադարձավ — տոնում ենք մեկ անգամ, ինքնաբերաբար
 let celebrated = false;
 try { celebrated = localStorage.getItem('aren-quest-crown') === '1'; } catch (e) {}
-if (reached === STOPS.length && !celebrated) {
+if (!preview && reached === STOPS.length && !celebrated) {
   try { localStorage.setItem('aren-quest-crown', '1'); } catch (e) {}
   story.hidden = true;
   setTimeout(showWin, 500);
