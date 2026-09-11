@@ -332,6 +332,73 @@
   }
   .langbtn:hover { transform: translateY(-2px); border-color: var(--accent); }
   .langbtn .flag { font-size: 1.35rem; flex-shrink: 0; }
+
+  /* ——— 🐱 Կատու-ուղեկցորդը — քայլում է ներքևում, հպիր՝ բան կասի ——— */
+  #guide {
+    position: fixed;
+    bottom: 6px;
+    left: 0;
+    z-index: 40;
+    width: 62px;
+    height: 62px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  #guide:active { transform: scale(0.9); }
+  #guide svg { width: 100%; height: 100%; display: block; }
+  #bubble {
+    position: fixed;
+    bottom: 74px;
+    z-index: 41;
+    max-width: min(70vw, 260px);
+    background: var(--card);
+    color: var(--ink);
+    border: 2px solid var(--accent);
+    border-radius: 14px;
+    padding: 9px 13px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    pointer-events: none;
+    animation: bubIn 0.25s;
+  }
+  #bubble[hidden] { display: none !important; }
+  @keyframes bubIn { from { transform: translateY(8px) scale(0.85); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* ——— ✨ Ոսկե փոշին մատի հետևից ——— */
+  #dust {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    pointer-events: none;
+  }
+
+  /* ——— 👑 Ոսկե ռեժիմ (գաղտնի) ——— */
+  html.golden body {
+    filter: sepia(0.34) saturate(1.75) hue-rotate(-12deg) brightness(1.06);
+  }
+  html.golden .game { border-color: var(--accent); }
+  html.golden #guide, html.golden #dust, html.golden #bubble { filter: none; }
+  #goldMsg {
+    position: fixed;
+    inset: 0;
+    z-index: 96;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 209, 102, 0.22);
+    pointer-events: none;
+    animation: goldFlash 1.6s forwards;
+  }
+  #goldMsg span {
+    background: var(--accent);
+    color: #2e2410;
+    font-weight: bold;
+    font-size: clamp(1.1rem, 5vw, 1.6rem);
+    padding: 14px 26px;
+    border-radius: 999px;
+    box-shadow: 0 0 40px rgba(255, 209, 102, 0.8);
+  }
+  @keyframes goldFlash { 0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
 </style>
 </head>
 <body>
@@ -1574,6 +1641,34 @@
 
 </div>
 
+
+<!-- 🐱 Կատու-ուղեկցորդը, ✨ ոսկե փոշին — Արենի մտքերն են -->
+<canvas id="dust"></canvas>
+<div id="bubble" hidden></div>
+<div id="guide" title="Փիսո">
+  <svg viewBox="0 0 60 60" aria-hidden="true">
+    <g id="gcat">
+      <path id="gtail" d="M46 44 q10 -2 10 -14" stroke="#f28c3b" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <g id="glegs" stroke="#f28c3b" stroke-width="5" stroke-linecap="round">
+        <path id="gl1" d="M20 44 v9"/><path id="gl2" d="M38 44 v9"/>
+      </g>
+      <ellipse cx="30" cy="38" rx="17" ry="11" fill="#f28c3b"/>
+      <g stroke="#d96f21" stroke-width="2.6" fill="none" stroke-linecap="round">
+        <path d="M24 30 q2 4 0 8"/><path d="M32 29 q2 4 0 8"/>
+      </g>
+      <circle cx="42" cy="26" r="10" fill="#f28c3b"/>
+      <path d="M35 19 L34 10 L41 15 Z" fill="#f28c3b"/>
+      <path d="M47 15 L52 9 L52 19 Z" fill="#f28c3b"/>
+      <circle cx="40" cy="25" r="1.9" fill="#23405c"/>
+      <circle cx="47" cy="25" r="1.9" fill="#23405c"/>
+      <circle cx="44" cy="30" r="1.7" fill="#ff8fa3"/>
+      <g stroke="rgba(35,64,92,0.5)" stroke-width="1.1" stroke-linecap="round">
+        <path d="M48 29 l7 -1"/><path d="M48 31 l7 2"/>
+      </g>
+    </g>
+  </svg>
+</div>
+
 <script>
 // Կրկնակի արագ հպումը հեռախոսում էկրանը մեծացնում էր — արգելում ենք
 let lastTap = 0;
@@ -2265,6 +2360,128 @@ let saved = null;
 try { saved = localStorage.getItem('gg-lang'); } catch (e) {}
 if (saved) applyLang(saved);
 else langPick.hidden = false;
+
+// ——————————————————————————————————————
+//  🐱 ԿԱՏՈՒ-ՈՒՂԵԿՑՈՐԴ, ✨ ՈՍԿԵ ՓՈՇԻ, 👑 ԳԱՂՏՆԻ ԿՈԴ — Արենի մտքերն են
+// ——————————————————————————————————————
+const CAT_SAY = {"hy": ["Բարև՛։ Ես այս կայքի փիսոն եմ 😼", "Ամեն օր նոր մարտահրավեր կա՝ նայի՛ր վերևը 🌍", "Գիտեի՞ր, որ Drums-ի ռիթմով կարող ես Beat խաղալ 🥁", "Լաբիրինթոսում լապտերի կոճակ կա 🔦", "Ագռավներից զգույշ… հատկապես հսկայից 🐦‍⬛", "Բոլոր գավաթները հավաքիր ու կնիք կստանաս 👑", "Ես 10 տարեկան տղայի առաջին խաղից եմ ծնվել 🐱", "Հոգնե՞լ ես։ Փորձիր այգին, այնտեղ հանգիստ է 🌻"], "ru": ["Привет! Я котик этого сайта 😼", "Каждый день новое задание — посмотри наверх 🌍", "А ты знал, что в Beat можно играть своим ритмом из Drums? 🥁", "В лабиринте есть кнопка-фонарик 🔦", "Берегись ворон… особенно гигантской 🐦‍⬛", "Собери все кубки и получишь печать 👑", "Я родился из первой игры десятилетнего мальчика 🐱", "Устал? Загляни в сад, там спокойно 🌻"], "en": ["Hi! I am the cat of this site 😼", "There is a new challenge every day — look up 🌍", "Did you know you can play Beat with your own Drums rhythm? 🥁", "The maze has a torch button 🔦", "Watch out for crows… especially the giant one 🐦‍⬛", "Collect every trophy and you get the stamp 👑", "I was born from a ten-year-old’s very first game 🐱", "Tired? Try the garden, it is calm there 🌻"], "es": ["¡Hola! Soy el gato de este sitio 😼", "Cada día hay un reto nuevo — mira arriba 🌍", "¿Sabías que puedes jugar a Beat con tu ritmo de Drums? 🥁", "El laberinto tiene un botón linterna 🔦", "Cuidado con los cuervos… sobre todo con el gigante 🐦‍⬛", "Reúne todos los trofeos y tendrás el sello 👑", "Nací del primer juego de un niño de diez años 🐱", "¿Cansado? Prueba el jardín, ahí hay calma 🌻"], "fr": ["Salut ! Je suis le chat de ce site 😼", "Il y a un nouveau défi chaque jour — regarde en haut 🌍", "Tu savais que Beat peut jouer ton rythme de Drums ? 🥁", "Le labyrinthe a un bouton lampe 🔦", "Méfie-toi des corbeaux… surtout du géant 🐦‍⬛", "Réunis tous les trophées et tu auras le sceau 👑", "Je suis né du tout premier jeu d’un garçon de dix ans 🐱", "Fatigué ? Essaie le jardin, c’est calme 🌻"], "de": ["Hallo! Ich bin die Katze dieser Seite 😼", "Jeden Tag gibt es eine neue Challenge — schau nach oben 🌍", "Wusstest du, dass Beat deinen Drums-Rhythmus spielen kann? 🥁", "Das Labyrinth hat einen Taschenlampen-Knopf 🔦", "Vorsicht vor Krähen… besonders vor der riesigen 🐦‍⬛", "Sammle alle Pokale und du bekommst den Stempel 👑", "Ich stamme aus dem allerersten Spiel eines Zehnjährigen 🐱", "Müde? Probier den Garten, da ist es ruhig 🌻"], "ja": ["やあ！ぼくはこのサイトのネコだよ 😼", "毎日あたらしいチャレンジがあるよ — 上を見て 🌍", "Drumsで作ったリズムでBeatがあそべるって知ってた？🥁", "めいろにはライトのボタンがあるよ 🔦", "カラスに気をつけて…とくにきょだいなやつ 🐦‍⬛", "トロフィーをぜんぶ集めるといんかんがもらえるよ 👑", "ぼくは10さいの子のさいしょのゲームから生まれたんだ 🐱", "つかれた？にわがおすすめ、しずかだよ 🌻"], "zh": ["你好！我是这个网站的小猫 😼", "每天都有新挑战——往上看 🌍", "你知道吗？Beat 可以用你在 Drums 做的节奏来玩 🥁", "迷宫里有个手电筒按钮 🔦", "小心乌鸦……尤其是那只巨大的 🐦‍⬛", "集齐所有奖杯就能拿到印章 👑", "我出生在一个十岁男孩的第一个游戏里 🐱", "累了吗？去花园看看，那儿很安静 🌻"], "it": ["Ciao! Sono il gatto di questo sito 😼", "Ogni giorno c’è una sfida nuova — guarda in alto 🌍", "Lo sapevi che Beat può suonare il tuo ritmo di Drums? 🥁", "Il labirinto ha un pulsante torcia 🔦", "Attento ai corvi… soprattutto a quello gigante 🐦‍⬛", "Raccogli tutti i trofei e avrai il sigillo 👑", "Sono nato dal primo gioco di un bambino di dieci anni 🐱", "Stanco? Prova il giardino, lì è tranquillo 🌻"], "ka": ["გამარჯობა! მე ამ საიტის კატა ვარ 😼", "ყოველ დღე ახალი გამოწვევაა — ზემოთ შეხედე 🌍", "იცოდი, რომ Beat-ში შენი Drums-ის რიტმით შეგიძლია თამაში? 🥁", "ლაბირინთს ფანრის ღილაკი აქვს 🔦", "ყვავებს მოერიდე… განსაკუთრებით გიგანტურს 🐦‍⬛", "შეაგროვე ყველა თასი და ბეჭედს მიიღებ 👑", "მე ათი წლის ბიჭის პირველი თამაშიდან დავიბადე 🐱", "დაიღალე? სცადე ბაღი, იქ მშვიდია 🌻"], "hi": ["नमस्ते! मैं इस साइट की बिल्ली हूँ 😼", "हर दिन नई चुनौती होती है — ऊपर देखो 🌍", "पता है? Beat को अपनी Drums वाली ताल पर खेल सकते हो 🥁", "भूलभुलैया में एक टॉर्च बटन है 🔦", "कौवों से बचना… ख़ासकर उस विशाल वाले से 🐦‍⬛", "सारी ट्रॉफ़ियाँ जमा करो और मुहर पाओ 👑", "मैं दस साल के लड़के के पहले खेल से पैदा हुई हूँ 🐱", "थक गए? बगीचा देखो, वहाँ शांति है 🌻"]};
+const GOLD_ON = {"hy": "👑 ՈՍԿԵ ՌԵԺԻՄ", "ru": "👑 ЗОЛОТОЙ РЕЖИМ", "en": "👑 GOLDEN MODE", "es": "👑 MODO DORADO", "fr": "👑 MODE DORÉ", "de": "👑 GOLDMODUS", "ja": "👑 ゴールドモード", "zh": "👑 黄金模式", "it": "👑 MODALITÀ ORO", "ka": "👑 ოქროს რეჟიმი", "hi": "👑 सुनहरा मोड"};
+const GOLD_OFF = {"hy": "Ոսկե ռեժիմն անջատվեց", "ru": "Золотой режим выключен", "en": "Golden mode off", "es": "Modo dorado apagado", "fr": "Mode doré désactivé", "de": "Goldmodus aus", "ja": "ゴールドモードOFF", "zh": "黄金模式已关闭", "it": "Modalità oro spenta", "ka": "ოქროს რეჟიმი გამორთულია", "hi": "सुनहरा मोड बंद"};
+const SECRET_TXT = {"hy": "Գաղտնիքը գտա՜ր 🤫", "ru": "Ты нашёл секрет! 🤫", "en": "You found the secret! 🤫", "es": "¡Encontraste el secreto! 🤫", "fr": "Tu as trouvé le secret ! 🤫", "de": "Du hast das Geheimnis gefunden! 🤫", "ja": "ひみつを見つけたね！🤫", "zh": "你找到秘密了！🤫", "it": "Hai trovato il segreto! 🤫", "ka": "საიდუმლო იპოვე! 🤫", "hi": "तुमने राज़ ढूँढ लिया! 🤫"};
+const catLang = () => CAT_SAY[ggLangNow()] ? ggLangNow() : 'hy';
+function ggLangNow() { try { return localStorage.getItem('gg-lang') || 'hy'; } catch (e) { return 'hy'; } }
+
+// ——— Փիսոն քայլում է ներքևում ———
+const guide = document.getElementById('guide');
+const bubble = document.getElementById('bubble');
+let gx = 30, gdir = 1, gstep = 0, gpaused = 0;
+function walkCat() {
+  if (gpaused > 0) { gpaused--; } else {
+    gx += gdir * 0.55;
+    if (gx > innerWidth - 76) { gdir = -1; gpaused = 40; }
+    if (gx < 6) { gdir = 1; gpaused = 40; }
+    gstep += 0.14;
+  }
+  const swing = gpaused > 0 ? 0 : Math.sin(gstep) * 4;
+  guide.style.transform = 'translateX(' + gx + 'px) scaleX(' + gdir + ')';
+  const l1 = document.getElementById('gl1'), l2 = document.getElementById('gl2');
+  if (l1) l1.setAttribute('transform', 'rotate(' + swing + ' 20 44)');
+  if (l2) l2.setAttribute('transform', 'rotate(' + (-swing) + ' 38 44)');
+  const tail = document.getElementById('gtail');
+  if (tail) tail.setAttribute('transform', 'rotate(' + (Math.sin(gstep * 0.6) * 7) + ' 46 44)');
+  requestAnimationFrame(walkCat);
+}
+walkCat();
+
+let bubTimer = null, catTaps = 0, lastCatTap = 0;
+function catSay(txt) {
+  bubble.textContent = txt;
+  bubble.hidden = false;
+  bubble.style.left = Math.max(8, Math.min(innerWidth - bubble.offsetWidth - 8, gx - 20)) + 'px';
+  clearTimeout(bubTimer);
+  bubTimer = setTimeout(() => { bubble.hidden = true; }, 3800);
+}
+guide.addEventListener('pointerdown', () => {
+  gpaused = 90;
+  const now = Date.now();
+  catTaps = (now - lastCatTap < 1200) ? catTaps + 1 : 1;
+  lastCatTap = now;
+  // Փիսոն գաղտնիքի պահապանն է. 7 անգամ իրար ետևից հպիր ու ոսկե ռեժիմը կբացվի
+  if (catTaps >= 7) { catTaps = 0; catSay(SECRET_TXT[catLang()]); toggleGolden(); return; }
+  const list = CAT_SAY[catLang()];
+  catSay(list[Math.floor(Math.random() * list.length)]);
+});
+
+// ——— ✨ Ոսկե փոշին մատի/կուրսորի հետևից ———
+const dustCv = document.getElementById('dust');
+const dctx = dustCv.getContext('2d');
+let bits = [];
+function dustSize() { dustCv.width = innerWidth; dustCv.height = innerHeight; }
+dustSize();
+addEventListener('resize', dustSize);
+function sprinkle(x, y) {
+  for (let i = 0; i < 2; i++) {
+    bits.push({ x, y, vx: (Math.random() - 0.5) * 1.1, vy: -0.3 - Math.random() * 0.7,
+                r: 1.4 + Math.random() * 2.2, life: 1 });
+  }
+  if (bits.length > 90) bits = bits.slice(-90);
+}
+addEventListener('pointermove', (e) => sprinkle(e.clientX, e.clientY), { passive: true });
+addEventListener('touchmove', (e) => { const t = e.touches[0]; if (t) sprinkle(t.clientX, t.clientY); }, { passive: true });
+function dustLoop() {
+  dctx.clearRect(0, 0, dustCv.width, dustCv.height);
+  for (const b of bits) {
+    b.x += b.vx; b.y += b.vy; b.life -= 0.022; b.vy += 0.012;
+    if (b.life <= 0) continue;
+    dctx.globalAlpha = Math.max(0, b.life);
+    dctx.fillStyle = b.life > 0.6 ? '#fff3c4' : '#ffd166';
+    dctx.beginPath(); dctx.arc(b.x, b.y, b.r * b.life, 0, Math.PI * 2); dctx.fill();
+  }
+  dctx.globalAlpha = 1;
+  bits = bits.filter(b => b.life > 0);
+  requestAnimationFrame(dustLoop);
+}
+dustLoop();
+
+// ——— 👑 Ոսկե ռեժիմը ———
+function goldFanfare() {
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    [523, 659, 784, 1047, 1319].forEach((f, k) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      const t = ac.currentTime + k * 0.1;
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.16, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + 0.3);
+    });
+  } catch (e) {}
+}
+function showGoldMsg(txt) {
+  const d = document.createElement('div');
+  d.id = 'goldMsg';
+  d.innerHTML = '<span></span>';
+  d.querySelector('span').textContent = txt;
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 1700);
+}
+function toggleGolden() {
+  const on = !document.documentElement.classList.contains('golden');
+  document.documentElement.classList.toggle('golden', on);
+  try { localStorage.setItem('gg-golden', on ? '1' : '0'); } catch (e) {}
+  showGoldMsg(on ? GOLD_ON[catLang()] : GOLD_OFF[catLang()]);
+  if (on) goldFanfare();
+}
+try { if (localStorage.getItem('gg-golden') === '1') document.documentElement.classList.add('golden'); } catch (e) {}
+
+// Konami կոդը՝ ↑↑↓↓←→←→ B A (համակարգչի ստեղնաշարով)
+const KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','KeyB','KeyA'];
+let kpos = 0;
+addEventListener('keydown', (e) => {
+  kpos = (e.code === KONAMI[kpos]) ? kpos + 1 : (e.code === KONAMI[0] ? 1 : 0);
+  if (kpos === KONAMI.length) { kpos = 0; toggleGolden(); }
+});
+
 </script>
 </body>
 </html>

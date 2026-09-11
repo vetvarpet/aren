@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>404 — Փիսոն կորել է 🙀</title>
+<link rel="icon" type="image/png" href="/logo-icon.png">
+<style>
+  :root {
+    --bg: #12122b;
+    --card: #1d1d3f;
+    --ink: #eef0ff;
+    --dim: #9a9ec7;
+    --accent: #ffd166;
+    --accent2: #6ee7b7;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    background:
+      radial-gradient(circle at 80% 10%, rgba(255, 209, 102, 0.08), transparent 45%),
+      var(--bg);
+    color: var(--ink);
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 26px 16px 40px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  .big404 {
+    font-size: clamp(3.4rem, 18vw, 6rem);
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+  h1 { font-size: clamp(1.1rem, 5vw, 1.5rem); margin-top: 6px; text-align: center; }
+  .sub { color: var(--dim); margin-top: 10px; text-align: center; max-width: 34ch; line-height: 1.5; }
+  .tries { color: var(--dim); font-size: 0.85rem; margin-top: 10px; min-height: 20px; }
+
+  .spots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: min(94vw, 420px);
+    margin-top: 18px;
+  }
+  .spot {
+    background: var(--card);
+    border: 2px solid #33356b;
+    border-radius: 16px;
+    padding: 10px 6px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.12s, border-color 0.12s;
+  }
+  .spot:hover { border-color: var(--accent); }
+  .spot svg { width: 100%; height: 64px; display: block; }
+  .spot .nm { font-size: 0.72rem; color: var(--dim); margin-top: 4px; }
+  .spot.checked { opacity: 0.45; }
+  .spot.checked .nm { color: #6a6f96; }
+  .spot.shake { animation: sh 0.4s; }
+  @keyframes sh {
+    0%, 100% { transform: none; }
+    25% { transform: translateX(-6px) rotate(-3deg); }
+    75% { transform: translateX(6px) rotate(3deg); }
+  }
+  .spot.found { border-color: var(--accent); background: rgba(255, 209, 102, 0.14); opacity: 1; }
+
+  #win { margin-top: 22px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  #win[hidden] { display: none !important; }
+  #win svg { width: 120px; height: 120px; animation: pop 0.55s cubic-bezier(0.2, 1.6, 0.4, 1); }
+  @keyframes pop { from { transform: scale(0.3); opacity: 0; } to { transform: none; opacity: 1; } }
+  #win .yay { color: var(--accent); font-weight: bold; font-size: clamp(1.05rem, 4.8vw, 1.35rem); }
+
+  a.home {
+    margin-top: 22px;
+    color: #2e2410;
+    background: var(--accent);
+    text-decoration: none;
+    font-weight: bold;
+    padding: 13px 28px;
+    border-radius: 999px;
+    font-size: 0.98rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="big404">404</div>
+<h1 id="ttl">Փիսոն կորե՜լ է 🙀</h1>
+<p class="sub" id="sub">Այս էջը չկա… բայց փիսոն ինչ-որ տեղ այստեղ է թաքնվել։ Նայիր, թե որտեղ։</p>
+<div class="tries" id="tries"></div>
+
+<div class="spots" id="spots"></div>
+
+<div id="win" hidden>
+  <svg viewBox="0 0 60 60" aria-hidden="true">
+    <path d="M46 44 q10 -2 10 -14" stroke="#f28c3b" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <g stroke="#f28c3b" stroke-width="5" stroke-linecap="round"><path d="M20 44 v9"/><path d="M38 44 v9"/></g>
+    <ellipse cx="30" cy="38" rx="17" ry="11" fill="#f28c3b"/>
+    <g stroke="#d96f21" stroke-width="2.6" fill="none" stroke-linecap="round">
+      <path d="M24 30 q2 4 0 8"/><path d="M32 29 q2 4 0 8"/></g>
+    <circle cx="42" cy="26" r="10" fill="#f28c3b"/>
+    <path d="M35 19 L34 10 L41 15 Z" fill="#f28c3b"/>
+    <path d="M47 15 L52 9 L52 19 Z" fill="#f28c3b"/>
+    <circle cx="40" cy="25" r="1.9" fill="#23405c"/>
+    <circle cx="47" cy="25" r="1.9" fill="#23405c"/>
+    <circle cx="44" cy="30" r="1.7" fill="#ff8fa3"/>
+    <g stroke="rgba(35,64,92,0.5)" stroke-width="1.1" stroke-linecap="round">
+      <path d="M48 29 l7 -1"/><path d="M48 31 l7 2"/></g>
+  </svg>
+  <div class="yay" id="yay"></div>
+</div>
+
+<a class="home" href="/" id="homeBtn">← Golden Games</a>
+
+<script>
+// ——————————————————————————————————————
+//  404 — ՓԻՍՈՆ ԿՈՐԵԼ Է 🙀 (Արենի միտքն է)
+//  Էջը չկա, բայց փիսոն այստեղ է թաքնված։ Հպիր տեղերին ու գտիր նրան։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { ttl: 'Փիսոն կորե՜լ է 🙀', sub: 'Այս էջը չկա… բայց փիսոն ինչ-որ տեղ այստեղ է թաքնվել։ Նայիր, թե որտեղ։', empty: 'Այստեղ չկա…', tries: n => 'Նայեցիր՝ ' + n + ' տեղ', yay: 'Գտա՜ր փիսոյին 🎉', home: '← Golden Games', names: ['Արկղ', 'Վարագույր', 'Ծաղկաման', 'Բազմոց', 'Տուփ', 'Զամբյուղ'] },
+  ru: { ttl: 'Котик потерялся 🙀', sub: 'Такой страницы нет… но котик где-то тут спрятался. Посмотри где.', empty: 'Здесь нет…', tries: n => 'Проверено мест: ' + n, yay: 'Ты нашёл котика! 🎉', home: '← Golden Games', names: ['Ящик', 'Штора', 'Горшок', 'Диван', 'Коробка', 'Корзина'] },
+  en: { ttl: 'The cat is lost 🙀', sub: 'This page does not exist… but the cat is hiding somewhere here. Find where.', empty: 'Not here…', tries: n => 'Places checked: ' + n, yay: 'You found the cat! 🎉', home: '← Golden Games', names: ['Crate', 'Curtain', 'Plant', 'Sofa', 'Box', 'Basket'] },
+  es: { ttl: 'El gato se perdió 🙀', sub: 'Esta página no existe… pero el gato se escondió por aquí. Busca dónde.', empty: 'Aquí no…', tries: n => 'Lugares revisados: ' + n, yay: '¡Encontraste al gato! 🎉', home: '← Golden Games', names: ['Cajón', 'Cortina', 'Maceta', 'Sofá', 'Caja', 'Cesta'] },
+  fr: { ttl: 'Le chat s’est perdu 🙀', sub: 'Cette page n’existe pas… mais le chat se cache quelque part ici. Trouve où.', empty: 'Pas ici…', tries: n => 'Endroits fouillés : ' + n, yay: 'Tu as trouvé le chat ! 🎉', home: '← Golden Games', names: ['Caisse', 'Rideau', 'Plante', 'Canapé', 'Boîte', 'Panier'] },
+  de: { ttl: 'Die Katze ist weg 🙀', sub: 'Diese Seite gibt es nicht… aber die Katze versteckt sich hier irgendwo. Finde wo.', empty: 'Hier nicht…', tries: n => 'Geprüfte Orte: ' + n, yay: 'Du hast die Katze gefunden! 🎉', home: '← Golden Games', names: ['Kiste', 'Vorhang', 'Pflanze', 'Sofa', 'Karton', 'Korb'] },
+  ja: { ttl: 'ネコがいなくなった 🙀', sub: 'このページはないよ…でもネコはこのへんにかくれてる。さがしてね。', empty: 'ここにはいない…', tries: n => 'しらべた場所：' + n, yay: 'ネコを見つけた！🎉', home: '← Golden Games', names: ['木箱', 'カーテン', 'うえき', 'ソファ', 'はこ', 'かご'] },
+  zh: { ttl: '小猫走丢了 🙀', sub: '这个页面不存在……但小猫就藏在这附近。找找看。', empty: '这里没有……', tries: n => '已查看：' + n + ' 处', yay: '你找到小猫了！🎉', home: '← Golden Games', names: ['板条箱', '窗帘', '花盆', '沙发', '纸箱', '篮子'] },
+  it: { ttl: 'Il gatto si è perso 🙀', sub: 'Questa pagina non esiste… ma il gatto si è nascosto da qualche parte qui. Trova dove.', empty: 'Qui no…', tries: n => 'Posti controllati: ' + n, yay: 'Hai trovato il gatto! 🎉', home: '← Golden Games', names: ['Cassa', 'Tenda', 'Vaso', 'Divano', 'Scatola', 'Cesto'] },
+  ka: { ttl: 'კატა დაიკარგა 🙀', sub: 'ეს გვერდი არ არსებობს… მაგრამ კატა აქვე სადღაც იმალება. იპოვე სად.', empty: 'აქ არ არის…', tries: n => 'შემოწმებული ადგილები: ' + n, yay: 'იპოვე კატა! 🎉', home: '← Golden Games', names: ['ყუთი', 'ფარდა', 'ქოთანი', 'დივანი', 'კოლოფი', 'კალათა'] },
+  hi: { ttl: 'बिल्ली खो गई 🙀', sub: 'यह पेज नहीं है… लेकिन बिल्ली यहीं कहीं छिपी है। ढूँढो कहाँ।', empty: 'यहाँ नहीं…', tries: n => 'देखी गई जगहें: ' + n, yay: 'तुमने बिल्ली ढूँढ ली! 🎉', home: '← Golden Games', names: ['संदूक', 'परदा', 'गमला', 'सोफ़ा', 'डिब्बा', 'टोकरी'] },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+// Թաքստոցները՝ ձեռքով նկարած, առանց էմոջիի
+const ART = [
+  '<rect x="12" y="26" width="56" height="40" rx="4" fill="#8a5f2b" stroke="#5a3e1a" stroke-width="3"/><path d="M12 40 h56 M40 26 v40" stroke="#5a3e1a" stroke-width="3"/>',
+  '<rect x="10" y="10" width="60" height="8" rx="3" fill="#8a8fb5"/><path d="M16 18 q6 26 0 50 h20 q-6 -24 0 -50 Z" fill="#b3384a"/><path d="M44 18 q6 26 0 50 h20 q-6 -24 0 -50 Z" fill="#b3384a"/>',
+  '<path d="M26 44 h28 l-4 24 h-20 Z" fill="#c9863f" stroke="#8f5a24" stroke-width="3"/><path d="M40 44 q-16 -6 -14 -24 q14 2 14 24" fill="#3f7a34"/><path d="M40 44 q16 -10 16 -22 q-14 4 -16 22" fill="#4f9c44"/>',
+  '<rect x="10" y="36" width="60" height="22" rx="6" fill="#5d6f9e" stroke="#3d4a6b" stroke-width="3"/><rect x="14" y="24" width="52" height="16" rx="6" fill="#6f82b5" stroke="#3d4a6b" stroke-width="3"/><rect x="14" y="58" width="8" height="8" fill="#3d4a6b"/><rect x="58" y="58" width="8" height="8" fill="#3d4a6b"/>',
+  '<path d="M14 30 h52 v34 h-52 Z" fill="#c9963f" stroke="#8a5f2b" stroke-width="3"/><path d="M14 30 l8 -12 h36 l8 12" fill="#e0b05a" stroke="#8a5f2b" stroke-width="3"/><path d="M40 18 v46" stroke="#8a5f2b" stroke-width="3"/>',
+  '<path d="M18 34 h44 l-6 32 h-32 Z" fill="#d1a15e" stroke="#8f6a32" stroke-width="3"/><path d="M18 34 q22 -10 44 0" fill="none" stroke="#8f6a32" stroke-width="3"/><path d="M26 42 h28 M25 52 h30" stroke="#8f6a32" stroke-width="2.5"/>',
+];
+
+document.getElementById('ttl').textContent = T.ttl;
+document.getElementById('sub').textContent = T.sub;
+document.getElementById('yay').textContent = T.yay;
+document.getElementById('homeBtn').textContent = T.home;
+document.documentElement.lang = ggLang;
+
+const hideAt = Math.floor(Math.random() * ART.length);
+let checked = 0, done = false;
+
+// Ձայները՝ փոքրիկ սինթեզատոր
+let actx = null;
+function tone(freq, dur, type, vol, delay) {
+  try {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const t = actx.currentTime + (delay || 0);
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type || 'triangle';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(vol || 0.14, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t); o.stop(t + dur);
+  } catch (e) {}
+}
+const sNope = () => tone(200, 0.12, 'square', 0.07);
+const sFound = () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.22, 'triangle', 0.16, k * 0.1));
+
+const spots = document.getElementById('spots');
+ART.forEach((art, i) => {
+  const d = document.createElement('div');
+  d.className = 'spot';
+  d.innerHTML = '<svg viewBox="0 0 80 80" aria-hidden="true">' + art + '</svg><div class="nm">' + T.names[i] + '</div>';
+  d.addEventListener('pointerdown', () => {
+    if (done || d.classList.contains('checked')) return;
+    d.classList.add('shake');
+    setTimeout(() => d.classList.remove('shake'), 400);
+    if (i === hideAt) {
+      done = true;
+      d.classList.add('found');
+      document.getElementById('win').hidden = false;
+      document.getElementById('tries').textContent = '';
+      sFound();
+    } else {
+      d.classList.add('checked');
+      d.querySelector('.nm').textContent = T.empty;
+      checked++;
+      document.getElementById('tries').textContent = T.tries(checked);
+      sNope();
+    }
+  });
+  spots.appendChild(d);
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>
+</body>
+</html>
