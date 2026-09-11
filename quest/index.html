@@ -559,8 +559,14 @@ let doneArr = [], reached = 0;
 // Այս ռեժիմում ամբողջ ճանապարհը ոսկի է դառնում ու վերջը կարելի է տեսնել,
 // բայց localStorage-ի իսկական ռեկորդներին ձեռք չենք տալիս — անջատում ես, ու
 // քարտեզը նորից ճշմարիտն է ցույց տալիս։
+// Ժամանակավորը թող իսկապես ժամանակավոր լինի. ոսկեզօծումը ապրում է միայն
+// այս այցի ընթացքում։ Խաղ ես մտնում ու ետ գալիս — մնում է. կայքը նորից ես
+// բացում — քարտեզը ինքնաբերաբար վերադառնում է ճշմարիտին։
 let preview = false;
-try { preview = localStorage.getItem('aren-quest-openall') === '1'; } catch (e) {}
+try {
+  preview = sessionStorage.getItem('aren-quest-openall') === '1';
+  localStorage.removeItem('aren-quest-openall');   // հին այցերից մնացածը մաքրում ենք
+} catch (e) {}
 let realArr = [];
 function isOpen(i) { return preview || i <= reached; }
 
@@ -713,7 +719,7 @@ document.getElementById('allBtn').addEventListener('pointerdown', (e) => {
   if (e.pointerType === 'mouse' && ghost()) return;
   initAudio(); tone(preview ? 440 : 700, 0.14, 'triangle');
   preview = !preview;
-  try { localStorage.setItem('aren-quest-openall', preview ? '1' : '0'); } catch (e) {}
+  try { sessionStorage.setItem('aren-quest-openall', preview ? '1' : '0'); } catch (e) {}
   if (!preview) hideWin();
   render();
   if (openIndex >= 0) openStop(openIndex);   // բաց վահանակը թարմացնում ենք
