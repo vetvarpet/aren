@@ -1,0 +1,792 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Արշավ 🗺️ · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #0f1424; overflow-x: hidden; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #f5eede;
+    /* ներքևի վահանակի համար տեղ ենք թողնում */
+    padding-bottom: 20px;
+  }
+
+  /* ——— վերևի գոտին՝ վերնագիր ու առաջընթաց ——— */
+  header {
+    position: sticky; top: 0; z-index: 20;
+    background: linear-gradient(#141a2c, rgba(20,26,44,0.88));
+    border-bottom: 2px solid rgba(240,200,90,0.35);
+    padding: 46px 12px 10px;
+    text-align: center;
+  }
+  header h1 { margin: 0; font-size: 1.12rem; color: #f0c85a; letter-spacing: 0.5px; }
+  header p { margin: 3px 0 8px; font-size: 0.72rem; opacity: 0.75; }
+  .bar { height: 9px; border-radius: 999px; background: rgba(255,255,255,0.12); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; border-radius: 999px;
+           background: linear-gradient(90deg, #f0c85a, #ffe9a8); transition: width 0.6s ease; }
+  .barTxt { margin-top: 5px; font-size: 0.72rem; color: #ffe9a8; }
+
+  /* ——— քարտեզը ——— */
+  #mapWrap { width: 100%; overflow-x: hidden; }
+  #map { display: block; width: 100%; height: auto; }
+
+  .stopHit { cursor: pointer; }
+  .stopLbl { font: bold 13px Arial, sans-serif; fill: #f5eede; paint-order: stroke; stroke: rgba(10,14,26,0.85); stroke-width: 4px; }
+  .stopNum { font: bold 17px Arial, sans-serif; fill: #10162a; text-anchor: middle; dominant-baseline: central; }
+  .stopNumLock { fill: #cfd6e6; }
+
+  /* ——— ներքևի վահանակը ——— */
+  #panel {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    background: #1b2238; border-top: 2px solid rgba(240,200,90,0.5);
+    border-radius: 16px 16px 0 0; padding: 14px 16px 20px;
+    box-shadow: 0 -8px 26px rgba(0,0,0,0.5);
+  }
+  #panel[hidden] { display: none !important; }
+  #pStop { font-size: 0.72rem; color: #f0c85a; letter-spacing: 1px; }
+  #pGame { margin: 2px 0 6px; font-size: 1.15rem; }
+  #pTask { margin: 0 0 4px; font-size: 0.92rem; line-height: 1.4; }
+  #pNow { margin: 0 0 12px; font-size: 0.78rem; opacity: 0.7; }
+  .btns { display: flex; gap: 10px; }
+  .btn {
+    flex: 1; padding: 12px 8px; border-radius: 12px; border: 2px solid transparent;
+    font-size: 0.92rem; font-family: inherit; color: #10162a; background: #f0c85a;
+    font-weight: bold; text-align: center; text-decoration: none; cursor: pointer;
+  }
+  .btn.ghost { background: transparent; color: #f5eede; border-color: rgba(255,255,255,0.3); }
+  .btn.off { background: rgba(255,255,255,0.12); color: #cfd6e6; font-weight: normal; }
+
+  /* ——— ավարտի տոնը ——— */
+  #win {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(8,11,22,0.93);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 24px;
+  }
+  #win[hidden] { display: none !important; }
+  #win .crown { font-size: 4.6rem; animation: pop 1.6s ease-in-out infinite; }
+  @keyframes pop { 0%, 100% { transform: scale(1) rotate(-4deg); } 50% { transform: scale(1.12) rotate(4deg); } }
+  #win h2 { margin: 10px 0 6px; font-size: 1.4rem; color: #f0c85a; }
+  #win p { margin: 0 0 18px; font-size: 0.92rem; line-height: 1.5; max-width: 340px; }
+  #confetti { position: fixed; inset: 0; z-index: 49; pointer-events: none; }
+  #confetti[hidden] { display: none !important; }
+
+  /* ——— սկզբի պատմությունը ——— */
+  #story {
+    position: fixed; inset: 0; z-index: 45;
+    background: rgba(8,11,22,0.95);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 26px;
+  }
+  #story[hidden] { display: none !important; }
+  #story .crown { font-size: 3.4rem; }
+  #story h2 { margin: 8px 0 10px; font-size: 1.25rem; color: #f0c85a; }
+  #story p { margin: 0 0 20px; font-size: 0.9rem; line-height: 1.55; max-width: 330px; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:60;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<header>
+  <h1 id="hTitle">Ոսկե Արշավ 🗺️</h1>
+  <p id="hSub">Մեկ ճանապարհ · տասներկու կանգառ · մեկ ոսկե թագ</p>
+  <div class="bar"><i id="barFill"></i></div>
+  <div class="barTxt" id="barTxt">0/12</div>
+</header>
+
+<div id="mapWrap">
+<!--
+  Քարտեզը մեկ բարձր նկար է՝ ներքևից վեր։
+  Ներքևում՝ գյուղը, հետո ծովը, անտառը, սարերը, քաղաքը,
+  իսկ ամենավերևում՝ ոսկե ամրոցը, որտեղ պիտի վերադարձնես թագը։
+-->
+<svg id="map" viewBox="0 0 400 2400" preserveAspectRatio="xMidYMin meet" aria-hidden="true">
+  <defs>
+    <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b1f4e"/><stop offset="0.55" stop-color="#4a3a6e"/><stop offset="1" stop-color="#7a5f86"/>
+    </linearGradient>
+    <linearGradient id="cityG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7a5f86"/><stop offset="1" stop-color="#4e4a70"/>
+    </linearGradient>
+    <linearGradient id="mountG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4e4a70"/><stop offset="1" stop-color="#3b5068"/>
+    </linearGradient>
+    <linearGradient id="forestG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f4f4a"/><stop offset="1" stop-color="#274440"/>
+    </linearGradient>
+    <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#20527e"/><stop offset="1" stop-color="#2c6f9a"/>
+    </linearGradient>
+    <linearGradient id="fieldG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3f6b45"/><stop offset="1" stop-color="#4e7d47"/>
+    </linearGradient>
+    <linearGradient id="goldG" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#e0a93c"/>
+    </linearGradient>
+    <linearGradient id="groundG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3d3a5c" stop-opacity="0"/><stop offset="0.35" stop-color="#3d3a5c" stop-opacity="1"/><stop offset="1" stop-color="#3d3a5c" stop-opacity="1"/>
+    </linearGradient>
+    <radialGradient id="glowG" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffe9a8" stop-opacity="0.75"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ——— գետինը շերտ առ շերտ, ներքևից վեր ——— -->
+  <rect x="0" y="0" width="400" height="2400" fill="url(#skyG)"/>
+
+  <!-- աստղերը ամրոցի երկնքում -->
+  <g fill="#fff6d8">
+    <circle cx="40" cy="60" r="1.8" opacity="0.9"/><circle cx="96" cy="120" r="1.2" opacity="0.7"/>
+    <circle cx="150" cy="48" r="1.5" opacity="0.8"/><circle cx="262" cy="86" r="1.4" opacity="0.75"/>
+    <circle cx="330" cy="42" r="2" opacity="0.95"/><circle cx="366" cy="132" r="1.3" opacity="0.7"/>
+    <circle cx="214" cy="164" r="1.1" opacity="0.6"/><circle cx="62" cy="196" r="1.5" opacity="0.7"/>
+    <circle cx="300" cy="206" r="1.2" opacity="0.65"/><circle cx="128" cy="232" r="1.6" opacity="0.8"/>
+  </g>
+
+  <!-- քաղաքը -->
+  <path d="M0 640 C 70 616, 130 660, 200 642 C 268 624, 330 664, 400 644 L400 1020 L0 1020 Z" fill="url(#cityG)"/>
+  <g fill="#33304f">
+    <rect x="24" y="700" width="34" height="132" rx="3"/><rect x="66" y="742" width="26" height="90" rx="3"/>
+    <rect x="104" y="672" width="40" height="160" rx="3"/><rect x="154" y="724" width="30" height="108" rx="3"/>
+    <rect x="196" y="690" width="36" height="142" rx="3"/><rect x="242" y="746" width="28" height="86" rx="3"/>
+    <rect x="280" y="706" width="38" height="126" rx="3"/><rect x="328" y="736" width="30" height="96" rx="3"/>
+  </g>
+  <g fill="#ffd98a" opacity="0.85">
+    <rect x="32" y="712" width="7" height="9"/><rect x="44" y="712" width="7" height="9"/><rect x="32" y="732" width="7" height="9"/>
+    <rect x="112" y="686" width="8" height="10"/><rect x="128" y="686" width="8" height="10"/><rect x="112" y="710" width="8" height="10"/>
+    <rect x="204" y="704" width="8" height="10"/><rect x="218" y="704" width="8" height="10"/><rect x="204" y="728" width="8" height="10"/>
+    <rect x="288" y="720" width="8" height="10"/><rect x="302" y="720" width="8" height="10"/>
+  </g>
+  <rect x="0" y="812" width="400" height="208" fill="url(#groundG)"/>
+
+  <!-- սարերը -->
+  <path d="M0 980 C 60 962, 120 998, 200 980 C 276 962, 336 1000, 400 982 L400 1460 L0 1460 Z" fill="url(#mountG)"/>
+  <g fill="#5b6b86">
+    <path d="M-10 1240 L70 1050 L150 1240 Z"/><path d="M110 1250 L210 1010 L310 1250 Z"/><path d="M270 1245 L350 1070 L420 1245 Z"/>
+  </g>
+  <g fill="#eef3fa">
+    <path d="M44 1112 L70 1050 L96 1112 L80 1100 L66 1116 L54 1104 Z"/>
+    <path d="M178 1086 L210 1010 L242 1086 L224 1072 L206 1092 L192 1076 Z"/>
+    <path d="M326 1128 L350 1070 L374 1128 L360 1116 L346 1132 L336 1120 Z"/>
+  </g>
+
+  <!-- անտառը -->
+  <path d="M0 1420 C 66 1402, 128 1438, 200 1420 C 272 1402, 336 1440, 400 1422 L400 1800 L0 1800 Z" fill="url(#forestG)"/>
+  <g fill="#1f3a35">
+    <path d="M40 1540 L58 1492 L76 1540 Z"/><path d="M46 1568 L58 1524 L70 1568 Z"/>
+    <path d="M118 1560 L138 1506 L158 1560 Z"/><path d="M124 1592 L138 1542 L152 1592 Z"/>
+    <path d="M232 1548 L250 1500 L268 1548 Z"/><path d="M238 1578 L250 1532 L262 1578 Z"/>
+    <path d="M310 1566 L330 1512 L350 1566 Z"/><path d="M316 1598 L330 1548 L344 1598 Z"/>
+    <path d="M70 1690 L88 1642 L106 1690 Z"/><path d="M180 1706 L200 1652 L220 1706 Z"/><path d="M290 1694 L308 1646 L326 1694 Z"/>
+  </g>
+
+  <!-- ծովը -->
+  <path d="M0 1760 C 70 1742, 130 1778, 200 1760 C 270 1742, 332 1780, 400 1762 L400 2110 L0 2110 Z" fill="url(#seaG)"/>
+  <g stroke="#a8d8f0" stroke-width="2.4" fill="none" opacity="0.5" stroke-linecap="round">
+    <path d="M30 1840 q 14 -8 28 0 q 14 8 28 0"/><path d="M240 1866 q 14 -8 28 0 q 14 8 28 0"/>
+    <path d="M70 1954 q 14 -8 28 0 q 14 8 28 0"/><path d="M270 1998 q 14 -8 28 0 q 14 8 28 0"/>
+    <path d="M120 2054 q 14 -8 28 0 q 14 8 28 0"/>
+  </g>
+  <!-- առագաստանավը -->
+  <g transform="translate(302 1922)">
+    <path d="M-26 12 L26 12 L18 24 L-18 24 Z" fill="#8a5a34"/>
+    <rect x="-1.5" y="-30" width="3" height="42" fill="#6e4526"/>
+    <path d="M2 -28 L24 8 L2 8 Z" fill="#f5eede"/>
+    <path d="M-2 -22 L-20 8 L-2 8 Z" fill="#ffd98a"/>
+  </g>
+
+  <!-- գյուղն ու արտերը -->
+  <path d="M0 2060 C 66 2042, 130 2078, 200 2060 C 270 2042, 334 2080, 400 2062 L400 2400 L0 2400 Z" fill="url(#fieldG)"/>
+  <g>
+    <rect x="40" y="2218" width="54" height="42" fill="#c9a06a"/>
+    <path d="M34 2218 L67 2190 L100 2218 Z" fill="#a2503c"/>
+    <rect x="58" y="2236" width="16" height="24" fill="#6e4526"/>
+    <rect x="272" y="2246" width="48" height="38" fill="#c9a06a"/>
+    <path d="M266 2246 L296 2220 L326 2246 Z" fill="#a2503c"/>
+    <rect x="288" y="2262" width="15" height="22" fill="#6e4526"/>
+  </g>
+  <g stroke="#3a6540" stroke-width="3" opacity="0.6">
+    <path d="M120 2330 h 170"/><path d="M110 2350 h 190"/><path d="M130 2370 h 150"/>
+  </g>
+
+  <!-- ——— ոսկե ամրոցը ամենավերևում ——— -->
+  <g id="castle">
+    <circle cx="200" cy="150" r="118" fill="url(#glowG)" opacity="0.35" id="castleGlow"/>
+    <rect x="150" y="128" width="100" height="86" fill="#6c6a92"/>
+    <rect x="126" y="104" width="30" height="110" fill="#7d7aa6"/>
+    <rect x="244" y="104" width="30" height="110" fill="#7d7aa6"/>
+    <path d="M126 104 L141 74 L156 104 Z" fill="#e0a93c"/>
+    <path d="M244 104 L259 74 L274 104 Z" fill="#e0a93c"/>
+    <path d="M150 128 L200 92 L250 128 Z" fill="#e0a93c"/>
+    <rect x="190" y="170" width="20" height="44" rx="10" fill="#3a3556"/>
+    <g fill="#ffd98a"><rect x="134" y="130" width="12" height="14"/><rect x="254" y="130" width="12" height="14"/></g>
+  </g>
+
+  <!-- ——— ճանապարհը ——— -->
+  <!-- նախ գորշ ուրվագիծը, հետո վրայից՝ ոսկե անցած մասը -->
+  <path id="road" d="M 200 2318
+    C 200 2246, 118 2214, 88 2152
+    C 56 2088, 100 2036, 166 2006
+    C 240 1972, 322 1990, 340 1918
+    C 356 1852, 300 1806, 236 1780
+    C 166 1752, 96 1718, 94 1648
+    C 92 1580, 152 1540, 216 1518
+    C 290 1492, 344 1448, 330 1380
+    C 316 1320, 246 1292, 182 1272
+    C 112 1250, 62 1200, 76 1136
+    C 90 1076, 156 1046, 220 1024
+    C 294 998, 348 954, 334 886
+    C 320 826, 250 798, 186 778
+    C 116 756, 66 706, 80 642
+    C 94 582, 160 552, 224 530
+    C 298 504, 352 460, 338 392
+    C 324 332, 254 304, 200 286
+    C 172 276, 200 232, 200 214"
+    fill="none" stroke="#10162a" stroke-width="15" stroke-linecap="round" opacity="0.55"/>
+  <path id="roadDash" fill="none" stroke="#cfd6e6" stroke-width="6" stroke-dasharray="11 13" stroke-linecap="round" opacity="0.4"/>
+  <path id="roadGold" fill="none" stroke="url(#goldG)" stroke-width="9" stroke-linecap="round" opacity="0"/>
+
+  <g id="stops"></g>
+</svg>
+</div>
+
+<!-- ——— կանգառի վահանակը ——— -->
+<div id="panel" hidden>
+  <div id="pStop">ԿԱՆԳԱՌ 1</div>
+  <h2 id="pGame">Golden Cat</h2>
+  <p id="pTask">Հավաքիր 30 միավոր</p>
+  <p id="pNow">Հիմա՝ 0</p>
+  <div class="btns">
+    <a class="btn" id="pGo" href="#">▶ Գնալ խաղալու</a>
+    <button class="btn ghost" id="pClose">Փակել</button>
+  </div>
+</div>
+
+<!-- ——— սկզբի պատմությունը ——— -->
+<div id="story" hidden>
+  <div class="crown">👑</div>
+  <h2 id="sTitle">Ոսկե Արշավ</h2>
+  <p id="sText"></p>
+  <button class="btn" id="sBtn" style="max-width:260px">🚩 Ճանապարհ ընկնել</button>
+</div>
+
+<!-- ——— ավարտի տոնը ——— -->
+<canvas id="confetti" hidden></canvas>
+<div id="win" hidden>
+  <div class="crown">👑</div>
+  <h2 id="wTitle"></h2>
+  <p id="wText"></p>
+  <div class="btns" style="max-width:320px;width:100%">
+    <a class="btn" id="wHome" href="../">🏠</a>
+    <button class="btn ghost" id="wClose">Փակել</button>
+  </div>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ԱՐՇԱՎ 🗺️ — Արենի միտքն է
+//  Խաղերը մեկ մեծ ճանապարհ են դառնում։ Ամեն կանգառ մի խաղ է
+//  իր առաջադրանքով։ Կատարում ես՝ կանգառը ոսկեզօծվում է,
+//  ճանապարհը բացվում է առաջ, իսկ վերջում՝ Ոսկե Թագը տուն է գալիս։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: {
+    title: 'Ոսկե Արշավ 🗺️', sub: 'Մեկ ճանապարհ · տասներկու կանգառ · մեկ ոսկե թագ',
+    story: 'Ոսկե Թագը գողացել են Golden Games-ից 👑 Ճանապարհը ոլորվում է ծովի, սարերի ու քաղաքի միջով։ Ամեն կանգառում քեզ մի խաղ է սպասում։ Կատարիր առաջադրանքը՝ կանգառը կոսկեզօծվի, ու ճանապարհը կբացվի դեպի հաջորդը։',
+    begin: '🚩 Ճանապարհ ընկնել',
+    stop: n => 'ԿԱՆԳԱՌ ' + n, prog: (n, m) => n + '/' + m + ' կանգառ',
+    go: '▶ Գնալ խաղալու', done: '✅ Կատարված է', locked: n => '🔒 Նախ ավարտիր ' + n + '-րդ կանգառը',
+    now: v => 'Հիմա՝ ' + v, none: 'դեռ չես խաղացել', close: 'Փակել',
+    winT: 'Ոսկե Թագը տա՛ն է 👑',
+    winS: 'Դու անցար ամբողջ ճանապարհը ու թագը վերադարձրիր Golden Games-ին։ Ամբողջ քաղաքը տոնում է 🎉',
+    home: '🏠 Գլխավոր',
+    t: { collect: (n, u) => 'Հավաքիր ' + n + u, build: (n, u) => 'Կառուցիր ' + n + u, level: n => 'Հասիր ' + n + '-րդ մակարդակին', run: n => 'Վազիր ' + n + ' մ', chain: n => 'Կրկնիր ' + n + ' քայլ', letters: n => 'Ճիշտ պատասխանիր ' + n + ' տառի', win: 'Հաղթիր Մսրա Մելիքին' },
+    u: { pt: ' միավոր', fl: ' հարկ', lvl: n => 'մակարդակ ' + n, m: ' մ', chain: ' քայլ' },
+  },
+  ru: {
+    title: 'Золотой Поход 🗺️', sub: 'Одна дорога · двенадцать привалов · одна золотая корона',
+    story: 'Золотую Корону украли у Golden Games 👑 Дорога вьётся через море, горы и город. На каждом привале тебя ждёт игра. Выполни задание — привал станет золотым, и дорога откроется дальше.',
+    begin: '🚩 В путь',
+    stop: n => 'ПРИВАЛ ' + n, prog: (n, m) => n + '/' + m + ' привалов',
+    go: '▶ Играть', done: '✅ Выполнено', locked: n => '🔒 Сначала пройди привал ' + n,
+    now: v => 'Сейчас: ' + v, none: 'ещё не играл', close: 'Закрыть',
+    winT: 'Золотая Корона дома 👑',
+    winS: 'Ты прошёл всю дорогу и вернул корону в Golden Games. Весь город празднует 🎉',
+    home: '🏠 На главную',
+    t: { collect: (n, u) => 'Собери ' + n + u, build: (n, u) => 'Построй ' + n + u, level: n => 'Дойди до уровня ' + n, run: n => 'Пробеги ' + n + ' м', chain: n => 'Повтори ' + n + ' шагов', letters: n => 'Ответь верно на ' + n + ' букв', win: 'Победи Мсра Мелика' },
+    u: { pt: ' очков', fl: ' этажей', lvl: n => 'уровень ' + n, m: ' м', chain: ' шагов' },
+  },
+  en: {
+    title: 'Golden Quest 🗺️', sub: 'One road · twelve stops · one golden crown',
+    story: 'The Golden Crown has been stolen from Golden Games 👑 The road winds through the sea, the mountains and the city. A game waits at every stop. Finish the task and the stop turns to gold, opening the road to the next one.',
+    begin: '🚩 Set off',
+    stop: n => 'STOP ' + n, prog: (n, m) => n + '/' + m + ' stops',
+    go: '▶ Go and play', done: '✅ Done', locked: n => '🔒 Finish stop ' + n + ' first',
+    now: v => 'Now: ' + v, none: 'not played yet', close: 'Close',
+    winT: 'The Golden Crown is home 👑',
+    winS: 'You walked the whole road and brought the crown back to Golden Games. The whole city is celebrating 🎉',
+    home: '🏠 Home',
+    t: { collect: (n, u) => 'Collect ' + n + u, build: (n, u) => 'Build ' + n + u, level: n => 'Reach level ' + n, run: n => 'Run ' + n + ' m', chain: n => 'Repeat ' + n + ' steps', letters: n => 'Get ' + n + ' letters right', win: 'Beat Msra Melik' },
+    u: { pt: ' points', fl: ' floors', lvl: n => 'level ' + n, m: ' m', chain: ' steps' },
+  },
+  es: {
+    title: 'Búsqueda Dorada 🗺️', sub: 'Un camino · doce paradas · una corona dorada',
+    story: 'Han robado la Corona Dorada de Golden Games 👑 El camino serpentea por el mar, las montañas y la ciudad. En cada parada te espera un juego. Cumple la tarea y la parada se volverá dorada, abriendo el camino a la siguiente.',
+    begin: '🚩 En marcha',
+    stop: n => 'PARADA ' + n, prog: (n, m) => n + '/' + m + ' paradas',
+    go: '▶ Ir a jugar', done: '✅ Hecho', locked: n => '🔒 Primero termina la parada ' + n,
+    now: v => 'Ahora: ' + v, none: 'aún sin jugar', close: 'Cerrar',
+    winT: 'La Corona Dorada está en casa 👑',
+    winS: 'Recorriste todo el camino y devolviste la corona a Golden Games. ¡Toda la ciudad lo celebra! 🎉',
+    home: '🏠 Inicio',
+    t: { collect: (n, u) => 'Consigue ' + n + u, build: (n, u) => 'Construye ' + n + u, level: n => 'Llega al nivel ' + n, run: n => 'Corre ' + n + ' m', chain: n => 'Repite ' + n + ' pasos', letters: n => 'Acierta ' + n + ' letras', win: 'Vence a Msra Melik' },
+    u: { pt: ' puntos', fl: ' pisos', lvl: n => 'nivel ' + n, m: ' m', chain: ' pasos' },
+  },
+  fr: {
+    title: 'Quête Dorée 🗺️', sub: 'Une route · douze étapes · une couronne d’or',
+    story: 'La Couronne d’Or a été volée à Golden Games 👑 La route serpente à travers la mer, les montagnes et la ville. Un jeu t’attend à chaque étape. Réussis la mission et l’étape devient dorée, ouvrant la route vers la suivante.',
+    begin: '🚩 En route',
+    stop: n => 'ÉTAPE ' + n, prog: (n, m) => n + '/' + m + ' étapes',
+    go: '▶ Aller jouer', done: '✅ Réussi', locked: n => '🔒 Termine d’abord l’étape ' + n,
+    now: v => 'Actuel : ' + v, none: 'pas encore joué', close: 'Fermer',
+    winT: 'La Couronne d’Or est rentrée 👑',
+    winS: 'Tu as parcouru toute la route et rendu la couronne à Golden Games. Toute la ville fait la fête 🎉',
+    home: '🏠 Accueil',
+    t: { collect: (n, u) => 'Récolte ' + n + u, build: (n, u) => 'Construis ' + n + u, level: n => 'Atteins le niveau ' + n, run: n => 'Cours ' + n + ' m', chain: n => 'Répète ' + n + ' pas', letters: n => 'Trouve ' + n + ' lettres', win: 'Bats Msra Melik' },
+    u: { pt: ' points', fl: ' étages', lvl: n => 'niveau ' + n, m: ' m', chain: ' pas' },
+  },
+  de: {
+    title: 'Goldene Reise 🗺️', sub: 'Ein Weg · zwölf Stationen · eine goldene Krone',
+    story: 'Die Goldene Krone wurde Golden Games gestohlen 👑 Der Weg schlängelt sich durch Meer, Berge und Stadt. An jeder Station wartet ein Spiel. Schaffst du die Aufgabe, wird die Station golden und der Weg zur nächsten öffnet sich.',
+    begin: '🚩 Losziehen',
+    stop: n => 'STATION ' + n, prog: (n, m) => n + '/' + m + ' Stationen',
+    go: '▶ Spielen gehen', done: '✅ Geschafft', locked: n => '🔒 Schaffe zuerst Station ' + n,
+    now: v => 'Jetzt: ' + v, none: 'noch nicht gespielt', close: 'Schließen',
+    winT: 'Die Goldene Krone ist zu Hause 👑',
+    winS: 'Du bist den ganzen Weg gegangen und hast die Krone zu Golden Games zurückgebracht. Die ganze Stadt feiert 🎉',
+    home: '🏠 Startseite',
+    t: { collect: (n, u) => 'Sammle ' + n + u, build: (n, u) => 'Baue ' + n + u, level: n => 'Erreiche Level ' + n, run: n => 'Laufe ' + n + ' m', chain: n => 'Wiederhole ' + n + ' Schritte', letters: n => 'Triff ' + n + ' Buchstaben', win: 'Besiege Msra Melik' },
+    u: { pt: ' Punkte', fl: ' Etagen', lvl: n => 'Level ' + n, m: ' m', chain: ' Schritte' },
+  },
+  ja: {
+    title: 'ゴールデン・クエスト 🗺️', sub: 'ひとつの道 · 12のちてん · ひとつの金のかんむり',
+    story: '金のかんむりが Golden Games からぬすまれた 👑 道は海と山と町をぬけていくよ。それぞれのちてんでゲームが待ってる。ミッションをクリアするとちてんが金色になって、つぎへの道がひらくんだ。',
+    begin: '🚩 しゅっぱつ',
+    stop: n => 'ちてん ' + n, prog: (n, m) => n + '/' + m + ' ちてん',
+    go: '▶ あそびにいく', done: '✅ クリア', locked: n => '🔒 まずはちてん' + n + 'をクリアしよう',
+    now: v => 'いま：' + v, none: 'まだあそんでないよ', close: 'とじる',
+    winT: '金のかんむりが帰ってきた 👑',
+    winS: '道をぜんぶ歩いて、かんむりを Golden Games にもどしたよ。町ぜんたいがおまつりだ 🎉',
+    home: '🏠 ホーム',
+    t: { collect: (n, u) => n + u + 'あつめよう', build: (n, u) => n + u + 'つくろう', level: n => 'レベル' + n + 'までいこう', run: n => n + ' m はしろう', chain: n => n + 'ステップまねしよう', letters: n => n + 'もじせいかいしよう', win: 'ムスラ・メリクをたおそう' },
+    u: { pt: 'ポイント', fl: '階', lvl: n => 'レベル' + n, m: ' m', chain: 'ステップ' },
+  },
+  zh: {
+    title: '黄金远征 🗺️', sub: '一条路 · 十二站 · 一顶金冠',
+    story: '金冠被人从 Golden Games 偷走了 👑 这条路穿过大海、群山和城市。每一站都有一个游戏在等你。完成任务，这一站就会变成金色，通往下一站的路也会打开。',
+    begin: '🚩 出发',
+    stop: n => '第' + n + '站', prog: (n, m) => n + '/' + m + ' 站',
+    go: '▶ 去玩', done: '✅ 完成', locked: n => '🔒 先完成第' + n + '站',
+    now: v => '现在：' + v, none: '还没玩过', close: '关闭',
+    winT: '金冠回家了 👑',
+    winS: '你走完了整条路，把金冠带回了 Golden Games。全城都在庆祝 🎉',
+    home: '🏠 首页',
+    t: { collect: (n, u) => '收集' + n + u, build: (n, u) => '建到' + n + u, level: n => '到达第' + n + '关', run: n => '跑' + n + ' 米', chain: n => '重复' + n + '步', letters: n => '答对' + n + '个字母', win: '打败姆斯拉·梅利克' },
+    u: { pt: '分', fl: '层', lvl: n => '第' + n + '关', m: ' 米', chain: '步' },
+  },
+  it: {
+    title: 'Avventura Dorata 🗺️', sub: 'Una strada · dodici tappe · una corona d’oro',
+    story: 'La Corona d’Oro è stata rubata a Golden Games 👑 La strada si snoda tra il mare, le montagne e la città. A ogni tappa ti aspetta un gioco. Completa la missione e la tappa diventerà dorata, aprendo la strada verso la successiva.',
+    begin: '🚩 Si parte',
+    stop: n => 'TAPPA ' + n, prog: (n, m) => n + '/' + m + ' tappe',
+    go: '▶ Vai a giocare', done: '✅ Fatto', locked: n => '🔒 Prima completa la tappa ' + n,
+    now: v => 'Ora: ' + v, none: 'non ancora giocato', close: 'Chiudi',
+    winT: 'La Corona d’Oro è a casa 👑',
+    winS: 'Hai percorso tutta la strada e riportato la corona a Golden Games. Tutta la città festeggia 🎉',
+    home: '🏠 Home',
+    t: { collect: (n, u) => 'Raccogli ' + n + u, build: (n, u) => 'Costruisci ' + n + u, level: n => 'Arriva al livello ' + n, run: n => 'Corri ' + n + ' m', chain: n => 'Ripeti ' + n + ' passi', letters: n => 'Indovina ' + n + ' lettere', win: 'Batti Msra Melik' },
+    u: { pt: ' punti', fl: ' piani', lvl: n => 'livello ' + n, m: ' m', chain: ' passi' },
+  },
+  ka: {
+    title: 'ოქროს ლაშქრობა 🗺️', sub: 'ერთი გზა · თორმეტი გაჩერება · ერთი ოქროს გვირგვინი',
+    story: 'ოქროს გვირგვინი მოიპარეს Golden Games-დან 👑 გზა მიიკლაკნება ზღვაზე, მთებსა და ქალაქზე. ყოველ გაჩერებაზე თამაში გელოდება. შეასრულე დავალება და გაჩერება ოქროსფერი გახდება, გზა კი შემდეგისკენ გაიხსნება.',
+    begin: '🚩 გზას დავადგეთ',
+    stop: n => 'გაჩერება ' + n, prog: (n, m) => n + '/' + m + ' გაჩერება',
+    go: '▶ სათამაშოდ', done: '✅ შესრულდა', locked: n => '🔒 ჯერ გაიარე ' + n + '-ე გაჩერება',
+    now: v => 'ახლა: ' + v, none: 'ჯერ არ გითამაშია', close: 'დახურვა',
+    winT: 'ოქროს გვირგვინი სახლშია 👑',
+    winS: 'მთელი გზა გაიარე და გვირგვინი Golden Games-ს დაუბრუნე. მთელი ქალაქი ზეიმობს 🎉',
+    home: '🏠 მთავარი',
+    t: { collect: (n, u) => 'შეაგროვე ' + n + u, build: (n, u) => 'ააშენე ' + n + u, level: n => 'მიაღწიე ' + n + '-ე დონეს', run: n => 'გაირბინე ' + n + ' მ', chain: n => 'გაიმეორე ' + n + ' ნაბიჯი', letters: n => 'სწორად უპასუხე ' + n + ' ასოს', win: 'დაამარცხე მსრა მელიქი' },
+    u: { pt: ' ქულა', fl: ' სართული', lvl: n => n + '-ე დონე', m: ' მ', chain: ' ნაბიჯი' },
+  },
+  hi: {
+    title: 'गोल्डन खोज 🗺️', sub: 'एक रास्ता · बारह पड़ाव · एक सुनहरा ताज',
+    story: 'Golden Games से सुनहरा ताज चोरी हो गया है 👑 रास्ता समुद्र, पहाड़ों और शहर से होकर घूमता है। हर पड़ाव पर एक खेल तुम्हारा इंतज़ार कर रहा है। काम पूरा करो और पड़ाव सुनहरा हो जाएगा, और आगे का रास्ता खुल जाएगा।',
+    begin: '🚩 चल पड़ो',
+    stop: n => 'पड़ाव ' + n, prog: (n, m) => n + '/' + m + ' पड़ाव',
+    go: '▶ खेलने चलो', done: '✅ पूरा', locked: n => '🔒 पहले पड़ाव ' + n + ' पूरा करो',
+    now: v => 'अभी: ' + v, none: 'अभी तक नहीं खेला', close: 'बंद करो',
+    winT: 'सुनहरा ताज घर आ गया 👑',
+    winS: 'तुमने पूरा रास्ता पार किया और ताज Golden Games को लौटा दिया। पूरा शहर जश्न मना रहा है 🎉',
+    home: '🏠 होम',
+    t: { collect: (n, u) => n + u + ' इकट्ठा करो', build: (n, u) => n + u + ' बनाओ', level: n => 'लेवल ' + n + ' तक पहुँचो', run: n => n + ' मीटर दौड़ो', chain: n => n + ' कदम दोहराओ', letters: n => n + ' अक्षर सही करो', win: 'मसरा मेलिक को हराओ' },
+    u: { pt: ' अंक', fl: ' मंज़िल', lvl: n => 'लेवल ' + n, m: ' मीटर', chain: ' कदम' },
+  },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+// ——— կանգառները՝ ներքևից վեր, ինչպես ճանապարհն է գնում ———
+const STOPS = [
+  { g: 'Golden Cat',      href: '../cat-jump/run/', key: 'cat-best',           goal: 30,  task: 'collect', unit: 'pt' },
+  { g: 'Golden Tower',    href: '../tower/',        key: 'aren-tower-best',    goal: 15,  task: 'build',   unit: 'fl' },
+  { g: 'Golden Fishing',  href: '../fishing/',      key: 'aren-fish-best',     goal: 40,  task: 'collect', unit: 'pt' },
+  { g: 'Golden Moles',    href: '../moles/',        key: 'aren-moles-best',    goal: 25,  task: 'collect', unit: 'pt' },
+  { g: 'Golden Lavash',   href: '../lavash/',       key: 'aren-lavash-best',   goal: 24,  task: 'collect', unit: 'pt' },
+  { g: 'Golden Maze',     href: '../maze/',         key: 'aren-maze-max',      goal: 10,  task: 'level',   unit: 'lvl' },
+  { g: 'Golden Alphabet', href: '../alphabet/',     key: 'aren-alphabet-best', goal: 12,  task: 'letters', unit: 'letters' },
+  { g: 'Golden Runner',   href: '../runner/',       key: 'aren-runner-best',   goal: 300, task: 'run',     unit: 'm' },
+  { g: 'Golden Dance',    href: '../dance/',        key: 'aren-dance-best',    goal: 8,   task: 'chain',   unit: 'chain' },
+  { g: 'Golden Rocket',   href: '../rocket/',       key: 'aren-rocket-best',   goal: 25,  task: 'collect', unit: 'pt' },
+  { g: 'Golden Bridge',   href: '../bridge/',       key: 'aren-bridge-level',  goal: 6,   task: 'level',   unit: 'lvl' },
+  { g: 'Golden Sasuntsi', href: '../sasuntsi/',     key: 'aren-sasuntsi-best', goal: 1,   task: 'win',     unit: 'pt' },
+];
+
+// ինչ գրել առաջադրանքի տողում
+function taskText(s) {
+  if (s.task === 'collect') return T.t.collect(s.goal, T.u.pt);
+  if (s.task === 'build') return T.t.build(s.goal, T.u.fl);
+  if (s.task === 'level') return T.t.level(s.goal);
+  if (s.task === 'run') return T.t.run(s.goal);
+  if (s.task === 'chain') return T.t.chain(s.goal);
+  if (s.task === 'letters') return T.t.letters(s.goal);
+  return T.t.win;
+}
+// ինչ գրել «հիմա՝ ...» տողում
+function nowText(s, v) {
+  if (!v) return T.none;
+  if (s.unit === 'lvl') return T.u.lvl(v);
+  if (s.unit === 'm') return v + T.u.m;
+  if (s.unit === 'chain') return v + T.u.chain;
+  if (s.unit === 'letters') return v + '/20';
+  if (s.unit === 'fl') return v + T.u.fl;
+  return v + T.u.pt;
+}
+function recordOf(s) {
+  let v = 0;
+  try { v = Number(localStorage.getItem(s.key) || 0) || 0; } catch (e) {}
+  return v;
+}
+
+// ——— ձայնը 🔊 (առաջին հպումից նոր է միանում) ———
+let actx = null;
+function initAudio() {
+  if (actx) return;
+  try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+}
+function tone(freq, dur, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.13, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (dur || 0.15));
+  o.connect(g); g.connect(actx.destination);
+  o.start(); o.stop(actx.currentTime + (dur || 0.15));
+}
+
+// ——— հեռախոսի ուրվական-մկնիկը. հպումից հետո mouse-ը կրկնում է հպումը ———
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+
+// ——— կրկնակի արագ հպումը էկրանը մեծացնում էր ———
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+const SVGNS = 'http://www.w3.org/2000/svg';
+const road = document.getElementById('road');
+const roadGold = document.getElementById('roadGold');
+const gStops = document.getElementById('stops');
+const panel = document.getElementById('panel');
+
+let openIndex = -1;
+let doneArr = [], reached = 0;
+
+// ——— ճանապարհի վրայի կետերը ———
+// Ամեն կանգառ նստում է ճանապարհի վրա՝ հավասար հեռավորությամբ։
+function stopPoint(i) {
+  const len = road.getTotalLength();
+  const f = (i + 0.62) / (STOPS.length + 0.25);
+  return { p: road.getPointAtLength(len * f), at: len * f };
+}
+
+function render() {
+  doneArr = STOPS.map(s => recordOf(s) >= s.goal);
+  // քանի կանգառ է անընդմեջ արված — այնքան է ճանապարհը բացվել
+  reached = 0;
+  while (reached < STOPS.length && doneArr[reached]) reached++;
+
+  // վերնագրերը
+  document.getElementById('hTitle').textContent = T.title;
+  document.getElementById('hSub').textContent = T.sub;
+  document.getElementById('barFill').style.width = (reached / STOPS.length * 100) + '%';
+  document.getElementById('barTxt').textContent = T.prog(reached, STOPS.length);
+  document.title = T.title + ' · Golden Games';
+  document.documentElement.lang = ggLang;
+
+  // ոսկե ճանապարհը՝ մինչև վերջին բացված կանգառը
+  const len = road.getTotalLength();
+  roadGold.setAttribute('d', road.getAttribute('d'));
+  document.getElementById('roadDash').setAttribute('d', road.getAttribute('d'));
+  const gold = reached === 0 ? 0 : stopPoint(reached - 1).at;
+  roadGold.setAttribute('stroke-dasharray', gold + ' ' + (len + 10));
+  roadGold.setAttribute('opacity', gold > 0 ? '1' : '0');
+
+  // ամրոցը լուսավորվում է, երբ ամեն ինչ արված է
+  document.getElementById('castleGlow').setAttribute('opacity', reached === STOPS.length ? '0.95' : '0.35');
+
+  gStops.textContent = '';
+  STOPS.forEach((s, i) => {
+    const { p } = stopPoint(i);
+    const isDone = doneArr[i];
+    const open = i <= reached;               // բացված է, թե դեռ փակ
+    const cur = i === reached;               // հենց հիմա այստեղ ես
+
+    const g = document.createElementNS(SVGNS, 'g');
+    g.setAttribute('class', 'stopHit');
+    g.dataset.i = i;
+
+    if (cur) {
+      const ring = document.createElementNS(SVGNS, 'circle');
+      ring.setAttribute('cx', p.x); ring.setAttribute('cy', p.y); ring.setAttribute('r', 26);
+      ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', '#ffe9a8'); ring.setAttribute('stroke-width', '2.5');
+      ring.setAttribute('opacity', '0.9');
+      const an = document.createElementNS(SVGNS, 'animate');
+      an.setAttribute('attributeName', 'r'); an.setAttribute('values', '19;30;19');
+      an.setAttribute('dur', '1.6s'); an.setAttribute('repeatCount', 'indefinite');
+      const an2 = document.createElementNS(SVGNS, 'animate');
+      an2.setAttribute('attributeName', 'opacity'); an2.setAttribute('values', '0.9;0.15;0.9');
+      an2.setAttribute('dur', '1.6s'); an2.setAttribute('repeatCount', 'indefinite');
+      ring.appendChild(an); ring.appendChild(an2);
+      g.appendChild(ring);
+    }
+
+    const c = document.createElementNS(SVGNS, 'circle');
+    c.setAttribute('cx', p.x); c.setAttribute('cy', p.y); c.setAttribute('r', 17);
+    c.setAttribute('fill', isDone ? 'url(#goldG)' : (open ? '#f5eede' : '#5a6078'));
+    c.setAttribute('stroke', '#10162a'); c.setAttribute('stroke-width', '3');
+    g.appendChild(c);
+
+    if (isDone) {
+      // ոսկե կանգառի նշանը՝ թռչող թև, ոչ թե emoji
+      const ok = document.createElementNS(SVGNS, 'path');
+      ok.setAttribute('d', 'M ' + (p.x - 7) + ' ' + p.y + ' l 5 6 l 9 -11');
+      ok.setAttribute('fill', 'none'); ok.setAttribute('stroke', '#10162a');
+      ok.setAttribute('stroke-width', '3.4'); ok.setAttribute('stroke-linecap', 'round');
+      ok.setAttribute('stroke-linejoin', 'round');
+      g.appendChild(ok);
+    } else {
+      const n = document.createElementNS(SVGNS, 'text');
+      n.setAttribute('x', p.x); n.setAttribute('y', p.y + 0.5);
+      n.setAttribute('class', 'stopNum' + (open ? '' : ' stopNumLock'));
+      n.textContent = String(i + 1);
+      g.appendChild(n);
+    }
+
+    // անունը՝ այն կողմում, որտեղ տեղ կա
+    const left = p.x > 200;
+    const lbl = document.createElementNS(SVGNS, 'text');
+    lbl.setAttribute('x', left ? p.x - 25 : p.x + 25);
+    lbl.setAttribute('y', p.y + 5);
+    lbl.setAttribute('text-anchor', left ? 'end' : 'start');
+    lbl.setAttribute('class', 'stopLbl');
+    lbl.setAttribute('opacity', open ? '1' : '0.55');
+    lbl.textContent = s.g;
+    g.appendChild(lbl);
+
+    // մեծ անտեսանելի շրջան, որ մատով հեշտ լինի դիպչել
+    const hit = document.createElementNS(SVGNS, 'circle');
+    hit.setAttribute('cx', p.x); hit.setAttribute('cy', p.y); hit.setAttribute('r', 32);
+    hit.setAttribute('fill', 'transparent');
+    g.appendChild(hit);
+
+    gStops.appendChild(g);
+  });
+}
+
+// ——— վահանակը բացել ———
+function openStop(i) {
+  const s = STOPS[i];
+  openIndex = i;
+  const v = recordOf(s);
+  document.getElementById('pStop').textContent = T.stop(i + 1);
+  document.getElementById('pGame').textContent = s.g;
+  document.getElementById('pTask').textContent = taskText(s);
+  document.getElementById('pNow').textContent = doneArr[i] ? T.done : T.now(nowText(s, v));
+  const go = document.getElementById('pGo');
+  if (i <= reached) {
+    go.textContent = T.go;
+    go.setAttribute('href', s.href);
+    go.classList.remove('off');
+  } else {
+    go.textContent = T.locked(reached + 1);
+    go.removeAttribute('href');
+    go.classList.add('off');
+  }
+  document.getElementById('pClose').textContent = T.close;
+  panel.hidden = false;
+  tone(520, 0.1, 'sine');
+}
+function closePanel() { panel.hidden = true; openIndex = -1; }
+
+gStops.addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio();
+  const g = e.target.closest('.stopHit');
+  if (!g) return;
+  openStop(Number(g.dataset.i));
+});
+document.getElementById('pClose').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  closePanel();
+});
+document.getElementById('pGo').addEventListener('click', (e) => {
+  if (!e.currentTarget.getAttribute('href')) e.preventDefault();
+});
+
+// ——— ամրոցին դիպչելով նորից կարող ես տոնը տեսնել ———
+document.getElementById('castle').style.cursor = 'pointer';
+document.getElementById('castle').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  if (reached === STOPS.length) showWin();
+});
+
+// ——————————————————————————————————————
+//  ՏՈՆԸ 🎉 — երբ Ոսկե Թագը տուն է գալիս
+// ——————————————————————————————————————
+const cvs = document.getElementById('confetti');
+const cx2 = cvs.getContext('2d');
+let bits = [], confRaf = 0;
+
+function showWin() {
+  document.getElementById('wTitle').textContent = T.winT;
+  document.getElementById('wText').textContent = T.winS;
+  document.getElementById('wHome').textContent = T.home;
+  document.getElementById('wClose').textContent = T.close;
+  document.getElementById('win').hidden = false;
+  startConfetti();
+  fanfare();
+}
+function hideWin() {
+  document.getElementById('win').hidden = true;
+  cvs.hidden = true;
+  cancelAnimationFrame(confRaf); confRaf = 0; bits = [];
+}
+document.getElementById('wClose').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  hideWin();
+});
+
+function startConfetti() {
+  cvs.hidden = false;
+  cvs.width = innerWidth; cvs.height = innerHeight;
+  const cols = ['#f0c85a', '#ffe9a8', '#e0a93c', '#f5eede', '#7fd1c1', '#e8756a'];
+  bits = [];
+  for (let i = 0; i < 90; i++) {
+    bits.push({
+      x: Math.random() * cvs.width,
+      y: -Math.random() * cvs.height,
+      w: 5 + Math.random() * 6,
+      h: 8 + Math.random() * 9,
+      vy: 1.4 + Math.random() * 2.4,
+      vx: (Math.random() - 0.5) * 1.4,
+      a: Math.random() * Math.PI,
+      va: (Math.random() - 0.5) * 0.2,
+      c: cols[Math.floor(Math.random() * cols.length)],
+    });
+  }
+  if (!confRaf) confRaf = requestAnimationFrame(stepConfetti);
+}
+function stepConfetti() {
+  cx2.clearRect(0, 0, cvs.width, cvs.height);
+  for (const b of bits) {
+    b.x += b.vx; b.y += b.vy; b.a += b.va;
+    if (b.y > cvs.height + 20) { b.y = -20; b.x = Math.random() * cvs.width; }
+    cx2.save();
+    cx2.translate(b.x, b.y); cx2.rotate(b.a);
+    cx2.fillStyle = b.c;
+    cx2.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+    cx2.restore();
+  }
+  confRaf = requestAnimationFrame(stepConfetti);
+}
+function fanfare() {
+  initAudio();
+  if (!actx) return;
+  const notes = [523, 659, 784, 1047, 784, 1047, 1319];
+  notes.forEach((f, i) => setTimeout(() => tone(f, 0.3, 'triangle', 0.16), i * 150));
+}
+
+// ——————————————————————————————————————
+//  ՄԵԿՆԱՐԿԸ
+// ——————————————————————————————————————
+render();
+
+// պատմությունը ցույց ենք տալիս միայն առաջին անգամ
+let seen = false;
+try { seen = localStorage.getItem('aren-quest-seen') === '1'; } catch (e) {}
+const story = document.getElementById('story');
+if (!seen) {
+  document.getElementById('sTitle').textContent = T.title;
+  document.getElementById('sText').textContent = T.story;
+  document.getElementById('sBtn').textContent = T.begin;
+  story.hidden = false;
+}
+document.getElementById('sBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio(); tone(660, 0.16, 'triangle');
+  story.hidden = true;
+  try { localStorage.setItem('aren-quest-seen', '1'); } catch (e) {}
+  scrollToCurrent();
+});
+
+// ճանապարհը ներքևից է սկսվում — իջնում ենք այնտեղ, որտեղ հիմա ես
+function scrollToCurrent() {
+  const svg = document.getElementById('map');
+  const k = svg.getBoundingClientRect().width / 400;   // viewBox-ից էկրան
+  const i = Math.min(reached, STOPS.length - 1);
+  const { p } = stopPoint(i);
+  const top = svg.getBoundingClientRect().top + scrollY;
+  scrollTo({ top: Math.max(0, top + p.y * k - innerHeight * 0.55), behavior: 'smooth' });
+}
+if (seen) scrollToCurrent();
+
+// թագը վերադարձավ — տոնում ենք մեկ անգամ, ինքնաբերաբար
+let celebrated = false;
+try { celebrated = localStorage.getItem('aren-quest-crown') === '1'; } catch (e) {}
+if (reached === STOPS.length && !celebrated) {
+  try { localStorage.setItem('aren-quest-crown', '1'); } catch (e) {}
+  story.hidden = true;
+  setTimeout(showWin, 500);
+}
+
+addEventListener('resize', () => { if (!cvs.hidden) { cvs.width = innerWidth; cvs.height = innerHeight; } });
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, թրթռոց, նկար, բեռնում -->
+<script src="../gg-kit.js" data-kind="info" defer></script>
+</body>
+</html>

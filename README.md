@@ -45,6 +45,7 @@ and iterating on the code together with Claude, one change at a time.
 | [`lavash`](./lavash/) | 🫓 Golden Lavash (Լավաշ) | Slap the dough onto the tonir and pull it out at the right second. Too early is raw, too late is burnt. |
 | [`dance`](./dance/) | 💃 Golden Dance (Քոչարի) | The kochari steps are shown in rhythm and you repeat them. Each round is one step longer. |
 | [`sasuntsi`](./sasuntsi/) | 🪨 Golden Sasuntsi (Սասունցի Դավիթ) | David with his sling against Msra Melik. Take aim, throw the stone and hit above the shield. |
+| [`quest`](./quest/) | 🗺️ Golden Quest (Ոսկե Արշավ) | One road through twelve games: finish the task at each stop and the road opens until the Golden Crown comes home |
 | [`time`](./time/) | 🕰️ Golden Time (Ժամանակի մեքենա) | The site's whole story as a timeline, from the first flying cat to today |
 | [`museum`](./museum/) | 🏛️ Golden Museum (Թանգարան) | Memorial hall of deleted projects, pedestals, epitaphs and all |
 

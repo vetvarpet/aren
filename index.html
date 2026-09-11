@@ -442,6 +442,7 @@
     <nav>
       <a href="./about.html" id="navAbout">😼 Մեր մասին</a>
       <a href="./trophies/" id="navTroph">🏆 Գավաթներ</a>
+      <a href="./quest/" id="navQuest">🗺️ Արշավ</a>
       <a href="#" id="navRand" title="Պատահական խաղ">🎲 Պատահական</a>
       <a href="./qr.html">📱 QR</a>
       <a href="https://github.com/vetvarpet/aren">⭐ GitHub</a>
@@ -1814,6 +1815,7 @@ const DICT = {
   ru: {
     about: '😼 О нас',
     troph: '🏆 Кубки',
+    quest: '🗺️ Поход',
     rand: '🎲 Случайная',
     moodQ: 'Во что сыграем?', moodSolo: '🙋 Я один', moodFriend: '👥 Я с другом', moodCalm: '🌿 Хочу спокойное', moodFast: '⚡ Хочу адреналина',
     dailyT: '🌍 Задание дня', dailyScore: (n, g) => 'Сегодня набери ' + n + ' в игре «' + g + '»', dailyLevel: (n, g) => 'Сегодня дойди до уровня ' + n + ' в игре «' + g + '»', dailyDone: '🏅 Сделано!', dailyGo: '▶ Попробовать',
@@ -1863,6 +1865,7 @@ const DICT = {
   en: {
     about: '😼 About',
     troph: '🏆 Trophies',
+    quest: '🗺️ Quest',
     rand: '🎲 Random',
     moodQ: 'What shall we play?', moodSolo: '🙋 On my own', moodFriend: '👥 With a friend', moodCalm: '🌿 Something calm', moodFast: '⚡ Adrenaline!',
     dailyT: '🌍 Daily challenge', dailyScore: (n, g) => 'Score ' + n + ' today in “' + g + '”', dailyLevel: (n, g) => 'Reach level ' + n + ' today in “' + g + '”', dailyDone: '🏅 Done!', dailyGo: '▶ Try it',
@@ -1912,6 +1915,7 @@ const DICT = {
   es: {
     about: '😼 Sobre nosotros',
     troph: '🏆 Trofeos',
+    quest: '🗺️ Búsqueda',
     rand: '🎲 Al azar',
     moodQ: '¿A qué jugamos?', moodSolo: '🙋 Estoy solo', moodFriend: '👥 Con un amigo', moodCalm: '🌿 Algo tranquilo', moodFast: '⚡ ¡Adrenalina!',
     dailyT: '🌍 Reto del día', dailyScore: (n, g) => 'Consigue hoy ' + n + ' en «' + g + '»', dailyLevel: (n, g) => 'Llega hoy al nivel ' + n + ' en «' + g + '»', dailyDone: '🏅 ¡Hecho!', dailyGo: '▶ Intentar',
@@ -1961,6 +1965,7 @@ const DICT = {
   fr: {
     about: '😼 À propos',
     troph: '🏆 Trophées',
+    quest: '🗺️ Quête',
     rand: '🎲 Au hasard',
     moodQ: 'On joue à quoi ?', moodSolo: '🙋 Je suis seul', moodFriend: '👥 Avec un ami', moodCalm: '🌿 Un truc calme', moodFast: '⚡ De l’adrénaline !',
     dailyT: '🌍 Défi du jour', dailyScore: (n, g) => 'Fais ' + n + ' aujourd’hui dans « ' + g + ' »', dailyLevel: (n, g) => 'Atteins le niveau ' + n + ' aujourd’hui dans « ' + g + ' »', dailyDone: '🏅 Fait !', dailyGo: '▶ Essayer',
@@ -2010,6 +2015,7 @@ const DICT = {
   de: {
     about: '😼 Über uns',
     troph: '🏆 Pokale',
+    quest: '🗺️ Reise',
     rand: '🎲 Zufall',
     moodQ: 'Was spielen wir?', moodSolo: '🙋 Ich bin allein', moodFriend: '👥 Mit einem Freund', moodCalm: '🌿 Etwas Ruhiges', moodFast: '⚡ Adrenalin!',
     dailyT: '🌍 Tages-Challenge', dailyScore: (n, g) => 'Hol heute ' + n + ' in „' + g + '“', dailyLevel: (n, g) => 'Erreiche heute Level ' + n + ' in „' + g + '“', dailyDone: '🏅 Geschafft!', dailyGo: '▶ Versuchen',
@@ -2059,6 +2065,7 @@ const DICT = {
   ja: {
     about: '😼 わたしたち',
     troph: '🏆 トロフィー',
+    quest: '🗺️ クエスト',
     rand: '🎲 ランダム',
     moodQ: 'なにであそぶ？', moodSolo: '🙋 ひとりで', moodFriend: '👥 ともだちと', moodCalm: '🌿 のんびりしたい', moodFast: '⚡ ドキドキしたい',
     dailyT: '🌍 今日のチャレンジ', dailyScore: (n, g) => '今日「' + g + '」で' + n + 'をとろう', dailyLevel: (n, g) => '今日「' + g + '」でレベル' + n + 'までいこう', dailyDone: '🏅 クリア！', dailyGo: '▶ やってみる',
@@ -2108,6 +2115,7 @@ const DICT = {
   zh: {
     about: '😼 关于我们',
     troph: '🏆 奖杯',
+    quest: '🗺️ 远征',
     rand: '🎲 随机',
     moodQ: '玩什么好呢？', moodSolo: '🙋 我一个人', moodFriend: '👥 和朋友一起', moodCalm: '🌿 想玩安静的', moodFast: '⚡ 想要刺激的',
     dailyT: '🌍 每日挑战', dailyScore: (n, g) => '今天在《' + g + '》拿到' + n, dailyLevel: (n, g) => '今天在《' + g + '》达到第' + n + '关', dailyDone: '🏅 完成！', dailyGo: '▶ 去试试',
@@ -2157,6 +2165,7 @@ const DICT = {
   it: {
     about: '😼 Chi siamo',
     troph: '🏆 Trofei',
+    quest: '🗺️ Avventura',
     rand: '🎲 A caso',
     moodQ: 'A cosa giochiamo?', moodSolo: '🙋 Sono da solo', moodFriend: '👥 Con un amico', moodCalm: '🌿 Qualcosa di tranquillo', moodFast: '⚡ Adrenalina!',
     dailyT: '🌍 Sfida del giorno', dailyScore: (n, g) => 'Fai oggi ' + n + ' in «' + g + '»', dailyLevel: (n, g) => 'Arriva oggi al livello ' + n + ' in «' + g + '»', dailyDone: '🏅 Fatto!', dailyGo: '▶ Provaci',
@@ -2206,6 +2215,7 @@ const DICT = {
   ka: {
     about: '😼 ჩვენ შესახებ',
     troph: '🏆 თასები',
+    quest: '🗺️ ლაშქრობა',
     rand: '🎲 შემთხვევითი',
     moodQ: 'რა ვითამაშოთ?', moodSolo: '🙋 მარტო ვარ', moodFriend: '👥 მეგობართან ერთად', moodCalm: '🌿 რამე მშვიდი მინდა', moodFast: '⚡ ადრენალინი მინდა',
     dailyT: '🌍 დღის გამოწვევა', dailyScore: (n, g) => 'დღეს დააგროვე ' + n + ' თამაშში «' + g + '»', dailyLevel: (n, g) => 'დღეს მიაღწიე ' + n + ' დონეს თამაშში «' + g + '»', dailyDone: '🏅 შესრულებულია!', dailyGo: '▶ სცადე',
@@ -2255,6 +2265,7 @@ const DICT = {
   hi: {
     about: '😼 हमारे बारे में',
     troph: '🏆 ट्रॉफ़ियाँ',
+    quest: '🗺️ खोज',
     rand: '🎲 कोई भी',
     moodQ: 'क्या खेलें?', moodSolo: '🙋 मैं अकेला हूँ', moodFriend: '👥 दोस्त के साथ', moodCalm: '🌿 कुछ शांत चाहिए', moodFast: '⚡ एड्रेनालिन चाहिए',
     dailyT: '🌍 आज की चुनौती', dailyScore: (n, g) => 'आज «' + g + '» में ' + n + ' बनाओ', dailyLevel: (n, g) => 'आज «' + g + '» में स्तर ' + n + ' तक पहुँचो', dailyDone: '🏅 हो गया!', dailyGo: '▶ आज़माओ',
@@ -2310,6 +2321,7 @@ function applyLang(lang) {
   if (!d) return;   // հայերենը արդեն էջի մեջ է
   document.getElementById('navAbout').textContent = d.about;
   document.getElementById('navTroph').textContent = d.troph;
+  document.getElementById('navQuest').textContent = d.quest;
   document.getElementById('navRand').textContent = d.rand;
   document.getElementById('moodQ').textContent = d.moodQ;
   document.getElementById('moodSolo').textContent = d.moodSolo;
