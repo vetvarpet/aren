@@ -1,0 +1,727 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Նարդի 🎲</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+
+  #wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 100dvh;
+    padding: 10px;
+    text-align: center;
+  }
+  h1 { font-size: clamp(1rem, 4.4vw, 1.45rem); color: #ffd76e; }
+  #scores { display: flex; gap: 14px; font-size: 0.92rem; }
+  #winsEl { color: #6ee7b7; }
+
+  /* Խաղատախտակը՝ նկարվում է canvas-ի վրա */
+  canvas { display: block; border-radius: 14px; touch-action: none; }
+
+  #status { font-size: 0.9rem; color: #ffd76e; min-height: 2.4em; line-height: 1.2; padding: 0 4px; }
+
+  #dicebar { display: flex; align-items: center; gap: 10px; }
+  #dice { display: flex; gap: 6px; min-height: 34px; align-items: center; }
+  .die {
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    background: #f5eede;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 4px; gap: 1px;
+    box-shadow: 0 2px 0 #b1a68f;
+  }
+  .die i { border-radius: 50%; background: #1a2a4a; }
+  .die i.no { background: transparent; }
+  .die.used { opacity: 0.22; }
+  #roll {
+    border: 2px solid #6a5f9e;
+    border-radius: 999px;
+    padding: 9px 16px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #3d3560;
+    color: #f5eede;
+  }
+  #roll:disabled { opacity: 0.3; }
+  #roll:active { transform: scale(0.96); }
+
+  /* Ծածկոցները. hidden-ը պարտադիր է ուժեղացնել, թե չէ flex-ը հաղթում է */
+  .overlay {
+    position: fixed; inset: 0; z-index: 20;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 14px; padding: 20px; text-align: center;
+    background: rgba(20, 15, 40, 0.9);
+  }
+  .overlay[hidden] { display: none !important; }
+  .sub { color: #9a9ec7; font-size: 0.95rem; max-width: 300px; }
+  .bigbtn {
+    border: 2px solid #6a5f9e;
+    border-radius: 16px;
+    padding: 13px 26px;
+    font-size: 1.05rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #3d3560;
+    color: #f5eede;
+  }
+  .bigbtn:active { transform: scale(0.97); }
+  #overTitle { font-size: 1.5rem; color: #ffd76e; }
+
+  .confetti { position: fixed; top: -50px; z-index: 30; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:40;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<div id="wrap">
+  <h1 id="title">Ոսկե Նարդի 🎲</h1>
+  <div id="scores">
+    <span>🟡 <b id="offPEl">0</b>/6</span>
+    <span id="winsEl">🏆 0</span>
+    <span>🔴 <b id="offCEl">0</b>/6</span>
+  </div>
+  <canvas id="board"></canvas>
+  <div id="status"></div>
+  <div id="dicebar">
+    <div id="dice"></div>
+    <button id="roll">🎲</button>
+  </div>
+</div>
+
+<div class="overlay" id="menu">
+  <h1 id="menuTitle">Ոսկե Նարդի 🎲</h1>
+  <p class="sub" id="menuSub"></p>
+  <p class="sub" id="menuWins"></p>
+  <button class="bigbtn" id="startBtn"></button>
+</div>
+
+<div class="overlay" id="over" hidden>
+  <div id="overTitle"></div>
+  <p class="sub" id="overSub"></p>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ՆԱՐԴԻ 🎲 — պարզեցված նարդի ռոբոտի դեմ
+//  Ամեն կողմն ունի 6 քար։ Քոնը՝ դեղին, ռոբոտինը՝ կարմիր։
+//  Գլորիր զառերը, դիպչիր քարիդ, հետո՝ լուսավոր տեղին։
+//  Եթե նստես թշնամու ՄԵՆԱԿ քարի վրա՝ նա գնում է բանտ (մեջտեղի ձող)։
+//  Ով առաջինը բոլոր 6 քարերը տուն տանի ու դուրս բերի՝ հաղթեց 🏆
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { h1: 'Ոսկե Նարդի 🎲', sub: 'Բոլոր 6 քարերը տուն հասցրու ու հանի՛ր դուրս։', start: '▶ Խաղա՛նք', you: 'Դու', foe: 'Ռոբոտ', yourTurn: 'Հերթը քոնն է', aiTurn: 'Ռոբոտը մտածում է…', roll: 'Գլորի՛ր 🎲', pick: 'Դիպչիր քարիդ, հետո՝ լուսավոր տեղին', noMove: 'Քայլ չկա — հերթն անցնում է', hitYou: 'Խփեցի՜ր, նրա քարը գնաց բանտ 🎯', hitAi: 'Ափսո՜ս, քո քարը գնաց բանտ 😮', barYou: 'Նախ բանտից քարդ ետ բեր։', win: 'ՀԱՂԹԵՑԻ՜Ր 🏆', lose: 'Ռոբոտը հաղթեց 🤖', wins: 'Հաղթանակներ՝ ', again: 'Դիպչիր՝ նորից խաղալու' },
+  ru: { h1: 'Золотые нарды 🎲', sub: 'Доведи все 6 шашек до дома и выведи их!', start: '▶ Играть', you: 'Ты', foe: 'Робот', yourTurn: 'Твой ход', aiTurn: 'Робот думает…', roll: 'Бросок 🎲', pick: 'Нажми на шашку, потом на светящееся место', noMove: 'Ходов нет — ход переходит', hitYou: 'Попал! Его шашка ушла в бар 🎯', hitAi: 'Ой! Твоя шашка ушла в бар 😮', barYou: 'Сначала верни шашку в игру!', win: 'ТЫ ПОБЕДИЛ! 🏆', lose: 'Робот победил 🤖', wins: 'Победы: ', again: 'Нажми, чтобы сыграть ещё' },
+  en: { h1: 'Golden Nardi 🎲', sub: 'Race all 6 checkers home and bear them off!', start: '▶ Play', you: 'You', foe: 'Robot', yourTurn: 'Your turn', aiTurn: 'Robot is thinking…', roll: 'Roll 🎲', pick: 'Tap a checker, then a glowing spot', noMove: 'No moves — turn passes', hitYou: 'Hit! His checker goes to the bar 🎯', hitAi: 'Ouch! Your checker goes to the bar 😮', barYou: 'Bring your checker back in first!', win: 'YOU WIN! 🏆', lose: 'Robot wins 🤖', wins: 'Wins: ', again: 'Tap to play again' },
+  es: { h1: 'Backgammon Dorado 🎲', sub: '¡Lleva las 6 fichas a casa y sácalas!', start: '▶ Jugar', you: 'Tú', foe: 'Robot', yourTurn: 'Tu turno', aiTurn: 'El robot piensa…', roll: 'Tirar 🎲', pick: 'Toca una ficha y luego el punto brillante', noMove: 'Sin jugadas: pasa el turno', hitYou: '¡Le diste! Su ficha va a la barra 🎯', hitAi: '¡Ay! Tu ficha va a la barra 😮', barYou: '¡Primero devuelve tu ficha al juego!', win: '¡GANASTE! 🏆', lose: 'Gana el robot 🤖', wins: 'Victorias: ', again: 'Toca para jugar otra vez' },
+  fr: { h1: 'Backgammon d’or 🎲', sub: 'Ramène tes 6 pions à la maison et sors-les !', start: '▶ Jouer', you: 'Toi', foe: 'Robot', yourTurn: 'À toi de jouer', aiTurn: 'Le robot réfléchit…', roll: 'Lancer 🎲', pick: 'Touche un pion, puis la case qui brille', noMove: 'Aucun coup — tour passé', hitYou: 'Touché ! Son pion va au bar 🎯', hitAi: 'Aïe ! Ton pion va au bar 😮', barYou: 'Remets d’abord ton pion en jeu !', win: 'TU AS GAGNÉ ! 🏆', lose: 'Le robot gagne 🤖', wins: 'Victoires : ', again: 'Touche pour rejouer' },
+  de: { h1: 'Goldenes Backgammon 🎲', sub: 'Bring alle 6 Steine nach Hause und würfle sie raus!', start: '▶ Spielen', you: 'Du', foe: 'Roboter', yourTurn: 'Du bist dran', aiTurn: 'Der Roboter überlegt…', roll: 'Würfeln 🎲', pick: 'Tippe einen Stein an, dann das leuchtende Feld', noMove: 'Kein Zug — du setzt aus', hitYou: 'Getroffen! Sein Stein muss auf die Bar 🎯', hitAi: 'Autsch! Dein Stein muss auf die Bar 😮', barYou: 'Bring zuerst deinen Stein zurück ins Spiel!', win: 'DU GEWINNST! 🏆', lose: 'Der Roboter gewinnt 🤖', wins: 'Siege: ', again: 'Tippe für ein neues Spiel' },
+  ja: { h1: 'ゴールデン・バックギャモン 🎲', sub: '6つのコマをぜんぶ家にいれて、そとに出そう！', start: '▶ あそぶ', you: 'きみ', foe: 'ロボット', yourTurn: 'きみのばん', aiTurn: 'ロボットがかんがえちゅう…', roll: 'サイコロ 🎲', pick: 'コマをタップして、ひかるところをタップ', noMove: 'うごけない — ばんがかわるよ', hitYou: 'あたり！あいてのコマはバーへ 🎯', hitAi: 'ああ！きみのコマがバーへ 😮', barYou: 'まずバーのコマをもどしてね！', win: 'きみのかち！🏆', lose: 'ロボットのかち 🤖', wins: 'かち：', again: 'タップでもう一回' },
+  zh: { h1: '黄金双陆棋 🎲', sub: '把 6 颗棋子都带回家再全部移出！', start: '▶ 开始', you: '你', foe: '机器人', yourTurn: '轮到你了', aiTurn: '机器人在想…', roll: '掷骰 🎲', pick: '点一下棋子，再点发光的位置', noMove: '没有可走的棋 — 轮空', hitYou: '打中了！他的棋子进了中条 🎯', hitAi: '哎呀！你的棋子进了中条 😮', barYou: '先把中条上的棋子放回场上！', win: '你赢了！🏆', lose: '机器人赢了 🤖', wins: '胜利：', again: '点一下再玩一次' },
+  it: { h1: 'Backgammon d’oro 🎲', sub: 'Porta tutte e 6 le pedine a casa e falle uscire!', start: '▶ Gioca', you: 'Tu', foe: 'Robot', yourTurn: 'Tocca a te', aiTurn: 'Il robot sta pensando…', roll: 'Lancia 🎲', pick: 'Tocca una pedina, poi il punto che brilla', noMove: 'Nessuna mossa — passi il turno', hitYou: 'Colpito! La sua pedina va alla barra 🎯', hitAi: 'Ahia! La tua pedina va alla barra 😮', barYou: 'Prima rimetti in gioco la tua pedina!', win: 'HAI VINTO! 🏆', lose: 'Vince il robot 🤖', wins: 'Vittorie: ', again: 'Tocca per rigiocare' },
+  ka: { h1: 'ოქროს ნარდი 🎲', sub: 'ექვსივე ქვა სახლში მიიყვანე და გაიყვანე!', start: '▶ ვითამაშოთ', you: 'შენ', foe: 'რობოტი', yourTurn: 'შენი სვლაა', aiTurn: 'რობოტი ფიქრობს…', roll: 'გააგორე 🎲', pick: 'დააჭირე ქვას, მერე მანათობელ ადგილს', noMove: 'სვლა არ არის — სვლა გადადის', hitYou: 'მოარტყი! მისი ქვა ბარზე წავიდა 🎯', hitAi: 'ვაი! შენი ქვა ბარზე წავიდა 😮', barYou: 'ჯერ დააბრუნე ქვა თამაშში!', win: 'შენ მოიგე! 🏆', lose: 'რობოტმა მოიგო 🤖', wins: 'გამარჯვებები: ', again: 'დააჭირე ხელახლა სათამაშოდ' },
+  hi: { h1: 'गोल्डन नर्दी 🎲', sub: 'अपनी छहों गोटियाँ घर लाओ और बाहर निकालो!', start: '▶ खेलें', you: 'तुम', foe: 'रोबोट', yourTurn: 'तुम्हारी बारी', aiTurn: 'रोबोट सोच रहा है…', roll: 'पासा 🎲', pick: 'गोटी छुओ, फिर चमकती जगह छुओ', noMove: 'कोई चाल नहीं — बारी आगे', hitYou: 'मारा! उसकी गोटी बार पर गई 🎯', hitAi: 'अरे! तुम्हारी गोटी बार पर गई 😮', barYou: 'पहले अपनी गोटी वापस खेल में लाओ!', win: 'तुम जीत गए! 🏆', lose: 'रोबोट जीत गया 🤖', wins: 'जीत: ', again: 'फिर खेलने के लिए छुओ' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+document.title = T.h1;
+document.getElementById('title').textContent = T.h1;
+document.getElementById('menuTitle').textContent = T.h1;
+document.getElementById('menuSub').textContent = T.sub;
+document.getElementById('startBtn').textContent = T.start;
+document.getElementById('roll').textContent = T.roll;
+document.getElementById('overSub').textContent = T.again;
+
+// ——— Խաղի վիճակը ———
+const CH = 6;        // քանի քար ունի ամեն կողմը
+const OFF = 99;      // «դուրս բերված» տեղը
+const BAR_P = 24;    // քո բանտը
+const BAR_C = -1;    // ռոբոտի բանտը
+
+// pts[i] > 0 → այդքան ԴԵՂԻՆ քար, pts[i] < 0 → այդքան ԿԱՐՄԻՐ քար
+let pts = new Array(24).fill(0);
+let barP = 0, barC = 0;      // բանտում եղած քարերը
+let offP = 0, offC = 0;      // դուրս բերած քարերը
+let turn = 1;                // 1 = դու, -1 = ռոբոտ
+let dice = [];               // դեռ չօգտագործված զառերը
+let rolled = [];             // գլորված բոլոր զառերը (ցույց տալու համար)
+let usedFlags = [];          // որ զառն է արդեն ծախսված
+let sel = null;              // ընտրած կետը
+let state = 'menu';          // menu → play → over
+let endedAt = 0;             // երբ վերջացավ, որ շուտ չսեղմվի
+let busy = false;            // ռոբոտը քայլում է — ձեռք մի տուր
+let wins = 0;
+try { wins = Number(localStorage.getItem('aren-nardi-best') || 0) || 0; } catch (e) {}
+
+const canvas = document.getElementById('board');
+const ctx = canvas.getContext('2d');
+const statusEl = document.getElementById('status');
+const diceEl = document.getElementById('dice');
+const rollBtn = document.getElementById('roll');
+const menuEl = document.getElementById('menu');
+const overEl = document.getElementById('over');
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.18, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sMove = () => tone(300, 0.09, 'square', 0.13);
+const sPick = () => tone(520, 0.07, 'triangle', 0.1);
+const sHit = () => { tone(180, 0.22, 'sawtooth', 0.16); tone(120, 0.28, 'square', 0.12, 0.05); };
+const sOff = () => [660, 880].forEach((f, k) => tone(f, 0.16, 'triangle', 0.16, k * 0.09));
+const sRoll = () => [700, 520, 620].forEach((f, k) => tone(f, 0.05, 'square', 0.09, k * 0.06));
+const sWin = () => [523, 659, 784, 1047, 1319].forEach((f, k) => tone(f, 0.25, 'triangle', 0.2, k * 0.13));
+const sLose = () => [400, 330, 260].forEach((f, k) => tone(f, 0.25, 'sine', 0.16, k * 0.14));
+
+// ——— Տախտակի չափերը. ամեն անգամ հարմարվում է հեռախոսի էկրանին ———
+let BW = 0, BH = 0, TRAY = 0, BARW = 0, TW = 0, TRIH = 0, CR = 0;
+function layout() {
+  const maxW = Math.min(window.innerWidth - 14, 420);
+  // Կողքի պառկեցրած հեռախոսի վրա քիչ տեղ կա — պահում ենք ավելի քիչ
+  const reserve = window.innerHeight < 520 ? 148 : 178;
+  const availH = window.innerHeight - reserve;   // տեղ՝ վերնագրին, զառերին, գրությանը
+  let w = Math.min(maxW, availH / 0.9);
+  w = Math.max(170, w);
+  const h = w * 0.9;
+  const DPR = window.devicePixelRatio || 1;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  canvas.width = Math.round(w * DPR);
+  canvas.height = Math.round(h * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  BW = w; BH = h;
+  TRAY = w * 0.088;
+  BARW = w * 0.062;
+  TW = (w - TRAY - BARW) / 12;
+  TRIH = h * 0.42;
+  CR = Math.min(TW * 0.46, h * 0.075);
+}
+window.addEventListener('resize', layout);
+layout();
+
+// Սյան ձախ եզրը՝ ըստ 0–11 համարի (6-ից հետո մեջտեղի ձողն է)
+function colX(col) { return col * TW + (col >= 6 ? BARW : 0); }
+// Կետի համարից՝ սյուն. ներքևի շարքը 0–11 է աջից ձախ, վերևինը՝ 12–23 ձախից աջ
+function colOf(i) { return i < 12 ? 11 - i : i - 12; }
+function isTop(i) { return i >= 12; }
+
+// Քարի կենտրոնը՝ i կետի k-րդ քարը (n հատից)
+function stackXY(i, k, n) {
+  const x = colX(colOf(i)) + TW / 2;
+  const step = Math.min(2 * CR + 1.5, (BH / 2 - 2 * CR - 4) / Math.max(1, n - 1));
+  const y = isTop(i) ? (CR + 3 + k * step) : (BH - CR - 3 - k * step);
+  return { x: x, y: y };
+}
+
+// Կետի «միջին» կետը՝ դիպչելու համար
+function pointCenter(i) {
+  if (i === OFF) return { x: 12 * TW + BARW + TRAY / 2, y: BH * 0.76 };
+  if (i === BAR_P) return { x: 6 * TW + BARW / 2, y: BH * 0.72 };
+  if (i === BAR_C) return { x: 6 * TW + BARW / 2, y: BH * 0.28 };
+  return { x: colX(colOf(i)) + TW / 2, y: isTop(i) ? BH * 0.24 : BH * 0.76 };
+}
+
+// Որ կետին դիպավ մատը
+function hitPoint(x, y) {
+  if (x >= 12 * TW + BARW) return y > BH / 2 ? OFF : -2;   // աջ ափսեները
+  if (x >= 6 * TW && x < 6 * TW + BARW) return y > BH / 2 ? BAR_P : BAR_C;
+  let col = x < 6 * TW ? Math.floor(x / TW) : 6 + Math.floor((x - 6 * TW - BARW) / TW);
+  col = Math.max(0, Math.min(11, col));
+  return y > BH / 2 ? (11 - col) : (12 + col);
+}
+
+// ——— Կանոնները ———
+// Կարո՞ղ ենք նստել այս կետին. 2 և ավելի թշնամու քար՝ ոչ
+function canLand(side, to) {
+  if (to < 0 || to > 23) return false;
+  const v = pts[to];
+  return side === 1 ? v >= -1 : v <= 1;
+}
+// Բոլո՞ր քարերը տանն են (դու՝ 0–5, ռոբոտը՝ 18–23)
+function allHome(side) {
+  if (side === 1) {
+    if (barP > 0) return false;
+    for (let i = 6; i < 24; i++) if (pts[i] > 0) return false;
+    return true;
+  }
+  if (barC > 0) return false;
+  for (let i = 0; i < 18; i++) if (pts[i] < 0) return false;
+  return true;
+}
+// Բոլոր օրինական քայլերը՝ {from, to, d}
+function genMoves(side, ds) {
+  const out = [];
+  const uniq = [];
+  for (const d of ds) if (uniq.indexOf(d) < 0) uniq.push(d);
+  const bar = side === 1 ? barP : barC;
+  if (bar > 0) {
+    for (const d of uniq) {
+      const to = side === 1 ? 24 - d : d - 1;
+      if (canLand(side, to)) out.push({ from: side === 1 ? BAR_P : BAR_C, to: to, d: d });
+    }
+    return out;
+  }
+  const home = allHome(side);
+  for (let i = 0; i < 24; i++) {
+    if (side === 1 ? pts[i] <= 0 : pts[i] >= 0) continue;
+    for (const d of uniq) {
+      const to = i - side * d;
+      if (to >= 0 && to <= 23) {
+        if (canLand(side, to)) out.push({ from: i, to: to, d: d });
+      } else if (home) {
+        // Դուրս բերելը՝ եթե զառը բավականաչափ մեծ է (երեխայի համար՝ մեղմ կանոն)
+        const need = side === 1 ? i + 1 : 24 - i;
+        if (d >= need) out.push({ from: i, to: OFF, d: d });
+      }
+    }
+  }
+  return out;
+}
+// Քայլն անում ենք. վերադարձնում ենք՝ խփե՞ց թե ոչ
+function applyMove(side, m) {
+  let hit = false;
+  if (m.from === BAR_P) barP--;
+  else if (m.from === BAR_C) barC--;
+  else pts[m.from] -= side;
+
+  if (m.to === OFF) {
+    if (side === 1) offP++; else offC++;
+  } else {
+    if (side === 1 && pts[m.to] === -1) { pts[m.to] = 0; barC++; hit = true; }
+    if (side === -1 && pts[m.to] === 1) { pts[m.to] = 0; barP++; hit = true; }
+    pts[m.to] += side;
+  }
+  const k = dice.indexOf(m.d);
+  if (k >= 0) dice.splice(k, 1);
+  for (let j = 0; j < rolled.length; j++) {
+    if (!usedFlags[j] && rolled[j] === m.d) { usedFlags[j] = true; break; }
+  }
+  return hit;
+}
+
+// ——— Նոր խաղ ———
+function newGame() {
+  pts = new Array(24).fill(0);
+  pts[23] = CH;     // քո 6 քարերը՝ վերևի աջ անկյունում
+  pts[0] = -CH;     // ռոբոտի 6 քարերը՝ ներքևի աջ անկյունում
+  barP = 0; barC = 0; offP = 0; offC = 0;
+  dice = []; rolled = []; usedFlags = []; sel = null;
+  turn = 1; busy = false;
+  state = 'play';
+  menuEl.hidden = true;
+  overEl.hidden = true;
+  setStatus(T.yourTurn + ' — ' + T.roll);
+  refresh();
+}
+
+function refresh() {
+  document.getElementById('offPEl').textContent = offP;
+  document.getElementById('offCEl').textContent = offC;
+  document.getElementById('winsEl').textContent = '🏆 ' + wins;
+  drawDice();
+  rollBtn.disabled = !(state === 'play' && turn === 1 && dice.length === 0 && !busy);
+}
+function setStatus(s) { statusEl.textContent = s; }
+
+// ——— Զառերի նկարները (կետերով) ———
+const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+function drawDice() {
+  diceEl.innerHTML = '';
+  for (let j = 0; j < rolled.length; j++) {
+    const d = document.createElement('div');
+    d.className = 'die' + (usedFlags[j] ? ' used' : '');
+    const on = PIPS[rolled[j]] || [];
+    for (let k = 0; k < 9; k++) {
+      const p = document.createElement('i');
+      if (on.indexOf(k) < 0) p.className = 'no';
+      d.appendChild(p);
+    }
+    diceEl.appendChild(d);
+  }
+}
+
+// ——— Զառ գլորելը ———
+function rnd(n) { return Math.floor(Math.random() * n); }
+function rollFor(side) {
+  const a = 1 + rnd(6), b = 1 + rnd(6);
+  rolled = (a === b) ? [a, a, a, a] : [a, b];   // զույգ զառը՝ չորս քայլ, ինչպես իսկական նարդում
+  usedFlags = rolled.map(function () { return false; });
+  dice = rolled.slice();
+  sRoll();
+  refresh();
+}
+
+rollBtn.addEventListener('pointerdown', function (e) {
+  e.preventDefault();
+  initAudio();
+  if (state !== 'play' || turn !== 1 || dice.length > 0 || busy) return;
+  rollFor(1);
+  const legal = genMoves(1, dice);
+  if (!legal.length) {
+    setStatus(T.noMove);
+    busy = true;
+    setTimeout(function () { busy = false; endTurn(); }, 1300);
+  } else {
+    setStatus(T.yourTurn + ' — ' + T.pick);
+  }
+  refresh();
+});
+
+// ——— Դիպչելը տախտակին ———
+let lastTouchAt = 0;
+canvas.addEventListener('pointerdown', function (e) {
+  e.preventDefault();
+  // Հեռախոսը հպումից հետո «ուրվական» մկնիկի ազդանշան է ուղարկում — անտեսում ենք
+  if (e.pointerType === 'mouse' && Date.now() - lastTouchAt < 700) return;
+  if (e.pointerType === 'touch') lastTouchAt = Date.now();
+  initAudio();
+  const r = canvas.getBoundingClientRect();
+  tapPoint(hitPoint(e.clientX - r.left, e.clientY - r.top));
+}, { passive: false });
+canvas.addEventListener('touchstart', function () { lastTouchAt = Date.now(); }, { passive: true });
+
+function tapPoint(i) {
+  if (state !== 'play' || turn !== 1 || busy) return;
+  if (dice.length === 0) { setStatus(T.yourTurn + ' — ' + T.roll); return; }
+  const legal = genMoves(1, dice);
+
+  // Ընտրած քարով փորձում ենք գնալ այս տեղը
+  if (sel !== null) {
+    let m = null;
+    for (const x of legal) if (x.from === sel && x.to === i) { m = x; break; }
+    if (m) { humanMove(m); return; }
+  }
+  // Նոր քար ենք ընտրում
+  const mine = (i === BAR_P) ? barP > 0 : (i >= 0 && i <= 23 && pts[i] > 0);
+  if (mine) {
+    let has = false;
+    for (const x of legal) if (x.from === i) { has = true; break; }
+    if (has) {
+      sel = (sel === i) ? null : i;
+      if (sel !== null) sPick();
+      setStatus(T.yourTurn + ' — ' + T.pick);
+      return;
+    }
+    if (barP > 0) { setStatus(T.barYou); return; }
+  }
+  sel = null;
+}
+
+function humanMove(m) {
+  const hit = applyMove(1, m);
+  sel = null;
+  if (m.to === OFF) sOff(); else sMove();
+  if (hit) { sHit(); setStatus(T.hitYou); } else setStatus(T.yourTurn + ' — ' + T.pick);
+  refresh();
+  if (checkOver()) return;
+  if (dice.length === 0 || genMoves(1, dice).length === 0) {
+    busy = true;
+    setTimeout(function () { busy = false; endTurn(); }, 450);
+    refresh();
+  }
+}
+
+function endTurn() {
+  if (state !== 'play') return;
+  turn = -turn;
+  sel = null;
+  dice = []; rolled = []; usedFlags = [];
+  if (turn === -1) {
+    setStatus(T.aiTurn);
+    busy = true;
+    refresh();
+    setTimeout(aiRoll, 700);
+  } else {
+    setStatus(T.yourTurn + ' — ' + T.roll);
+    refresh();
+  }
+}
+
+// ——— Ռոբոտը ———
+function aiRoll() {
+  if (state !== 'play') return;
+  rollFor(-1);
+  setTimeout(aiStep, 750);
+}
+function aiStep() {
+  if (state !== 'play') return;
+  const legal = genMoves(-1, dice);
+  if (!legal.length || dice.length === 0) {
+    busy = false;
+    endTurn();
+    return;
+  }
+  const m = pickAi(legal);
+  const hit = applyMove(-1, m);
+  if (m.to === OFF) sOff(); else sMove();
+  if (hit) { sHit(); setStatus(T.hitAi); }
+  refresh();
+  if (checkOver()) { busy = false; return; }
+  setTimeout(aiStep, 750);
+}
+// Ռոբոտը խորամանկ չէ, բայց հիմար էլ չէ. ընտրում է ամենաշահավետ քայլը
+function pickAi(legal) {
+  let best = null, bs = -1e9;
+  for (const m of legal) {
+    let s = m.d;                                       // առաջ գնալը միշտ լավ է
+    if (m.to === OFF) s += 60;                         // դուրս բերելը՝ ամենալավը
+    else {
+      if (pts[m.to] === 1) s += 55;                    // մենակ դեղին քարին խփելը
+      if (pts[m.to] <= -1) s += 14;                    // իր քարի կողքին՝ ապահով է
+      if (m.from >= 0 && pts[m.from] === -2) s -= 10;  // մենակ քար չթողնի
+      if (m.to >= 18) s += 8;                          // տուն մտնելը լավ է
+    }
+    s += Math.random() * 3;                            // մի քիչ պատահականություն
+    if (s > bs) { bs = s; best = m; }
+  }
+  return best;
+}
+
+// ——— Վերջը ———
+function checkOver() {
+  if (offP < CH && offC < CH) return false;
+  state = 'over';
+  endedAt = Date.now();
+  busy = false;
+  const won = offP >= CH;
+  if (won) {
+    wins++;
+    try { localStorage.setItem('aren-nardi-best', wins); } catch (e) {}
+    sWin(); confetti();
+  } else sLose();
+  document.getElementById('overTitle').textContent = won ? T.win : T.lose;
+  overEl.hidden = false;
+  refresh();
+  return true;
+}
+
+// Վերջի էկրանին դիպչելը՝ նոր խաղ (բայց ~1100 մլվ սպասում է, որ պատահական չսեղմվի)
+overEl.addEventListener('pointerdown', function (e) {
+  e.preventDefault();
+  if (state !== 'over') return;
+  if (Date.now() - endedAt < 1100) return;
+  initAudio();
+  newGame();
+}, { passive: false });
+
+document.getElementById('startBtn').addEventListener('pointerdown', function (e) {
+  e.preventDefault();
+  initAudio();
+  newGame();
+}, { passive: false });
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', function (e) {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// ——— Նկարելը ———
+function rrect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function checker(x, y, r, side, glow) {
+  if (glow) {
+    ctx.beginPath(); ctx.arc(x, y, r + 3, 0, 7); ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fill();
+  }
+  const g = ctx.createRadialGradient(x - r * 0.3, y - r * 0.35, r * 0.15, x, y, r);
+  if (side === 1) { g.addColorStop(0, '#ffe9a8'); g.addColorStop(1, '#e8b40c'); }
+  else { g.addColorStop(0, '#ff9d8e'); g.addColorStop(1, '#d4283a'); }
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fillStyle = g; ctx.fill();
+  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = side === 1 ? 'rgba(120,80,0,0.5)' : 'rgba(70,10,20,0.5)';
+  ctx.stroke();
+}
+
+function draw() {
+  requestAnimationFrame(draw);
+  if (!BW) return;
+  const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 260);
+
+  // տախտակի ֆոնը
+  ctx.clearRect(0, 0, BW, BH);
+  ctx.fillStyle = '#1d1637';
+  rrect(0, 0, BW, BH, 14); ctx.fill();
+
+  // 24 եռանկյունիները՝ հերթով մուգ ու բաց
+  for (let i = 0; i < 24; i++) {
+    const col = colOf(i);
+    const x = colX(col);
+    const top = isTop(i);
+    ctx.beginPath();
+    if (top) { ctx.moveTo(x + 1, 0); ctx.lineTo(x + TW - 1, 0); ctx.lineTo(x + TW / 2, TRIH); }
+    else { ctx.moveTo(x + 1, BH); ctx.lineTo(x + TW - 1, BH); ctx.lineTo(x + TW / 2, BH - TRIH); }
+    ctx.closePath();
+    ctx.fillStyle = ((col + (top ? 0 : 1)) % 2 === 0) ? '#544a8c' : '#2b2250';
+    ctx.fill();
+  }
+
+  // տների գծերը՝ դեղինը ներքևի աջ, կարմիրը վերևի աջ
+  const hx = colX(6), hw = 6 * TW;
+  ctx.fillStyle = '#ffd76e'; ctx.fillRect(hx, BH - 3, hw, 3);
+  ctx.fillStyle = '#ff7b6b'; ctx.fillRect(hx, 0, hw, 3);
+
+  // մեջտեղի ձողը (բանտը)
+  ctx.fillStyle = '#120e26';
+  ctx.fillRect(6 * TW, 0, BARW, BH);
+  // աջ ափսեները՝ դուրս բերած քարերի համար
+  const tx = 12 * TW + BARW;
+  ctx.fillStyle = '#120e26';
+  rrect(tx + 2, 3, TRAY - 5, BH / 2 - 6, 6); ctx.fill();
+  rrect(tx + 2, BH / 2 + 3, TRAY - 5, BH / 2 - 6, 6); ctx.fill();
+
+  // դուրս բերած քարերը՝ բարակ գծիկներ
+  for (let k = 0; k < offP; k++) {
+    ctx.fillStyle = '#e8b40c';
+    rrect(tx + 5, BH - 12 - k * 9, TRAY - 11, 6, 3); ctx.fill();
+  }
+  for (let k = 0; k < offC; k++) {
+    ctx.fillStyle = '#d4283a';
+    rrect(tx + 5, 6 + k * 9, TRAY - 11, 6, 3); ctx.fill();
+  }
+
+  // քարերը
+  for (let i = 0; i < 24; i++) {
+    const n = Math.abs(pts[i]);
+    const side = pts[i] > 0 ? 1 : -1;
+    for (let k = 0; k < n; k++) {
+      const p = stackXY(i, k, n);
+      checker(p.x, p.y, CR, side, sel === i && k === n - 1);
+    }
+  }
+  // բանտի քարերը
+  for (let k = 0; k < barP; k++) checker(6 * TW + BARW / 2, BH * 0.72 - k * (CR + 2), CR * 0.9, 1, sel === BAR_P && k === barP - 1);
+  for (let k = 0; k < barC; k++) checker(6 * TW + BARW / 2, BH * 0.28 + k * (CR + 2), CR * 0.9, -1, false);
+
+  // լուսավոր տեղերը՝ ուր կարող ես գնալ
+  if (state === 'play' && turn === 1 && sel !== null && dice.length) {
+    const legal = genMoves(1, dice);
+    for (const m of legal) {
+      if (m.from !== sel) continue;
+      let x, y;
+      if (m.to === OFF) { x = tx + TRAY / 2; y = BH - 26; }
+      else {
+        const n = Math.abs(pts[m.to]);
+        const p = stackXY(m.to, pts[m.to] > 0 ? n : 0, Math.max(n + 1, 2));
+        x = p.x; y = p.y;
+      }
+      ctx.beginPath(); ctx.arc(x, y, CR * 0.92, 0, 7);
+      ctx.fillStyle = 'rgba(110,231,183,' + (0.25 + 0.22 * pulse) + ')'; ctx.fill();
+      ctx.lineWidth = 2.5; ctx.strokeStyle = '#6ee7b7'; ctx.stroke();
+      ctx.fillStyle = '#0d2b22';
+      ctx.font = 'bold ' + Math.round(CR * 1.05) + 'px Arial, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(m.d), x, y + 1);
+    }
+  }
+  // եթե դեռ քար չես ընտրել՝ նշում ենք, թե որոնք են շարժվող
+  if (state === 'play' && turn === 1 && sel === null && dice.length) {
+    const legal = genMoves(1, dice);
+    const seen = [];
+    for (const m of legal) {
+      if (seen.indexOf(m.from) >= 0) continue;
+      seen.push(m.from);
+      let p;
+      if (m.from === BAR_P) p = { x: 6 * TW + BARW / 2, y: BH * 0.72 };
+      else { const n = Math.abs(pts[m.from]); p = stackXY(m.from, n - 1, n); }
+      ctx.beginPath(); ctx.arc(p.x, p.y, CR + 2.5, 0, 7);
+      ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,215,110,' + (0.35 + 0.4 * pulse) + ')'; ctx.stroke();
+    }
+  }
+}
+draw();
+
+function confetti() {
+  const stuff = ['🎉', '⭐', '🎲', '🟡', '🎊', '✨'];
+  for (let k = 0; k < 34; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[rnd(stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', function () { s.remove(); });
+  }
+}
+
+document.getElementById('menuWins').textContent = wins > 0 ? T.wins + wins : '';
+refresh();
+
+// Փոքրիկ օգնական՝ ստուգումների համար (Playwright-ը սրանով է նայում խաղին)
+window.NARDI = {
+  get state() { return state; },
+  get turn() { return turn; },
+  get dice() { return dice.slice(); },
+  get pts() { return pts.slice(); },
+  get offP() { return offP; },
+  get offC() { return offC; },
+  get barP() { return barP; },
+  get barC() { return barC; },
+  get sel() { return sel; },
+  get wins() { return wins; },
+  get busy() { return busy; },
+  moves: function () { return genMoves(1, dice); },
+  center: function (i) { return pointCenter(i); },
+  force: function (o) {
+    if (o.pts) pts = o.pts.slice();
+    if ('offP' in o) offP = o.offP;
+    if ('offC' in o) offC = o.offC;
+    if ('barP' in o) barP = o.barP;
+    if ('barC' in o) barC = o.barC;
+    if ('turn' in o) turn = o.turn;
+    if (o.dice) { dice = o.dice.slice(); rolled = o.dice.slice(); usedFlags = rolled.map(function () { return false; }); }
+    sel = null; busy = false;
+    refresh();
+  },
+};
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, թրթռոց, նկար, բեռնում -->
+<script src="../gg-kit.js" data-kind="game" defer></script>

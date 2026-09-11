@@ -1,0 +1,568 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Պար 💃</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: linear-gradient(#2a1e3f, #1a2a4a);
+    color: #f5eede;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", "Arial", system-ui, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+
+  /* ——— Սկզբի էկրանը ——— */
+  #menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    height: 100dvh;
+    padding: 18px;
+    text-align: center;
+  }
+  #menu[hidden] { display: none !important; }
+  h1 { font-size: clamp(1.3rem, 5vw, 2rem); color: #ffd76e; }
+  .sub { color: #9a9ec7; max-width: 320px; }
+  .best { color: #6ee7b7; font-size: 0.95rem; }
+  .best[hidden] { display: none !important; }
+  #startBtn {
+    width: min(80vw, 300px);
+    border: 2px solid #6a5f9e;
+    border-radius: 16px;
+    padding: 14px 18px;
+    font-size: 1.1rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #3d3560;
+    color: #f5eede;
+  }
+  #startBtn:active { transform: scale(0.97); }
+
+  /* Վերևի գրությունները DOM-ում են, ոչ թե canvas-ի վրա — էմոջին այնտեղ գեղեցիկ է */
+  #hud {
+    position: fixed; top: 46px; left: 0; right: 0;
+    text-align: center; z-index: 5; pointer-events: none;
+  }
+  #hud[hidden] { display: none !important; }
+  #hudLevel { font-size: 1.1rem; color: #f5eede; }
+  #hudPhase { font-size: 1rem; margin-top: 5px; color: #ffd76e; }
+
+  .overlay {
+    position: fixed; inset: 0; z-index: 20;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 10px; padding: 20px; text-align: center;
+    background: rgba(20, 15, 40, 0.88);
+  }
+  .overlay[hidden] { display: none !important; }
+  #overWrong { color: #ff7b6b; font-size: 1.25rem; }
+  #overTitle { color: #ffd76e; font-size: 1.7rem; }
+  #overScore { font-size: 1.25rem; }
+  #overRec { color: #ffd166; font-size: 1rem; }
+  #overRec[hidden] { display: none !important; }
+  #overAgain { color: #9a9ec7; font-size: 0.95rem; margin-top: 10px; }
+
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;   /* առանց սրա մատի շարժումը էջն է քաշում, ոչ թե պարում */
+  }
+  canvas[hidden] { display: none !important; }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:40;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<div id="menu">
+  <h1 id="menuTitle">Ոսկե Պար 💃</h1>
+  <p class="sub" id="menuSub"></p>
+  <p class="best" id="bestEl" hidden></p>
+  <button id="startBtn"></button>
+</div>
+<canvas id="game" hidden></canvas>
+<div id="hud" hidden>
+  <div id="hudLevel"></div>
+  <div id="hudPhase"></div>
+</div>
+<div class="overlay" id="over" hidden>
+  <div id="overWrong"></div>
+  <div id="overTitle"></div>
+  <div id="overScore"></div>
+  <div id="overRec" hidden></div>
+  <div id="overAgain"></div>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ՊԱՐ 💃 — քոչարի՛ սովորենք
+//  Պարողները ցույց են տալիս քայլերի շարքը՝ ձախ, աջ, դոփ, ցատկ։
+//  Հետո դու պիտի նույն շարքը կրկնես նույն հերթականությամբ։
+//  Ամեն անգամ շարքը մեկ քայլով երկարում ու մի քիչ արագանում է։
+//  Մեկ սխալ — պարը վերջանում է 😅
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { h1: 'Ոսկե Պար 💃', sub: 'Նայի՛ր քոչարու քայլերին, հետո կրկնի՛ր նույն հերթականությամբ։', start: '▶ Պարե՛նք', best: 'Ռեկորդ՝ ', watch: 'ՆԱՅԻ՛Ր 👀', repeat: 'ԿՐԿՆԻ՛Ր 💃', level: 'Քայլեր՝ ', good: 'Ապրե՛ս 🎉', wrong: 'Սխալ քայլ 😅', over: 'Պարը վերջացավ', newRec: 'ՆՈՐ ՌԵԿՈՐԴ 🏆', again: 'Դիպչիր՝ նորից պարելու', steps: { left: 'Ձախ', right: 'Աջ', stamp: 'Դոփ', jump: 'Ցատկ' } },
+  ru: { h1: 'Золотой танец 💃', sub: 'Смотри шаги кочари, потом повтори их по порядку!', start: '▶ Танцуем', best: 'Рекорд: ', watch: 'СМОТРИ 👀', repeat: 'ПОВТОРИ! 💃', level: 'Шаги: ', good: 'Молодец! 🎉', wrong: 'Неверный шаг 😅', over: 'Танец окончен', newRec: 'НОВЫЙ РЕКОРД 🏆', again: 'Нажми, чтобы танцевать снова', steps: { left: 'Влево', right: 'Вправо', stamp: 'Топ', jump: 'Прыжок' } },
+  en: { h1: 'Golden Dance 💃', sub: 'Watch the kochari steps, then repeat them in order!', start: '▶ Let’s dance', best: 'Best: ', watch: 'WATCH 👀', repeat: 'REPEAT! 💃', level: 'Steps: ', good: 'Well done! 🎉', wrong: 'Wrong step 😅', over: 'Dance over', newRec: 'NEW RECORD 🏆', again: 'Tap to dance again', steps: { left: 'Left', right: 'Right', stamp: 'Stamp', jump: 'Jump' } },
+  es: { h1: 'Baile Dorado 💃', sub: '¡Mira los pasos del kochari y repítelos en orden!', start: '▶ ¡A bailar!', best: 'Récord: ', watch: 'MIRA 👀', repeat: '¡REPITE! 💃', level: 'Pasos: ', good: '¡Muy bien! 🎉', wrong: 'Paso equivocado 😅', over: 'Se acabó el baile', newRec: '¡NUEVO RÉCORD! 🏆', again: 'Toca para bailar otra vez', steps: { left: 'Izq.', right: 'Der.', stamp: 'Pisada', jump: 'Salto' } },
+  fr: { h1: 'Danse d’or 💃', sub: 'Regarde les pas du kotchari, puis répète-les dans l’ordre !', start: '▶ On danse', best: 'Record : ', watch: 'REGARDE 👀', repeat: 'RÉPÈTE ! 💃', level: 'Pas : ', good: 'Bravo ! 🎉', wrong: 'Mauvais pas 😅', over: 'Danse terminée', newRec: 'NOUVEAU RECORD 🏆', again: 'Touche pour redanser', steps: { left: 'Gauche', right: 'Droite', stamp: 'Frappe', jump: 'Saut' } },
+  de: { h1: 'Goldener Tanz 💃', sub: 'Schau dir die Kotschari-Schritte an und mach sie der Reihe nach nach!', start: '▶ Tanzen', best: 'Rekord: ', watch: 'SCHAU 👀', repeat: 'MACH NACH! 💃', level: 'Schritte: ', good: 'Super! 🎉', wrong: 'Falscher Schritt 😅', over: 'Tanz vorbei', newRec: 'NEUER REKORD 🏆', again: 'Tippe zum Weitertanzen', steps: { left: 'Links', right: 'Rechts', stamp: 'Stampf', jump: 'Sprung' } },
+  ja: { h1: 'ゴールデンダンス 💃', sub: 'コチャリのステップを見て、じゅんばんにまねしよう！', start: '▶ おどろう', best: 'ベスト：', watch: 'みてね 👀', repeat: 'まねして！💃', level: 'ステップ：', good: 'じょうず！🎉', wrong: 'ちがうステップ 😅', over: 'ダンスおわり', newRec: '新記録 🏆', again: 'タップでもう一回', steps: { left: 'ひだり', right: 'みぎ', stamp: 'ふむ', jump: 'ジャンプ' } },
+  zh: { h1: '黄金舞蹈 💃', sub: '看科恰里的舞步，然后按顺序跳出来！', start: '▶ 开始跳舞', best: '纪录：', watch: '看好了 👀', repeat: '跟着跳！💃', level: '步数：', good: '太棒了！🎉', wrong: '跳错了 😅', over: '舞蹈结束', newRec: '新纪录 🏆', again: '点一下再跳一次', steps: { left: '左', right: '右', stamp: '跺脚', jump: '跳' } },
+  it: { h1: 'Danza d’oro 💃', sub: 'Guarda i passi del kochari, poi ripetili in ordine!', start: '▶ Balliamo', best: 'Record: ', watch: 'GUARDA 👀', repeat: 'RIPETI! 💃', level: 'Passi: ', good: 'Bravo! 🎉', wrong: 'Passo sbagliato 😅', over: 'Danza finita', newRec: 'NUOVO RECORD 🏆', again: 'Tocca per ballare ancora', steps: { left: 'Sinistra', right: 'Destra', stamp: 'Battuta', jump: 'Salto' } },
+  ka: { h1: 'ოქროს ცეკვა 💃', sub: 'უყურე ქოჩარის ნაბიჯებს და გაიმეორე იმავე რიგით!', start: '▶ ვიცეკვოთ', best: 'რეკორდი: ', watch: 'უყურე 👀', repeat: 'გაიმეორე! 💃', level: 'ნაბიჯები: ', good: 'ყოჩაღ! 🎉', wrong: 'არასწორი ნაბიჯი 😅', over: 'ცეკვა დასრულდა', newRec: 'ახალი რეკორდი 🏆', again: 'დააჭირე ხელახლა საცეკვაოდ', steps: { left: 'მარცხნივ', right: 'მარჯვნივ', stamp: 'დარტყმა', jump: 'ახტომა' } },
+  hi: { h1: 'गोल्डन डांस 💃', sub: 'कोचारी के कदम देखो, फिर उसी क्रम में दोहराओ!', start: '▶ नाचें', best: 'रिकॉर्ड: ', watch: 'देखो 👀', repeat: 'दोहराओ! 💃', level: 'कदम: ', good: 'शाबाश! 🎉', wrong: 'गलत कदम 😅', over: 'नाच खत्म', newRec: 'नया रिकॉर्ड 🏆', again: 'फिर नाचने के लिए छुओ', steps: { left: 'बायाँ', right: 'दायाँ', stamp: 'थाप', jump: 'छलांग' } },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+document.title = T.h1;
+document.getElementById('menuTitle').textContent = T.h1;
+document.getElementById('menuSub').textContent = T.sub;
+document.getElementById('startBtn').textContent = T.start;
+
+const STEPS = ['left', 'right', 'stamp', 'jump'];
+const COLORS = ['#ff7b6b', '#6ec5ff', '#ffd166', '#6ee7b7'];
+
+const menu = document.getElementById('menu');
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const bestEl = document.getElementById('bestEl');
+const hud = document.getElementById('hud');
+const hudLevel = document.getElementById('hudLevel');
+const hudPhase = document.getElementById('hudPhase');
+const overEl = document.getElementById('over');
+document.getElementById('overTitle').textContent = T.over;
+document.getElementById('overAgain').textContent = T.again;
+document.getElementById('overWrong').textContent = T.wrong;
+
+let W = 0, H = 0, BTNH = 0, BY = 0;
+function resize() {
+  const DPR = window.devicePixelRatio || 1;
+  canvas.width = Math.round(window.innerWidth * DPR);
+  canvas.height = Math.round(window.innerHeight * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  W = window.innerWidth;
+  H = window.innerHeight;
+  BTNH = Math.max(96, Math.min(150, H * 0.23));
+  BY = H - BTNH;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ——— Ձայները՝ դհոլի պես ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.18, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+// Խշշոց՝ դոփի փոշու համար
+function noise(dur, vol, freq) {
+  if (!actx) return;
+  const t = actx.currentTime;
+  const n = Math.max(1, Math.floor(actx.sampleRate * dur));
+  const buf = actx.createBuffer(1, n, actx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let j = 0; j < n; j++) d[j] = (Math.random() * 2 - 1) * (1 - j / n);
+  const src = actx.createBufferSource();
+  src.buffer = buf;
+  const bp = actx.createBiquadFilter();
+  bp.type = 'bandpass'; bp.frequency.value = freq || 1200; bp.Q.value = 0.9;
+  const g = actx.createGain(); g.gain.value = vol || 0.12;
+  src.connect(bp); bp.connect(g); g.connect(actx.destination);
+  src.start(t);
+}
+// Ամեն քայլն իր թմբուկի ձայնն ունի
+function stepSound(i) {
+  if (i === 0) { tone(155, 0.17, 'sine', 0.24); tone(310, 0.05, 'triangle', 0.08); }
+  else if (i === 1) { tone(210, 0.16, 'sine', 0.24); tone(420, 0.05, 'triangle', 0.08); }
+  else if (i === 2) { tone(78, 0.3, 'square', 0.22); noise(0.14, 0.14, 700); }
+  else { tone(340, 0.11, 'triangle', 0.2); tone(680, 0.1, 'triangle', 0.12, 0.07); }
+}
+const sGood = () => [523, 659, 784].forEach((f, k) => tone(f, 0.18, 'triangle', 0.18, k * 0.1));
+const sWrong = () => { tone(200, 0.3, 'sawtooth', 0.16); tone(140, 0.4, 'square', 0.13, 0.1); };
+const sTick = () => tone(900, 0.03, 'square', 0.05);
+
+// ——— Խաղի վիճակը ———
+let state = 'menu';        // menu → play → over
+let phase = 'show';        // show = նայում ես, wait = կրկնում ես, good = ապրես
+let seq = [];              // քայլերի շարքը
+let step = 0;              // քանիսն ես արդեն ճիշտ կրկնել
+let BD = 620;              // մեկ քայլի տևողությունը (մլվ)
+let phT0 = 0, shownIdx = -1, lastInput = 0, goodT = 0;
+let endedAt = 0;
+let score = 0, gotRecord = false;
+const LIMIT = 5000;        // եթե շատ երկար ես մտածում՝ պարը կանգնում է
+let best = 0;
+try { best = Number(localStorage.getItem('aren-dance-best') || 0) || 0; } catch (e) {}
+if (best > 0) { bestEl.textContent = T.best + best; bestEl.hidden = false; }
+
+// Ինչ քայլ է հենց նոր արվել (պարողի շարժման համար)
+let react = { kind: -1, t: -9999 };
+let flashAt = [-9999, -9999, -9999, -9999];
+let dust = [];
+let lastTick = 0;
+
+function rnd(n) { return Math.floor(Math.random() * n); }
+
+function startGame() {
+  seq = []; step = 0; score = 0; gotRecord = false;
+  dust = [];
+  state = 'play';
+  menu.hidden = true;
+  canvas.hidden = false;
+  overEl.hidden = true;
+  hud.hidden = false;
+  nextRound();
+}
+function nextRound() {
+  seq.push(rnd(4));
+  BD = Math.max(290, 620 - (seq.length - 1) * 26);   // ամեն շարք մի քիչ արագ
+  phase = 'show';
+  phT0 = performance.now();
+  shownIdx = -1;
+  step = 0;
+}
+function trigger(i) {
+  react = { kind: i, t: performance.now() };
+  flashAt[i] = performance.now();
+  stepSound(i);
+  if (i === 2) for (let k = 0; k < 6; k++) dust.push({ x: 0, y: 0, vx: (Math.random() - 0.5) * 2.4, vy: -Math.random() * 1.2, life: 26, who: rnd(3) });
+}
+function gameOver() {
+  state = 'over';
+  endedAt = Date.now();
+  sWrong();
+  document.getElementById('overScore').textContent = T.level + score;
+  document.getElementById('overRec').hidden = !gotRecord;
+  document.getElementById('overRec').textContent = T.newRec;
+  hud.hidden = true;
+  overEl.hidden = false;
+}
+function backToMenu() {
+  state = 'menu';
+  canvas.hidden = true;
+  overEl.hidden = true;
+  hud.hidden = true;
+  menu.hidden = false;
+  if (best > 0) { bestEl.textContent = T.best + best; bestEl.hidden = false; }
+}
+// Վերջի ծածկոցին դիպչելը՝ ետ մենյու (բայց ~1100 մլվ սպասում ենք)
+overEl.addEventListener('pointerdown', function (e) {
+  e.preventDefault();
+  if (state !== 'over') return;
+  if (Date.now() - endedAt < 1100) return;
+  initAudio();
+  backToMenu();
+}, { passive: false });
+
+// ——— Դիպչելը ———
+function tapStep(i) {
+  if (state !== 'play' || phase !== 'wait') return;
+  trigger(i);
+  if (i === seq[step]) {
+    step++;
+    lastInput = performance.now();
+    if (step >= seq.length) {
+      score = seq.length;
+      if (score > best) {
+        best = score;
+        gotRecord = true;
+        try { localStorage.setItem('aren-dance-best', best); } catch (e) {}
+      }
+      phase = 'good';
+      goodT = performance.now();
+      setTimeout(sGood, 180);
+    }
+  } else {
+    gameOver();
+  }
+}
+
+let lastTouchAt = 0;
+canvas.addEventListener('pointerdown', function (e) {
+  e.preventDefault();
+  // Հեռախոսը հպումից հետո «ուրվական» մկնիկի ազդանշան է ուղարկում — անտեսում ենք
+  if (e.pointerType === 'mouse' && Date.now() - lastTouchAt < 700) return;
+  if (e.pointerType === 'touch') lastTouchAt = Date.now();
+  initAudio();
+  if (state === 'over') {
+    if (Date.now() - endedAt < 1100) return;
+    backToMenu();
+    return;
+  }
+  if (e.clientY < BY) return;              // վերևը՝ միայն նայելու համար է
+  tapStep(Math.max(0, Math.min(3, Math.floor(e.clientX / (W / 4)))));
+}, { passive: false });
+canvas.addEventListener('touchstart', function () { lastTouchAt = Date.now(); }, { passive: true });
+
+document.getElementById('startBtn').addEventListener('pointerdown', function (e) {
+  e.preventDefault();
+  initAudio();
+  startGame();
+}, { passive: false });
+
+window.addEventListener('keydown', function (e) {
+  const keys = { KeyA: 0, KeyD: 1, KeyS: 2, KeyW: 3 };
+  if (e.code in keys) { initAudio(); tapStep(keys[e.code]); }
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', function (e) {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// ——— Նկարելը ———
+function font(size, weight) {
+  ctx.font = (weight || 'bold ') + size + 'px "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif';
+}
+// Երկար բառը փոքրացնում ենք, որ կոճակից դուրս չգա
+function fitText(txt, maxW, size) {
+  let s = size;
+  font(s);
+  while (ctx.measureText(txt).width > maxW && s > 7) { s -= 1; font(s); }
+}
+function rrect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+// Մեկ պարող՝ գլուխ, մարմին, ոտքեր. ձեռքերը հետո ենք կապում
+function drawDancer(x, y, s, dx, dy, kind, env) {
+  const bx = x + dx, by = y + dy;
+  ctx.save();
+  // ոտքերը
+  ctx.strokeStyle = '#2b2150';
+  ctx.lineWidth = 6 * s;
+  ctx.lineCap = 'round';
+  const lift = (kind === 2 ? 5 * s * env : 0);
+  ctx.beginPath();
+  ctx.moveTo(bx - 7 * s, by); ctx.lineTo(bx - 8 * s, by + 26 * s - lift);
+  ctx.moveTo(bx + 7 * s, by); ctx.lineTo(bx + 8 * s, by + 26 * s);
+  ctx.stroke();
+  // կոշիկները
+  ctx.fillStyle = '#141028';
+  rrect(bx - 13 * s, by + 24 * s - lift, 11 * s, 5 * s, 2.5 * s); ctx.fill();
+  rrect(bx + 2 * s, by + 24 * s, 11 * s, 5 * s, 2.5 * s); ctx.fill();
+  // մարմինը՝ ազգային շապիկ
+  ctx.beginPath();
+  ctx.moveTo(bx - 14 * s, by - 46 * s);
+  ctx.lineTo(bx + 14 * s, by - 46 * s);
+  ctx.lineTo(bx + 18 * s, by + 2 * s);
+  ctx.lineTo(bx - 18 * s, by + 2 * s);
+  ctx.closePath();
+  ctx.fillStyle = '#6a5f9e'; ctx.fill();
+  // գոտին
+  ctx.fillStyle = '#ffd76e';
+  ctx.fillRect(bx - 17 * s, by - 14 * s, 34 * s, 5 * s);
+  // գլուխը
+  ctx.beginPath(); ctx.arc(bx, by - 60 * s, 11 * s, 0, 7);
+  ctx.fillStyle = '#f0c9a0'; ctx.fill();
+  // գլխարկը
+  ctx.beginPath();
+  ctx.arc(bx, by - 62 * s, 11 * s, Math.PI, 0);
+  ctx.closePath();
+  ctx.fillStyle = '#3d3560'; ctx.fill();
+  ctx.restore();
+  return { sx: bx, sy: by - 44 * s };
+}
+
+function draw() {
+  requestAnimationFrame(draw);
+  if (state === 'menu') return;
+
+  const now = performance.now();
+
+  // ——— խաղի ժամացույցը ———
+  if (state === 'play') {
+    if (phase === 'show') {
+      const t = now - phT0 - 800;     // 0.8 վրկ պատրաստվելու ժամանակ
+      if (t >= 0) {
+        const idx = Math.floor(t / BD);
+        if (idx > shownIdx) {
+          shownIdx = idx;
+          if (idx < seq.length) trigger(seq[idx]);
+          else { phase = 'wait'; step = 0; lastInput = now; lastTick = now; }
+        }
+      }
+    } else if (phase === 'wait') {
+      if (now - lastTick > BD) { lastTick += BD; sTick(); }
+      if (now - lastInput > LIMIT) gameOver();
+    } else if (phase === 'good') {
+      if (now - goodT > 950) nextRound();
+    }
+  }
+
+  // ——— ֆոնը ———
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#2a1e3f'); g.addColorStop(1, '#1a2a4a');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  const stageY = BY * 0.70;
+  const beatPhase = (now - phT0) / BD;
+  const bob = Math.sin(beatPhase * Math.PI * 2) * 3;
+
+  // բեմի լուսավոր շրջանը՝ բաբախում է ռիթմով
+  const ring = 0.5 + 0.5 * Math.sin(beatPhase * Math.PI * 2);
+  ctx.beginPath();
+  const sc = Math.min(W / 270, BY / 300);
+  ctx.ellipse(W / 2, stageY + 30 * sc, Math.min(W * 0.46, 156 * sc) * (0.95 + 0.05 * ring), 24 * sc, 0, 0, 7);
+  ctx.fillStyle = 'rgba(255,215,110,' + (0.07 + 0.06 * ring) + ')';
+  ctx.fill();
+
+  // ——— պարողները՝ ձեռք-ձեռքի ———
+  const a = Math.max(0, Math.min(1, (now - react.t) / 340));
+  const env = react.t < -1000 ? 0 : Math.sin(Math.PI * a);
+  const k = react.kind;
+  const dx = (k === 0 ? -13 : k === 1 ? 13 : 0) * env;
+  const dy = (k === 3 ? -30 : k === 2 ? 8 : 0) * env + bob;
+  const s = sc;
+  const gap = 74 * s;
+  const sh = [];
+  for (let i = 0; i < 3; i++) {
+    const tilt = i === 1 ? 1 : 0.82;   // մեջտեղինը մի քիչ ավելի է ցատկում
+    sh.push(drawDancer(W / 2 + (i - 1) * gap, stageY, s, dx * tilt, dy * tilt, k, env));
+  }
+  // կապած ձեռքերը
+  ctx.strokeStyle = '#f0c9a0';
+  ctx.lineWidth = 5 * s;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(sh[0].sx - 20 * s, sh[0].sy - 12 * s);
+  ctx.lineTo(sh[0].sx, sh[0].sy);
+  ctx.lineTo((sh[0].sx + sh[1].sx) / 2, Math.min(sh[0].sy, sh[1].sy) - 11 * s);
+  ctx.lineTo(sh[1].sx, sh[1].sy);
+  ctx.lineTo((sh[1].sx + sh[2].sx) / 2, Math.min(sh[1].sy, sh[2].sy) - 11 * s);
+  ctx.lineTo(sh[2].sx, sh[2].sy);
+  ctx.lineTo(sh[2].sx + 20 * s, sh[2].sy - 12 * s);
+  ctx.stroke();
+
+  // դոփից բարձրացած փոշին
+  for (const p of dust) {
+    p.life--;
+    p.x += p.vx; p.y += p.vy; p.vy += 0.05;
+    ctx.beginPath();
+    ctx.arc(sh[p.who].sx + p.x, stageY + 28 * s + p.y, 3 + (26 - p.life) * 0.14, 0, 7);
+    ctx.fillStyle = 'rgba(200,190,220,' + (p.life / 60) + ')';
+    ctx.fill();
+  }
+  dust = dust.filter(function (p) { return p.life > 0; });
+
+  // ——— վերևի գրությունները՝ DOM-ում (canvas-ի վրա էմոջի չենք նկարում) ———
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  if (state === 'play') {
+    const lvlTxt = T.level + seq.length;
+    if (hudLevel.textContent !== lvlTxt) hudLevel.textContent = lvlTxt;
+    const lbl = phase === 'wait' ? T.repeat : (phase === 'good' ? T.good : T.watch);
+    if (hudPhase.textContent !== lbl) hudPhase.textContent = lbl;
+    hudPhase.style.color = phase === 'wait' ? '#6ee7b7' : '#ffd76e';
+    // քանիսը կրկնեցիր՝ կետիկներով
+    const dots = seq.length;
+    const dw = Math.min(16, (W * 0.7) / Math.max(1, dots));
+    for (let i = 0; i < dots; i++) {
+      const x = W / 2 - (dots - 1) * dw / 2 + i * dw;
+      ctx.beginPath(); ctx.arc(x, 112, dw * 0.22, 0, 7);
+      ctx.fillStyle = (phase === 'wait' && i < step) || phase === 'good' ? '#6ee7b7' : 'rgba(245,238,222,0.28)';
+      ctx.fill();
+    }
+  }
+
+  // ——— ներքևի չորս կոճակները ———
+  const bw = W / 4;
+  for (let i = 0; i < 4; i++) {
+    const x = i * bw, lit = Math.max(0, 1 - (now - flashAt[i]) / 280);
+    rrect(x + 5, BY + 5, bw - 10, BTNH - 12, 14);
+    ctx.fillStyle = lit > 0 ? COLORS[i] : 'rgba(61,53,96,0.9)';
+    ctx.globalAlpha = lit > 0 ? 0.35 + 0.65 * lit : 1;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = COLORS[i];
+    ctx.stroke();
+
+    const cx = x + bw / 2, cy = BY + BTNH * 0.4, R = Math.min(bw, BTNH) * 0.21;
+    ctx.fillStyle = lit > 0 ? '#141028' : COLORS[i];
+    ctx.strokeStyle = lit > 0 ? '#141028' : COLORS[i];
+    ctx.lineWidth = R * 0.4;
+    ctx.lineCap = 'round';
+    if (i === 0) {                      // ձախ քայլ՝ ձախ նայող եռանկյուն
+      ctx.beginPath();
+      ctx.moveTo(cx - R, cy); ctx.lineTo(cx + R * 0.75, cy - R * 0.9); ctx.lineTo(cx + R * 0.75, cy + R * 0.9);
+      ctx.closePath(); ctx.fill();
+    } else if (i === 1) {               // աջ քայլ
+      ctx.beginPath();
+      ctx.moveTo(cx + R, cy); ctx.lineTo(cx - R * 0.75, cy - R * 0.9); ctx.lineTo(cx - R * 0.75, cy + R * 0.9);
+      ctx.closePath(); ctx.fill();
+    } else if (i === 2) {               // դոփ՝ կոշիկ ու գետին
+      rrect(cx - R * 0.55, cy - R, R * 0.9, R * 1.3, R * 0.25); ctx.fill();
+      rrect(cx - R * 0.55, cy + R * 0.15, R * 1.5, R * 0.5, R * 0.2); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx - R, cy + R * 0.95); ctx.lineTo(cx + R, cy + R * 0.95);
+      ctx.lineWidth = R * 0.22; ctx.stroke();
+    } else {                            // ցատկ՝ վեր նայող եռանկյուն ու աղեղ
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - R); ctx.lineTo(cx + R * 0.9, cy + R * 0.35); ctx.lineTo(cx - R * 0.9, cy + R * 0.35);
+      ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.arc(cx, cy + R * 0.2, R * 0.85, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.lineWidth = R * 0.2; ctx.stroke();
+    }
+    // քայլի անունը
+    const label = T.steps[STEPS[i]];
+    fitText(label, bw - 16, 13);
+    ctx.fillStyle = lit > 0 ? '#141028' : '#f5eede';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, cx, BY + BTNH - 20);
+  }
+
+}
+draw();
+
+// Փոքրիկ օգնական՝ ստուգումների համար (Playwright-ը սրանով է նայում խաղին)
+window.DANCE = {
+  get state() { return state; },
+  get phase() { return phase; },
+  get seq() { return seq.slice(); },
+  get level() { return seq.length; },
+  get step() { return step; },
+  get best() { return best; },
+  btn: function (i) { return { x: (i + 0.5) * (W / 4), y: BY + BTNH * 0.45 }; },
+};
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, թրթռոց, նկար, բեռնում -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
