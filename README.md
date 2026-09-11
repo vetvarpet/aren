@@ -40,6 +40,11 @@ and iterating on the code together with Claude, one change at a time.
 | [`wind`](./wind/) | 🍃 Golden Wind (Քամին) | The wind carries a sheet of paper. Puff from below and get it to the open window. |
 | [`domino`](./domino/) | 🁢 Golden Domino (Դոմինո) | Line up the tiles at the right spacing, then let the wave roll to the golden bell. |
 | [`copy`](./copy/) | 🎨 Golden Copy (Կրկնօրինակիր) | The picture shows for just 3 seconds. Then you rebuild it from memory. |
+| [`alphabet`](./alphabet/) | 🔤 Golden Alphabet (Այբուբեն) | Mashtots’ 39 letters as a game. Know the letter, find the next one, say which letter a word starts with. |
+| [`nardi`](./nardi/) | 🎲 Golden Nardi (Նարդի) | Simplified Armenian nardi: roll the dice, move your checkers and bear them off. The computer plays against you. |
+| [`lavash`](./lavash/) | 🫓 Golden Lavash (Լավաշ) | Slap the dough onto the tonir and pull it out at the right second. Too early is raw, too late is burnt. |
+| [`dance`](./dance/) | 💃 Golden Dance (Քոչարի) | The kochari steps are shown in rhythm and you repeat them. Each round is one step longer. |
+| [`sasuntsi`](./sasuntsi/) | 🪨 Golden Sasuntsi (Սասունցի Դավիթ) | David with his sling against Msra Melik. Take aim, throw the stone and hit above the shield. |
 | [`time`](./time/) | 🕰️ Golden Time (Ժամանակի մեքենա) | The site's whole story as a timeline, from the first flying cat to today |
 | [`museum`](./museum/) | 🏛️ Golden Museum (Թանգարան) | Memorial hall of deleted projects, pedestals, epitaphs and all |
 
