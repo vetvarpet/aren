@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Lavash 🫓</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #1b1208; }
+  body {
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif;
+    color: #f5eede;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    overflow-x: hidden;
+  }
+  /* Առանց touch-action:none կտավի վրա մատի շարժումը էջ է ոլորում */
+  canvas { display: block; position: fixed; inset: 0; width: 100vw; height: 100dvh; touch-action: none; }
+
+  /* «hidden» պիտակը պարտվում է display:flex-ին — ուժեղացնում ենք */
+  #ov[hidden] { display: none !important; }
+  #ov {
+    position: fixed; inset: 0; z-index: 8;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+    text-align: center; padding: 26px 18px;
+    background: rgba(24, 12, 4, 0.88);
+    touch-action: none;
+  }
+  #ovTitle { font-size: 1.8rem; color: #ffd166; }
+  #ovText { font-size: 0.95rem; color: #f0dcc2; line-height: 1.5; max-width: 330px; white-space: pre-line; }
+  #ovBest { font-size: 1rem; color: #6ee7b7; }
+  #ovTap { margin-top: 8px; font-size: 1.1rem; color: #6ee7b7; }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+
+<div id="ov">
+  <div id="ovTitle"></div>
+  <div id="ovText"></div>
+  <div id="ovBest"></div>
+  <div id="ovTap"></div>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN LAVASH 🫓
+//  Տոնիրը տաք է, ներքևից կրակ է փայլում։
+//  Առաջին հպումով խմորը փակցնում ես տոնրի պատին,
+//  երկրորդ հպումով՝ դուրս հանում։
+//    շուտ հանեցիր → հում խմոր, 0
+//    ճիշտ պահին   → ոսկե լավաշ, +3 ու փայլփլուն կայծեր
+//    ուշացար      → այրված, −1 ու ծուխ
+//  Որքան շատ միավոր, այնքան արագ է թխվում ու նեղ է ճիշտ պահը։
+//  60 վայրկյան, պատրաստ լավաշները դիզվում են կողքի կույտին։
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { title: 'Golden Lavash 🫓', h1: 'Հպի՛ր՝ խմորը տոնրի պատին փակցնելու', h2: 'Հպի՛ր նորից ճիշտ պահին · ոսկեգույն՝ +3 · այրված՝ −1 · 60 վայրկյան', start: 'Հպի՛ր՝ սկսելու', again: 'Հպի՛ր՝ նորից թխելու', timeup: 'Ժամանակը վերջացավ', sc: 'Միավոր՝ ', best: 'Ռեկորդդ՝ ', tm: 'Ժամանակ՝ ', sec: ' վրկ', raw: 'Հում է… +0', good: 'Ոսկե լավա՜շ +3', burnt: 'Այրվե՜ց… −1', made: 'Լավաշ՝ ', hint: 'Հպի՛ր՝ խմորը տոնիր', hint2: 'Հպի՛ր՝ դուրս հանելու' },
+  ru: { title: 'Golden Lavash 🫓', h1: 'Нажми, чтобы прилепить тесто к стенке тонира', h2: 'Нажми снова вовремя · золотой: +3 · сгорел: −1 · 60 секунд', start: 'Нажми, чтобы начать', again: 'Нажми, чтобы печь снова', timeup: 'Время вышло', sc: 'Очки: ', best: 'Твой рекорд: ', tm: 'Время: ', sec: ' сек', raw: 'Сырой… +0', good: 'Золотой лаваш! +3', burnt: 'Сгорел… −1', made: 'Лаваш: ', hint: 'Нажми — тесто в тонир', hint2: 'Нажми — доставай' },
+  en: { title: 'Golden Lavash 🫓', h1: 'Tap to slap the dough onto the tonir wall', h2: 'Tap again at the right moment · golden: +3 · burnt: −1 · 60 seconds', start: 'Tap to start', again: 'Tap to bake again', timeup: 'Time is up', sc: 'Score: ', best: 'Your best: ', tm: 'Time: ', sec: ' s', raw: 'Raw… +0', good: 'Golden lavash! +3', burnt: 'Burnt… −1', made: 'Lavash: ', hint: 'Tap — dough into the tonir', hint2: 'Tap — pull it out' },
+  es: { title: 'Golden Lavash 🫓', h1: 'Toca para pegar la masa a la pared del tonir', h2: 'Toca otra vez en el momento justo · dorado: +3 · quemado: −1 · 60 segundos', start: 'Toca para empezar', again: 'Toca para hornear otra vez', timeup: 'Se acabó el tiempo', sc: 'Puntos: ', best: 'Tu récord: ', tm: 'Tiempo: ', sec: ' s', raw: 'Crudo… +0', good: '¡Lavash dorado! +3', burnt: 'Quemado… −1', made: 'Lavash: ', hint: 'Toca: masa al tonir', hint2: 'Toca: sácalo' },
+  fr: { title: 'Golden Lavash 🫓', h1: 'Touche pour coller la pâte à la paroi du tonir', h2: 'Touche encore au bon moment · doré : +3 · brûlé : −1 · 60 secondes', start: 'Touche pour commencer', again: 'Touche pour cuire encore', timeup: 'Temps écoulé', sc: 'Points : ', best: 'Ton record : ', tm: 'Temps : ', sec: ' s', raw: 'Cru… +0', good: 'Lavash doré ! +3', burnt: 'Brûlé… −1', made: 'Lavash : ', hint: 'Touche : la pâte au tonir', hint2: 'Touche : sors-le' },
+  de: { title: 'Golden Lavash 🫓', h1: 'Tippe, um den Teig an die Tonir-Wand zu klatschen', h2: 'Tippe im richtigen Moment nochmal · golden: +3 · verbrannt: −1 · 60 Sekunden', start: 'Tippe zum Starten', again: 'Tippe, um nochmal zu backen', timeup: 'Die Zeit ist um', sc: 'Punkte: ', best: 'Dein Rekord: ', tm: 'Zeit: ', sec: ' s', raw: 'Roh… +0', good: 'Goldenes Lavash! +3', burnt: 'Verbrannt… −1', made: 'Lavash: ', hint: 'Tippe: Teig in den Tonir', hint2: 'Tippe: hol es raus' },
+  ja: { title: 'Golden Lavash 🫓', h1: 'タップして トニールの かべに きじを はろう', h2: 'ちょうどいい ときに もう一回タップ · きんいろ：+3 · こげ：−1 · 60びょう', start: 'タップでスタート', again: 'タップでもう一回やく', timeup: '時間切れ', sc: 'スコア：', best: 'ベスト記録：', tm: 'じかん：', sec: '秒', raw: 'なまやけ… +0', good: 'きんいろラヴァシュ！+3', burnt: 'こげた… −1', made: 'ラヴァシュ：', hint: 'タップ：きじを トニールへ', hint2: 'タップ：とりだす' },
+  zh: { title: 'Golden Lavash 🫓', h1: '点一下，把面饼贴到坦都炉壁上', h2: '在合适的时候再点一下 · 金黄：+3 · 烤焦：−1 · 60秒', start: '点一下开始', again: '点一下再烤一次', timeup: '时间到', sc: '得分：', best: '你的纪录：', tm: '时间：', sec: '秒', raw: '还是生的… +0', good: '金黄拉瓦什！+3', burnt: '烤焦了… −1', made: '拉瓦什：', hint: '点一下：把面饼贴进炉里', hint2: '点一下：取出来' },
+  it: { title: 'Golden Lavash 🫓', h1: 'Tocca per attaccare l’impasto alla parete del tonir', h2: 'Tocca di nuovo al momento giusto · dorato: +3 · bruciato: −1 · 60 secondi', start: 'Tocca per iniziare', again: 'Tocca per infornare ancora', timeup: 'Tempo scaduto', sc: 'Punti: ', best: 'Il tuo record: ', tm: 'Tempo: ', sec: ' s', raw: 'Crudo… +0', good: 'Lavash dorato! +3', burnt: 'Bruciato… −1', made: 'Lavash: ', hint: 'Tocca: impasto nel tonir', hint2: 'Tocca: tiralo fuori' },
+  ka: { title: 'Golden Lavash 🫓', h1: 'დააჭირე, რომ ცომი თონის კედელს მიაკრა', h2: 'დააჭირე ისევ სწორ მომენტში · ოქროსფერი: +3 · დამწვარი: −1 · 60 წამი', start: 'დააჭირე დასაწყებად', again: 'დააჭირე ისევ გამოსაცხობად', timeup: 'დრო ამოიწურა', sc: 'ქულა: ', best: 'შენი რეკორდი: ', tm: 'დრო: ', sec: ' წმ', raw: 'ნედლია… +0', good: 'ოქროსფერი ლავაში! +3', burnt: 'დაიწვა… −1', made: 'ლავაში: ', hint: 'დააჭირე: ცომი თონეში', hint2: 'დააჭირე: გამოიღე' },
+  hi: { title: 'Golden Lavash 🫓', h1: 'तंदूर की दीवार पर आटा चिपकाने के लिए टैप करो', h2: 'सही समय पर फिर टैप करो · सुनहरा: +3 · जला: −1 · 60 सेकंड', start: 'शुरू करने के लिए टैप करो', again: 'फिर से सेंकने के लिए टैप करो', timeup: 'समय खत्म', sc: 'स्कोर: ', best: 'तुम्हारा रिकॉर्ड: ', tm: 'समय: ', sec: ' से', raw: 'कच्चा… +0', good: 'सुनहरा लवाश! +3', burnt: 'जल गया… −1', made: 'लवाश: ', hint: 'टैप: आटा तंदूर में', hint2: 'टैप: बाहर निकालो' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const ov = document.getElementById('ov');
+
+let W = 0, H = 0, DPR = 1;
+let ovTop = 0, ovBot = 0, tonCx = 0, tonW = 0, meterY = 0, stackX = 0, stackRx = 0, handY = 0;
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ovTop = 98;                                   // վահանակից ներքև
+  ovBot = Math.max(ovTop + 190, H - 210);       // խմորի ձեռքից վերև
+  tonW = Math.min(W * 0.60, 240);
+  tonCx = W * 0.38;                             // տոնիրը ձախ կողմում, կույտը՝ աջ
+  handY = ovBot + 30;
+  meterY = Math.min(H - 62, Math.max(handY + 26, H - 130));   // հուշման տողի տեղը միշտ մնա էկրանին
+  stackX = Math.min(W - 48, tonCx + tonW * 0.5 + 52);
+  stackRx = Math.max(18, Math.min(36, W - stackX - 10));
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sSlap = () => { tone(160, 0.09, 'square', 0.14); tone(90, 0.14, 'sine', 0.16, 0.03); };
+const sGood = () => [784, 988, 1319].forEach((f, k) => tone(f, 0.15, 'triangle', 0.2, k * 0.08));
+const sRaw = () => tone(300, 0.16, 'sine', 0.12);
+const sBurn = () => { tone(140, 0.3, 'sawtooth', 0.16); tone(90, 0.35, 'sawtooth', 0.12, 0.12); };
+const sEnd = () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.22, 'triangle', 0.18, k * 0.11));
+
+// ——— Խաղի վիճակը ———
+let state = 'menu', endedAt = 0;
+let dough = 'hand';        // hand → խմորը ձեռքիդ է, wall → տոնրում թխվում է
+let bake = 0, timeLeft = 60, score = 0, made = 0;
+let stack = [], sparks = [], smokes = [], popups = [];
+let lastTs = 0, tNow = 0, flick = 0;
+let best = 0;
+try { best = Number(localStorage.getItem('aren-lavash-best') || 0); } catch (e) {}
+
+const MAXBAKE = 1.75;      // սրանից հետո ինքն իրեն այրվում է
+// Որքան շատ միավոր, այնքան արագ է թխվում ու նեղ է ոսկե պահը
+function bakeSpeed() { return Math.min(1.15, 0.40 + score * 0.011); }
+function winLo() { return 0.60; }
+function winHi() { return winLo() + Math.max(0.13, 0.38 - score * 0.010); }
+
+function startGame() {
+  state = 'play';
+  dough = 'hand';
+  bake = 0; timeLeft = 60; score = 0; made = 0;
+  stack = []; sparks = []; smokes = []; popups = [];
+  ov.hidden = true;
+}
+
+function endGame() {
+  state = 'over';
+  endedAt = Date.now();
+  dough = 'hand';
+  sEnd();
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('aren-lavash-best', best); } catch (e) {}
+    confetti();
+  }
+  document.getElementById('ovTitle').textContent = T.timeup;
+  document.getElementById('ovText').textContent = T.sc + score + '\n' + T.made + made;
+  document.getElementById('ovBest').textContent = T.best + best;
+  document.getElementById('ovTap').textContent = T.again;
+  ov.hidden = false;
+}
+
+// ——— Հպումը՝ խաղի սիրտը ———
+function tap() {
+  if (state !== 'play') return;
+  if (dough === 'hand') {
+    dough = 'wall';
+    bake = 0;
+    sSlap();
+    return;
+  }
+  pullOut(bake);
+}
+
+function pullOut(b) {
+  const lo = winLo(), hi = winHi();
+  const lx = tonCx + tonW * 0.20, ly = ovTop + (ovBot - ovTop) * 0.44;
+  let kind;
+  if (b < lo) {
+    kind = 'raw';
+    sRaw();
+    popups.push({ x: tonCx, y: ovTop + 40, life: 1.1, text: T.raw, color: '#e8dcc0' });
+  } else if (b <= hi) {
+    kind = 'good';
+    score += 3;
+    sGood();
+    popups.push({ x: tonCx, y: ovTop + 40, life: 1.1, text: T.good, color: '#ffd166' });
+    for (let i = 0; i < 22; i++) {
+      const a = Math.random() * Math.PI * 2;
+      sparks.push({ x: lx, y: ly, vx: Math.cos(a) * (40 + Math.random() * 110), vy: Math.sin(a) * (40 + Math.random() * 110) - 40, life: 0.8 });
+    }
+  } else {
+    kind = 'burnt';
+    score = Math.max(0, score - 1);
+    sBurn();
+    popups.push({ x: tonCx, y: ovTop + 40, life: 1.1, text: T.burnt, color: '#ff9b8a' });
+    for (let i = 0; i < 7; i++) {
+      smokes.push({ x: lx + (Math.random() - 0.5) * 26, y: ly, r: 8 + Math.random() * 10, life: 1.4 });
+    }
+  }
+  made++;
+  stack.push(kind);
+  if (stack.length > 11) stack.shift();
+  dough = 'hand';
+  bake = 0;
+}
+
+// Հեռախոսը հպումից հետո «ուրվական» մկնիկ է ուղարկում — հիշում ենք վերջին հպումը
+let lastTouchAt = 0;
+function isGhost(e) {
+  if (e.pointerType === 'touch') { lastTouchAt = Date.now(); return false; }
+  return Date.now() - lastTouchAt < 700;
+}
+cv.addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return;
+  e.preventDefault();
+  initAudio();
+  tap();
+});
+cv.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+cv.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+ov.addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return;
+  e.preventDefault();
+  initAudio();
+  if (state === 'over' && Date.now() - endedAt < 1100) return;   // սպասիր, որ պատահական չսկսես
+  startGame();
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// ——— Քայլը ———
+function update(dt) {
+  flick += dt;
+  for (const s of sparks) { s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 220 * dt; s.life -= dt; }
+  sparks = sparks.filter(s => s.life > 0);
+  for (const s of smokes) { s.y -= 28 * dt; s.r += 16 * dt; s.life -= dt; }
+  smokes = smokes.filter(s => s.life > 0);
+  for (const p of popups) { p.y -= 18 * dt; p.life -= dt; }
+  popups = popups.filter(p => p.life > 0);
+
+  if (state !== 'play') return;
+  timeLeft -= dt;
+  if (timeLeft <= 0) { timeLeft = 0; endGame(); return; }
+  if (dough === 'wall') {
+    bake += bakeSpeed() * dt;
+    if (bake >= MAXBAKE) pullOut(bake);   // մոռացար հանել՝ ածուխ դարձավ
+  }
+}
+
+// ——— Գույները ———
+// Խմորի գույնը թխվելու ընթացքում՝ գունատից ոսկեգույն, հետո սև
+const BAKE_STOPS = [
+  [0.00, [238, 226, 200]],
+  [0.55, [235, 205, 145]],
+  [0.75, [223, 165,  74]],
+  [1.00, [176, 110,  38]],
+  [1.30, [ 92,  60,  34]],
+  [1.75, [ 38,  30,  26]],
+];
+function bakeColor(b) {
+  b = Math.max(0, Math.min(MAXBAKE, b));
+  for (let i = 1; i < BAKE_STOPS.length; i++) {
+    if (b <= BAKE_STOPS[i][0]) {
+      const [p0, c0] = BAKE_STOPS[i - 1], [p1, c1] = BAKE_STOPS[i];
+      const t = (b - p0) / (p1 - p0);
+      return 'rgb(' + c0.map((v, k) => Math.round(v + (c1[k] - v) * t)).join(',') + ')';
+    }
+  }
+  return 'rgb(38,30,26)';
+}
+const STACK_COLOR = { raw: '#e5d9bd', good: '#d79b3e', burnt: '#4a3327' };
+
+// ——— Նկարելը (էմոջի կտավին չենք նկարում, միայն ձևեր) ———
+function drawLavash(x, y, rx, ry, rot, color, b) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rot);
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
+  // թխվելիս փուչիկներ են բարձրանում լավաշի վրա
+  if (b !== undefined && b > 0.3) {
+    ctx.fillStyle = 'rgba(0,0,0,' + Math.min(0.35, (b - 0.3) * 0.45) + ')';
+    const n = Math.min(7, Math.floor((b - 0.3) * 9));
+    for (let i = 0; i < n; i++) {
+      const a = i * 2.4;
+      ctx.beginPath();
+      ctx.ellipse(Math.cos(a) * rx * 0.5, Math.sin(a * 1.7) * ry * 0.5, 3.2, 2.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+// Կավե տոնիրը կուժի պես է՝ բերանը նեղ, փորը լայն, ներքևից կրակ
+function tonirPath(c, mouth, belly, base, top, bot) {
+  const h = bot - top;
+  c.beginPath();
+  c.moveTo(tonCx - mouth, top);
+  c.bezierCurveTo(tonCx - belly, top + h * 0.30, tonCx - belly, top + h * 0.62, tonCx - base, bot);
+  c.lineTo(tonCx + base, bot);
+  c.bezierCurveTo(tonCx + belly, top + h * 0.62, tonCx + belly, top + h * 0.30, tonCx + mouth, top);
+  c.closePath();
+}
+function drawTonir() {
+  const wall = 18;
+  const mouth = tonW * 0.34, belly = tonW * 0.50, base = tonW * 0.30;
+  const innerTop = ovTop + 14, innerBot = ovBot - 10;
+
+  // հողե պատվանդանը
+  ctx.fillStyle = '#3a2415';
+  ctx.beginPath(); ctx.ellipse(tonCx, ovBot + 6, belly * 0.95, 16, 0, 0, Math.PI * 2); ctx.fill();
+
+  // կավե մարմինը
+  const clay = ctx.createLinearGradient(tonCx - belly - wall, 0, tonCx + belly + wall, 0);
+  clay.addColorStop(0, '#57331b');
+  clay.addColorStop(0.35, '#a06a3e');
+  clay.addColorStop(0.7, '#7d4c28');
+  clay.addColorStop(1, '#472a16');
+  ctx.fillStyle = clay;
+  tonirPath(ctx, mouth + wall, belly + wall, base + wall * 0.7, ovTop, ovBot);
+  ctx.fill();
+  // ձեռքով շինված կավի գծերը
+  ctx.strokeStyle = 'rgba(60,34,16,0.28)';
+  ctx.lineWidth = 2;
+  for (let i = 1; i <= 4; i++) {
+    const y = ovTop + (ovBot - ovTop) * (i / 5);
+    const t = i / 5, hw = (mouth + (belly - mouth) * Math.sin(t * Math.PI)) + wall * 0.8;
+    ctx.beginPath(); ctx.moveTo(tonCx - hw, y); ctx.quadraticCurveTo(tonCx, y + 6, tonCx + hw, y); ctx.stroke();
+  }
+
+  // ներսի խոռոչը՝ ներքևից կրակը փայլում է
+  const glow = ctx.createLinearGradient(0, innerTop, 0, innerBot);
+  glow.addColorStop(0, '#170c05');
+  glow.addColorStop(0.42, '#5c2208');
+  glow.addColorStop(0.76, '#d9561a');
+  glow.addColorStop(1, '#ffd97a');
+  ctx.save();
+  tonirPath(ctx, mouth, belly, base, innerTop, innerBot);
+  ctx.clip();
+  ctx.fillStyle = glow;
+  ctx.fillRect(tonCx - belly - 4, innerTop, belly * 2 + 8, innerBot - innerTop);
+
+  // թրթռուն ածուխները
+  for (let i = 0; i < 7; i++) {
+    const fx = tonCx + (i - 3) * (base * 0.55);
+    const fw = 13 + Math.sin(flick * 5 + i) * 5;
+    ctx.fillStyle = 'rgba(255,' + Math.round(180 + Math.sin(flick * 7 + i) * 50) + ',80,0.85)';
+    ctx.beginPath(); ctx.ellipse(fx, innerBot - 8, fw, 8, 0, 0, Math.PI * 2); ctx.fill();
+  }
+  // կրակի լեզուները
+  for (let i = 0; i < 5; i++) {
+    const fx = tonCx + (i - 2) * (base * 0.7);
+    const fh = 26 + Math.sin(flick * 6 + i * 1.7) * 14;
+    ctx.fillStyle = 'rgba(255,200,90,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(fx - 10, innerBot);
+    ctx.quadraticCurveTo(fx, innerBot - fh, fx + 10, innerBot);
+    ctx.closePath(); ctx.fill();
+  }
+
+  // տոնրում փակցված լավաշը՝ աջ պատին
+  if (state === 'play' && dough === 'wall') {
+    drawLavash(tonCx + belly * 0.48, innerTop + (innerBot - innerTop) * 0.32,
+      tonW * 0.17, tonW * 0.26, -0.22, bakeColor(bake), bake);
+  }
+  ctx.restore();
+
+  // տոնրի բերանի հաստ եզրը
+  ctx.fillStyle = '#c08a52';
+  ctx.beginPath(); ctx.ellipse(tonCx, ovTop + 2, mouth + wall, 11, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#150b05';
+  ctx.beginPath(); ctx.ellipse(tonCx, ovTop + 3, mouth, 7, 0, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawMeter() {
+  const x0 = 22, x1 = W - 22, w = x1 - x0, h = 24;
+  ctx.fillStyle = 'rgba(20,12,6,0.8)';
+  ctx.beginPath(); ctx.roundRect(x0, meterY, w, h, 12); ctx.fill();
+  // ոսկե պահի կանաչ գոտին
+  const lo = winLo() / MAXBAKE, hi = winHi() / MAXBAKE;
+  ctx.fillStyle = 'rgba(110,231,183,0.45)';
+  ctx.beginPath(); ctx.roundRect(x0 + w * lo, meterY + 3, w * (hi - lo), h - 6, 8); ctx.fill();
+  ctx.strokeStyle = '#6ee7b7'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(x0 + w * lo, meterY + 3, w * (hi - lo), h - 6, 8); ctx.stroke();
+  // ջերմաչափի սլաքը
+  if (state === 'play' && dough === 'wall') {
+    const bx = x0 + w * Math.min(1, bake / MAXBAKE);
+    ctx.fillStyle = bakeColor(bake);
+    ctx.beginPath(); ctx.roundRect(bx - 4, meterY - 5, 8, h + 10, 4); ctx.fill();
+    ctx.strokeStyle = '#fff8e2'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(bx - 4, meterY - 5, 8, h + 10, 4); ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(x0, meterY, w, h, 12); ctx.stroke();
+}
+
+function drawStack() {
+  // պատրաստ լավաշների կույտը՝ տոնրի կողքի փայտե տախտակին
+  const baseY = ovBot - 4;
+  ctx.fillStyle = '#6b4526';
+  ctx.beginPath(); ctx.roundRect(stackX - stackRx - 8, baseY, stackRx * 2 + 16, 11, 4); ctx.fill();
+  ctx.fillStyle = '#8a5c34';
+  ctx.beginPath(); ctx.roundRect(stackX - stackRx - 8, baseY, stackRx * 2 + 16, 5, 3); ctx.fill();
+  stack.forEach((kind, i) => {
+    drawLavash(stackX + (i % 2 ? 3 : -3), baseY - 5 - i * 7, stackRx, 8, (i % 2 ? 0.05 : -0.05), STACK_COLOR[kind]);
+  });
+  ctx.fillStyle = '#f0dcc2';
+  ctx.font = 'bold 14px "Noto Sans Armenian", Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(T.made + made, stackX, baseY + 30);
+}
+
+function drawHand() {
+  // խմորը ձեռքիդ է՝ սպասում է տոնիրին
+  if (!(state === 'play' && dough === 'hand')) return;
+  const hx = tonCx, hy = handY;
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.ellipse(hx, hy + 16, 30, 7, 0, 0, Math.PI * 2); ctx.fill();
+  // ձեռքը
+  ctx.fillStyle = '#d9a76a';
+  ctx.beginPath(); ctx.roundRect(hx - 20, hy + 2, 40, 18, 9); ctx.fill();
+  // հում խմորի բոքոնը
+  ctx.fillStyle = '#ece0c4';
+  ctx.beginPath(); ctx.ellipse(hx, hy - 2, 30, 12, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.beginPath(); ctx.ellipse(hx - 9, hy - 5, 10, 4, -0.2, 0, Math.PI * 2); ctx.fill();
+}
+
+function draw() {
+  // թոնրատան պատը
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#2a1a0e');
+  bg.addColorStop(1, '#140c06');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+  // տոնրի ջերմ լույսը հատակին
+  const gl = ctx.createRadialGradient(tonCx, ovBot, 10, tonCx, ovBot, Math.max(W, 260));
+  gl.addColorStop(0, 'rgba(255,150,50,0.28)');
+  gl.addColorStop(1, 'rgba(255,150,50,0)');
+  ctx.fillStyle = gl;
+  ctx.fillRect(0, 0, W, H);
+
+  drawTonir();
+  drawStack();
+  drawHand();
+
+  // կայծերն ու ծուխը
+  for (const s of sparks) {
+    ctx.globalAlpha = Math.max(0, s.life / 0.8);
+    ctx.fillStyle = '#ffe79a';
+    ctx.beginPath(); ctx.arc(s.x, s.y, 3, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  for (const s of smokes) {
+    ctx.globalAlpha = Math.max(0, s.life / 1.4) * 0.5;
+    ctx.fillStyle = '#9a9a9a';
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  drawMeter();
+
+  // հուշումը չափիչից ներքև
+  if (state === 'play') {
+    ctx.fillStyle = '#c9b394';
+    ctx.font = '15px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(dough === 'hand' ? T.hint : T.hint2, W / 2, meterY + 52);
+  }
+
+  // «+3» գրությունները
+  for (const p of popups) {
+    ctx.globalAlpha = Math.min(1, p.life / 0.5);
+    ctx.fillStyle = p.color;
+    ctx.font = 'bold 24px "Noto Sans Armenian", Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.text, p.x, p.y);
+    ctx.globalAlpha = 1;
+  }
+
+  // ——— Վահանակը ———
+  ctx.fillStyle = 'rgba(20,12,6,0.78)';
+  ctx.beginPath(); ctx.roundRect(10, 48, W - 20, 42, 12); ctx.fill();
+  ctx.fillStyle = '#ffd166';
+  ctx.font = 'bold 19px "Noto Sans Armenian", Arial, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(T.sc + score, 24, 75);
+  const secs = Math.ceil(timeLeft);
+  ctx.textAlign = 'right';
+  ctx.fillStyle = (state === 'play' && secs <= 10 && Math.floor(tNow * 2) % 2) ? '#ff6b5e' : '#fff8e2';
+  ctx.fillText(secs + T.sec, W - 24, 75);
+}
+
+function confetti() {
+  const stuff = ['🎉', '🫓', '⭐', '💛', '🎊', '✨'];
+  for (let k = 0; k < 34; k++) {
+    const s = document.createElement('span');
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.cssText = 'position:fixed;top:-50px;z-index:20;pointer-events:none;left:' + (Math.random() * 100) + 'vw;font-size:' + (16 + Math.random() * 20) + 'px;transition:transform ' + (2 + Math.random() * 2) + 's linear';
+    document.body.appendChild(s);
+    requestAnimationFrame(() => { s.style.transform = 'translateY(115vh) rotate(720deg)'; });
+    setTimeout(() => s.remove(), 4600);
+  }
+}
+
+function loop(ts) {
+  const dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0;
+  lastTs = ts; tNow = ts / 1000;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ——— Մեկնարկի էկրանը ———
+document.getElementById('ovTitle').textContent = T.title;
+document.getElementById('ovText').textContent = T.h1 + '\n' + T.h2;
+document.getElementById('ovBest').textContent = best > 0 ? T.best + best : '';
+document.getElementById('ovTap').textContent = T.start;
+requestAnimationFrame(loop);
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, թրթռոց, նկար, բեռնում -->
+<script src="../gg-kit.js" data-kind="game" defer></script>

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Alphabet 🔤</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #1d1430; }
+  body {
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif;
+    color: #f5eede;
+    background: linear-gradient(#2a1e3f, #16243f);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 54px 12px 16px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    overflow-x: hidden;
+  }
+
+  #hud {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    color: #bdb2d8;
+  }
+  #hud b { color: #ffd76e; }
+  #roundName {
+    font-size: 1rem;
+    color: #ffd76e;
+    text-align: center;
+    line-height: 1.25;
+  }
+  #prompt {
+    font-size: 0.86rem;
+    color: #cbb8dd;
+    text-align: center;
+    min-height: 1.2em;
+  }
+
+  /* «hidden» պիտակը պարտվում է display:flex/grid-ին — ուժեղացնում ենք */
+  #ov[hidden], #qBig[hidden], #qSeq[hidden], #qPic[hidden] { display: none !important; }
+
+  #qwrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 168px;
+    width: 100%;
+  }
+  #qBig {
+    font-size: 5.4rem;
+    line-height: 1;
+    color: #ffd76e;
+    text-shadow: 0 6px 18px rgba(0,0,0,0.45);
+  }
+  #qSeq { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .seqBox {
+    min-width: 54px;
+    height: 64px;
+    padding: 0 6px;
+    border-radius: 12px;
+    background: #2d2350;
+    border: 2px solid #4d3f80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.1rem;
+    color: #ffd76e;
+  }
+  .seqBox.q { border-style: dashed; color: #8d7fbb; }
+  #qPic { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  #picCv { width: 132px; height: 112px; display: block; }
+  #qWord { font-size: 1.5rem; color: #ffd76e; letter-spacing: 1px; }
+  #qTr { font-size: 0.8rem; color: #a79bc4; min-height: 1em; }
+
+  #opts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+    max-width: 330px;
+  }
+  #opts button {
+    font-family: inherit;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #f3ecff;
+    background: #3d3560;
+    border: 2px solid #6a5f9e;
+    border-radius: 14px;
+    padding: 10px 4px;
+    min-height: 64px;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 0.08s, background 0.12s, border-color 0.12s;
+  }
+  #opts button:active { transform: scale(0.94); }
+  #opts button.good { background: #1f6e4e; border-color: #6ee7b7; color: #dfffef; }
+  #opts button.bad { background: #6e2230; border-color: #ff7b6b; color: #ffe3df; }
+
+  #msg { min-height: 1.4em; font-size: 0.95rem; font-weight: bold; color: #6ee7b7; text-align: center; }
+
+  #ov {
+    position: fixed; inset: 0; z-index: 8;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+    text-align: center; padding: 26px 18px;
+    background: rgba(12, 8, 24, 0.9);
+  }
+  #ovTitle { font-size: 1.7rem; color: #ffd76e; }
+  #ovText { font-size: 0.95rem; color: #dfd2ea; line-height: 1.5; max-width: 330px; white-space: pre-line; }
+  #ovMash {
+    font-size: 0.84rem; color: #9ad6ff; line-height: 1.45; max-width: 330px;
+    border-top: 2px solid rgba(255,255,255,0.14);
+    border-bottom: 2px solid rgba(255,255,255,0.14);
+    padding: 8px 4px;
+  }
+  #ovBest { font-size: 1rem; color: #6ee7b7; }
+  #ovTap { margin-top: 8px; font-size: 1.1rem; color: #6ee7b7; }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<div id="hud"></div>
+<div id="roundName"></div>
+<div id="prompt"></div>
+
+<div id="qwrap">
+  <div id="qBig" hidden></div>
+  <div id="qSeq" hidden></div>
+  <div id="qPic" hidden>
+    <canvas id="picCv" width="264" height="224"></canvas>
+    <div id="qWord"></div>
+    <div id="qTr"></div>
+  </div>
+</div>
+
+<div id="opts"></div>
+<div id="msg"></div>
+
+<div id="ov">
+  <div id="ovTitle"></div>
+  <div id="ovText"></div>
+  <div id="ovMash"></div>
+  <div id="ovBest"></div>
+  <div id="ovTap"></div>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN ALPHABET 🔤
+//  Հայոց այբուբենը՝ 39 տառ, Մեսրոպ Մաշտոցի նվերը։
+//  Երեք տեսակի հարց է գալիս հերթով.
+//    1) մեծատառին գտիր փոքրատառը (կամ հակառակը),
+//    2) երեք տառ կարգով են՝ ո՞րն է հաջորդը,
+//    3) նկարը տեսար՝ ի՞նչ տառով է սկսվում բառը։
+//  20 հարց, ամեն ճիշտը՝ +1։
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { title: 'Golden Alphabet 🔤', h1: 'Սովորի՛ր հայոց այբուբենը՝ 39 տառ', h2: '20 հարց · ամեն ճիշտ պատասխան՝ +1', mash: 'Հայոց այբուբենը ստեղծել է Մեսրոպ Մաշտոցը՝ 405 թվականին։', start: 'Հպի՛ր՝ սկսելու', again: 'Հպի՛ր՝ նորից խաղալու', qLbl: n => 'Հարց ' + n + '/20', sc: 'Միավոր՝ ', best: 'Ռեկորդդ՝ ', rn1: 'Ճանաչի՛ր տառը', rn2: 'Ո՞րն է հաջորդը', rn3: 'Ի՞նչ տառով է սկսվում', r1a: 'Գտի՛ր փոքրատառը', r1b: 'Գտի՛ր մեծատառը', yes: 'Ճի՛շտ է 🎉', no: 'Ճիշտը՝ լուսավորվածը', done: 'Խաղն ավարտվեց', perfect: 'Բոլոր 20-ը ճիշտ 🏆', w: { sun: 'արև', banana: 'բանան', book: 'գիրք', pumpkin: 'դդում', bell: 'զանգ', butterfly: 'թիթեռ', clock: 'ժամացույց', plane: 'ինքնաթիռ', moon: 'լուսին', apple: 'խնձոր', tree: 'ծառ', cat: 'կատու', bread: 'հաց', fish: 'ձուկ', pencil: 'մատիտ', boat: 'նավ', dog: 'շուն', drop: 'ջուր', mountain: 'սար', rose: 'վարդ', house: 'տուն', elephant: 'փիղ', snake: 'օձ', ball: 'ֆուտբոլ' } },
+  ru: { title: 'Golden Alphabet 🔤', h1: 'Учи армянский алфавит — 39 букв', h2: '20 вопросов · за каждый верный ответ +1', mash: 'Армянский алфавит создал Месроп Маштоц в 405 году.', start: 'Нажми, чтобы начать', again: 'Нажми, чтобы играть снова', qLbl: n => 'Вопрос ' + n + '/20', sc: 'Очки: ', best: 'Твой рекорд: ', rn1: 'Узнай букву', rn2: 'Какая буква следующая?', rn3: 'С какой буквы начинается?', r1a: 'Найди строчную букву', r1b: 'Найди заглавную букву', yes: 'Верно! 🎉', no: 'Правильная — подсвеченная', done: 'Игра окончена', perfect: 'Все 20 верно! 🏆', w: { sun: 'солнце', banana: 'банан', book: 'книга', pumpkin: 'тыква', bell: 'колокольчик', butterfly: 'бабочка', clock: 'часы', plane: 'самолёт', moon: 'луна', apple: 'яблоко', tree: 'дерево', cat: 'кот', bread: 'хлеб', fish: 'рыба', pencil: 'карандаш', boat: 'лодка', dog: 'собака', drop: 'вода', mountain: 'гора', rose: 'роза', house: 'дом', elephant: 'слон', snake: 'змея', ball: 'футбол' } },
+  en: { title: 'Golden Alphabet 🔤', h1: 'Learn the Armenian alphabet — 39 letters', h2: '20 questions · +1 for every right answer', mash: 'Mesrop Mashtots created the Armenian alphabet in the year 405.', start: 'Tap to start', again: 'Tap to play again', qLbl: n => 'Question ' + n + '/20', sc: 'Score: ', best: 'Your best: ', rn1: 'Know your letter', rn2: 'Which letter comes next?', rn3: 'Which letter does it start with?', r1a: 'Find the small letter', r1b: 'Find the capital letter', yes: 'Correct! 🎉', no: 'The right one is highlighted', done: 'Game over', perfect: 'All 20 correct! 🏆', w: { sun: 'sun', banana: 'banana', book: 'book', pumpkin: 'pumpkin', bell: 'bell', butterfly: 'butterfly', clock: 'clock', plane: 'plane', moon: 'moon', apple: 'apple', tree: 'tree', cat: 'cat', bread: 'bread', fish: 'fish', pencil: 'pencil', boat: 'boat', dog: 'dog', drop: 'water', mountain: 'mountain', rose: 'rose', house: 'house', elephant: 'elephant', snake: 'snake', ball: 'football' } },
+  es: { title: 'Golden Alphabet 🔤', h1: 'Aprende el alfabeto armenio: 39 letras', h2: '20 preguntas · +1 por cada acierto', mash: 'Mesrop Mashtots creó el alfabeto armenio en el año 405.', start: 'Toca para empezar', again: 'Toca para jugar otra vez', qLbl: n => 'Pregunta ' + n + '/20', sc: 'Puntos: ', best: 'Tu récord: ', rn1: 'Reconoce la letra', rn2: '¿Cuál es la siguiente?', rn3: '¿Con qué letra empieza?', r1a: 'Encuentra la minúscula', r1b: 'Encuentra la mayúscula', yes: '¡Correcto! 🎉', no: 'La correcta está marcada', done: 'Fin del juego', perfect: '¡Las 20 correctas! 🏆', w: { sun: 'sol', banana: 'plátano', book: 'libro', pumpkin: 'calabaza', bell: 'campana', butterfly: 'mariposa', clock: 'reloj', plane: 'avión', moon: 'luna', apple: 'manzana', tree: 'árbol', cat: 'gato', bread: 'pan', fish: 'pez', pencil: 'lápiz', boat: 'barco', dog: 'perro', drop: 'agua', mountain: 'montaña', rose: 'rosa', house: 'casa', elephant: 'elefante', snake: 'serpiente', ball: 'fútbol' } },
+  fr: { title: 'Golden Alphabet 🔤', h1: 'Apprends l’alphabet arménien : 39 lettres', h2: '20 questions · +1 par bonne réponse', mash: 'Mesrop Machtots a créé l’alphabet arménien en 405.', start: 'Touche pour commencer', again: 'Touche pour rejouer', qLbl: n => 'Question ' + n + '/20', sc: 'Points : ', best: 'Ton record : ', rn1: 'Reconnais la lettre', rn2: 'Quelle lettre vient après ?', rn3: 'Par quelle lettre ça commence ?', r1a: 'Trouve la minuscule', r1b: 'Trouve la majuscule', yes: 'Exact ! 🎉', no: 'La bonne est en vert', done: 'Partie terminée', perfect: 'Les 20 bonnes ! 🏆', w: { sun: 'soleil', banana: 'banane', book: 'livre', pumpkin: 'citrouille', bell: 'cloche', butterfly: 'papillon', clock: 'horloge', plane: 'avion', moon: 'lune', apple: 'pomme', tree: 'arbre', cat: 'chat', bread: 'pain', fish: 'poisson', pencil: 'crayon', boat: 'bateau', dog: 'chien', drop: 'eau', mountain: 'montagne', rose: 'rose', house: 'maison', elephant: 'éléphant', snake: 'serpent', ball: 'football' } },
+  de: { title: 'Golden Alphabet 🔤', h1: 'Lerne das armenische Alphabet — 39 Buchstaben', h2: '20 Fragen · +1 für jede richtige Antwort', mash: 'Mesrop Maschtoz schuf das armenische Alphabet im Jahr 405.', start: 'Tippe zum Starten', again: 'Tippe, um nochmal zu spielen', qLbl: n => 'Frage ' + n + '/20', sc: 'Punkte: ', best: 'Dein Rekord: ', rn1: 'Erkenne den Buchstaben', rn2: 'Welcher kommt als Nächstes?', rn3: 'Mit welchem Buchstaben beginnt es?', r1a: 'Finde den kleinen Buchstaben', r1b: 'Finde den großen Buchstaben', yes: 'Richtig! 🎉', no: 'Der richtige leuchtet grün', done: 'Spiel vorbei', perfect: 'Alle 20 richtig! 🏆', w: { sun: 'Sonne', banana: 'Banane', book: 'Buch', pumpkin: 'Kürbis', bell: 'Glocke', butterfly: 'Schmetterling', clock: 'Uhr', plane: 'Flugzeug', moon: 'Mond', apple: 'Apfel', tree: 'Baum', cat: 'Katze', bread: 'Brot', fish: 'Fisch', pencil: 'Bleistift', boat: 'Boot', dog: 'Hund', drop: 'Wasser', mountain: 'Berg', rose: 'Rose', house: 'Haus', elephant: 'Elefant', snake: 'Schlange', ball: 'Fußball' } },
+  ja: { title: 'Golden Alphabet 🔤', h1: 'アルメニア文字をおぼえよう — 39もじ', h2: '20もん · せいかい1つで +1', mash: 'アルメニア文字は405年にメスロプ・マシュトツが作りました。', start: 'タップでスタート', again: 'タップでもう一回', qLbl: n => 'もんだい ' + n + '/20', sc: 'スコア：', best: 'ベスト記録：', rn1: 'もじを あてよう', rn2: 'つぎの もじは？', rn3: 'どの もじで はじまる？', r1a: 'ちいさい もじを さがそう', r1b: 'おおきい もじを さがそう', yes: 'せいかい！🎉', no: 'ひかっているのが せいかい', done: 'おわり', perfect: '20もん ぜんぶ せいかい！🏆', w: { sun: 'たいよう', banana: 'バナナ', book: 'ほん', pumpkin: 'カボチャ', bell: 'ベル', butterfly: 'ちょうちょ', clock: 'とけい', plane: 'ひこうき', moon: 'つき', apple: 'りんご', tree: 'き', cat: 'ねこ', bread: 'パン', fish: 'さかな', pencil: 'えんぴつ', boat: 'ふね', dog: 'いぬ', drop: 'みず', mountain: 'やま', rose: 'バラ', house: 'いえ', elephant: 'ゾウ', snake: 'ヘビ', ball: 'サッカー' } },
+  zh: { title: 'Golden Alphabet 🔤', h1: '学亚美尼亚字母 — 39个字母', h2: '20道题 · 每答对一题 +1', mash: '亚美尼亚字母由梅斯罗普·马什托茨在405年创造。', start: '点一下开始', again: '点一下再玩一次', qLbl: n => '第 ' + n + '/20 题', sc: '得分：', best: '你的纪录：', rn1: '认字母', rn2: '下一个是哪个？', rn3: '它以哪个字母开头？', r1a: '找出小写字母', r1b: '找出大写字母', yes: '对啦！🎉', no: '亮着的那个才对', done: '游戏结束', perfect: '20题全对！🏆', w: { sun: '太阳', banana: '香蕉', book: '书', pumpkin: '南瓜', bell: '铃铛', butterfly: '蝴蝶', clock: '钟', plane: '飞机', moon: '月亮', apple: '苹果', tree: '树', cat: '猫', bread: '面包', fish: '鱼', pencil: '铅笔', boat: '船', dog: '狗', drop: '水', mountain: '山', rose: '玫瑰', house: '房子', elephant: '大象', snake: '蛇', ball: '足球' } },
+  it: { title: 'Golden Alphabet 🔤', h1: 'Impara l’alfabeto armeno: 39 lettere', h2: '20 domande · +1 per ogni risposta giusta', mash: 'Mesrop Mashtots creò l’alfabeto armeno nel 405.', start: 'Tocca per iniziare', again: 'Tocca per giocare ancora', qLbl: n => 'Domanda ' + n + '/20', sc: 'Punti: ', best: 'Il tuo record: ', rn1: 'Riconosci la lettera', rn2: 'Qual è la prossima?', rn3: 'Con quale lettera inizia?', r1a: 'Trova la minuscola', r1b: 'Trova la maiuscola', yes: 'Giusto! 🎉', no: 'Quella giusta è evidenziata', done: 'Partita finita', perfect: 'Tutte e 20 giuste! 🏆', w: { sun: 'sole', banana: 'banana', book: 'libro', pumpkin: 'zucca', bell: 'campana', butterfly: 'farfalla', clock: 'orologio', plane: 'aereo', moon: 'luna', apple: 'mela', tree: 'albero', cat: 'gatto', bread: 'pane', fish: 'pesce', pencil: 'matita', boat: 'barca', dog: 'cane', drop: 'acqua', mountain: 'montagna', rose: 'rosa', house: 'casa', elephant: 'elefante', snake: 'serpente', ball: 'calcio' } },
+  ka: { title: 'Golden Alphabet 🔤', h1: 'ისწავლე სომხური ანბანი — 39 ასო', h2: '20 კითხვა · ყოველ სწორ პასუხზე +1', mash: 'სომხური ანბანი 405 წელს მესროპ მაშტოცმა შექმნა.', start: 'დააჭირე დასაწყებად', again: 'დააჭირე ისევ სათამაშოდ', qLbl: n => 'კითხვა ' + n + '/20', sc: 'ქულა: ', best: 'შენი რეკორდი: ', rn1: 'იცანი ასო', rn2: 'რომელია შემდეგი?', rn3: 'რომელი ასოთი იწყება?', r1a: 'იპოვე პატარა ასო', r1b: 'იპოვე დიდი ასო', yes: 'სწორია! 🎉', no: 'სწორი გამოკვეთილია', done: 'თამაში დასრულდა', perfect: 'ოცივე სწორია! 🏆', w: { sun: 'მზე', banana: 'ბანანი', book: 'წიგნი', pumpkin: 'გოგრა', bell: 'ზარი', butterfly: 'პეპელა', clock: 'საათი', plane: 'თვითმფრინავი', moon: 'მთვარე', apple: 'ვაშლი', tree: 'ხე', cat: 'კატა', bread: 'პური', fish: 'თევზი', pencil: 'ფანქარი', boat: 'ნავი', dog: 'ძაღლი', drop: 'წყალი', mountain: 'მთა', rose: 'ვარდი', house: 'სახლი', elephant: 'სპილო', snake: 'გველი', ball: 'ფეხბურთი' } },
+  hi: { title: 'Golden Alphabet 🔤', h1: 'अर्मेनियाई वर्णमाला सीखो — 39 अक्षर', h2: '20 सवाल · हर सही जवाब पर +1', mash: 'अर्मेनियाई वर्णमाला मेसरोप माश्तोत्स ने 405 ईस्वी में बनाई थी।', start: 'शुरू करने के लिए टैप करो', again: 'फिर से खेलने के लिए टैप करो', qLbl: n => 'सवाल ' + n + '/20', sc: 'स्कोर: ', best: 'तुम्हारा रिकॉर्ड: ', rn1: 'अक्षर पहचानो', rn2: 'अगला अक्षर कौन सा?', rn3: 'यह किस अक्षर से शुरू होता है?', r1a: 'छोटा अक्षर ढूँढो', r1b: 'बड़ा अक्षर ढूँढो', yes: 'सही! 🎉', no: 'हरा वाला सही है', done: 'खेल खत्म', perfect: 'सभी 20 सही! 🏆', w: { sun: 'सूरज', banana: 'केला', book: 'किताब', pumpkin: 'कद्दू', bell: 'घंटी', butterfly: 'तितली', clock: 'घड़ी', plane: 'हवाई जहाज़', moon: 'चाँद', apple: 'सेब', tree: 'पेड़', cat: 'बिल्ली', bread: 'रोटी', fish: 'मछली', pencil: 'पेंसिल', boat: 'नाव', dog: 'कुत्ता', drop: 'पानी', mountain: 'पहाड़', rose: 'गुलाब', house: 'घर', elephant: 'हाथी', snake: 'साँप', ball: 'फ़ुटबॉल' } },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+// ——————————————————————————————————————
+//  ԱՅԲՈՒԲԵՆԸ — 39 տառ
+//  Դպրոցական կարգն է. 36 հին տառերը, հետո ՈՒ-ն Ւ-ից հետո,
+//  իսկ Օ-ն ու Ֆ-ն ամենավերջում՝ դրանք ավելի ուշ են ավելացել։
+//  ՈՒ-ն երկու նշանից է (Ո + Ւ), բայց մեկ տառ է համարվում։
+// ——————————————————————————————————————
+const UP = ['Ա','Բ','Գ','Դ','Ե','Զ','Է','Ը','Թ','Ժ','Ի','Լ','Խ','Ծ','Կ','Հ','Ձ','Ղ','Ճ','Մ','Յ','Ն','Շ','Ո','Չ','Պ','Ջ','Ռ','Ս','Վ','Տ','Ր','Ց','Ւ','ՈՒ','Փ','Ք','Օ','Ֆ'];
+const LOW = ['ա','բ','գ','դ','ե','զ','է','ը','թ','ժ','ի','լ','խ','ծ','կ','հ','ձ','ղ','ճ','մ','յ','ն','շ','ո','չ','պ','ջ','ռ','ս','վ','տ','ր','ց','ւ','ու','փ','ք','օ','ֆ'];
+
+// ——— Նկարների բառերը. [նկարի անուն, հայերեն բառ, առաջին տառ] ———
+const PICS = [
+  ['sun', 'ԱՐԵՎ', 'Ա'], ['banana', 'ԲԱՆԱՆ', 'Բ'], ['book', 'ԳԻՐՔ', 'Գ'], ['pumpkin', 'ԴԴՈՒՄ', 'Դ'],
+  ['bell', 'ԶԱՆԳ', 'Զ'], ['butterfly', 'ԹԻԹԵՌ', 'Թ'], ['clock', 'ԺԱՄԱՑՈՒՅՑ', 'Ժ'], ['plane', 'ԻՆՔՆԱԹԻՌ', 'Ի'],
+  ['moon', 'ԼՈՒՍԻՆ', 'Լ'], ['apple', 'ԽՆՁՈՐ', 'Խ'], ['tree', 'ԾԱՌ', 'Ծ'], ['cat', 'ԿԱՏՈՒ', 'Կ'],
+  ['bread', 'ՀԱՑ', 'Հ'], ['fish', 'ՁՈՒԿ', 'Ձ'], ['pencil', 'ՄԱՏԻՏ', 'Մ'], ['boat', 'ՆԱՎ', 'Ն'],
+  ['dog', 'ՇՈՒՆ', 'Շ'], ['drop', 'ՋՈՒՐ', 'Ջ'], ['mountain', 'ՍԱՐ', 'Ս'], ['rose', 'ՎԱՐԴ', 'Վ'],
+  ['house', 'ՏՈՒՆ', 'Տ'], ['elephant', 'ՓԻՂ', 'Փ'], ['snake', 'ՕՁ', 'Օ'], ['ball', 'ՖՈՒՏԲՈԼ', 'Ֆ'],
+];
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sYes = () => [660, 880, 1180].forEach((f, k) => tone(f, 0.14, 'triangle', 0.18, k * 0.08));
+const sNo = () => { tone(200, 0.18, 'sawtooth', 0.14); tone(150, 0.22, 'sawtooth', 0.12, 0.13); };
+const sNext = () => tone(520 + Math.random() * 60, 0.06, 'square', 0.07);
+const sEnd = () => [523, 659, 784, 1047].forEach((f, k) => tone(f, 0.22, 'triangle', 0.18, k * 0.11));
+
+// ——— Նկարները. էմոջի չենք նկարում կտավի վրա, միայն ձևեր ———
+const pcv = document.getElementById('picCv');
+const pc = pcv.getContext('2d');
+function paintSun(c) {
+  c.fillStyle = '#ffd166'; c.beginPath(); c.arc(0, 0, 26, 0, 6.3); c.fill();
+  c.strokeStyle = '#ffb703'; c.lineWidth = 6; c.lineCap = 'round';
+  for (let i = 0; i < 8; i++) {
+    const a = i * Math.PI / 4;
+    c.beginPath(); c.moveTo(Math.cos(a) * 34, Math.sin(a) * 34); c.lineTo(Math.cos(a) * 48, Math.sin(a) * 48); c.stroke();
+  }
+}
+function paintBanana(c) {
+  c.fillStyle = '#f7d14e';
+  c.beginPath(); c.moveTo(-40, -20); c.quadraticCurveTo(-4, 36, 42, 18);
+  c.quadraticCurveTo(0, 18, -26, -26); c.closePath(); c.fill();
+  c.fillStyle = '#8a6b1f'; c.beginPath(); c.arc(-34, -23, 6, 0, 6.3); c.fill();
+}
+function paintBook(c) {
+  c.fillStyle = '#c0463c'; c.beginPath(); c.roundRect(-42, -30, 84, 58, 5); c.fill();
+  c.fillStyle = '#f6efdd'; c.beginPath(); c.roundRect(-36, -24, 34, 46, 3); c.fill();
+  c.beginPath(); c.roundRect(2, -24, 34, 46, 3); c.fill();
+  c.strokeStyle = '#8f2f27'; c.lineWidth = 4; c.beginPath(); c.moveTo(0, -28); c.lineTo(0, 26); c.stroke();
+  c.strokeStyle = '#bfb3a0'; c.lineWidth = 2;
+  for (let i = 0; i < 4; i++) {
+    const y = -14 + i * 10;
+    c.beginPath(); c.moveTo(-30, y); c.lineTo(-8, y); c.moveTo(8, y); c.lineTo(30, y); c.stroke();
+  }
+}
+function paintPumpkin(c) {
+  c.fillStyle = '#e8862a';
+  for (const dx of [-16, 0, 16]) { c.beginPath(); c.ellipse(dx, 6, 18, 28, 0, 0, 6.3); c.fill(); }
+  c.fillStyle = '#c26a1c'; c.beginPath(); c.ellipse(0, 6, 10, 28, 0, 0, 6.3); c.fill();
+  c.strokeStyle = '#4f7a32'; c.lineWidth = 7; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(0, -22); c.lineTo(0, -36); c.stroke();
+  c.fillStyle = '#4f7a32'; c.beginPath(); c.ellipse(16, -34, 14, 6, -0.4, 0, 6.3); c.fill();
+}
+function paintBell(c) {
+  c.fillStyle = '#f0c43c';
+  c.beginPath(); c.moveTo(-30, 22); c.quadraticCurveTo(-26, -30, 0, -32);
+  c.quadraticCurveTo(26, -30, 30, 22); c.closePath(); c.fill();
+  c.beginPath(); c.roundRect(-34, 20, 68, 10, 5); c.fill();
+  c.fillStyle = '#a6821c'; c.beginPath(); c.arc(0, 34, 7, 0, 6.3); c.fill();
+  c.beginPath(); c.roundRect(-5, -42, 10, 12, 4); c.fill();
+}
+function paintButterfly(c) {
+  c.fillStyle = '#7c5cd6';
+  c.beginPath(); c.ellipse(-22, -12, 20, 16, -0.4, 0, 6.3); c.fill();
+  c.beginPath(); c.ellipse(22, -12, 20, 16, 0.4, 0, 6.3); c.fill();
+  c.fillStyle = '#e26fb0';
+  c.beginPath(); c.ellipse(-18, 14, 15, 13, 0.4, 0, 6.3); c.fill();
+  c.beginPath(); c.ellipse(18, 14, 15, 13, -0.4, 0, 6.3); c.fill();
+  c.fillStyle = '#33254f'; c.beginPath(); c.ellipse(0, 0, 5, 26, 0, 0, 6.3); c.fill();
+  c.strokeStyle = '#33254f'; c.lineWidth = 3; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(-2, -24); c.lineTo(-12, -38); c.moveTo(2, -24); c.lineTo(12, -38); c.stroke();
+}
+function paintClock(c) {
+  c.fillStyle = '#e9e3d2'; c.beginPath(); c.arc(0, 2, 34, 0, 6.3); c.fill();
+  c.strokeStyle = '#4a5b7a'; c.lineWidth = 6; c.beginPath(); c.arc(0, 2, 34, 0, 6.3); c.stroke();
+  c.lineCap = 'round'; c.strokeStyle = '#2b3550';
+  c.lineWidth = 5; c.beginPath(); c.moveTo(0, 2); c.lineTo(0, -18); c.stroke();
+  c.lineWidth = 4; c.beginPath(); c.moveTo(0, 2); c.lineTo(16, 10); c.stroke();
+  c.fillStyle = '#e04a3a'; c.beginPath(); c.arc(0, 2, 4, 0, 6.3); c.fill();
+  c.fillStyle = '#4a5b7a';
+  c.beginPath(); c.roundRect(-26, -44, 16, 12, 4); c.fill();
+  c.beginPath(); c.roundRect(10, -44, 16, 12, 4); c.fill();
+}
+function paintPlane(c) {
+  c.fillStyle = '#dfe6f2';
+  c.beginPath(); c.ellipse(0, 4, 42, 11, 0, 0, 6.3); c.fill();
+  c.fillStyle = '#5c8ed6';
+  c.beginPath(); c.moveTo(-6, 0); c.lineTo(14, -34); c.lineTo(26, -32); c.lineTo(14, 0); c.closePath(); c.fill();
+  c.beginPath(); c.moveTo(-6, 6); c.lineTo(14, 34); c.lineTo(26, 32); c.lineTo(14, 6); c.closePath(); c.fill();
+  c.beginPath(); c.moveTo(-42, 2); c.lineTo(-30, -18); c.lineTo(-24, -16); c.lineTo(-28, 2); c.closePath(); c.fill();
+  c.fillStyle = '#2b3550'; c.beginPath(); c.arc(30, 0, 5, 0, 6.3); c.fill();
+}
+function paintMoon(c) {
+  c.fillStyle = '#ffe9a3'; c.beginPath(); c.arc(0, 0, 32, 0, 6.3); c.fill();
+  c.save(); c.globalCompositeOperation = 'destination-out';
+  c.beginPath(); c.arc(18, -10, 28, 0, 6.3); c.fill(); c.restore();
+  c.fillStyle = '#ffe9a3';
+  c.beginPath(); c.arc(34, -30, 3, 0, 6.3); c.fill();
+  c.beginPath(); c.arc(42, -6, 2.5, 0, 6.3); c.fill();
+}
+function paintApple(c) {
+  c.fillStyle = '#d63b3b';
+  c.beginPath(); c.arc(-13, 4, 22, 0, 6.3); c.fill();
+  c.beginPath(); c.arc(13, 4, 22, 0, 6.3); c.fill();
+  c.beginPath(); c.ellipse(0, 14, 22, 18, 0, 0, 6.3); c.fill();
+  c.strokeStyle = '#6b4a2a'; c.lineWidth = 5; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(0, -14); c.lineTo(2, -34); c.stroke();
+  c.fillStyle = '#4f9a3a'; c.beginPath(); c.ellipse(16, -32, 14, 7, -0.4, 0, 6.3); c.fill();
+}
+function paintTree(c) {
+  c.fillStyle = '#7a5230'; c.beginPath(); c.roundRect(-8, 4, 16, 38, 3); c.fill();
+  c.fillStyle = '#3f9a4e';
+  c.beginPath(); c.arc(0, -16, 24, 0, 6.3); c.fill();
+  c.beginPath(); c.arc(-20, 0, 18, 0, 6.3); c.fill();
+  c.beginPath(); c.arc(20, 0, 18, 0, 6.3); c.fill();
+  c.fillStyle = '#54b862'; c.beginPath(); c.arc(-6, -24, 12, 0, 6.3); c.fill();
+}
+function paintCat(c) {
+  c.fillStyle = '#9a8ab0';
+  c.beginPath(); c.moveTo(-30, -14); c.lineTo(-22, -44); c.lineTo(-6, -24); c.closePath(); c.fill();
+  c.beginPath(); c.moveTo(30, -14); c.lineTo(22, -44); c.lineTo(6, -24); c.closePath(); c.fill();
+  c.beginPath(); c.arc(0, 2, 30, 0, 6.3); c.fill();
+  c.fillStyle = '#231b33';
+  c.beginPath(); c.ellipse(-11, -3, 4, 7, 0, 0, 6.3); c.fill();
+  c.beginPath(); c.ellipse(11, -3, 4, 7, 0, 0, 6.3); c.fill();
+  c.fillStyle = '#e28aa6'; c.beginPath(); c.moveTo(-5, 10); c.lineTo(5, 10); c.lineTo(0, 16); c.closePath(); c.fill();
+  c.strokeStyle = '#231b33'; c.lineWidth = 2; c.lineCap = 'round';
+  for (const s of [-1, 1]) for (let i = 0; i < 3; i++) {
+    c.beginPath(); c.moveTo(s * 8, 12 + i * 2); c.lineTo(s * 38, 4 + i * 8); c.stroke();
+  }
+}
+function paintBread(c) {
+  c.fillStyle = '#d69b53';
+  c.beginPath(); c.ellipse(0, 4, 44, 26, 0, 0, 6.3); c.fill();
+  c.fillStyle = '#e7b878'; c.beginPath(); c.ellipse(0, -2, 40, 20, 0, 0, 6.3); c.fill();
+  c.strokeStyle = '#b87b36'; c.lineWidth = 4; c.lineCap = 'round';
+  for (const dx of [-18, 0, 18]) { c.beginPath(); c.moveTo(dx - 6, -12); c.lineTo(dx + 6, 4); c.stroke(); }
+}
+function paintFish(c) {
+  c.fillStyle = '#4fb0d8';
+  c.beginPath(); c.ellipse(4, 0, 30, 19, 0, 0, 6.3); c.fill();
+  c.beginPath(); c.moveTo(-22, 0); c.lineTo(-46, -16); c.lineTo(-46, 16); c.closePath(); c.fill();
+  c.fillStyle = '#2f89ab'; c.beginPath(); c.moveTo(0, -17); c.lineTo(10, -32); c.lineTo(18, -14); c.closePath(); c.fill();
+  c.fillStyle = '#fff'; c.beginPath(); c.arc(18, -5, 6, 0, 6.3); c.fill();
+  c.fillStyle = '#222'; c.beginPath(); c.arc(20, -5, 3, 0, 6.3); c.fill();
+}
+function paintPencil(c) {
+  c.save(); c.rotate(-0.6);
+  c.fillStyle = '#f0b429'; c.beginPath(); c.roundRect(-10, -34, 20, 56, 2); c.fill();
+  c.fillStyle = '#e08e2a'; c.fillRect(2, -34, 8, 56);
+  c.fillStyle = '#e9d5b5'; c.beginPath(); c.moveTo(-10, 22); c.lineTo(10, 22); c.lineTo(0, 44); c.closePath(); c.fill();
+  c.fillStyle = '#33302c'; c.beginPath(); c.moveTo(-4, 35); c.lineTo(4, 35); c.lineTo(0, 44); c.closePath(); c.fill();
+  c.fillStyle = '#e2687a'; c.beginPath(); c.roundRect(-10, -46, 20, 13, 4); c.fill();
+  c.restore();
+}
+function paintBoat(c) {
+  c.fillStyle = '#b3542e';
+  c.beginPath(); c.moveTo(-44, 10); c.lineTo(44, 10); c.lineTo(30, 32); c.lineTo(-30, 32); c.closePath(); c.fill();
+  c.strokeStyle = '#7a4a26'; c.lineWidth = 4; c.beginPath(); c.moveTo(0, 8); c.lineTo(0, -42); c.stroke();
+  c.fillStyle = '#f2efe4'; c.beginPath(); c.moveTo(4, -40); c.lineTo(34, 6); c.lineTo(4, 6); c.closePath(); c.fill();
+  c.fillStyle = '#e0574a'; c.beginPath(); c.moveTo(-4, -38); c.lineTo(-28, 6); c.lineTo(-4, 6); c.closePath(); c.fill();
+  c.strokeStyle = 'rgba(120,190,230,0.9)'; c.lineWidth = 4; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(-46, 38); c.quadraticCurveTo(-20, 46, 6, 38); c.quadraticCurveTo(30, 30, 48, 38); c.stroke();
+}
+function paintDog(c) {
+  c.fillStyle = '#8a6234';
+  c.beginPath(); c.ellipse(-30, -2, 11, 24, 0.25, 0, 6.3); c.fill();
+  c.beginPath(); c.ellipse(30, -2, 11, 24, -0.25, 0, 6.3); c.fill();
+  c.fillStyle = '#b98a4e'; c.beginPath(); c.ellipse(0, 0, 28, 26, 0, 0, 6.3); c.fill();
+  c.fillStyle = '#e0bb84'; c.beginPath(); c.ellipse(0, 14, 16, 12, 0, 0, 6.3); c.fill();
+  c.fillStyle = '#2c2118';
+  c.beginPath(); c.arc(-11, -5, 4, 0, 6.3); c.fill();
+  c.beginPath(); c.arc(11, -5, 4, 0, 6.3); c.fill();
+  c.beginPath(); c.ellipse(0, 9, 6, 4.5, 0, 0, 6.3); c.fill();
+  c.strokeStyle = '#2c2118'; c.lineWidth = 2.5; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(0, 13); c.lineTo(0, 18); c.stroke();
+}
+function paintDrop(c) {
+  c.fillStyle = '#49a8e0';
+  c.beginPath(); c.moveTo(0, -40); c.quadraticCurveTo(30, -2, 30, 10);
+  c.arc(0, 10, 30, 0, Math.PI); c.quadraticCurveTo(-30, -2, 0, -40); c.closePath(); c.fill();
+  c.fillStyle = 'rgba(255,255,255,0.55)'; c.beginPath(); c.ellipse(-10, 10, 6, 11, 0.3, 0, 6.3); c.fill();
+}
+function paintMountain(c) {
+  c.fillStyle = '#6b7f9e';
+  c.beginPath(); c.moveTo(-50, 32); c.lineTo(-12, -22); c.lineTo(22, 32); c.closePath(); c.fill();
+  c.fillStyle = '#87a0c0';
+  c.beginPath(); c.moveTo(-4, 32); c.lineTo(22, -34); c.lineTo(52, 32); c.closePath(); c.fill();
+  c.fillStyle = '#f3f6fb';
+  c.beginPath(); c.moveTo(-12, -22); c.lineTo(-24, -4); c.lineTo(0, -4); c.closePath(); c.fill();
+  c.beginPath(); c.moveTo(22, -34); c.lineTo(8, -14); c.lineTo(36, -14); c.closePath(); c.fill();
+}
+function paintRose(c) {
+  c.strokeStyle = '#3f8a3f'; c.lineWidth = 5; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(0, -4); c.lineTo(0, 44); c.stroke();
+  c.fillStyle = '#3f8a3f'; c.beginPath(); c.ellipse(-16, 22, 14, 7, 0.4, 0, 6.3); c.fill();
+  c.fillStyle = '#d4315a'; c.beginPath(); c.arc(0, -14, 26, 0, 6.3); c.fill();
+  c.strokeStyle = '#8f1734'; c.lineWidth = 3;
+  c.beginPath(); c.arc(0, -14, 17, 0, 5); c.stroke();
+  c.beginPath(); c.arc(0, -14, 9, 1, 6); c.stroke();
+}
+function paintHouse(c) {
+  c.fillStyle = '#e6d7bd'; c.beginPath(); c.roundRect(-34, -8, 68, 48, 3); c.fill();
+  c.fillStyle = '#c0463c';
+  c.beginPath(); c.moveTo(-44, -8); c.lineTo(0, -42); c.lineTo(44, -8); c.closePath(); c.fill();
+  c.fillStyle = '#7a5230'; c.beginPath(); c.roundRect(-10, 12, 20, 28, 2); c.fill();
+  c.fillStyle = '#ffd166'; c.beginPath(); c.arc(5, 26, 2.5, 0, 6.3); c.fill();
+  c.fillStyle = '#79b6e0'; c.beginPath(); c.roundRect(-28, 2, 15, 15, 2); c.fill();
+  c.beginPath(); c.roundRect(14, 2, 15, 15, 2); c.fill();
+}
+function paintElephant(c) {
+  c.fillStyle = '#8e93a8';
+  c.beginPath(); c.ellipse(6, 4, 34, 26, 0, 0, 6.3); c.fill();
+  c.fillStyle = '#7b8098'; c.beginPath(); c.ellipse(-22, -4, 18, 22, 0, 0, 6.3); c.fill();
+  c.fillStyle = '#8e93a8';
+  c.beginPath(); c.moveTo(28, 6); c.quadraticCurveTo(52, 14, 44, 38);
+  c.quadraticCurveTo(40, 42, 36, 38); c.quadraticCurveTo(42, 20, 24, 18); c.closePath(); c.fill();
+  c.fillStyle = '#f2eee2'; c.beginPath(); c.ellipse(30, 22, 10, 3.5, 0.4, 0, 6.3); c.fill();
+  c.fillStyle = '#2c2f3c'; c.beginPath(); c.arc(10, -6, 4, 0, 6.3); c.fill();
+  c.fillStyle = '#7b8098'; c.beginPath(); c.roundRect(-16, 24, 12, 16, 4); c.fill();
+  c.beginPath(); c.roundRect(6, 24, 12, 16, 4); c.fill();
+}
+function paintSnake(c) {
+  c.strokeStyle = '#4fa85c'; c.lineWidth = 15; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(-42, 28);
+  c.bezierCurveTo(-10, 34, -34, -6, -2, -2);
+  c.bezierCurveTo(28, 2, 14, -34, 40, -30);
+  c.stroke();
+  c.fillStyle = '#4fa85c'; c.beginPath(); c.ellipse(40, -30, 15, 11, 0, 0, 6.3); c.fill();
+  c.fillStyle = '#fff'; c.beginPath(); c.arc(44, -34, 4, 0, 6.3); c.fill();
+  c.fillStyle = '#222'; c.beginPath(); c.arc(45, -34, 2, 0, 6.3); c.fill();
+  c.strokeStyle = '#e0574a'; c.lineWidth = 3;
+  c.beginPath(); c.moveTo(53, -27); c.lineTo(64, -22); c.moveTo(53, -27); c.lineTo(64, -31); c.stroke();
+}
+function paintBall(c) {
+  c.fillStyle = '#f6f4ee'; c.beginPath(); c.arc(0, 0, 34, 0, 6.3); c.fill();
+  c.strokeStyle = '#2b3550'; c.lineWidth = 3; c.beginPath(); c.arc(0, 0, 34, 0, 6.3); c.stroke();
+  c.fillStyle = '#2b3550';
+  const pent = (cx, cy, r, rot) => {
+    c.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const a = rot + i * Math.PI * 2 / 5;
+      const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+      i === 0 ? c.moveTo(x, y) : c.lineTo(x, y);
+    }
+    c.closePath(); c.fill();
+  };
+  pent(0, 0, 12, -Math.PI / 2);
+  pent(0, -26, 8, Math.PI / 2);
+  pent(-25, 8, 8, -Math.PI / 2);
+  pent(25, 8, 8, -Math.PI / 2);
+}
+const PAINT = {
+  sun: paintSun, banana: paintBanana, book: paintBook, pumpkin: paintPumpkin, bell: paintBell,
+  butterfly: paintButterfly, clock: paintClock, plane: paintPlane, moon: paintMoon, apple: paintApple,
+  tree: paintTree, cat: paintCat, bread: paintBread, fish: paintFish, pencil: paintPencil,
+  boat: paintBoat, dog: paintDog, drop: paintDrop, mountain: paintMountain, rose: paintRose,
+  house: paintHouse, elephant: paintElephant, snake: paintSnake, ball: paintBall,
+};
+function drawPic(id) {
+  pc.setTransform(1, 0, 0, 1, 0, 0);
+  pc.clearRect(0, 0, pcv.width, pcv.height);
+  pc.save();
+  pc.translate(pcv.width / 2, pcv.height / 2);
+  pc.scale(2, 2);   // կտավը կրկնակի մեծ է՝ որ հեռախոսին սուր երևա
+  PAINT[id](pc);
+  pc.restore();
+}
+
+// ——— Խաղի վիճակը ———
+const QN = 20;
+let state = 'menu', endedAt = 0;
+let qi = 0, score = 0, answer = '', locked = false;
+let usedPics = [];
+let best = 0;
+try { best = Number(localStorage.getItem('aren-alphabet-best') || 0); } catch (e) {}
+
+const elHud = document.getElementById('hud');
+const elRound = document.getElementById('roundName');
+const elPrompt = document.getElementById('prompt');
+const elOpts = document.getElementById('opts');
+const elMsg = document.getElementById('msg');
+const qBig = document.getElementById('qBig');
+const qSeq = document.getElementById('qSeq');
+const qPic = document.getElementById('qPic');
+const ov = document.getElementById('ov');
+
+const pick = a => a[Math.floor(Math.random() * a.length)];
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+// Երեք «խաբող» տարբերակ՝ ճիշտից տարբեր
+function decoys(pool, right, n) {
+  const rest = pool.filter(x => x !== right);
+  return shuffle(rest.slice()).slice(0, n);
+}
+
+function syncHud() {
+  elHud.innerHTML = '';
+  const a = document.createElement('span');
+  a.textContent = T.qLbl(Math.min(qi + 1, QN));
+  const b = document.createElement('span');
+  b.innerHTML = T.sc + '<b>' + score + '</b>';
+  elHud.appendChild(a); elHud.appendChild(b);
+}
+
+function nextQuestion() {
+  locked = false;
+  elMsg.textContent = '';
+  qBig.hidden = true; qSeq.hidden = true; qPic.hidden = true;
+  const round = qi % 3;   // 0 → տառի զույգ, 1 → հաջորդ տառը, 2 → նկարը
+  let opts = [];
+
+  if (round === 0) {
+    const i = Math.floor(Math.random() * UP.length);
+    const upFirst = Math.random() < 0.5;       // երբեմն մեծատառն ենք ցույց տալիս, երբեմն՝ փոքրը
+    elRound.textContent = T.rn1;
+    elPrompt.textContent = upFirst ? T.r1a : T.r1b;
+    qBig.textContent = upFirst ? UP[i] : LOW[i];
+    qBig.hidden = false;
+    answer = upFirst ? LOW[i] : UP[i];
+    opts = decoys(upFirst ? LOW : UP, answer, 3).concat([answer]);
+  } else if (round === 1) {
+    const i = Math.floor(Math.random() * (UP.length - 3));
+    elRound.textContent = T.rn2;
+    elPrompt.textContent = '';
+    qSeq.innerHTML = '';
+    for (let k = 0; k < 3; k++) {
+      const d = document.createElement('div');
+      d.className = 'seqBox';
+      d.textContent = UP[i + k];
+      qSeq.appendChild(d);
+    }
+    const q = document.createElement('div');
+    q.className = 'seqBox q';
+    q.textContent = '?';
+    qSeq.appendChild(q);
+    qSeq.hidden = false;
+    answer = UP[i + 3];
+    opts = decoys(UP, answer, 3).concat([answer]);
+  } else {
+    if (!usedPics.length) usedPics = shuffle(PICS.map((_, k) => k));
+    const p = PICS[usedPics.pop()];
+    elRound.textContent = T.rn3;
+    elPrompt.textContent = '';
+    drawPic(p[0]);
+    document.getElementById('qWord').textContent = p[1];
+    // Հայերենով խաղալիս թարգմանությունը ավելորդ է
+    document.getElementById('qTr').textContent = ggLang === 'hy' ? '' : T.w[p[0]];
+    qPic.hidden = false;
+    answer = p[2];
+    opts = decoys(UP, answer, 3).concat([answer]);
+  }
+
+  shuffle(opts);
+  elOpts.innerHTML = '';
+  opts.forEach(ch => {
+    const b = document.createElement('button');
+    b.textContent = ch;
+    b.dataset.ch = ch;
+    b.addEventListener('pointerdown', (e) => {
+      if (isGhost(e)) return;
+      e.preventDefault();
+      answerTap(b, ch);
+    });
+    elOpts.appendChild(b);
+  });
+  syncHud();
+}
+
+function answerTap(btn, ch) {
+  if (state !== 'play' || locked) return;
+  initAudio();
+  locked = true;
+  const right = ch === answer;
+  if (right) {
+    score++;
+    btn.classList.add('good');
+    elMsg.textContent = T.yes;
+    elMsg.style.color = '#6ee7b7';
+    sYes();
+  } else {
+    btn.classList.add('bad');
+    // ճիշտ պատասխանը միշտ ցույց ենք տալիս՝ որ սովորի
+    for (const b of elOpts.children) if (b.dataset.ch === answer) b.classList.add('good');
+    elMsg.textContent = T.no;
+    elMsg.style.color = '#ffb3a7';
+    sNo();
+  }
+  syncHud();
+  qi++;
+  setTimeout(() => {
+    if (state !== 'play') return;
+    if (qi >= QN) endGame();
+    else { sNext(); nextQuestion(); }
+  }, right ? 750 : 1250);
+}
+
+function startGame() {
+  state = 'play';
+  qi = 0; score = 0; usedPics = [];
+  ov.hidden = true;
+  nextQuestion();
+}
+
+function endGame() {
+  state = 'over';
+  endedAt = Date.now();
+  sEnd();
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('aren-alphabet-best', best); } catch (e) {}
+    confetti();
+  }
+  document.getElementById('ovTitle').textContent = score >= QN ? T.perfect : T.done;
+  document.getElementById('ovText').textContent = T.sc + score + ' / ' + QN;
+  document.getElementById('ovMash').textContent = T.mash;
+  document.getElementById('ovBest').textContent = T.best + best;
+  document.getElementById('ovTap').textContent = T.again;
+  ov.hidden = false;
+}
+
+// ——— Հպումները ———
+// Հեռախոսը հպումից հետո «ուրվական» մկնիկ է ուղարկում — հիշում ենք վերջին հպումը
+let lastTouchAt = 0;
+function isGhost(e) {
+  if (e.pointerType === 'touch') { lastTouchAt = Date.now(); return false; }
+  return Date.now() - lastTouchAt < 700;
+}
+ov.addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return;
+  e.preventDefault();
+  initAudio();
+  if (state === 'over' && Date.now() - endedAt < 1100) return;   // սպասիր, որ պատահական չսկսես
+  startGame();
+});
+
+function confetti() {
+  const stuff = ['🎉', '🔤', '⭐', '💛', '🎊', '✨'];
+  for (let k = 0; k < 34; k++) {
+    const s = document.createElement('span');
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.cssText = 'position:fixed;top:-50px;z-index:20;pointer-events:none;left:' + (Math.random() * 100) + 'vw;font-size:' + (16 + Math.random() * 20) + 'px;transition:transform ' + (2 + Math.random() * 2) + 's linear';
+    document.body.appendChild(s);
+    requestAnimationFrame(() => { s.style.transform = 'translateY(115vh) rotate(720deg)'; });
+    setTimeout(() => s.remove(), 4600);
+  }
+}
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// ——— Մեկնարկի էկրանը ———
+document.getElementById('ovTitle').textContent = T.title;
+document.getElementById('ovText').textContent = T.h1 + '\n' + T.h2;
+document.getElementById('ovMash').textContent = T.mash;
+document.getElementById('ovBest').textContent = best > 0 ? T.best + best : '';
+document.getElementById('ovTap').textContent = T.start;
+elRound.textContent = T.title;
+elPrompt.textContent = T.h2;
+elHud.textContent = '';
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, թրթռոց, նկար, բեռնում -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
