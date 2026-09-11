@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Sasuntsi 🪨</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #1b1330; }
+  body {
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif;
+    color: #f5eede;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    overflow-x: hidden;
+  }
+  /* Կտավին պետք է touch-action: none, թե չէ մատով քաշելը կդառնա էջի ոլորում */
+  canvas { display: block; position: fixed; inset: 0; width: 100vw; height: 100dvh; touch-action: none; }
+
+  #hud {
+    position: fixed; top: 48px; left: 10px; right: 10px; z-index: 6;
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+    pointer-events: none;
+  }
+  #hud .box {
+    background: rgba(14, 10, 26, 0.72);
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-radius: 14px; padding: 5px 10px;
+  }
+  #lives { font-size: 1.15rem; color: #ff5a6e; letter-spacing: 2px; line-height: 1.1; }
+  #hits { font-size: 0.72rem; color: #ffd76e; }
+  #barName { font-size: 0.72rem; color: #cfc3e8; text-align: right; }
+  #bar {
+    width: min(140px, 36vw); height: 12px; margin-top: 3px;
+    background: #2b2340; border: 2px solid #6a5f9e; border-radius: 999px; overflow: hidden;
+  }
+  #barFill { height: 100%; width: 100%; background: linear-gradient(90deg, #ff8f5a, #ffd76e); transition: width 0.18s; }
+
+  #ctrls {
+    position: fixed; left: 0; right: 0; bottom: 12px; z-index: 6;
+    display: flex; justify-content: space-between; gap: 10px; padding: 0 12px;
+  }
+  /* hidden-ը պարտվում է display:flex-ին — ուժեղացնում ենք */
+  #ctrls[hidden] { display: none !important; }
+  .dbtn {
+    font-family: inherit; font-size: 1.5rem; color: #eef4ff;
+    background: rgba(45, 74, 47, 0.85); border: 2px solid #6ba36f;
+    border-radius: 18px; width: 40%; max-width: 150px; height: 58px;
+    cursor: pointer; touch-action: none;
+  }
+  .dbtn:active { background: #4f8a5c; }
+
+  #ov[hidden] { display: none !important; }
+  #ov {
+    position: fixed; inset: 0; z-index: 8;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 9px;
+    text-align: center; padding: 24px 18px;
+    background: rgba(10, 7, 20, 0.86);
+  }
+  #ovTitle { font-size: clamp(1.3rem, 6vw, 1.9rem); color: #ffd76e; }
+  #ovEpic { font-size: 0.8rem; color: #b9a7e0; max-width: 330px; line-height: 1.45; }
+  #ovText { font-size: 0.95rem; color: #cfe0f5; line-height: 1.5; max-width: 340px; white-space: pre-line; }
+  #ovBest { font-size: 1rem; color: #6ee7b7; }
+  #ovTap { margin-top: 8px; font-size: 1.1rem; color: #6ee7b7; }
+
+  .confetti { position: fixed; top: -50px; z-index: 9; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+</style>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+
+<div id="hud">
+  <div class="box"><div id="lives"></div><div id="hits"></div></div>
+  <div class="box"><div id="barName"></div><div id="bar"><div id="barFill"></div></div></div>
+</div>
+
+<div id="ctrls">
+  <button class="dbtn" id="leftBtn">◀</button>
+  <button class="dbtn" id="rightBtn">▶</button>
+</div>
+
+<div id="ov">
+  <div id="ovTitle"></div>
+  <div id="ovEpic"></div>
+  <div id="ovText"></div>
+  <div id="ovBest"></div>
+  <div id="ovTap"></div>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՍԱՍՈՒՆՑԻ ԴԱՎԻԹ 🪨
+//  Դավիթը ձախ կողմում է՝ պարսատիկով, Մսրա Մելիքը՝ աջ, վահանի հետևում։
+//  Մատով քաշի՛ր հետ՝ նշան բռնելու (կետագիծը ցույց է տալիս, ուր կգնա քարը),
+//  բաց թող՝ քարը կթռչի։ Վահանին դիպավ՝ միայն «ծա՛նգ», վահանից վեր դիպավ՝ հարված։
+//  Մելիքն էլ բաներ է շպրտում — ◀ ▶ կոճակներով խույս տուր։ 3 կյանք ունես։
+// ——————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { title: 'Golden Sasuntsi 🪨', epic: 'Հայկական «Սասնա ծռեր» էպոսից՝ Սասունցի Դավիթը', h1: 'Քաշի՛ր մատդ հետ՝ նշան բռնիր, բա՛ց թող՝ քարը թռչի', h2: 'Նետիր վահանից վեր · ◀ ▶ — խույս տուր · 3 կյանք', start: 'Հպի՛ր՝ սկսելու', again: 'Հպի՛ր՝ նորից խաղալու', won: 'Դավիթը հաղթե՜ց', lost: 'Այս անգամ Մելիքը հաղթեց', david: 'Դավիթ', melik: 'Մսրա Մելիք', hits: 'Հարված՝ ', time: 'Ժամանակ՝ ', sec: ' վրկ', score: 'Միավոր՝ ', best: 'Ռեկորդդ՝ ', newRec: 'ՆՈՐ ՌԵԿՈՐԴ 🎉' },
+  ru: { title: 'Golden Sasuntsi 🪨', epic: 'Из армянского эпоса «Сасна црер» — Давид Сасунский', h1: 'Тяни палец назад — целься, отпусти — камень летит', h2: 'Бросай выше щита · ◀ ▶ — уворачивайся · 3 жизни', start: 'Нажми, чтобы начать', again: 'Нажми, чтобы играть снова', won: 'Давид победил!', lost: 'На этот раз победил Мелик', david: 'Давид', melik: 'Мсра Мелик', hits: 'Попаданий: ', time: 'Время: ', sec: ' сек', score: 'Очки: ', best: 'Твой рекорд: ', newRec: 'НОВЫЙ РЕКОРД 🎉' },
+  en: { title: 'Golden Sasuntsi 🪨', epic: 'From the Armenian epic «Sasna Tsrer» — David of Sasun', h1: 'Drag back to aim, let go to throw the stone', h2: 'Arc it over the shield · ◀ ▶ to dodge · 3 lives', start: 'Tap to start', again: 'Tap to play again', won: 'David wins!', lost: 'Melik won this time', david: 'David', melik: 'Msra Melik', hits: 'Hits: ', time: 'Time: ', sec: ' s', score: 'Score: ', best: 'Your best: ', newRec: 'NEW RECORD 🎉' },
+  es: { title: 'Golden Sasuntsi 🪨', epic: 'Del epos armenio «Sasna Tsrer» — David de Sasun', h1: 'Arrastra hacia atrás para apuntar, suelta para lanzar', h2: 'Pasa por encima del escudo · ◀ ▶ para esquivar · 3 vidas', start: 'Toca para empezar', again: 'Toca para jugar otra vez', won: '¡David gana!', lost: 'Esta vez ganó Melik', david: 'David', melik: 'Msra Melik', hits: 'Aciertos: ', time: 'Tiempo: ', sec: ' s', score: 'Puntos: ', best: 'Tu récord: ', newRec: '¡NUEVO RÉCORD! 🎉' },
+  fr: { title: 'Golden Sasuntsi 🪨', epic: 'De l’épopée arménienne «Sasna Tsrer» — David de Sassoun', h1: 'Tire ton doigt en arrière pour viser, lâche pour lancer', h2: 'Passe au-dessus du bouclier · ◀ ▶ pour esquiver · 3 vies', start: 'Touche pour commencer', again: 'Touche pour rejouer', won: 'David a gagné !', lost: 'Cette fois, Mélik a gagné', david: 'David', melik: 'Msra Mélik', hits: 'Touches : ', time: 'Temps : ', sec: ' s', score: 'Points : ', best: 'Ton record : ', newRec: 'NOUVEAU RECORD 🎉' },
+  de: { title: 'Golden Sasuntsi 🪨', epic: 'Aus dem armenischen Epos «Sasna Zrer» — David von Sassun', h1: 'Zieh den Finger zurück zum Zielen, loslassen zum Werfen', h2: 'Wirf über den Schild · ◀ ▶ zum Ausweichen · 3 Leben', start: 'Tippe zum Starten', again: 'Tippe, um nochmal zu spielen', won: 'David gewinnt!', lost: 'Diesmal hat Melik gewonnen', david: 'David', melik: 'Msra Melik', hits: 'Treffer: ', time: 'Zeit: ', sec: ' s', score: 'Punkte: ', best: 'Dein Rekord: ', newRec: 'NEUER REKORD 🎉' },
+  ja: { title: 'Golden Sasuntsi 🪨', epic: 'アルメニアの叙事詩『サスナ・ツレル』より — サスンのダヴィド', h1: 'ゆびを うしろに ひいて ねらい、はなすと 石が とぶ', h2: 'たての 上を こえて なげよう · ◀ ▶ で よける · ライフ3', start: 'タップでスタート', again: 'タップでもう一回', won: 'ダヴィドの勝ち！', lost: 'こんかいは メリクの勝ち', david: 'ダヴィド', melik: 'ムスラ・メリク', hits: 'ヒット：', time: 'じかん：', sec: '秒', score: 'スコア：', best: 'ベスト記録：', newRec: '新記録 🎉' },
+  zh: { title: 'Golden Sasuntsi 🪨', epic: '出自亚美尼亚史诗《萨逊的疯子》— 萨逊的大卫', h1: '向后拖动瞄准，松手扔出石头', h2: '把石头抛过盾牌 · ◀ ▶ 躲闪 · 3条命', start: '点一下开始', again: '点一下再玩一次', won: '大卫赢了！', lost: '这次梅利克赢了', david: '大卫', melik: '姆斯拉·梅利克', hits: '命中：', time: '时间：', sec: '秒', score: '得分：', best: '你的纪录：', newRec: '新纪录 🎉' },
+  it: { title: 'Golden Sasuntsi 🪨', epic: 'Dall’epopea armena «Sasna Tsrer» — Davide di Sasun', h1: 'Trascina indietro per mirare, lascia per lanciare il sasso', h2: 'Passa sopra lo scudo · ◀ ▶ per schivare · 3 vite', start: 'Tocca per iniziare', again: 'Tocca per giocare ancora', won: 'Davide vince!', lost: 'Questa volta ha vinto Melik', david: 'Davide', melik: 'Msra Melik', hits: 'Colpi: ', time: 'Tempo: ', sec: ' s', score: 'Punti: ', best: 'Il tuo record: ', newRec: 'NUOVO RECORD 🎉' },
+  ka: { title: 'Golden Sasuntsi 🪨', epic: 'სომხური ეპოსიდან «სასნა ცრერი» — დავით სასუნელი', h1: 'გადაწიე თითი უკან და დამიზნე, გაუშვი — ქვა გაფრინდება', h2: 'გადააგდე ფარის ზემოდან · ◀ ▶ — აარიდე თავი · 3 სიცოცხლე', start: 'დააჭირე დასაწყებად', again: 'დააჭირე ისევ სათამაშოდ', won: 'დავითმა გაიმარჯვა!', lost: 'ამჯერად მელიქმა გაიმარჯვა', david: 'დავითი', melik: 'მსრა მელიქი', hits: 'მოხვედრა: ', time: 'დრო: ', sec: ' წმ', score: 'ქულა: ', best: 'შენი რეკორდი: ', newRec: 'ახალი რეკორდი 🎉' },
+  hi: { title: 'Golden Sasuntsi 🪨', epic: 'आर्मेनियाई महाकाव्य «सास्ना त्स्रेर» से — सासुन का डेविड', h1: 'उँगली पीछे खींचकर निशाना लगाओ, छोड़ो तो पत्थर उड़ेगा', h2: 'ढाल के ऊपर से फेंको · ◀ ▶ से बचो · 3 जान', start: 'शुरू करने के लिए टैप करो', again: 'फिर से खेलने के लिए टैप करो', won: 'डेविड जीत गया!', lost: 'इस बार मेलिक जीत गया', david: 'डेविड', melik: 'म्स्रा मेलिक', hits: 'निशाने: ', time: 'समय: ', sec: ' से', score: 'स्कोर: ', best: 'तुम्हारा रिकॉर्ड: ', newRec: 'नया रिकॉर्ड 🎉' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const ov = document.getElementById('ov');
+const elCtrls = document.getElementById('ctrls');
+const elLives = document.getElementById('lives');
+const elHits = document.getElementById('hits');
+const elBarName = document.getElementById('barName');
+const elBarFill = document.getElementById('barFill');
+
+// ——— Չափսերը ———
+let W = 0, H = 0, DPR = 1, groundY = 0;
+let lanes = [0, 0, 0];      // Դավթի երեք կանգնելու տեղը
+let mxMin = 0, mxMax = 0;   // Մելիքի աջ ու ձախ սահմանը
+let decor = [];             // խոտեր ու քարեր՝ գետնին
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  groundY = H - Math.max(150, H * 0.19);
+  // Մենամարտի հրապարակը միշտ նույն լայնքն է — լայն էկրանին էլ հեռավորությունը չի փոխվում
+  const AW = Math.min(W, 460);
+  const ax = (W - AW) / 2;
+  const gap = Math.min(58, AW * 0.15);
+  lanes = [ax + AW * 0.08, ax + AW * 0.08 + gap, ax + AW * 0.08 + gap * 2];
+  mxMin = ax + AW * 0.60;
+  mxMax = ax + AW - 46;
+  decor = [];
+  for (let i = 0; i < 26; i++) {
+    decor.push({ x: (i * 97 % 100) / 100 * W, y: groundY + 8 + ((i * 53) % 7) * 5, s: 2 + (i % 4), g: i % 3 === 0 });
+  }
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ——— Ձայները (թվերով ենք սարքում, ֆայլ չկա) ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sWhoosh = () => { tone(220, 0.12, 'sine', 0.12); tone(440, 0.09, 'sine', 0.08, 0.04); };
+const sClang = () => { tone(1200, 0.14, 'square', 0.13); tone(760, 0.3, 'triangle', 0.12, 0.03); };
+const sBonk = () => { tone(160, 0.16, 'square', 0.2); tone(90, 0.26, 'sawtooth', 0.16, 0.05); };
+const sOuch = () => { tone(320, 0.18, 'sawtooth', 0.2); tone(150, 0.3, 'square', 0.15, 0.08); };
+const sStep = () => tone(520, 0.05, 'square', 0.07);
+const sThud = () => tone(110, 0.18, 'triangle', 0.12);
+const sLose = () => [392, 330, 262, 196].forEach((f, k) => tone(f, 0.26, 'triangle', 0.18, k * 0.14));
+const sWin = () => [523, 659, 784, 1047, 1319, 1568].forEach((f, k) => tone(f, 0.26, 'triangle', 0.2, k * 0.12));
+
+// ——— Խաղի ամբողջ վիճակը մեկ տեղում ———
+const G = {
+  state: 'menu', endedAt: 0, startedAt: 0, elapsed: 0,
+  hp: 100, lives: 3, hits: 0, score: 0, best: 0,
+  stones: [], incoming: [], puffs: [],
+  melik: { x: 0, vx: 1, sy: 0, sHigh: false, switchAt: 0, throwAt: 0, hurt: 0, clang: 0 },
+  david: { lane: 1, x: 0, inv: 0, sling: 0, arm: 0 },
+  aim: null,
+  calm: false,   // հանգիստ ռեժիմ՝ ստուգելու համար (Մելիքը կանգնում է տեղում)
+};
+window.G = G;   // որ ստուգող ծրագիրը կարողանա ներսը նայել
+try { G.best = Number(localStorage.getItem('aren-sasuntsi-best') || 0); } catch (e) {}
+
+const GRAV = 1500;          // ձգողականությունը՝ պիքսել/վրկ²
+const MAXPOW = 1150;        // ամենաուժեղ նետումը
+const STONE_R = 7;
+
+// Մելիքի մարմնի չափսերը
+const MEL = { halfW: 33, bodyH: 78, helmR: 34, shW: 22, shH: 88 };
+const shieldLowY = () => groundY - 48;    // վահանը ցած է — գլուխը բաց է, նետիր վերևից
+const shieldHighY = () => groundY - 124;  // վահանը վեր է — մարմինը բաց է, նետիր ուղիղ
+
+function melikBoxes() {
+  const m = G.melik;
+  return {
+    torso: { x0: m.x - MEL.halfW, x1: m.x + MEL.halfW, y0: groundY - MEL.bodyH - 14, y1: groundY - 12 },
+    helm: { cx: m.x, cy: groundY - MEL.bodyH - 14 - 26, r: MEL.helmR },
+    shield: { x0: m.x - MEL.halfW - 26, x1: m.x - MEL.halfW - 26 + MEL.shW, y0: m.sy - MEL.shH / 2, y1: m.sy + MEL.shH / 2 },
+  };
+}
+
+function launchPoint() {
+  return { x: G.david.x + 11, y: groundY - 64 };
+}
+
+// ——— HUD ———
+function syncHud() {
+  let hearts = '';
+  for (let i = 0; i < Math.max(0, G.lives); i++) hearts += '♥';
+  elLives.textContent = hearts;
+  elHits.textContent = T.hits + G.hits;
+  elBarName.textContent = T.melik;
+  elBarFill.style.width = Math.max(0, G.hp) + '%';
+}
+
+// ——— Սկիզբ ու վերջ ———
+function startGame() {
+  G.hp = 100; G.lives = 3; G.hits = 0; G.score = 0;
+  G.stones = []; G.incoming = []; G.puffs = [];
+  G.melik.x = (mxMin + mxMax) / 2;
+  G.melik.vx = 1;
+  G.melik.sHigh = false;
+  G.melik.sy = shieldLowY();
+  G.melik.switchAt = Date.now() + 2300;
+  G.melik.throwAt = Date.now() + 3200;
+  G.melik.hurt = 0; G.melik.clang = 0;
+  G.david.lane = 1; G.david.x = lanes[1]; G.david.inv = 0; G.david.sling = 0; G.david.arm = 0;
+  G.aim = null;
+  G.startedAt = Date.now();
+  G.state = 'play';
+  ov.hidden = true;
+  elCtrls.hidden = false;
+  syncHud();
+  tone(660, 0.12, 'square', 0.15);
+}
+
+function finish(won) {
+  G.state = won ? 'win' : 'over';
+  G.endedAt = Date.now();
+  G.elapsed = (Date.now() - G.startedAt) / 1000;
+  elCtrls.hidden = true;
+  let extra = '';
+  if (won) {
+    // Միավորը՝ որքան արագ ես հաղթել ու քանի կյանք է մնացել
+    G.score = Math.max(50, 1800 - Math.round(G.elapsed * 12) + G.lives * 250);
+    sWin();
+    if (G.score > G.best) {
+      G.best = G.score;
+      try { localStorage.setItem('aren-sasuntsi-best', G.best); } catch (e) {}
+      extra = '\n' + T.newRec;
+    }
+    confetti();
+  } else {
+    G.score = 0;
+    sLose();
+  }
+  document.getElementById('ovTitle').textContent = won ? T.won : T.lost;
+  document.getElementById('ovEpic').textContent = '';
+  document.getElementById('ovText').textContent =
+    T.hits + G.hits + '\n' + T.time + Math.round(G.elapsed) + T.sec +
+    (won ? '\n' + T.score + G.score : '') + extra;
+  document.getElementById('ovBest').textContent = G.best > 0 ? T.best + G.best : '';
+  document.getElementById('ovTap').textContent = T.again;
+  ov.hidden = false;
+  syncHud();
+}
+
+function showMenu() {
+  document.getElementById('ovTitle').textContent = T.title;
+  document.getElementById('ovEpic').textContent = T.epic;
+  document.getElementById('ovText').textContent = T.h1 + '\n' + T.h2;
+  document.getElementById('ovBest').textContent = G.best > 0 ? T.best + G.best : '';
+  document.getElementById('ovTap').textContent = T.start;
+  ov.hidden = false;
+  elCtrls.hidden = true;
+}
+G.david.x = lanes[1];
+G.melik.x = (mxMin + mxMax) / 2;
+G.melik.sy = shieldLowY();
+showMenu();
+syncHud();
+
+// ——— Հպումից հետո հեռախոսը «ուրվական» մկնիկ է ուղարկում — անտեսում ենք ———
+let lastTouchAt = 0;
+function isGhost(e) {
+  if (e.pointerType === 'touch') { lastTouchAt = Date.now(); return false; }
+  return Date.now() - lastTouchAt < 700;
+}
+
+// ——— Խույս տալը ձախ/աջ ———
+function step(dir) {
+  if (G.state !== 'play') return;
+  const n = Math.max(0, Math.min(2, G.david.lane + dir));
+  if (n === G.david.lane) return;
+  G.david.lane = n;
+  sStep();
+}
+document.getElementById('leftBtn').addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return; e.preventDefault(); initAudio(); step(-1);
+});
+document.getElementById('rightBtn').addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return; e.preventDefault(); initAudio(); step(1);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'ArrowLeft') step(-1);
+  if (e.code === 'ArrowRight') step(1);
+  if ((e.code === 'Space' || e.code === 'Enter') && G.state !== 'play') {
+    initAudio();
+    if (G.state !== 'menu' && Date.now() - G.endedAt < 1100) return;
+    startGame();
+  }
+});
+
+// ——— Նշան բռնելը՝ մատով քաշում ենք հետ ———
+function aimVector() {
+  if (!G.aim) return null;
+  let dx = G.aim.x0 - G.aim.x, dy = G.aim.y0 - G.aim.y;
+  const len = Math.hypot(dx, dy);
+  if (len < 8) return null;
+  const k = 7.5;
+  let vx = dx * k, vy = dy * k;
+  const sp = Math.hypot(vx, vy);
+  if (sp > MAXPOW) { vx = vx / sp * MAXPOW; vy = vy / sp * MAXPOW; }
+  if (vx < 60) vx = 60;   // քարը միշտ առաջ է թռչում
+  return { vx, vy, pow: Math.min(1, sp / MAXPOW) };
+}
+
+function throwStone() {
+  const v = aimVector();
+  G.aim = null;
+  if (!v || G.state !== 'play') return;
+  if (G.stones.length >= 2) return;
+  const p = launchPoint();
+  G.stones.push({ x: p.x, y: p.y, vx: v.vx, vy: v.vy, rot: 0, vr: 9, decided: false });
+  G.david.arm = 0.28;
+  sWhoosh();
+}
+
+cv.addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return;
+  e.preventDefault();
+  initAudio();
+  if (G.state !== 'play') return;
+  G.aim = { x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY };
+  if (cv.setPointerCapture) { try { cv.setPointerCapture(e.pointerId); } catch (err) {} }
+});
+cv.addEventListener('pointermove', (e) => {
+  if (!G.aim || G.state !== 'play') return;
+  e.preventDefault();
+  G.aim.x = e.clientX; G.aim.y = e.clientY;
+});
+cv.addEventListener('pointerup', (e) => {
+  if (isGhost(e)) return;
+  e.preventDefault();
+  if (G.state === 'play') { throwStone(); return; }
+  // ընկած ես կամ հաղթել ես — սպասիր մի քիչ, որ պատահական նորից չսկսես
+  if (G.state !== 'menu' && Date.now() - G.endedAt < 1100) return;
+  initAudio();
+  startGame();
+});
+cv.addEventListener('pointercancel', () => { G.aim = null; });
+cv.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+cv.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+ov.addEventListener('pointerdown', (e) => {
+  if (isGhost(e)) return;
+  e.preventDefault();
+  initAudio();
+  if (G.state !== 'menu' && Date.now() - G.endedAt < 1100) return;
+  startGame();
+});
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+// ——— Մելիքի շպրտած իրը ———
+function melikThrow() {
+  const m = G.melik;
+  // որքան քիչ է առողջությունը, այնքան արագ է թռչում իրը (բայց ոչ երբեք շատ արագ)
+  const tt = 1.5 - (1 - G.hp / 100) * 0.35;
+  let lane = G.david.lane;
+  if (Math.random() < 0.3) lane = Math.floor(Math.random() * 3);
+  G.incoming.push({
+    x0: m.x - MEL.halfW, y0: groundY - MEL.bodyH - 10,
+    x1: lanes[lane], t: 0, tt,
+    kind: Math.floor(Math.random() * 2), rot: 0,
+  });
+  tone(240, 0.14, 'sawtooth', 0.12);
+}
+G.melikThrow = melikThrow;
+
+// ——— Բախումների ստուգում ———
+function hitWhat(x, y) {
+  const b = melikBoxes();
+  const s = b.shield;
+  if (x + STONE_R > s.x0 && x - STONE_R < s.x1 && y + STONE_R > s.y0 && y - STONE_R < s.y1) return 'shield';
+  const h = b.helm;
+  if (Math.hypot(x - h.cx, y - h.cy) < h.r + STONE_R) return 'helm';
+  const t = b.torso;
+  if (x + STONE_R > t.x0 && x - STONE_R < t.x1 && y + STONE_R > t.y0 && y - STONE_R < t.y1) return 'torso';
+  return null;
+}
+
+function puff(x, y, c, n) {
+  for (let i = 0; i < (n || 8); i++) {
+    G.puffs.push({ x, y, vx: (Math.random() - 0.5) * 180, vy: -Math.random() * 160, life: 0.5, c });
+  }
+}
+
+// ——— Խաղի քայլը ———
+function update(dt) {
+  const d = G.david, m = G.melik;
+
+  // Դավիթը սահուն գնում է իր տեղը
+  const tx = lanes[d.lane];
+  d.x += (tx - d.x) * Math.min(1, dt * 12);
+  if (d.inv > 0) d.inv -= dt;
+  if (d.arm > 0) d.arm -= dt;
+  d.sling += dt * (G.aim ? 13 : 3);
+  // Մելիքի «ա՛յ» ու «ծա՛նգ» թարթոցները հանգչում են նաև վերջի էկրանին
+  if (m.hurt > 0) m.hurt -= dt;
+  if (m.clang > 0) m.clang -= dt;
+
+  if (G.state !== 'play') return;
+
+  if (!G.calm) {
+    // Մելիքը գնում-գալիս է. ինչքան վիրավոր, այնքան արագ
+    const sp = 22 + (1 - G.hp / 100) * 48;
+    m.x += m.vx * sp * dt;
+    if (m.x < mxMin) { m.x = mxMin; m.vx = 1; }
+    if (m.x > mxMax) { m.x = mxMax; m.vx = -1; }
+
+    // վահանը ժամանակ առ ժամանակ բարձրանում-իջնում է
+    const every = 2300 - (1 - G.hp / 100) * 900;
+    if (Date.now() > m.switchAt) {
+      m.sHigh = !m.sHigh;
+      m.switchAt = Date.now() + every;
+    }
+
+    // Մելիքը բան է շպրտում
+    if (Date.now() > m.throwAt) {
+      melikThrow();
+      m.throwAt = Date.now() + (3600 - (1 - G.hp / 100) * 1000);
+    }
+  }
+
+  // վահանը սահում է դեպի իր տեղը
+  const sTarget = m.sHigh ? shieldHighY() : shieldLowY();
+  const slide = 260 * dt;                      // վահանը մեկ քայլում այսքան է սահում
+  if (Math.abs(m.sy - sTarget) <= slide) m.sy = sTarget;
+  else m.sy += Math.sign(sTarget - m.sy) * slide;
+
+  // ——— Քարերը ———
+  for (let i = G.stones.length - 1; i >= 0; i--) {
+    const s = G.stones[i];
+
+    // Խելացի պաշտպանություն. երբ քարը մոտենում է, Մելիքը կարող է վահանը տանել այնտեղ
+    if (!G.calm && !s.decided && s.vx > 0) {
+      const tReach = (m.x - MEL.halfW - 30 - s.x) / s.vx;
+      if (tReach > 0 && tReach < 0.5) {
+        s.decided = true;
+        const pBlock = 0.10 + (1 - G.hp / 100) * 0.25;
+        if (Math.random() < pBlock) {
+          const yAt = s.y + s.vy * tReach + 0.5 * GRAV * tReach * tReach;
+          m.sHigh = yAt < groundY - 100;
+          m.switchAt = Date.now() + 900;
+        }
+      }
+    }
+
+    // փոքր քայլերով ենք շարժում, որ արագ քարը վահանի կողքով չսահի
+    const speed = Math.hypot(s.vx, s.vy);
+    const steps = Math.max(1, Math.ceil(speed * dt / 6));
+    let done = false;
+    for (let k = 0; k < steps && !done; k++) {
+      const sdt = dt / steps;
+      s.vy += GRAV * sdt;
+      s.x += s.vx * sdt;
+      s.y += s.vy * sdt;
+      s.rot += s.vr * sdt;
+      const what = hitWhat(s.x, s.y);
+      if (what === 'shield') {
+        sClang();
+        m.clang = 0.3;
+        puff(s.x, s.y, '#ffe9a8', 10);
+        G.stones.splice(i, 1);
+        done = true;
+      } else if (what === 'helm' || what === 'torso') {
+        G.hp -= (what === 'helm' ? 20 : 14);
+        G.hits++;
+        m.hurt = 0.35;
+        sBonk();
+        puff(s.x, s.y, '#ffd76e', 12);
+        G.stones.splice(i, 1);
+        syncHud();
+        done = true;
+        if (G.hp <= 0) { G.hp = 0; syncHud(); finish(true); return; }
+      } else if (s.y > groundY - 4) {
+        sThud();
+        puff(s.x, groundY, '#8a6b4a', 6);
+        G.stones.splice(i, 1);
+        done = true;
+      } else if (s.x > W + 60 || s.x < -60 || s.y < -600) {
+        G.stones.splice(i, 1);
+        done = true;
+      }
+    }
+  }
+
+  // ——— Մելիքի շպրտածները ———
+  for (let i = G.incoming.length - 1; i >= 0; i--) {
+    const o = G.incoming[i];
+    o.t += dt;
+    o.rot += dt * 7;
+    if (o.t >= o.tt) {
+      // ընկավ. եթե Դավիթը հենց այնտեղ է, կյանք է կորցնում
+      puff(o.x1, groundY, '#a98b6a', 10);
+      sThud();
+      if (Math.abs(G.david.x - o.x1) < 32 && d.inv <= 0) {
+        G.lives--;
+        d.inv = 1.2;
+        sOuch();
+        syncHud();
+        if (G.lives <= 0) { G.incoming.splice(i, 1); finish(false); return; }
+      }
+      G.incoming.splice(i, 1);
+    }
+  }
+
+  // ——— Փոշին ———
+  for (let i = G.puffs.length - 1; i >= 0; i--) {
+    const p = G.puffs[i];
+    p.life -= dt;
+    p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 500 * dt;
+    if (p.life <= 0) G.puffs.splice(i, 1);
+  }
+}
+
+// ——————————— ՆԿԱՐԵԼԸ (ամեն ինչ ձևերով է, էմոջի կտավին չենք գրում) ———————————
+
+function drawSky() {
+  const g = ctx.createLinearGradient(0, 0, 0, groundY);
+  g.addColorStop(0, '#2b1c46');
+  g.addColorStop(0.55, '#8b4a6b');
+  g.addColorStop(1, '#f0a868');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, groundY + 2);
+  // արևը
+  ctx.fillStyle = '#ffd98a';
+  ctx.beginPath(); ctx.arc(W * 0.76, groundY - H * 0.30, Math.min(30, W * 0.08), 0, 7); ctx.fill();
+  // հեռու սարերը (Սասունը)
+  const peaks = [[0.05, 0.30], [0.30, 0.40], [0.58, 0.26], [0.86, 0.36]];
+  for (let i = 0; i < peaks.length; i++) {
+    const cx = peaks[i][0] * W, hh = peaks[i][1] * (groundY - 10);
+    const bw = hh * 1.5;
+    ctx.fillStyle = i % 2 ? '#4a3260' : '#3b2851';
+    ctx.beginPath();
+    ctx.moveTo(cx - bw, groundY);
+    ctx.lineTo(cx, groundY - hh);
+    ctx.lineTo(cx + bw, groundY);
+    ctx.closePath(); ctx.fill();
+    // ձյունը գագաթին
+    ctx.fillStyle = 'rgba(245,238,222,0.75)';
+    ctx.beginPath();
+    ctx.moveTo(cx - bw * 0.18, groundY - hh * 0.82);
+    ctx.lineTo(cx, groundY - hh);
+    ctx.lineTo(cx + bw * 0.18, groundY - hh * 0.82);
+    ctx.lineTo(cx + bw * 0.05, groundY - hh * 0.86);
+    ctx.lineTo(cx - bw * 0.06, groundY - hh * 0.8);
+    ctx.closePath(); ctx.fill();
+  }
+  // գետինը
+  ctx.fillStyle = '#6b4a2e';
+  ctx.fillRect(0, groundY, W, H - groundY);
+  ctx.fillStyle = '#7d5a38';
+  ctx.fillRect(0, groundY, W, 8);
+  for (const dd of decor) {
+    if (dd.g) {
+      ctx.strokeStyle = '#5f8a44'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(dd.x, dd.y); ctx.lineTo(dd.x - 3, dd.y - 7);
+      ctx.moveTo(dd.x, dd.y); ctx.lineTo(dd.x + 3, dd.y - 8);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = '#8a6b4a';
+      ctx.beginPath(); ctx.arc(dd.x, dd.y, dd.s, 0, 7); ctx.fill();
+    }
+  }
+}
+
+function shadowAt(x, rx) {
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath(); ctx.ellipse(x, groundY + 3, rx, rx * 0.3, 0, 0, 7); ctx.fill();
+}
+
+// ——— Դավիթը՝ փոքրիկ, պարսատիկը պտտվում է ———
+function drawDavid() {
+  const d = G.david, x = d.x, y = groundY;
+  shadowAt(x, 16);
+  if (d.inv > 0 && Math.floor(d.inv * 12) % 2 === 0) return;   // թարթում է, երբ դիպել են
+  // ոտքերը
+  ctx.strokeStyle = '#4a3420'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x - 4, y - 26); ctx.lineTo(x - 8, y - 1);
+  ctx.moveTo(x + 5, y - 26); ctx.lineTo(x + 9, y - 1);
+  ctx.stroke();
+  // շապիկը
+  ctx.fillStyle = '#c94747';
+  ctx.beginPath();
+  ctx.moveTo(x - 12, y - 24);
+  ctx.lineTo(x + 12, y - 24);
+  ctx.lineTo(x + 9, y - 54);
+  ctx.lineTo(x - 9, y - 54);
+  ctx.closePath(); ctx.fill();
+  // գոտին
+  ctx.fillStyle = '#f0b429';
+  ctx.fillRect(x - 12, y - 33, 24, 5);
+  // գլուխը
+  ctx.fillStyle = '#f2c79a';
+  ctx.beginPath(); ctx.arc(x, y - 64, 9.5, 0, 7); ctx.fill();
+  // մազերը
+  ctx.fillStyle = '#3a2418';
+  ctx.beginPath(); ctx.arc(x, y - 66, 9.7, Math.PI * 1.05, Math.PI * 2.05); ctx.fill();
+  // աչքը
+  ctx.fillStyle = '#2b1b10';
+  ctx.beginPath(); ctx.arc(x + 4, y - 64, 1.7, 0, 7); ctx.fill();
+  // պարսատիկի ձեռքը
+  const hx = x + 9, hy = y - 50;
+  ctx.strokeStyle = '#f2c79a'; ctx.lineWidth = 4.5;
+  ctx.beginPath(); ctx.moveTo(x + 8, y - 50); ctx.lineTo(hx + (d.arm > 0 ? 8 : 2), hy - (d.arm > 0 ? 10 : 2)); ctx.stroke();
+  // պարսատիկը՝ երկու թել ու քարիկ
+  const a = d.sling;
+  const px = hx + Math.cos(a) * 19, py = hy + Math.sin(a) * 19;
+  ctx.strokeStyle = '#e8d9b8'; ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.moveTo(hx, hy); ctx.lineTo(px, py);
+  ctx.moveTo(hx + 3, hy); ctx.lineTo(px, py);
+  ctx.stroke();
+  ctx.fillStyle = '#9aa0a6';
+  ctx.beginPath(); ctx.arc(px, py, 4, 0, 7); ctx.fill();
+}
+
+// ——— Մսրա Մելիքը՝ ծիծաղելի հսկա սաղավարտով ———
+function drawMelik() {
+  const m = G.melik, x = m.x, y = groundY;
+  const b = melikBoxes();
+  shadowAt(x, 30);
+  const shake = m.hurt > 0 ? Math.sin(m.hurt * 60) * 3 : 0;
+  ctx.save();
+  ctx.translate(shake, 0);
+
+  // կոշիկները
+  ctx.fillStyle = '#3a2c22';
+  ctx.beginPath(); ctx.roundRect(x - 26, y - 16, 22, 16, 4); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(x + 5, y - 16, 22, 16, 4); ctx.fill();
+  // մարմինը՝ երկաթե զրահ
+  const bg = ctx.createLinearGradient(x - MEL.halfW, 0, x + MEL.halfW, 0);
+  bg.addColorStop(0, '#54607a');
+  bg.addColorStop(0.5, '#8592ad');
+  bg.addColorStop(1, '#3f4a60');
+  ctx.fillStyle = m.hurt > 0 ? '#c96a6a' : bg;
+  ctx.beginPath(); ctx.roundRect(b.torso.x0, b.torso.y0, MEL.halfW * 2, b.torso.y1 - b.torso.y0, 14); ctx.fill();
+  // զրահի գամերը
+  ctx.fillStyle = '#2e3646';
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath(); ctx.arc(x - 20 + i * 20, b.torso.y0 + 14, 3, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(x - 20 + i * 20, b.torso.y1 - 16, 3, 0, 7); ctx.fill();
+  }
+  // գոտի
+  ctx.fillStyle = '#6b4a2e';
+  ctx.fillRect(b.torso.x0, y - 40, MEL.halfW * 2, 9);
+  ctx.fillStyle = '#f0b429';
+  ctx.fillRect(x - 7, y - 41, 14, 11);
+  // ուսերը
+  ctx.fillStyle = '#3f4a60';
+  ctx.beginPath(); ctx.ellipse(b.torso.x0 + 6, b.torso.y0 + 6, 14, 10, 0, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(b.torso.x1 - 6, b.torso.y0 + 6, 14, 10, 0, 0, 7); ctx.fill();
+
+  // վիզ
+  ctx.fillStyle = '#7a5a3c';
+  ctx.fillRect(x - 9, b.torso.y0 - 10, 18, 14);
+  // դեմքը (սաղավարտի տակ հազիվ երևում է)
+  ctx.fillStyle = '#c99a6a';
+  ctx.beginPath(); ctx.arc(b.helm.cx, b.helm.cy + 12, 17, 0, 7); ctx.fill();
+  // աչքիկները՝ բարկացած (սաղավարտի եզրից ցած, որ երևան)
+  ctx.fillStyle = '#231a12';
+  ctx.beginPath(); ctx.arc(b.helm.cx - 8, b.helm.cy + 19, 2.6, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(b.helm.cx + 8, b.helm.cy + 19, 2.6, 0, 7); ctx.fill();
+  ctx.strokeStyle = '#231a12'; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(b.helm.cx - 13, b.helm.cy + 14); ctx.lineTo(b.helm.cx - 4, b.helm.cy + 17);
+  ctx.moveTo(b.helm.cx + 13, b.helm.cy + 14); ctx.lineTo(b.helm.cx + 4, b.helm.cy + 17);
+  ctx.stroke();
+  // մեծ բեղերը
+  ctx.strokeStyle = '#231a12'; ctx.lineWidth = 3.4; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(b.helm.cx - 1, b.helm.cy + 25); ctx.quadraticCurveTo(b.helm.cx - 12, b.helm.cy + 23, b.helm.cx - 15, b.helm.cy + 29);
+  ctx.moveTo(b.helm.cx + 1, b.helm.cy + 25); ctx.quadraticCurveTo(b.helm.cx + 12, b.helm.cy + 23, b.helm.cx + 15, b.helm.cy + 29);
+  ctx.stroke();
+
+  // ՀՍԿԱ սաղավարտը
+  const hg = ctx.createLinearGradient(b.helm.cx - MEL.helmR, 0, b.helm.cx + MEL.helmR, 0);
+  hg.addColorStop(0, '#6b7691');
+  hg.addColorStop(0.45, '#aab6cd');
+  hg.addColorStop(1, '#4c566d');
+  ctx.fillStyle = hg;
+  ctx.beginPath();
+  ctx.arc(b.helm.cx, b.helm.cy + 4, MEL.helmR, Math.PI, 0);
+  ctx.lineTo(b.helm.cx + MEL.helmR, b.helm.cy + 8);
+  ctx.lineTo(b.helm.cx - MEL.helmR, b.helm.cy + 8);
+  ctx.closePath(); ctx.fill();
+  // սաղավարտի եզրը
+  ctx.fillStyle = '#3f4a60';
+  ctx.beginPath(); ctx.roundRect(b.helm.cx - MEL.helmR - 5, b.helm.cy + 6, MEL.helmR * 2 + 10, 8, 4); ctx.fill();
+  // քթի պաշտպանիչը
+  ctx.fillStyle = '#5a657e';
+  ctx.fillRect(b.helm.cx - 3, b.helm.cy + 10, 6, 11);
+  // ծայրի ձողիկը ու փետուրը
+  ctx.strokeStyle = '#3f4a60'; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(b.helm.cx, b.helm.cy - MEL.helmR + 4); ctx.lineTo(b.helm.cx, b.helm.cy - MEL.helmR - 14); ctx.stroke();
+  ctx.strokeStyle = '#e04a5f'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(b.helm.cx, b.helm.cy - MEL.helmR - 13);
+    ctx.quadraticCurveTo(b.helm.cx + 14 + i * 5, b.helm.cy - MEL.helmR - 10 + i * 5, b.helm.cx + 6 + i * 4, b.helm.cy - MEL.helmR + 6 + i * 6);
+    ctx.stroke();
+  }
+
+  // ձեռքը, որ վահանն է բռնել
+  ctx.strokeStyle = '#7a5a3c'; ctx.lineWidth = 8; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(b.torso.x0 + 4, b.torso.y0 + 16);
+  ctx.lineTo(b.shield.x0 + MEL.shW / 2, m.sy);
+  ctx.stroke();
+
+  // ՎԱՀԱՆԸ
+  const sg = ctx.createLinearGradient(b.shield.x0, 0, b.shield.x1, 0);
+  sg.addColorStop(0, m.clang > 0 ? '#fff3c4' : '#c98b2e');
+  sg.addColorStop(1, '#8a5a1e');
+  ctx.fillStyle = sg;
+  ctx.beginPath(); ctx.roundRect(b.shield.x0, b.shield.y0, MEL.shW, MEL.shH, 11); ctx.fill();
+  ctx.strokeStyle = '#f0b429'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.roundRect(b.shield.x0 + 1.5, b.shield.y0 + 1.5, MEL.shW - 3, MEL.shH - 3, 10); ctx.stroke();
+  // վահանի կենտրոնի կոճակը
+  ctx.fillStyle = '#f5e2a8';
+  ctx.beginPath(); ctx.arc(b.shield.x0 + MEL.shW / 2, m.sy, 6, 0, 7); ctx.fill();
+  ctx.fillStyle = '#8a5a1e';
+  ctx.beginPath(); ctx.arc(b.shield.x0 + MEL.shW / 2, m.sy - 30, 3, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(b.shield.x0 + MEL.shW / 2, m.sy + 30, 3, 0, 7); ctx.fill();
+
+  // «ԾԱ՛ՆԳ» — վահանին դիպավ
+  if (m.clang > 0) {
+    ctx.strokeStyle = 'rgba(255,243,196,' + Math.max(0, m.clang * 3) + ')';
+    ctx.lineWidth = 3;
+    for (let i = 1; i <= 3; i++) {
+      ctx.beginPath(); ctx.arc(b.shield.x0, m.sy, 14 + i * 9, -0.8, 0.8); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+function drawStone(s) {
+  ctx.save();
+  ctx.translate(s.x, s.y);
+  ctx.rotate(s.rot);
+  ctx.fillStyle = '#9aa0a6';
+  ctx.beginPath();
+  for (let k = 0; k < 7; k++) {
+    const a = (Math.PI * 2 / 7) * k;
+    const r = STONE_R * (0.8 + 0.25 * Math.sin(k * 3));
+    ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+  }
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#6f757a';
+  ctx.beginPath(); ctx.arc(-2, -1, 2, 0, 7); ctx.fill();
+  ctx.restore();
+}
+
+// Մելիքի շպրտածը՝ կարաս կամ գերան (նկարած, ոչ էմոջի)
+function drawIncoming(o) {
+  const p = o.t / o.tt;
+  const x = o.x0 + (o.x1 - o.x0) * p;
+  const y = (o.y0 + (groundY - 12 - o.y0) * p) - 150 * 4 * p * (1 - p) * 0.5;
+  // ընկնելու տեղը՝ գետնին
+  const warn = 0.35 + 0.45 * Math.sin(Date.now() / 90);
+  ctx.strokeStyle = 'rgba(255,90,110,' + warn.toFixed(2) + ')';
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.ellipse(o.x1, groundY + 2, 26, 8, 0, 0, 7); ctx.stroke();
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.beginPath(); ctx.ellipse(o.x1, groundY + 2, 8 + 16 * p, (8 + 16 * p) * 0.3, 0, 0, 7); ctx.fill();
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(o.rot);
+  if (o.kind === 0) {
+    // կավե կարաս
+    ctx.fillStyle = '#b5723f';
+    ctx.beginPath(); ctx.ellipse(0, 0, 12, 15, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#8a5228';
+    ctx.fillRect(-5, -19, 10, 6);
+    ctx.strokeStyle = '#8a5228'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(12, -2, 6, -1.2, 1.2); ctx.stroke();
+  } else {
+    // գերան
+    ctx.fillStyle = '#7a5230';
+    ctx.beginPath(); ctx.roundRect(-18, -8, 36, 16, 7); ctx.fill();
+    ctx.fillStyle = '#a8764a';
+    ctx.beginPath(); ctx.ellipse(16, 0, 4, 8, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#5e3d21'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-8, -8); ctx.lineTo(-8, 8); ctx.moveTo(2, -8); ctx.lineTo(2, 8); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// Կետագծով ցույց ենք տալիս, ուր կգնա քարը — որ արդար լինի
+function drawAimArc() {
+  const v = aimVector();
+  if (!v) return;
+  const p = launchPoint();
+  let x = p.x, y = p.y, vx = v.vx, vy = v.vy;
+  for (let i = 0; i < 34; i++) {
+    const st = 0.032;
+    vy += GRAV * st; x += vx * st; y += vy * st;
+    if (y > groundY || x > W + 20) break;
+    const r = Math.max(1.4, 3.6 - i * 0.06);
+    ctx.fillStyle = 'rgba(20,14,32,0.5)';
+    ctx.beginPath(); ctx.arc(x, y + 1, r + 1.2, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+  }
+  // փոքրիկ սլաք՝ ուր է թռչելու
+  const a = Math.atan2(v.vy, v.vx);
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.rotate(a);
+  ctx.fillStyle = '#6ee7b7';
+  ctx.beginPath();
+  ctx.moveTo(30, 0); ctx.lineTo(16, -7); ctx.lineTo(16, 7);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+  // ուժի սանդղակը՝ Դավթի գլխի վերևում
+  ctx.fillStyle = 'rgba(20,14,32,0.7)';
+  ctx.beginPath(); ctx.roundRect(p.x - 27, p.y - 46, 54, 10, 5); ctx.fill();
+  ctx.fillStyle = v.pow > 0.85 ? '#ff8f5a' : '#6ee7b7';
+  ctx.beginPath(); ctx.roundRect(p.x - 25, p.y - 44, 50 * v.pow, 6, 3); ctx.fill();
+}
+
+function draw() {
+  drawSky();
+  for (const o of G.incoming) drawIncoming(o);
+  drawMelik();
+  drawDavid();
+  for (const s of G.stones) drawStone(s);
+  if (G.state === 'play' && G.aim) drawAimArc();
+  for (const p of G.puffs) {
+    ctx.globalAlpha = Math.max(0, p.life * 2);
+    ctx.fillStyle = p.c;
+    ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, 7); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ——— Հիմնական պտույտը ———
+let lastTs = 0;
+function loop(ts) {
+  const dt = Math.min(0.05, lastTs ? (ts - lastTs) / 1000 : 0.016);
+  lastTs = ts;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// ——— Տոնական թղթիկները (սրանք DOM-ում են, ոչ կտավին — այստեղ էմոջին կարելի է) ———
+function confetti() {
+  const stuff = ['🎉', '⭐', '💛', '🎊', '✨'];
+  for (let k = 0; k < 40; k++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = stuff[Math.floor(Math.random() * stuff.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 22) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+}
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, թրթռոց, նկար, բեռնում -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
