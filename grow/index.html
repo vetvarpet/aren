@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Մեծացող 🎈 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #16203a; overflow: hidden;
+               font-family: Arial, Helvetica, sans-serif; color: #f5eede; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  .ov { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 24px;
+        background: rgba(12,15,32,0.9); }
+  .ov[hidden] { display: none !important; }
+  .ov h1 { margin: 0 0 6px; font-size: 1.45rem; color: #f0c85a; }
+  .ov p { margin: 0 0 18px; font-size: 0.92rem; line-height: 1.5; max-width: 330px; opacity: 0.9; }
+  .ov .big { font-size: 2.6rem; font-weight: bold; color: #ffe9a8; margin-bottom: 2px; }
+  .ov button { font-family: inherit; font-size: 1rem; font-weight: bold; padding: 13px 30px;
+               border-radius: 14px; border: none; background: #f0c85a; color: #10162a; cursor: pointer; }
+  #hud { position: fixed; top: 54px; left: 0; right: 0; z-index: 10; text-align: center;
+         font-size: 1.2rem; font-weight: bold; color: #ffe9a8; pointer-events: none; text-shadow: 0 2px 6px #000; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:30;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="hud"></div>
+
+<div class="ov" id="menu">
+  <h1 id="mT">Ոսկե Մեծացող 🎈</h1>
+  <p id="mS">Ինչ ուտում ես՝ մեծանում ես։ Բայց մեծ վիճակում դռներից չես անցնում — սպասիր, մինչև մարսես։</p>
+  <button id="startBtn">▶ Սկսել</button>
+</div>
+
+<div class="ov" id="over" hidden>
+  <div class="big" id="oScore">0</div>
+  <h1 id="oT">Վե՛րջ</h1>
+  <p id="oS"></p>
+  <button id="againBtn">↻ Նորից</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ՄԵԾԱՑՈՂ 🎈 — Արենի միտքն է
+//  Ուտում ես՝ մեծանում ես։ Մեծ վիճակում նեղ դռներից չես անցնում։
+//  Ուրեմն պիտի մտածես՝ ե՞րբ ուտել ու ե՞րբ սպասել, որ մարսես։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'Ոսկե Մեծացող 🎈', s:'Ինչ ուտում ես՝ մեծանում ես։ Բայց մեծ վիճակում դռներից չես անցնում — սպասիր, մինչև մարսես։',
+        go:'▶ Սկսել', again:'↻ Նորից', over:'Ժամանակը լրացավ', rec:'Նոր ռեկորդ 🎉',
+        best:n=>'Ռեկորդ՝ '+n, ate:n=>'Կերար '+n, sec:n=>n+' վրկ' },
+  ru: { t:'Золотой Растущий 🎈', s:'Что съел — на то и вырос. Но большой в дверь не пролезешь: подожди, пока переваришь.',
+        go:'▶ Начать', again:'↻ Ещё раз', over:'Время вышло', rec:'Новый рекорд 🎉',
+        best:n=>'Рекорд: '+n, ate:n=>'Съедено: '+n, sec:n=>n+' с' },
+  en: { t:'Golden Grow 🎈', s:'Whatever you eat makes you bigger. But big means you cannot fit through the doors — wait until you digest.',
+        go:'▶ Start', again:'↻ Again', over:'Time is up', rec:'New best 🎉',
+        best:n=>'Best: '+n, ate:n=>'Eaten: '+n, sec:n=>n+'s' },
+  es: { t:'El Dorado que Crece 🎈', s:'Todo lo que comes te hace más grande. Pero grande no cabes por las puertas: espera a digerir.',
+        go:'▶ Empezar', again:'↻ Otra vez', over:'Se acabó el tiempo', rec:'¡Nuevo récord! 🎉',
+        best:n=>'Récord: '+n, ate:n=>'Comido: '+n, sec:n=>n+'s' },
+  fr: { t:'Le Doré qui Grandit 🎈', s:'Tout ce que tu manges te fait grossir. Mais gros, tu ne passes plus les portes : attends de digérer.',
+        go:'▶ Démarrer', again:'↻ Encore', over:'Temps écoulé', rec:'Nouveau record 🎉',
+        best:n=>'Record : '+n, ate:n=>'Mangé : '+n, sec:n=>n+' s' },
+  de: { t:'Der Goldene Wachser 🎈', s:'Was du isst, macht dich größer. Aber groß passt du nicht durch die Türen — warte, bis du verdaut hast.',
+        go:'▶ Start', again:'↻ Nochmal', over:'Zeit ist um', rec:'Neuer Rekord 🎉',
+        best:n=>'Rekord: '+n, ate:n=>'Gegessen: '+n, sec:n=>n+' s' },
+  ja: { t:'ゴールデン・おおきくなる 🎈', s:'たべるとおおきくなるよ。でもおおきいとドアをとおれない。しょうかするまでまとう。',
+        go:'▶ スタート', again:'↻ もういちど', over:'じかんぎれ', rec:'しんきろく 🎉',
+        best:n=>'ベスト：'+n, ate:n=>'たべたかず：'+n, sec:n=>n+'びょう' },
+  zh: { t:'黄金变大 🎈', s:'吃什么都会变大。但变大了就过不去门——等消化完再走。',
+        go:'▶ 开始', again:'↻ 再来', over:'时间到', rec:'新纪录 🎉',
+        best:n=>'纪录：'+n, ate:n=>'吃了：'+n, sec:n=>n+'秒' },
+  it: { t:'Il Dorato che Cresce 🎈', s:'Tutto quello che mangi ti fa crescere. Ma da grande non passi dalle porte: aspetta di digerire.',
+        go:'▶ Avvia', again:'↻ Ancora', over:'Tempo scaduto', rec:'Nuovo record 🎉',
+        best:n=>'Record: '+n, ate:n=>'Mangiato: '+n, sec:n=>n+' s' },
+  ka: { t:'ოქროს გამზრდელი 🎈', s:'რასაც ჭამ, იმდენად იზრდები. მაგრამ დიდი კარებში ვერ გაძვრები — დაელოდე, სანამ მოინელებ.',
+        go:'▶ დაწყება', again:'↻ თავიდან', over:'დრო ამოიწურა', rec:'ახალი რეკორდი 🎉',
+        best:n=>'რეკორდი: '+n, ate:n=>'შეჭამე: '+n, sec:n=>n+' წმ' },
+  hi: { t:'गोल्डन बढ़ने वाला 🎈', s:'जो खाओगे उतने बड़े हो जाओगे। पर बड़े होकर दरवाज़े से नहीं निकलोगे — पचने का इंतज़ार करो।',
+        go:'▶ शुरू', again:'↻ फिर से', over:'समय पूरा', rec:'नया रिकॉर्ड 🎉',
+        best:n=>'रिकॉर्ड: '+n, ate:n=>'खाया: '+n, sec:n=>n+'से' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('mT').textContent = T.t;
+document.getElementById('mS').textContent = T.s;
+document.getElementById('startBtn').textContent = T.go;
+document.getElementById('againBtn').textContent = T.again;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let best = 0;
+try { best = Number(localStorage.getItem('aren-grow-best') || 0) || 0; } catch (e) {}
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.12, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.12));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.12));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function fit() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+fit(); addEventListener('resize', fit);
+
+// ——— դաշտը. երեք սենյակ, երկու պատ ———
+const TOP = () => H * 0.16, BOT = () => H * 0.94;
+function wallYs() {
+  const a = TOP(), b = BOT();
+  return [a + (b - a) / 3, a + 2 * (b - a) / 3];
+}
+// դռների լայնությունը՝ լայն ու նեղ
+const GAPS = [86, 54];
+let gapX = [0, 0];
+
+const RMIN = 13, RMAX = 34;
+let state = 'menu', r = RMIN, px = 0, py = 0, tx = 0, ty = 0;
+let food = [], ate = 0, left = 60, endedAt = 0, bump = 0;
+
+function reset() {
+  r = RMIN; ate = 0; left = 60; food = []; bump = 0;
+  px = W / 2; py = BOT() - 40; tx = px; ty = py;
+  gapX = [W * (0.25 + Math.random() * 0.5), W * (0.25 + Math.random() * 0.5)];
+  for (let i = 0; i < 7; i++) addFood();
+}
+function roomOf(y) { const [w1, w2] = wallYs(); return y < w1 ? 0 : (y < w2 ? 1 : 2); }
+function addFood() {
+  for (let tries = 0; tries < 30; tries++) {
+    const x = 30 + Math.random() * (W - 60);
+    const y = TOP() + 30 + Math.random() * (BOT() - TOP() - 60);
+    const [w1, w2] = wallYs();
+    if (Math.abs(y - w1) < 26 || Math.abs(y - w2) < 26) continue;
+    // վերևի սենյակում ուտելիքն ավելի արժեքավոր է — այնտեղ հասնելը դժվար է
+    food.push({ x: x, y: y, v: roomOf(y) === 0 ? 3 : (roomOf(y) === 1 ? 2 : 1) });
+    return;
+  }
+}
+function start() {
+  initAudio(); reset(); state = 'play';
+  document.getElementById('menu').hidden = true;
+  document.getElementById('over').hidden = true;
+  tone(700, 0.13, 'triangle');
+}
+function finish() {
+  state = 'over'; endedAt = Date.now();
+  const isRec = ate > best;
+  if (isRec) { best = ate; try { localStorage.setItem('aren-grow-best', String(best)); } catch (e) {} }
+  document.getElementById('oScore').textContent = String(ate);
+  document.getElementById('oT').textContent = isRec ? T.rec : T.over;
+  document.getElementById('oS').textContent = T.best(best);
+  document.getElementById('over').hidden = false;
+  tone(300, 0.3, 'triangle', 0.13);
+}
+
+function aim(e) {
+  const rect = cv.getBoundingClientRect();
+  tx = e.clientX - rect.left; ty = e.clientY - rect.top;
+}
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio();
+  if (state === 'play') { aim(e); return; }
+  if (state === 'over' && Date.now() - endedAt > 1100) start();
+});
+cv.addEventListener('pointermove', (e) => { if (state === 'play' && e.buttons) { e.preventDefault(); aim(e); } });
+cv.addEventListener('touchmove', (e) => {
+  if (state === 'play' && e.touches[0]) {
+    e.preventDefault();
+    const rect = cv.getBoundingClientRect();
+    tx = e.touches[0].clientX - rect.left; ty = e.touches[0].clientY - rect.top;
+  }
+}, { passive: false });
+document.getElementById('startBtn').addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && ghost()) return; start(); });
+document.getElementById('againBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  if (Date.now() - endedAt > 1100) start();
+});
+
+function step(dt) {
+  left -= dt;
+  if (left <= 0) { left = 0; finish(); return; }
+  if (bump > 0) bump -= dt;
+
+  // մարսողություն — կամաց փոքրանում ես
+  r = Math.max(RMIN, r - 2.2 * dt);
+
+  // շարժում դեպի մատը
+  const dx = tx - px, dy = ty - py, d = Math.hypot(dx, dy);
+  const sp = 260;
+  let nx = px, ny = py;
+  if (d > 2) { nx = px + dx / d * Math.min(d, sp * dt); ny = py + dy / d * Math.min(d, sp * dt); }
+  nx = Math.max(r, Math.min(W - r, nx));
+  ny = Math.max(TOP() + r, Math.min(BOT() - r, ny));
+
+  // պատերը. անցնում ես միայն դռնով, ու միայն եթե տեղավորվում ես
+  const ys = wallYs();
+  for (let i = 0; i < 2; i++) {
+    const wy = ys[i], g = GAPS[i], gx = gapX[i];
+    const crossing = (py - wy) * (ny - wy) <= 0 && py !== ny;
+    const near = Math.abs(ny - wy) < r + 4;
+    if (crossing || near) {
+      const insideDoor = Math.abs(nx - gx) + r <= g / 2;
+      if (!insideDoor) {
+        // պատին կպանք — մնում ենք նույն կողմում
+        if (Math.abs(ny - wy) < r + 4) {
+          ny = py < wy ? Math.min(ny, wy - r - 4) : Math.max(ny, wy + r + 4);
+          if (bump <= 0) { bump = 0.25; tone(220, 0.07, 'square', 0.06); }
+        }
+      }
+    }
+  }
+  px = nx; py = ny;
+
+  // ուտելիք
+  for (const f of food) {
+    if (f.done) continue;
+    if (Math.hypot(f.x - px, f.y - py) < r + 9) {
+      f.done = true; ate += f.v; r = Math.min(RMAX, r + 3 + f.v);
+      tone(560 + f.v * 90, 0.09, 'triangle', 0.1);
+      addFood();
+    }
+  }
+  food = food.filter(f => !f.done);
+  while (food.length < 7) addFood();
+}
+
+function draw() {
+  cx.clearRect(0, 0, W, H);
+  const g = cx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#1a2440'); g.addColorStop(1, '#243055');
+  cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+
+  const ys = wallYs();
+  // սենյակների ֆոնը
+  cx.fillStyle = 'rgba(255,255,255,0.035)';
+  cx.fillRect(0, TOP(), W, ys[0] - TOP());
+  cx.fillRect(0, ys[1], W, BOT() - ys[1]);
+
+  // վերևի ու ներքևի եզրերը
+  cx.fillStyle = '#3a3f6b'; cx.fillRect(0, TOP() - 8, W, 8); cx.fillRect(0, BOT(), W, 8);
+
+  // պատերն ու դռները
+  for (let i = 0; i < 2; i++) {
+    const wy = ys[i], gx = gapX[i], gw = GAPS[i];
+    cx.fillStyle = '#5a5f8c';
+    cx.fillRect(0, wy - 5, Math.max(0, gx - gw / 2), 10);
+    cx.fillRect(Math.min(W, gx + gw / 2), wy - 5, W, 10);
+    // դռան շրջանակը — կանաչ, եթե տեղավորվում ես, կարմիր՝ եթե ոչ
+    const fits = r * 2 <= gw - 2;
+    cx.fillStyle = fits ? '#7fd1c1' : '#e8756a';
+    cx.fillRect(gx - gw / 2 - 6, wy - 7, 6, 14);
+    cx.fillRect(gx + gw / 2, wy - 7, 6, 14);
+  }
+
+  // ուտելիքը
+  for (const f of food) {
+    cx.fillStyle = f.v === 3 ? '#ffe9a8' : (f.v === 2 ? '#7fd1c1' : '#a8c98a');
+    cx.beginPath(); cx.arc(f.x, f.y, 8, 0, Math.PI * 2); cx.fill();
+    cx.fillStyle = 'rgba(0,0,0,0.25)';
+    cx.beginPath(); cx.arc(f.x + 2, f.y + 2, 3, 0, Math.PI * 2); cx.fill();
+  }
+
+  // հերոսը — փուչիկ, որ մեծանում է
+  cx.save();
+  if (bump > 0) cx.translate(Math.sin(bump * 60) * 3, 0);
+  const gg = cx.createRadialGradient(px - r * 0.3, py - r * 0.3, r * 0.2, px, py, r);
+  gg.addColorStop(0, '#ffe9a8'); gg.addColorStop(1, '#e0a93c');
+  cx.fillStyle = gg;
+  cx.beginPath(); cx.arc(px, py, r, 0, Math.PI * 2); cx.fill();
+  cx.fillStyle = '#10162a';
+  cx.beginPath(); cx.arc(px - r * 0.28, py - r * 0.1, Math.max(2, r * 0.13), 0, Math.PI * 2); cx.fill();
+  cx.beginPath(); cx.arc(px + r * 0.28, py - r * 0.1, Math.max(2, r * 0.13), 0, Math.PI * 2); cx.fill();
+  cx.strokeStyle = '#10162a'; cx.lineWidth = Math.max(2, r * 0.09);
+  cx.beginPath(); cx.arc(px, py + r * 0.18, r * 0.3, 0.15 * Math.PI, 0.85 * Math.PI); cx.stroke();
+  cx.restore();
+
+  document.getElementById('hud').textContent = state === 'play'
+    ? T.ate(ate) + '   ⏱ ' + T.sec(Math.ceil(left)) : '';
+}
+
+let prev = 0;
+function loop(now) {
+  const dt = Math.min(0.033, (now - prev) / 1000 || 0); prev = now;
+  if (state === 'play') step(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+draw(); requestAnimationFrame(loop);
+
+window.GROW = {
+  get state() { return state; }, get r() { return r; }, get ate() { return ate; }, get best() { return best; },
+  get pos() { return { x: px, y: py }; }, get food() { return food; }, get gaps() { return GAPS; },
+  get gapX() { return gapX; }, get wallYs() { return wallYs(); },
+  set left(v) { left = v; }, setR: v => { r = v; }, moveTo: (x, y) => { tx = x; ty = y; },
+  put: (x, y) => { px = x; py = y; tx = x; ty = y; }, start: start,
+};
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
+</body>
+</html>

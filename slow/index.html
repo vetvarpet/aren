@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Դանդաղ 🐌 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #16261f; overflow: hidden;
+               font-family: Arial, Helvetica, sans-serif; color: #f5eede; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  .ov { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 24px;
+        background: rgba(10,20,16,0.92); }
+  .ov[hidden] { display: none !important; }
+  .ov h1 { margin: 0 0 6px; font-size: 1.45rem; color: #f0c85a; }
+  .ov p { margin: 0 0 18px; font-size: 0.92rem; line-height: 1.5; max-width: 330px; opacity: 0.9; }
+  .ov .big { font-size: 2.6rem; font-weight: bold; color: #ffe9a8; margin-bottom: 2px; }
+  .ov button { font-family: inherit; font-size: 1rem; font-weight: bold; padding: 13px 30px;
+               border-radius: 14px; border: none; background: #f0c85a; color: #10162a; cursor: pointer; }
+  #hud { position: fixed; top: 54px; left: 0; right: 0; z-index: 10; text-align: center;
+         pointer-events: none; text-shadow: 0 2px 6px #000; }
+  #hud .sc { font-size: 1.4rem; font-weight: bold; color: #ffe9a8; }
+  #hud .tip { font-size: 0.8rem; opacity: 0.85; margin-top: 3px; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:30;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="hud"><div class="sc"></div><div class="tip"></div></div>
+
+<div class="ov" id="menu">
+  <h1 id="mT">Ոսկե Դանդաղ 🐌</h1>
+  <p id="mS">Հակառակ բոլոր խաղերի՝ այստեղ որքան դանդաղ շարժվես, այնքան շատ միավոր։ Բայց 60 վայրկյանում պիտի հասնես վերջ։</p>
+  <button id="startBtn">▶ Սկսել</button>
+</div>
+
+<div class="ov" id="over" hidden>
+  <div class="big" id="oScore">0</div>
+  <h1 id="oT">Վե՛րջ</h1>
+  <p id="oS"></p>
+  <button id="againBtn">↻ Նորից</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ԴԱՆԴԱՂ 🐌 — Արենի միտքն է
+//  Ամենատարօրինակ կանոնը. որքան դանդաղ ես գնում, այնքան շատ միավոր։
+//  Բայց ժամանակը սահմանափակ է — շատ դանդաղ գնաս, չես հասնի։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'Ոսկե Դանդաղ 🐌', s:'Հակառակ բոլոր խաղերի՝ այստեղ որքան դանդաղ շարժվես, այնքան շատ միավոր։ Բայց 60 վայրկյանում պիտի հասնես վերջ։',
+        go:'▶ Սկսել', again:'↻ Նորից', done:'Հասար վերջ 🎉', late:'Ժամանակը լրացավ', rec:'Նոր ռեկորդ 🎉',
+        best:n=>'Ռեկորդ՝ '+n, bonus:n=>'Հասնելու բոնուս՝ +'+n, way:n=>'Ճանապարհ՝ '+n+'%',
+        slow:'Կատարյալ դանդաղ 🐌', fast:'Շա՛տ արագ ես — միավոր չկա', pull:'Քաշիր խխունջին առաջ' },
+  ru: { t:'Золотой Медленный 🐌', s:'Наоборот: чем медленнее едешь, тем больше очков. Но за 60 секунд надо доехать до конца.',
+        go:'▶ Начать', again:'↻ Ещё раз', done:'Доехал 🎉', late:'Время вышло', rec:'Новый рекорд 🎉',
+        best:n=>'Рекорд: '+n, bonus:n=>'Бонус за финиш: +'+n, way:n=>'Путь: '+n+'%',
+        slow:'Идеально медленно 🐌', fast:'Слишком быстро — очков нет', pull:'Тяни улитку вперёд' },
+  en: { t:'Golden Slow 🐌', s:'The opposite of every other game: the slower you move, the more points. But you must finish within 60 seconds.',
+        go:'▶ Start', again:'↻ Again', done:'You made it 🎉', late:'Time is up', rec:'New best 🎉',
+        best:n=>'Best: '+n, bonus:n=>'Finish bonus: +'+n, way:n=>'Road: '+n+'%',
+        slow:'Perfectly slow 🐌', fast:'Too fast — no points', pull:'Drag the snail forward' },
+  es: { t:'El Dorado Lento 🐌', s:'Al revés que los demás: cuanto más lento vas, más puntos. Pero debes llegar en 60 segundos.',
+        go:'▶ Empezar', again:'↻ Otra vez', done:'¡Llegaste! 🎉', late:'Se acabó el tiempo', rec:'¡Nuevo récord! 🎉',
+        best:n=>'Récord: '+n, bonus:n=>'Bonus de meta: +'+n, way:n=>'Camino: '+n+'%',
+        slow:'Perfectamente lento 🐌', fast:'Demasiado rápido: no hay puntos', pull:'Arrastra el caracol' },
+  fr: { t:'Le Doré Lent 🐌', s:'L’inverse des autres jeux : plus tu vas lentement, plus tu marques. Mais tu dois finir en 60 secondes.',
+        go:'▶ Démarrer', again:'↻ Encore', done:'Tu es arrivé 🎉', late:'Temps écoulé', rec:'Nouveau record 🎉',
+        best:n=>'Record : '+n, bonus:n=>'Bonus d’arrivée : +'+n, way:n=>'Route : '+n+' %',
+        slow:'Parfaitement lent 🐌', fast:'Trop vite — aucun point', pull:'Tire l’escargot' },
+  de: { t:'Der Goldene Langsame 🐌', s:'Andersherum als sonst: je langsamer du bist, desto mehr Punkte. Aber in 60 Sekunden musst du ankommen.',
+        go:'▶ Start', again:'↻ Nochmal', done:'Angekommen 🎉', late:'Zeit ist um', rec:'Neuer Rekord 🎉',
+        best:n=>'Rekord: '+n, bonus:n=>'Ziel-Bonus: +'+n, way:n=>'Weg: '+n+'%',
+        slow:'Perfekt langsam 🐌', fast:'Zu schnell — keine Punkte', pull:'Zieh die Schnecke vorwärts' },
+  ja: { t:'ゴールデン・ゆっくり 🐌', s:'ほかのゲームのぎゃく。ゆっくりうごくほどてんすうがふえる。でも60びょういないにゴールしてね。',
+        go:'▶ スタート', again:'↻ もういちど', done:'ゴールしたよ 🎉', late:'じかんぎれ', rec:'しんきろく 🎉',
+        best:n=>'ベスト：'+n, bonus:n=>'ゴールボーナス：+'+n, way:n=>'みち：'+n+'%',
+        slow:'かんぺきにゆっくり 🐌', fast:'はやすぎ — てんすうなし', pull:'カタツムリをまえへひっぱって' },
+  zh: { t:'黄金慢慢来 🐌', s:'和别的游戏相反：走得越慢分越多。但必须在 60 秒内到终点。',
+        go:'▶ 开始', again:'↻ 再来', done:'到终点啦 🎉', late:'时间到', rec:'新纪录 🎉',
+        best:n=>'纪录：'+n, bonus:n=>'到达奖励：+'+n, way:n=>'路程：'+n+'%',
+        slow:'慢得刚刚好 🐌', fast:'太快了 — 没有分', pull:'把蜗牛往前拖' },
+  it: { t:'Il Dorato Lento 🐌', s:'Il contrario di tutti gli altri: più vai piano, più punti fai. Ma devi arrivare in 60 secondi.',
+        go:'▶ Avvia', again:'↻ Ancora', done:'Sei arrivato 🎉', late:'Tempo scaduto', rec:'Nuovo record 🎉',
+        best:n=>'Record: '+n, bonus:n=>'Bonus arrivo: +'+n, way:n=>'Strada: '+n+'%',
+        slow:'Perfettamente lento 🐌', fast:'Troppo veloce — niente punti', pull:'Trascina la lumaca' },
+  ka: { t:'ოქროს ნელი 🐌', s:'ყველა სხვა თამაშის საპირისპიროდ: რაც უფრო ნელა მიდიხარ, მით მეტი ქულა. მაგრამ 60 წამში უნდა მიხვიდე.',
+        go:'▶ დაწყება', again:'↻ თავიდან', done:'მიაღწიე 🎉', late:'დრო ამოიწურა', rec:'ახალი რეკორდი 🎉',
+        best:n=>'რეკორდი: '+n, bonus:n=>'ფინიშის ბონუსი: +'+n, way:n=>'გზა: '+n+'%',
+        slow:'იდეალურად ნელა 🐌', fast:'ძალიან სწრაფად — ქულა არაა', pull:'გაათრიე ლოკოკინა წინ' },
+  hi: { t:'गोल्डन धीरे 🐌', s:'बाकी सब खेलों का उल्टा: जितना धीरे चलोगे उतने ज़्यादा अंक। पर 60 सेकंड में पहुँचना है।',
+        go:'▶ शुरू', again:'↻ फिर से', done:'पहुँच गए 🎉', late:'समय पूरा', rec:'नया रिकॉर्ड 🎉',
+        best:n=>'रिकॉर्ड: '+n, bonus:n=>'पहुँचने का बोनस: +'+n, way:n=>'रास्ता: '+n+'%',
+        slow:'बिल्कुल सही धीमा 🐌', fast:'बहुत तेज़ — कोई अंक नहीं', pull:'घोंघे को आगे खींचो' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('mT').textContent = T.t;
+document.getElementById('mS').textContent = T.s;
+document.getElementById('startBtn').textContent = T.go;
+document.getElementById('againBtn').textContent = T.again;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let best = 0;
+try { best = Number(localStorage.getItem('aren-slow-best') || 0) || 0; } catch (e) {}
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.1, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.12));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.12));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function fit() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+fit(); addEventListener('resize', fit);
+
+// ——— ճանապարհը. ոլորապտույտ գիծ վերևից ներքև ———
+let pts = [];
+function buildPath() {
+  pts = [];
+  const n = 9, top = H * 0.14, bot = H * 0.9;
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    const y = top + (bot - top) * t;
+    const x = W / 2 + Math.sin(t * Math.PI * 2.4) * (W * 0.30);
+    pts.push({ x: x, y: y });
+  }
+}
+function pathLen() {
+  let L = 0;
+  for (let i = 1; i < pts.length; i++) L += Math.hypot(pts[i].x - pts[i-1].x, pts[i].y - pts[i-1].y);
+  return L;
+}
+function atDist(d) {
+  let acc = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const seg = Math.hypot(pts[i].x - pts[i-1].x, pts[i].y - pts[i-1].y);
+    if (acc + seg >= d) {
+      const k = (d - acc) / seg;
+      return { x: pts[i-1].x + (pts[i].x - pts[i-1].x) * k, y: pts[i-1].y + (pts[i].y - pts[i-1].y) * k };
+    }
+    acc += seg;
+  }
+  return pts[pts.length - 1];
+}
+
+// Խխունջը հետևում է մատիդ՝ համաչափ, ոչ թե միշտ առավելագույն արագությամբ։
+// Այդպես մատդ 3 պիքսել առաջ պահելը իսկապես դանդաղ քայլ է տալիս,
+// իսկ մատը հեռու տանելը՝ լրիվ արագություն ու զրո միավոր։
+const VMAX = 320;             // px/վրկ — սրանից արագ չի գնում, ու այդտեղ միավոր չկա
+let state = 'menu', dist = 0, total = 1, score = 0, left = 60, endedAt = 0;
+let tx = 0, ty = 0, dragging = false, curSp = 0, trail = [];
+
+function reset() {
+  buildPath(); total = pathLen();
+  dist = 0; score = 0; left = 60; curSp = 0; trail = [];
+  const p = atDist(0); tx = p.x; ty = p.y;
+}
+function start() {
+  initAudio(); reset(); state = 'play';
+  document.getElementById('menu').hidden = true;
+  document.getElementById('over').hidden = true;
+  tone(500, 0.16, 'sine', 0.08);
+}
+function finish(reached) {
+  state = 'over'; endedAt = Date.now();
+  let bonus = 0;
+  if (reached) { bonus = 120 + Math.round(left * 1.2); score += bonus; }   // հասնելն ինքնին արժե, բայց դանդաղը գերակշռում է
+  score = Math.round(score);
+  const isRec = score > best;
+  if (isRec) { best = score; try { localStorage.setItem('aren-slow-best', String(best)); } catch (e) {} }
+  document.getElementById('oScore').textContent = String(score);
+  document.getElementById('oT').textContent = reached ? (isRec ? T.rec : T.done) : T.late;
+  document.getElementById('oS').textContent =
+    (reached ? T.bonus(bonus) + ' · ' : T.way(Math.round(dist / total * 100)) + ' · ') + T.best(best);
+  document.getElementById('over').hidden = false;
+  if (reached) [523,659,784].forEach((f,i)=>setTimeout(()=>tone(f,0.28,'triangle',0.14), i*170));
+  else tone(240, 0.3, 'sawtooth', 0.12);
+}
+
+function aim(e) { const r = cv.getBoundingClientRect(); tx = e.clientX - r.left; ty = e.clientY - r.top; }
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio();
+  if (state === 'play') { dragging = true; aim(e); return; }
+  if (state === 'over' && Date.now() - endedAt > 1100) start();
+});
+cv.addEventListener('pointermove', (e) => { if (state === 'play' && e.buttons) { e.preventDefault(); dragging = true; aim(e); } });
+cv.addEventListener('pointerup', () => { dragging = false; });
+cv.addEventListener('touchmove', (e) => {
+  if (state === 'play' && e.touches[0]) {
+    e.preventDefault(); dragging = true;
+    const r = cv.getBoundingClientRect();
+    tx = e.touches[0].clientX - r.left; ty = e.touches[0].clientY - r.top;
+  }
+}, { passive: false });
+cv.addEventListener('touchend', () => { dragging = false; }, { passive: true });
+document.getElementById('startBtn').addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && ghost()) return; start(); });
+document.getElementById('againBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  if (Date.now() - endedAt > 1100) start();
+});
+
+function step(dt) {
+  left -= dt;
+  if (left <= 0) { left = 0; finish(false); return; }
+
+  // խխունջը գնում է առաջ այնքան, որքան մատդ քաշել ես ճանապարհով
+  const me = atDist(dist);
+  const want = Math.hypot(tx - me.x, ty - me.y);
+  let move = 0;
+  if (dragging && want > 2) move = Math.min(want * 0.3, VMAX * dt);
+  const newDist = Math.min(total, dist + move);
+  const realMove = newDist - dist;
+  dist = newDist;
+  curSp = realMove / Math.max(0.001, dt);
+
+  // ՄԻԱՎՈՐԸ. որքան դանդաղ, այնքան շատ — բայց միայն շարժվելիս
+  if (realMove > 0.05) {
+    const slowness = Math.max(0, 1 - curSp / VMAX);
+    score += realMove * slowness * 1.5;
+    trail.push({ x: me.x, y: me.y, s: slowness });
+    if (trail.length > 260) trail.shift();
+  }
+  // Համաչափ հետևելու պատճառով վերջին պիքսելները անվերջ են մոտենում —
+  // 6 պիքսել մնաց՝ ուրեմն հասել ես։
+  if (dist >= total - 6) { dist = total; finish(true); }
+}
+
+function draw() {
+  cx.clearRect(0, 0, W, H);
+  const g = cx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#1a3227'); g.addColorStop(1, '#27452f');
+  cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+  if (!pts.length) buildPath();
+
+  // ճանապարհը
+  cx.strokeStyle = '#3d6b4a'; cx.lineWidth = 34; cx.lineCap = 'round'; cx.lineJoin = 'round';
+  cx.beginPath(); cx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) cx.lineTo(pts[i].x, pts[i].y);
+  cx.stroke();
+  cx.strokeStyle = '#4e8055'; cx.lineWidth = 26; cx.stroke();
+
+  // անցած հետքը՝ որքան դանդաղ, այնքան ոսկեգույն
+  for (const p of trail) {
+    cx.fillStyle = 'rgba(' + Math.round(255) + ',' + Math.round(200 + p.s * 33) + ',' + Math.round(60 + p.s * 120) + ',' + (0.15 + p.s * 0.5) + ')';
+    cx.beginPath(); cx.arc(p.x, p.y, 5 + p.s * 4, 0, Math.PI * 2); cx.fill();
+  }
+
+  // մեկնարկն ու վերջը
+  const a = pts[0], z = pts[pts.length - 1];
+  cx.fillStyle = '#cfd6e6'; cx.beginPath(); cx.arc(a.x, a.y, 12, 0, Math.PI * 2); cx.fill();
+  cx.fillStyle = '#f0c85a';
+  cx.beginPath(); cx.moveTo(z.x, z.y - 4); cx.lineTo(z.x, z.y - 44); cx.lineTo(z.x + 34, z.y - 32);
+  cx.lineTo(z.x, z.y - 20); cx.closePath(); cx.fill();
+  cx.fillStyle = '#cfd6e6'; cx.fillRect(z.x - 2, z.y - 46, 4, 46);
+
+  // խխունջը
+  const me = atDist(dist);
+  cx.save(); cx.translate(me.x, me.y);
+  cx.fillStyle = '#a8c98a';
+  cx.beginPath(); cx.ellipse(-6, 8, 20, 8, 0, 0, Math.PI * 2); cx.fill();
+  cx.beginPath(); cx.ellipse(11, 2, 8, 7, 0, 0, Math.PI * 2); cx.fill();
+  // եղջյուրները
+  cx.strokeStyle = '#a8c98a'; cx.lineWidth = 2.5; cx.lineCap = 'round';
+  cx.beginPath(); cx.moveTo(14, -3); cx.lineTo(19, -14); cx.stroke();
+  cx.beginPath(); cx.moveTo(9, -4); cx.lineTo(11, -16); cx.stroke();
+  cx.fillStyle = '#10162a';
+  cx.beginPath(); cx.arc(19, -15, 2.2, 0, Math.PI * 2); cx.fill();
+  cx.beginPath(); cx.arc(11, -17, 2.2, 0, Math.PI * 2); cx.fill();
+  // խեցին — ոսկեգույն օղակներով
+  const sg = cx.createRadialGradient(-6, 0, 2, -6, 0, 16);
+  sg.addColorStop(0, '#ffe9a8'); sg.addColorStop(1, '#c9825a');
+  cx.fillStyle = sg;
+  cx.beginPath(); cx.arc(-6, 0, 15, 0, Math.PI * 2); cx.fill();
+  cx.strokeStyle = 'rgba(80,50,20,0.5)'; cx.lineWidth = 2;
+  cx.beginPath(); cx.arc(-6, 0, 10, 0, Math.PI * 1.6); cx.stroke();
+  cx.beginPath(); cx.arc(-5, 1, 5, 0, Math.PI * 1.9); cx.stroke();
+  cx.restore();
+
+  // սանդղակներ
+  const bw = W * 0.66, bx = (W - bw) / 2;
+  cx.fillStyle = 'rgba(255,255,255,0.12)';
+  cx.beginPath(); cx.roundRect(bx, H - 44, bw, 9, 5); cx.fill();
+  cx.fillStyle = '#7fd1c1';
+  cx.beginPath(); cx.roundRect(bx, H - 44, bw * (dist / total), 9, 5); cx.fill();
+  cx.fillStyle = 'rgba(255,255,255,0.12)';
+  cx.beginPath(); cx.roundRect(bx, H - 28, bw, 9, 5); cx.fill();
+  cx.fillStyle = '#f0c85a';
+  cx.beginPath(); cx.roundRect(bx, H - 28, bw * (left / 60), 9, 5); cx.fill();
+
+  const sc = document.querySelector('#hud .sc'), tip = document.querySelector('#hud .tip');
+  if (state !== 'play') { sc.textContent = ''; tip.textContent = ''; }
+  else {
+    sc.textContent = Math.round(score) + '   ⏱ ' + Math.ceil(left);
+    tip.textContent = curSp < 2 ? T.pull : (curSp > VMAX ? T.fast : T.slow);
+  }
+}
+
+let prev = 0;
+function loop(now) {
+  const dt = Math.min(0.033, (now - prev) / 1000 || 0); prev = now;
+  if (state === 'play') step(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+buildPath(); draw(); requestAnimationFrame(loop);
+
+window.SLOW = {
+  get state() { return state; }, get score() { return Math.round(score); }, get best() { return best; },
+  get dist() { return dist; }, get total() { return total; }, get left() { return left; }, get sp() { return curSp; },
+  at: d => atDist(d), drag: (x, y) => { dragging = true; tx = x; ty = y; }, release: () => { dragging = false; },
+  setLeft: v => { left = v; }, start: start,
+};
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
+</body>
+</html>

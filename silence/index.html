@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Լռություն 🤫 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #0f1424; overflow: hidden;
+               font-family: Arial, Helvetica, sans-serif; color: #f5eede; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  .ov { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 24px;
+        background: rgba(8,11,22,0.92); }
+  .ov[hidden] { display: none !important; }
+  .ov h1 { margin: 0 0 6px; font-size: 1.45rem; color: #f0c85a; }
+  .ov p { margin: 0 0 18px; font-size: 0.92rem; line-height: 1.5; max-width: 330px; opacity: 0.9; }
+  .ov .big { font-size: 2.5rem; font-weight: bold; color: #ffe9a8; margin-bottom: 2px; }
+  .ov button { font-family: inherit; font-size: 1rem; font-weight: bold; padding: 13px 30px;
+               border-radius: 14px; border: none; background: #f0c85a; color: #10162a; cursor: pointer; }
+  #hud { position: fixed; top: 54px; left: 0; right: 0; z-index: 10; text-align: center;
+         pointer-events: none; text-shadow: 0 2px 6px #000; }
+  #hud .lv { font-size: 1.15rem; font-weight: bold; color: #ffe9a8; }
+  #hud .tip { font-size: 0.8rem; opacity: 0.8; margin-top: 3px; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:30;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="hud"><div class="lv"></div><div class="tip"></div></div>
+
+<div class="ov" id="menu">
+  <h1 id="mT">Ոսկե Լռություն 🤫</h1>
+  <p id="mS">Նրանք քնած են։ Որքան արագ շարժվես, այնքան աղմուկ ես անում։ Վերցրու բանալին ու հասիր դռանը՝ առանց արթնացնելու։</p>
+  <button id="startBtn">▶ Սկսել</button>
+</div>
+
+<div class="ov" id="over" hidden>
+  <div class="big" id="oScore">1</div>
+  <h1 id="oT">Արթնացան</h1>
+  <p id="oS"></p>
+  <button id="againBtn">↻ Նորից</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ԼՌՈՒԹՅՈՒՆ 🤫 — Արենի միտքն է
+//  Քնածներին չարթնացնես։ Որքան արագ ես մատդ շարժում, այնքան
+//  շատ աղմուկ։ Կամացուկ վերցրու բանալին ու դուրս եկ։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'Ոսկե Լռություն 🤫', s:'Նրանք քնած են։ Որքան արագ շարժվես, այնքան աղմուկ ես անում։ Վերցրու բանալին ու հասիր դռանը՝ առանց արթնացնելու։',
+        go:'▶ Սկսել', again:'↻ Նորից', woke:'Արթնացան 😱', win:'Բոլոր սենյակներն անցար 👑', rec:'Նոր ռեկորդ 🎉',
+        lv:n=>'Սենյակ '+n+'/6', best:n=>'Ամենահեռուն՝ '+n+'/6',
+        getKey:'Վերցրու ոսկե բանալին', toDoor:'Հիմա՝ դեպի դուռը', quiet:'Կամա՛ց' },
+  ru: { t:'Золотая Тишина 🤫', s:'Они спят. Чем быстрее двигаешься, тем больше шума. Возьми ключ и дойди до двери, не разбудив их.',
+        go:'▶ Начать', again:'↻ Ещё раз', woke:'Проснулись 😱', win:'Ты прошёл все комнаты 👑', rec:'Новый рекорд 🎉',
+        lv:n=>'Комната '+n+'/6', best:n=>'Дальше всего: '+n+'/6',
+        getKey:'Возьми золотой ключ', toDoor:'Теперь к двери', quiet:'Тихо!' },
+  en: { t:'Golden Silence 🤫', s:'They are asleep. The faster you move, the more noise you make. Grab the key and reach the door without waking them.',
+        go:'▶ Start', again:'↻ Again', woke:'They woke up 😱', win:'You cleared every room 👑', rec:'New best 🎉',
+        lv:n=>'Room '+n+'/6', best:n=>'Furthest: '+n+'/6',
+        getKey:'Take the golden key', toDoor:'Now to the door', quiet:'Slowly!' },
+  es: { t:'Silencio Dorado 🤫', s:'Están dormidos. Cuanto más rápido te mueves, más ruido haces. Coge la llave y llega a la puerta sin despertarlos.',
+        go:'▶ Empezar', again:'↻ Otra vez', woke:'Se despertaron 😱', win:'¡Pasaste todas las salas! 👑', rec:'¡Nuevo récord! 🎉',
+        lv:n=>'Sala '+n+'/6', best:n=>'Lo más lejos: '+n+'/6',
+        getKey:'Coge la llave dorada', toDoor:'Ahora a la puerta', quiet:'¡Despacio!' },
+  fr: { t:'Silence Doré 🤫', s:'Ils dorment. Plus tu vas vite, plus tu fais de bruit. Prends la clé et va jusqu’à la porte sans les réveiller.',
+        go:'▶ Démarrer', again:'↻ Encore', woke:'Ils se sont réveillés 😱', win:'Tu as passé toutes les salles 👑', rec:'Nouveau record 🎉',
+        lv:n=>'Salle '+n+'/6', best:n=>'Le plus loin : '+n+'/6',
+        getKey:'Prends la clé dorée', toDoor:'Maintenant vers la porte', quiet:'Doucement !' },
+  de: { t:'Goldene Stille 🤫', s:'Sie schlafen. Je schneller du dich bewegst, desto lauter wird es. Hol den Schlüssel und erreiche die Tür, ohne sie zu wecken.',
+        go:'▶ Start', again:'↻ Nochmal', woke:'Sie sind aufgewacht 😱', win:'Du hast alle Räume geschafft 👑', rec:'Neuer Rekord 🎉',
+        lv:n=>'Raum '+n+'/6', best:n=>'Am weitesten: '+n+'/6',
+        getKey:'Nimm den goldenen Schlüssel', toDoor:'Jetzt zur Tür', quiet:'Langsam!' },
+  ja: { t:'ゴールデン・しずけさ 🤫', s:'みんなねてるよ。はやくうごくほどおとがでる。かぎをとってドアまで、おこさずにね。',
+        go:'▶ スタート', again:'↻ もういちど', woke:'おきちゃった 😱', win:'ぜんぶのへやをクリア 👑', rec:'しんきろく 🎉',
+        lv:n=>'へや '+n+'/6', best:n=>'さいこう：'+n+'/6',
+        getKey:'金のかぎをとろう', toDoor:'つぎはドアへ', quiet:'そーっと！' },
+  zh: { t:'黄金寂静 🤫', s:'他们在睡觉。你动得越快，声音越大。拿到钥匙走到门口，别把他们吵醒。',
+        go:'▶ 开始', again:'↻ 再来', woke:'他们醒了 😱', win:'所有房间都过了 👑', rec:'新纪录 🎉',
+        lv:n=>'第'+n+'间 / 6', best:n=>'最远：'+n+'/6',
+        getKey:'拿走金钥匙', toDoor:'现在去门口', quiet:'慢一点！' },
+  it: { t:'Silenzio Dorato 🤫', s:'Dormono. Più veloce ti muovi, più rumore fai. Prendi la chiave e arriva alla porta senza svegliarli.',
+        go:'▶ Avvia', again:'↻ Ancora', woke:'Si sono svegliati 😱', win:'Hai superato tutte le stanze 👑', rec:'Nuovo record 🎉',
+        lv:n=>'Stanza '+n+'/6', best:n=>'Più lontano: '+n+'/6',
+        getKey:'Prendi la chiave d’oro', toDoor:'Ora verso la porta', quiet:'Piano!' },
+  ka: { t:'ოქროს სიჩუმე 🤫', s:'ისინი სძინავთ. რაც უფრო სწრაფად მოძრაობ, მით მეტ ხმაურს გამოსცემ. აიღე გასაღები და მიაღწიე კარს გაუღვიძებლად.',
+        go:'▶ დაწყება', again:'↻ თავიდან', woke:'გაიღვიძეს 😱', win:'ყველა ოთახი გაიარე 👑', rec:'ახალი რეკორდი 🎉',
+        lv:n=>'ოთახი '+n+'/6', best:n=>'ყველაზე შორს: '+n+'/6',
+        getKey:'აიღე ოქროს გასაღები', toDoor:'ახლა კარისკენ', quiet:'ნელა!' },
+  hi: { t:'गोल्डन ख़ामोशी 🤫', s:'वे सो रहे हैं। जितनी तेज़ चलोगे उतना शोर होगा। चाबी लो और बिना जगाए दरवाज़े तक पहुँचो।',
+        go:'▶ शुरू', again:'↻ फिर से', woke:'वे जाग गए 😱', win:'सारे कमरे पार कर लिए 👑', rec:'नया रिकॉर्ड 🎉',
+        lv:n=>'कमरा '+n+'/6', best:n=>'सबसे दूर: '+n+'/6',
+        getKey:'सुनहरी चाबी उठाओ', toDoor:'अब दरवाज़े की तरफ़', quiet:'धीरे!' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('mT').textContent = T.t;
+document.getElementById('mS').textContent = T.s;
+document.getElementById('startBtn').textContent = T.go;
+document.getElementById('againBtn').textContent = T.again;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let best = 0;
+try { best = Number(localStorage.getItem('aren-silence-best') || 0) || 0; } catch (e) {}
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.12, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.12));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.12));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function fit() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+fit(); addEventListener('resize', fit);
+
+const TOP = () => H * 0.17, BOT = () => H * 0.93;
+const QUIET = 90;     // px/վրկ — մինչև սա ձայն չկա
+
+let state = 'menu', level = 1, endedAt = 0;
+let px = 0, py = 0, tx = 0, ty = 0, noise = 0, hasKey = false;
+let sleepers = [], key = null, door = null;
+
+function makeLevel(n) {
+  sleepers = [];
+  const count = Math.min(6, 1 + n);
+  const x0 = 30, x1 = W - 30, y0 = TOP() + 40, y1 = BOT() - 40;
+  for (let i = 0; i < count; i++) {
+    // քնածները ցրված են, բայց ոչ մուտքի ու դռան վրա
+    for (let tries = 0; tries < 40; tries++) {
+      const x = x0 + Math.random() * (x1 - x0);
+      const y = y0 + Math.random() * (y1 - y0);
+      if (Math.hypot(x - W / 2, y - (BOT() - 26)) < 110) continue;      // մուտքը
+      if (Math.hypot(x - (W / 2), y - (TOP() + 24)) < 90) continue;      // դուռը
+      if (sleepers.some(s => Math.hypot(s.x - x, s.y - y) < 90)) continue;
+      sleepers.push({ x: x, y: y, ear: 78 + n * 6, wake: 0, ph: Math.random() * 6 });
+      break;
+    }
+  }
+  key = { x: 40 + Math.random() * (W - 80), y: TOP() + 50 + Math.random() * (BOT() - TOP() - 150) };
+  door = { x: W / 2, y: TOP() + 16 };
+  px = W / 2; py = BOT() - 26; tx = px; ty = py;
+  noise = 0; hasKey = false;
+}
+function start() {
+  initAudio(); level = 1; state = 'play'; makeLevel(1);
+  document.getElementById('menu').hidden = true;
+  document.getElementById('over').hidden = true;
+  tone(600, 0.13, 'sine', 0.08);
+}
+function nextLevel() {
+  tone(880, 0.16, 'triangle', 0.12);
+  if (level >= 6) { finish(true); return; }
+  level++; makeLevel(level);
+}
+function finish(won) {
+  state = 'over'; endedAt = Date.now();
+  const reached = won ? 6 : level;
+  const isRec = reached > best;
+  if (isRec) { best = reached; try { localStorage.setItem('aren-silence-best', String(best)); } catch (e) {} }
+  document.getElementById('oScore').textContent = reached + '/6';
+  document.getElementById('oT').textContent = won ? T.win : (isRec ? T.rec : T.woke);
+  document.getElementById('oS').textContent = T.best(best);
+  document.getElementById('over').hidden = false;
+  if (won) [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.3,'triangle',0.15), i*160));
+  else { tone(150, 0.4, 'sawtooth', 0.15); try { navigator.vibrate && navigator.vibrate(120); } catch (e) {} }
+}
+
+function aim(e) { const r = cv.getBoundingClientRect(); tx = e.clientX - r.left; ty = e.clientY - r.top; }
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio();
+  if (state === 'play') { aim(e); return; }
+  if (state === 'over' && Date.now() - endedAt > 1100) start();
+});
+cv.addEventListener('pointermove', (e) => { if (state === 'play' && e.buttons) { e.preventDefault(); aim(e); } });
+cv.addEventListener('touchmove', (e) => {
+  if (state === 'play' && e.touches[0]) {
+    e.preventDefault();
+    const r = cv.getBoundingClientRect();
+    tx = e.touches[0].clientX - r.left; ty = e.touches[0].clientY - r.top;
+  }
+}, { passive: false });
+document.getElementById('startBtn').addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && ghost()) return; start(); });
+document.getElementById('againBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  if (Date.now() - endedAt > 1100) start();
+});
+
+function step(dt) {
+  const dx = tx - px, dy = ty - py, d = Math.hypot(dx, dy);
+  const maxSp = 300;
+  let moved = 0;
+  if (d > 1.5) {
+    const m = Math.min(d, maxSp * dt);
+    px += dx / d * m; py += dy / d * m; moved = m;
+  }
+  px = Math.max(16, Math.min(W - 16, px));
+  py = Math.max(TOP() + 14, Math.min(BOT() - 14, py));
+
+  const speed = moved / Math.max(0.001, dt);
+  // աղմուկը միայն արագ շարժվելիս է ծնվում
+  const made = Math.max(0, speed - QUIET) / 210;
+  noise = Math.max(0, Math.min(1, noise * 0.92 + made * dt * 4.5));
+
+  for (const s of sleepers) {
+    s.ph += dt;
+    const dist = Math.hypot(s.x - px, s.y - py);
+    const heard = dist < s.ear ? (1 - dist / s.ear) * noise : 0;
+    s.wake = Math.max(0, Math.min(1, s.wake + heard * dt * 2.3 - dt * 0.35));
+    if (s.wake >= 1) { finish(false); return; }
+  }
+
+  if (!hasKey && Math.hypot(key.x - px, key.y - py) < 26) {
+    hasKey = true; tone(1000, 0.12, 'triangle', 0.1);
+  }
+  if (hasKey && Math.hypot(door.x - px, door.y - py) < 30) nextLevel();
+}
+
+function sleeper(s) {
+  // քնածը՝ ձևերով. կլոր մարմին, փակ աչքեր, «zzz» չենք նկարում կտավին
+  const wobble = Math.sin(s.ph * 1.5) * 2;
+  cx.save(); cx.translate(s.x, s.y + wobble);
+  // լսողության շրջանը
+  cx.fillStyle = 'rgba(232,117,106,' + (0.05 + s.wake * 0.22) + ')';
+  cx.beginPath(); cx.arc(0, 0, s.ear, 0, Math.PI * 2); cx.fill();
+  cx.strokeStyle = 'rgba(232,117,106,' + (0.18 + s.wake * 0.5) + ')';
+  cx.lineWidth = 2; cx.stroke();
+  // մարմինը
+  cx.fillStyle = s.wake > 0.5 ? '#e8756a' : '#8a7fc0';
+  cx.beginPath(); cx.ellipse(0, 6, 26, 20, 0, 0, Math.PI * 2); cx.fill();
+  cx.beginPath(); cx.arc(0, -12, 17, 0, Math.PI * 2); cx.fill();
+  // ականջները
+  cx.beginPath(); cx.moveTo(-14, -22); cx.lineTo(-9, -34); cx.lineTo(-2, -21); cx.closePath(); cx.fill();
+  cx.beginPath(); cx.moveTo(2, -21); cx.lineTo(9, -34); cx.lineTo(14, -22); cx.closePath(); cx.fill();
+  // աչքերը փակ
+  cx.strokeStyle = '#10162a'; cx.lineWidth = 2.4; cx.lineCap = 'round';
+  cx.beginPath(); cx.arc(-6, -12, 4, 0.15 * Math.PI, 0.85 * Math.PI); cx.stroke();
+  cx.beginPath(); cx.arc(6, -12, 4, 0.15 * Math.PI, 0.85 * Math.PI); cx.stroke();
+  // արթնանալու գոտին
+  if (s.wake > 0.02) {
+    cx.fillStyle = '#e8756a';
+    cx.fillRect(-24, -44, 48 * s.wake, 5);
+    cx.strokeStyle = 'rgba(255,255,255,0.35)'; cx.lineWidth = 1;
+    cx.strokeRect(-24, -44, 48, 5);
+  }
+  cx.restore();
+}
+
+function draw() {
+  cx.clearRect(0, 0, W, H);
+  cx.fillStyle = '#111730'; cx.fillRect(0, 0, W, H);
+  // սենյակը
+  cx.fillStyle = '#1b2340'; cx.fillRect(0, TOP(), W, BOT() - TOP());
+  cx.fillStyle = '#2b3560'; cx.fillRect(0, TOP() - 10, W, 10); cx.fillRect(0, BOT(), W, 10);
+  // հատակի տախտակները
+  cx.strokeStyle = 'rgba(255,255,255,0.05)'; cx.lineWidth = 1;
+  for (let y = TOP() + 30; y < BOT(); y += 34) { cx.beginPath(); cx.moveTo(0, y); cx.lineTo(W, y); cx.stroke(); }
+
+  if (state === 'play') {
+    // դուռը
+    cx.fillStyle = hasKey ? '#f0c85a' : '#5a5f8c';
+    cx.beginPath(); cx.roundRect(door.x - 26, TOP() - 4, 52, 34, 6); cx.fill();
+    cx.fillStyle = '#10162a';
+    cx.beginPath(); cx.arc(door.x + 14, TOP() + 14, 3.5, 0, Math.PI * 2); cx.fill();
+
+    for (const s of sleepers) sleeper(s);
+
+    if (!hasKey) {
+      // բանալին
+      cx.save(); cx.translate(key.x, key.y);
+      cx.fillStyle = '#ffe9a8';
+      cx.beginPath(); cx.arc(0, -6, 8, 0, Math.PI * 2); cx.fill();
+      cx.fillRect(-2.5, 0, 5, 20);
+      cx.fillRect(-2.5, 12, 10, 4);
+      cx.fillRect(-2.5, 18, 8, 4);
+      cx.restore();
+    }
+
+    // հերոսը
+    cx.save(); cx.translate(px, py);
+    cx.fillStyle = '#7fd1c1';
+    cx.beginPath(); cx.ellipse(0, 4, 15, 13, 0, 0, Math.PI * 2); cx.fill();
+    cx.beginPath(); cx.arc(0, -10, 11, 0, Math.PI * 2); cx.fill();
+    cx.fillStyle = '#10162a';
+    cx.beginPath(); cx.arc(-4, -11, 2.4, 0, Math.PI * 2); cx.fill();
+    cx.beginPath(); cx.arc(4, -11, 2.4, 0, Math.PI * 2); cx.fill();
+    if (hasKey) { cx.fillStyle = '#ffe9a8'; cx.beginPath(); cx.arc(13, 2, 5, 0, Math.PI * 2); cx.fill(); }
+    cx.restore();
+
+    // աղմուկի ալիքները
+    if (noise > 0.05) {
+      cx.strokeStyle = 'rgba(232,117,106,' + Math.min(0.6, noise) + ')';
+      cx.lineWidth = 2;
+      for (let i = 1; i <= 3; i++) {
+        cx.beginPath(); cx.arc(px, py, 18 + i * 14 * noise + i * 8, 0, Math.PI * 2); cx.stroke();
+      }
+    }
+
+    // աղմուկի սանդղակը
+    const bw = W * 0.6, bx = (W - bw) / 2, by = BOT() + 18;
+    cx.fillStyle = 'rgba(255,255,255,0.12)';
+    cx.beginPath(); cx.roundRect(bx, by, bw, 9, 5); cx.fill();
+    cx.fillStyle = noise > 0.55 ? '#e8756a' : '#7fd1c1';
+    cx.beginPath(); cx.roundRect(bx, by, bw * noise, 9, 5); cx.fill();
+  }
+
+  const lv = document.querySelector('#hud .lv'), tip = document.querySelector('#hud .tip');
+  if (state !== 'play') { lv.textContent = ''; tip.textContent = ''; }
+  else {
+    lv.textContent = T.lv(level);
+    tip.textContent = noise > 0.55 ? T.quiet : (hasKey ? T.toDoor : T.getKey);
+  }
+}
+
+let prev = 0;
+function loop(now) {
+  const dt = Math.min(0.033, (now - prev) / 1000 || 0); prev = now;
+  if (state === 'play') step(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+draw(); requestAnimationFrame(loop);
+
+window.SILENCE = {
+  get state() { return state; }, get level() { return level; }, get best() { return best; },
+  get noise() { return noise; }, get hasKey() { return hasKey; }, get sleepers() { return sleepers; },
+  get key() { return key; }, get door() { return door; }, get pos() { return { x: px, y: py }; },
+  moveTo: (x, y) => { tx = x; ty = y; }, put: (x, y) => { px = x; py = y; tx = x; ty = y; },
+  start: start,
+};
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
+</body>
+</html>
