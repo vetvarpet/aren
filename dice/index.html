@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Զառ 🎲 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #1a2138; color: #f5eede; font-family: Arial, Helvetica, sans-serif; }
+  body { display: flex; flex-direction: column; align-items: center; padding: 56px 14px 24px; min-height: 100vh; }
+  h1 { margin: 0 0 2px; font-size: 1.2rem; color: #f0c85a; }
+  .sub { margin: 0 0 12px; font-size: 0.74rem; opacity: 0.7; text-align: center; }
+  canvas { width: 100%; max-width: 420px; height: auto; display: block; border-radius: 16px;
+           background: #24603f; touch-action: none; border: 2px solid #33356b; cursor: pointer; }
+  #sum { font-size: 1.5rem; font-weight: bold; margin: 12px 0 2px; min-height: 30px; color: #ffe9a8; }
+  #hist { font-size: 0.72rem; opacity: 0.6; min-height: 18px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; max-width: 420px; }
+  button {
+    font-family: inherit; font-size: 0.85rem; padding: 10px 15px; border-radius: 12px; cursor: pointer;
+    color: #f5eede; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.24);
+  }
+  button.on { background: rgba(240,200,90,0.2); border-color: #f0c85a; color: #ffe9a8; }
+  button.go { background: #f0c85a; border-color: #f0c85a; color: #10162a; font-weight: bold; min-width: 150px; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<h1 id="h1">Ոսկե Զառ 🎲</h1>
+<p class="sub" id="sub">Սեղանի խաղերի համար։ Հպիր՝ գցելու համար։</p>
+
+<canvas id="cv" width="840" height="480"></canvas>
+<div id="sum"></div>
+<div id="hist"></div>
+
+<div class="row" id="modes"></div>
+<div class="row"><button class="go" id="rollBtn">🎲 Գցել</button></div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ԶԱՌ 🎲 — Արենի միտքն է
+//  Սեղանի խաղերի համար. մեկ, երկու կամ երեք զառ, կամ մետաղադրամ։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t: 'Ոսկե Զառ 🎲', s: 'Սեղանի խաղերի համար։ Հպիր՝ գցելու համար։', roll: '🎲 Գցել', flip: '🪙 Գցել',
+        d: n => n + ' զառ', coin: '🪙 Մետաղադրամ', sum: n => 'Գումարը՝ ' + n, heads: 'ԱՐԾԻՎ', tails: 'ՄԱԿԱՂ',
+        last: 'Վերջինները՝ ', dbl: 'Զույգ! 🎉' },
+  ru: { t: 'Золотой Кубик 🎲', s: 'Для настольных игр. Нажми, чтобы бросить.', roll: '🎲 Бросить', flip: '🪙 Бросить',
+        d: n => n + ' кубика', coin: '🪙 Монета', sum: n => 'Сумма: ' + n, heads: 'ОРЁЛ', tails: 'РЕШКА',
+        last: 'Последние: ', dbl: 'Дубль! 🎉' },
+  en: { t: 'Golden Dice 🎲', s: 'For board games. Tap to roll.', roll: '🎲 Roll', flip: '🪙 Flip',
+        d: n => n + ' dice', coin: '🪙 Coin', sum: n => 'Total: ' + n, heads: 'HEADS', tails: 'TAILS',
+        last: 'Last rolls: ', dbl: 'Double! 🎉' },
+  es: { t: 'Dado Dorado 🎲', s: 'Para juegos de mesa. Toca para tirar.', roll: '🎲 Tirar', flip: '🪙 Lanzar',
+        d: n => n + ' dados', coin: '🪙 Moneda', sum: n => 'Total: ' + n, heads: 'CARA', tails: 'CRUZ',
+        last: 'Últimas: ', dbl: '¡Dobles! 🎉' },
+  fr: { t: 'Dé Doré 🎲', s: 'Pour les jeux de société. Touche pour lancer.', roll: '🎲 Lancer', flip: '🪙 Lancer',
+        d: n => n + ' dés', coin: '🪙 Pièce', sum: n => 'Total : ' + n, heads: 'PILE', tails: 'FACE',
+        last: 'Derniers : ', dbl: 'Double ! 🎉' },
+  de: { t: 'Goldener Würfel 🎲', s: 'Für Brettspiele. Tippe zum Würfeln.', roll: '🎲 Würfeln', flip: '🪙 Werfen',
+        d: n => n + ' Würfel', coin: '🪙 Münze', sum: n => 'Summe: ' + n, heads: 'KOPF', tails: 'ZAHL',
+        last: 'Zuletzt: ', dbl: 'Pasch! 🎉' },
+  ja: { t: 'ゴールデン・サイコロ 🎲', s: 'ボードゲームよう。タップでふるよ。', roll: '🎲 ふる', flip: '🪙 なげる',
+        d: n => 'サイコロ' + n + 'こ', coin: '🪙 コイン', sum: n => 'ごうけい：' + n, heads: 'おもて', tails: 'うら',
+        last: 'まえのけっか：', dbl: 'ゾロめ！🎉' },
+  zh: { t: '黄金骰子 🎲', s: '桌游用。点一下就掷。', roll: '🎲 掷骰', flip: '🪙 抛硬币',
+        d: n => n + ' 个骰子', coin: '🪙 硬币', sum: n => '总和：' + n, heads: '正面', tails: '反面',
+        last: '最近：', dbl: '对子！🎉' },
+  it: { t: 'Dado Dorato 🎲', s: 'Per i giochi da tavolo. Tocca per lanciare.', roll: '🎲 Lancia', flip: '🪙 Lancia',
+        d: n => n + ' dadi', coin: '🪙 Moneta', sum: n => 'Totale: ' + n, heads: 'TESTA', tails: 'CROCE',
+        last: 'Ultimi: ', dbl: 'Doppio! 🎉' },
+  ka: { t: 'ოქროს კამათელი 🎲', s: 'სამაგიდო თამაშებისთვის. შეეხე დასაგდებად.', roll: '🎲 გაგდება', flip: '🪙 აგდება',
+        d: n => n + ' კამათელი', coin: '🪙 მონეტა', sum: n => 'ჯამი: ' + n, heads: 'საფასური', tails: 'ზურგი',
+        last: 'ბოლო: ', dbl: 'წყვილი! 🎉' },
+  hi: { t: 'गोल्डन पासा 🎲', s: 'बोर्ड गेम के लिए। फेंकने के लिए छुओ।', roll: '🎲 फेंको', flip: '🪙 उछालो',
+        d: n => n + ' पासे', coin: '🪙 सिक्का', sum: n => 'कुल: ' + n, heads: 'हेड', tails: 'टेल',
+        last: 'पिछले: ', dbl: 'जोड़ा! 🎉' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('h1').textContent = T.t;
+document.getElementById('sub').textContent = T.s;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let mode = 2;                 // 1, 2, 3 զառ, կամ 0՝ մետաղադրամ
+try { const m = localStorage.getItem('aren-dice-mode'); if (m !== null) mode = Number(m); } catch (e) {}
+let vals = [1, 1], coin = 0, rolling = 0, hist = [];
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.12, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.12));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.12));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+// ——— ռեժիմի կոճակները ———
+const modes = document.getElementById('modes');
+[1, 2, 3, 0].forEach(m => {
+  const b = document.createElement('button');
+  b.textContent = m === 0 ? T.coin : T.d(m);
+  b.dataset.m = m;
+  b.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && ghost()) return;
+    initAudio(); tone(560, 0.08, 'sine');
+    mode = m; hist = [];
+    try { localStorage.setItem('aren-dice-mode', String(m)); } catch (er) {}
+    vals = []; for (let i = 0; i < Math.max(1, m); i++) vals.push(1);
+    refresh(); paint();
+  });
+  modes.appendChild(b);
+});
+
+const rollBtn = document.getElementById('rollBtn');
+function refresh() {
+  [...modes.children].forEach(b => b.classList.toggle('on', Number(b.dataset.m) === mode));
+  rollBtn.textContent = mode === 0 ? T.flip : T.roll;
+}
+
+function roll() {
+  if (rolling > 0) return;
+  initAudio();
+  rolling = 0.85;
+  if (mode === 0) coin = Math.random() < 0.5 ? 0 : 1;
+  else { vals = []; for (let i = 0; i < mode; i++) vals.push(1 + Math.floor(Math.random() * 6)); }
+  tone(300, 0.07, 'square', 0.09);
+  setTimeout(() => tone(420, 0.07, 'square', 0.09), 120);
+  setTimeout(() => {
+    tone(760, 0.16, 'triangle', 0.14);
+    if (mode === 0) hist.unshift(coin ? T.heads[0] : T.tails[0]);
+    else hist.unshift(vals.reduce((a, b) => a + b, 0));
+    hist = hist.slice(0, 8);
+    document.getElementById('hist').textContent = T.last + hist.join(' · ');
+    const dbl = mode >= 2 && vals.every(v => v === vals[0]);
+    document.getElementById('sum').textContent = mode === 0
+      ? (coin ? T.heads : T.tails)
+      : (mode === 1 ? String(vals[0]) : T.sum(vals.reduce((a, b) => a + b, 0)) + (dbl ? '  ' + T.dbl : ''));
+    if (dbl) { try { navigator.vibrate && navigator.vibrate([30, 60, 90]); } catch (e) {} }
+  }, 850);
+  document.getElementById('sum').textContent = '';
+}
+rollBtn.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && ghost()) return; roll(); });
+document.getElementById('cv').addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && ghost()) return; roll(); });
+
+// ——— նկարը ———
+const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+
+function pips(n, x, y, s) {
+  const r = s * 0.085, d = s * 0.24;
+  const P = { 1: [[0,0]], 2: [[-1,-1],[1,1]], 3: [[-1,-1],[0,0],[1,1]],
+              4: [[-1,-1],[1,-1],[-1,1],[1,1]], 5: [[-1,-1],[1,-1],[0,0],[-1,1],[1,1]],
+              6: [[-1,-1],[1,-1],[-1,0],[1,0],[-1,1],[1,1]] }[n] || [];
+  cx.fillStyle = '#10162a';
+  for (const [a, b] of P) { cx.beginPath(); cx.arc(x + a * d, y + b * d, r, 0, Math.PI * 2); cx.fill(); }
+}
+function die(x, y, s, v, spin) {
+  cx.save(); cx.translate(x, y); cx.rotate(spin);
+  cx.fillStyle = 'rgba(0,0,0,0.25)';
+  cx.beginPath(); cx.roundRect(-s/2 + 6, -s/2 + 8, s, s, s * 0.18); cx.fill();
+  const g = cx.createLinearGradient(-s/2, -s/2, s/2, s/2);
+  g.addColorStop(0, '#fff8e6'); g.addColorStop(1, '#e6d8b4');
+  cx.fillStyle = g;
+  cx.beginPath(); cx.roundRect(-s/2, -s/2, s, s, s * 0.18); cx.fill();
+  cx.strokeStyle = '#c9b78a'; cx.lineWidth = 3; cx.stroke();
+  pips(v, 0, 0, s);
+  cx.restore();
+}
+function paint() {
+  cx.clearRect(0, 0, W, H);
+  const g = cx.createRadialGradient(W/2, H/2, 40, W/2, H/2, W * 0.62);
+  g.addColorStop(0, '#2c744c'); g.addColorStop(1, '#1c4a33');
+  cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+  // սեղանի եզրագիծը
+  cx.strokeStyle = 'rgba(255,255,255,0.14)'; cx.lineWidth = 6;
+  cx.beginPath(); cx.roundRect(22, 22, W - 44, H - 44, 24); cx.stroke();
+
+  const shake = rolling > 0 ? rolling : 0;
+  if (mode === 0) {
+    // մետաղադրամը
+    const t = shake > 0 ? shake * 26 : 0;
+    const sq = shake > 0 ? Math.abs(Math.cos(t)) : 1;
+    const r = 116;
+    cx.save(); cx.translate(W / 2, H / 2); cx.scale(Math.max(0.08, sq), 1);
+    const cg = cx.createLinearGradient(-r, -r, r, r);
+    cg.addColorStop(0, '#ffe9a8'); cg.addColorStop(1, '#d99a2b');
+    cx.fillStyle = cg; cx.beginPath(); cx.arc(0, 0, r, 0, Math.PI * 2); cx.fill();
+    cx.strokeStyle = '#a8761c'; cx.lineWidth = 8; cx.stroke();
+    if (shake <= 0) {
+      cx.fillStyle = '#8a5f14';
+      if (coin) {   // ԱՐԾԻՎ — թռչնի պարզ ուրվագիծ
+        cx.beginPath(); cx.moveTo(-56, 14); cx.lineTo(0, -34); cx.lineTo(56, 14);
+        cx.lineTo(24, 6); cx.lineTo(0, 30); cx.lineTo(-24, 6); cx.closePath(); cx.fill();
+      } else {      // ՄԱԿԱՂ — աստղ
+        cx.beginPath();
+        for (let i = 0; i < 10; i++) {
+          const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? 24 : 54;
+          cx[i ? 'lineTo' : 'moveTo'](Math.cos(a) * rr, Math.sin(a) * rr);
+        }
+        cx.closePath(); cx.fill();
+      }
+    }
+    cx.restore();
+  } else {
+    const n = vals.length, s = n === 1 ? 190 : (n === 2 ? 160 : 132);
+    const gap = s * 1.28, x0 = W / 2 - gap * (n - 1) / 2;
+    for (let i = 0; i < n; i++) {
+      const jitter = shake > 0 ? Math.sin(shake * 30 + i * 2) * 16 : 0;
+      const v = shake > 0 ? 1 + Math.floor(Math.random() * 6) : vals[i];
+      die(x0 + gap * i, H / 2 + jitter, s, v, shake > 0 ? Math.sin(shake * 22 + i) * 0.35 : 0);
+    }
+  }
+}
+let prev = 0;
+function loop(now) {
+  const dt = Math.min(0.05, (now - prev) / 1000); prev = now;
+  if (rolling > 0) rolling = Math.max(0, rolling - dt);
+  paint();
+  requestAnimationFrame(loop);
+}
+vals = []; for (let i = 0; i < Math.max(1, mode); i++) vals.push(1 + Math.floor(Math.random() * 6));
+refresh(); requestAnimationFrame(loop);
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="info" defer></script>
+</body>
+</html>

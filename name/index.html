@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Անուն 🎭 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #1a2138; color: #f5eede; font-family: Arial, Helvetica, sans-serif; }
+  body { display: flex; flex-direction: column; align-items: center; padding: 56px 14px 24px; min-height: 100vh; }
+  h1 { margin: 0 0 2px; font-size: 1.2rem; color: #f0c85a; }
+  .sub { margin: 0 0 14px; font-size: 0.74rem; opacity: 0.7; text-align: center; }
+  #card {
+    width: 100%; max-width: 420px; background: linear-gradient(150deg, #2a3358, #1f2745);
+    border: 2px solid #f0c85a; border-radius: 20px; padding: 26px 18px; text-align: center;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+  }
+  #nm { font-size: 1.85rem; font-weight: bold; color: #ffe9a8; margin: 4px 0 6px; line-height: 1.2; word-break: break-word; }
+  #ep { font-size: 0.95rem; opacity: 0.9; min-height: 22px; }
+  #kindLbl { font-size: 0.68rem; letter-spacing: 1.4px; color: #f0c85a; opacity: 0.9; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; max-width: 420px; }
+  button {
+    font-family: inherit; font-size: 0.85rem; padding: 10px 15px; border-radius: 12px; cursor: pointer;
+    color: #f5eede; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.24);
+  }
+  button.on { background: rgba(240,200,90,0.2); border-color: #f0c85a; color: #ffe9a8; }
+  button.go { background: #f0c85a; border-color: #f0c85a; color: #10162a; font-weight: bold; min-width: 170px; }
+  #saved { margin-top: 16px; width: 100%; max-width: 420px; font-size: 0.78rem; }
+  #saved div { padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,0.09); }
+  #saved div:first-child { color: #f0c85a; border-bottom: 2px solid rgba(240,200,90,0.4); font-size: 0.7rem; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<h1 id="h1">Ոսկե Անուն 🎭</h1>
+<p class="sub" id="sub">Կերպարիդ անուն է ընտրում։ Դուր չեկա՞վ — սեղմիր նորից։</p>
+
+<div id="card">
+  <div id="kindLbl"></div>
+  <div id="nm">…</div>
+  <div id="ep"></div>
+</div>
+
+<div class="row" id="kinds"></div>
+<div class="row">
+  <button class="go" id="goBtn">🎭 Նոր անուն</button>
+  <button id="keepBtn">⭐ Պահել</button>
+</div>
+<div id="saved"></div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ԱՆՈՒՆ 🎭 — Արենի միտքն է
+//  Կերպարների համար պատահական անուն է առաջարկում՝ հերոս, հրեշ,
+//  կախարդ կամ կենդանի, ամեն մեկն իր մականունով։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+// Անունները ձայներից ենք հավաքում, որ ամեն անգամ նորը ստացվի
+const A = ['Ար', 'Վար', 'Զոր', 'Նար', 'Թոր', 'Գառ', 'Սաս', 'Մհեր', 'Կար', 'Դավ', 'Հայկ', 'Տիգ', 'Շամ', 'Բար', 'Ոսկ', 'Անդ', 'Ման', 'Ռուբ'];
+const B = ['ան', 'ուն', 'իկ', 'որ', 'ար', 'ես', 'ուշ', 'իր', 'ոն', 'ատ', 'ուր', 'ինե'];
+const LA = ['Ar', 'Var', 'Zor', 'Nar', 'Thor', 'Gar', 'Sas', 'Mher', 'Kar', 'Dav', 'Hayk', 'Tig', 'Sham', 'Bar', 'Vosk', 'And', 'Man', 'Rub'];
+const LB = ['an', 'un', 'ik', 'or', 'ar', 'es', 'ush', 'ir', 'on', 'at', 'ur', 'ine'];
+const useArm = ggLang === 'hy';
+
+const TRL = {
+  hy: { t: 'Ոսկե Անուն 🎭', s: 'Կերպարիդ անուն է ընտրում։ Դուր չեկա՞վ — սեղմիր նորից։',
+        go: '🎭 Նոր անուն', keep: '⭐ Պահել', savedT: 'ՊԱՀՎԱԾ ԱՆՈՒՆՆԵՐ',
+        k: { hero: '⚔️ Հերոս', beast: '🐉 Հրեշ', mage: '🔮 Կախարդ', pet: '🐾 Ընկեր' },
+        e: { hero: ['Անվախը', 'Քարից ուժեղը', 'Լուսաբացի որդին', 'Յոթ սարի տերը', 'Ոսկե սրով'],
+             beast: ['Կրակաշունչը', 'Գիշերվա ստվերը', 'Երեք գլխանին', 'Քարանձավի տերը', 'Ձյան հսկան'],
+             mage: ['Աստղերի ընթերցողը', 'Ժամանակի պահապանը', 'Հազար գրքի տերը', 'Լուսնի ձայնը', 'Անտեսանելին'],
+             pet: ['Արագոտնը', 'Փափուկ թաթիկը', 'Միշտ քաղցածը', 'Ամենահավատարիմը', 'Քնկոտիկը'] } },
+  ru: { t: 'Золотое Имя 🎭', s: 'Придумывает имя твоему герою. Не понравилось — жми ещё.',
+        go: '🎭 Новое имя', keep: '⭐ Сохранить', savedT: 'СОХРАНЁННЫЕ ИМЕНА',
+        k: { hero: '⚔️ Герой', beast: '🐉 Чудовище', mage: '🔮 Маг', pet: '🐾 Друг' },
+        e: { hero: ['Бесстрашный', 'Крепче камня', 'Сын рассвета', 'Хозяин семи гор', 'С золотым мечом'],
+             beast: ['Огнедышащий', 'Ночная тень', 'Трёхголовый', 'Хозяин пещеры', 'Снежный великан'],
+             mage: ['Читающий звёзды', 'Хранитель времени', 'Владелец тысячи книг', 'Голос луны', 'Невидимый'],
+             pet: ['Быстролапый', 'Мягкая лапка', 'Вечно голодный', 'Самый верный', 'Соня'] } },
+  en: { t: 'Golden Name 🎭', s: 'Picks a name for your character. Not keen? Tap again.',
+        go: '🎭 New name', keep: '⭐ Keep it', savedT: 'SAVED NAMES',
+        k: { hero: '⚔️ Hero', beast: '🐉 Beast', mage: '🔮 Mage', pet: '🐾 Companion' },
+        e: { hero: ['the Fearless', 'Stronger than Stone', 'Son of the Dawn', 'Lord of Seven Mountains', 'of the Golden Sword'],
+             beast: ['the Firebreather', 'Shadow of the Night', 'the Three-Headed', 'Keeper of the Cave', 'the Snow Giant'],
+             mage: ['Reader of Stars', 'Keeper of Time', 'Owner of a Thousand Books', 'Voice of the Moon', 'the Unseen'],
+             pet: ['Swiftpaw', 'Softpaw', 'the Ever-Hungry', 'the Most Loyal', 'the Sleepy One'] } },
+  es: { t: 'Nombre Dorado 🎭', s: 'Elige un nombre para tu personaje. ¿No te gusta? Pulsa otra vez.',
+        go: '🎭 Nombre nuevo', keep: '⭐ Guardar', savedT: 'NOMBRES GUARDADOS',
+        k: { hero: '⚔️ Héroe', beast: '🐉 Bestia', mage: '🔮 Mago', pet: '🐾 Compañero' },
+        e: { hero: ['el Intrépido', 'Más Fuerte que la Piedra', 'Hijo del Alba', 'Señor de Siete Montañas', 'de la Espada Dorada'],
+             beast: ['el Escupefuego', 'Sombra de la Noche', 'el Tricéfalo', 'Guardián de la Cueva', 'el Gigante de Nieve'],
+             mage: ['Lector de Estrellas', 'Guardián del Tiempo', 'Dueño de Mil Libros', 'Voz de la Luna', 'el Invisible'],
+             pet: ['Patas Veloces', 'Patita Suave', 'el Siempre Hambriento', 'el Más Fiel', 'el Dormilón'] } },
+  fr: { t: 'Nom Doré 🎭', s: 'Trouve un nom pour ton personnage. Pas convaincu ? Rappuie.',
+        go: '🎭 Nouveau nom', keep: '⭐ Garder', savedT: 'NOMS GARDÉS',
+        k: { hero: '⚔️ Héros', beast: '🐉 Monstre', mage: '🔮 Mage', pet: '🐾 Compagnon' },
+        e: { hero: ['l’Intrépide', 'Plus Fort que la Pierre', 'Fils de l’Aube', 'Seigneur des Sept Montagnes', 'à l’Épée d’Or'],
+             beast: ['le Cracheur de Feu', 'Ombre de la Nuit', 'le Tricéphale', 'Gardien de la Grotte', 'le Géant des Neiges'],
+             mage: ['Lecteur d’Étoiles', 'Gardien du Temps', 'Maître de Mille Livres', 'Voix de la Lune', 'l’Invisible'],
+             pet: ['Patte Rapide', 'Patte Douce', 'l’Éternel Affamé', 'le Plus Fidèle', 'le Dormeur'] } },
+  de: { t: 'Goldener Name 🎭', s: 'Sucht einen Namen für deine Figur. Gefällt nicht? Nochmal tippen.',
+        go: '🎭 Neuer Name', keep: '⭐ Behalten', savedT: 'GESPEICHERTE NAMEN',
+        k: { hero: '⚔️ Held', beast: '🐉 Ungeheuer', mage: '🔮 Magier', pet: '🐾 Gefährte' },
+        e: { hero: ['der Furchtlose', 'Stärker als Stein', 'Sohn der Morgenröte', 'Herr der Sieben Berge', 'mit dem Goldschwert'],
+             beast: ['der Feuerspeier', 'Schatten der Nacht', 'der Dreiköpfige', 'Hüter der Höhle', 'der Schneeriese'],
+             mage: ['Sternenleser', 'Hüter der Zeit', 'Herr von Tausend Büchern', 'Stimme des Mondes', 'der Unsichtbare'],
+             pet: ['Schnellpfote', 'Weichpfote', 'der Immerhungrige', 'der Treueste', 'der Schläfrige'] } },
+  ja: { t: 'ゴールデン・ネーム 🎭', s: 'キャラのなまえをかんがえるよ。きにいらない？もういちどタップ。',
+        go: '🎭 あたらしいなまえ', keep: '⭐ とっておく', savedT: 'とっておいたなまえ',
+        k: { hero: '⚔️ ゆうしゃ', beast: '🐉 かいぶつ', mage: '🔮 まほうつかい', pet: '🐾 なかま' },
+        e: { hero: ['おそれしらず', 'いわよりつよい', 'よあけのこ', 'ななつやまのぬし', '金のけんの'],
+             beast: ['ひをはくもの', 'よるのかげ', 'みつくびの', 'どうくつのぬし', 'ゆきのきょじん'],
+             mage: ['ほしをよむもの', 'ときのまもりびと', 'せんさつのぬし', 'つきのこえ', 'みえないもの'],
+             pet: ['はやあし', 'ふわふわあし', 'いつもはらぺこ', 'いちばんちゅうじつ', 'ねぼすけ'] } },
+  zh: { t: '黄金名字 🎭', s: '给你的角色取个名字。不喜欢就再点一次。',
+        go: '🎭 换个名字', keep: '⭐ 留下', savedT: '留下的名字',
+        k: { hero: '⚔️ 英雄', beast: '🐉 怪兽', mage: '🔮 法师', pet: '🐾 伙伴' },
+        e: { hero: ['无畏者', '比石头还硬', '黎明之子', '七山之主', '持金剑者'],
+             beast: ['喷火者', '夜之影', '三头怪', '洞穴之主', '雪巨人'],
+             mage: ['读星者', '时间守护者', '千书之主', '月之声', '隐形者'],
+             pet: ['快脚', '软爪', '总是饿', '最忠诚的', '瞌睡虫'] } },
+  it: { t: 'Nome Dorato 🎭', s: 'Trova un nome per il tuo personaggio. Non ti piace? Ritocca.',
+        go: '🎭 Nome nuovo', keep: '⭐ Tienilo', savedT: 'NOMI TENUTI',
+        k: { hero: '⚔️ Eroe', beast: '🐉 Bestia', mage: '🔮 Mago', pet: '🐾 Compagno' },
+        e: { hero: ['il Senza Paura', 'Più Forte della Pietra', 'Figlio dell’Alba', 'Signore di Sette Monti', 'dalla Spada d’Oro'],
+             beast: ['lo Sputafuoco', 'Ombra della Notte', 'il Tricipite', 'Guardiano della Grotta', 'il Gigante di Neve'],
+             mage: ['Lettore di Stelle', 'Custode del Tempo', 'Padrone di Mille Libri', 'Voce della Luna', 'l’Invisibile'],
+             pet: ['Zampa Veloce', 'Zampa Morbida', 'il Sempre Affamato', 'il Più Fedele', 'il Dormiglione'] } },
+  ka: { t: 'ოქროს სახელი 🎭', s: 'შენს პერსონაჟს სახელს არჩევს. არ მოგეწონა? კიდევ დააჭირე.',
+        go: '🎭 ახალი სახელი', keep: '⭐ შენახვა', savedT: 'შენახული სახელები',
+        k: { hero: '⚔️ გმირი', beast: '🐉 ურჩხული', mage: '🔮 ჯადოქარი', pet: '🐾 მეგობარი' },
+        e: { hero: ['უშიშარი', 'ქვაზე მაგარი', 'განთიადის შვილი', 'შვიდი მთის პატრონი', 'ოქროს ხმლით'],
+             beast: ['ცეცხლისმფრქვეველი', 'ღამის ჩრდილი', 'სამთავიანი', 'გამოქვაბულის პატრონი', 'თოვლის გოლიათი'],
+             mage: ['ვარსკვლავების მკითხველი', 'დროის მცველი', 'ათასი წიგნის პატრონი', 'მთვარის ხმა', 'უხილავი'],
+             pet: ['სწრაფთათა', 'რბილთათა', 'მუდამ მშიერი', 'ყველაზე ერთგული', 'მძინარა'] } },
+  hi: { t: 'गोल्डन नाम 🎭', s: 'तुम्हारे किरदार का नाम चुनता है। पसंद नहीं? फिर से दबाओ।',
+        go: '🎭 नया नाम', keep: '⭐ रख लो', savedT: 'रखे हुए नाम',
+        k: { hero: '⚔️ नायक', beast: '🐉 राक्षस', mage: '🔮 जादूगर', pet: '🐾 साथी' },
+        e: { hero: ['निडर', 'पत्थर से मज़बूत', 'भोर का बेटा', 'सात पहाड़ों का मालिक', 'सुनहरी तलवार वाला'],
+             beast: ['आग उगलने वाला', 'रात की परछाईं', 'तीन सिर वाला', 'गुफ़ा का मालिक', 'बर्फ़ का दानव'],
+             mage: ['तारों का पाठक', 'समय का रक्षक', 'हज़ार किताबों का मालिक', 'चाँद की आवाज़', 'अदृश्य'],
+             pet: ['तेज़ पंजा', 'नरम पंजा', 'हमेशा भूखा', 'सबसे वफ़ादार', 'नींद वाला'] } },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('h1').textContent = T.t;
+document.getElementById('sub').textContent = T.s;
+document.getElementById('goBtn').textContent = T.go;
+document.getElementById('keepBtn').textContent = T.keep;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let kind = 'hero', current = '';
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.12, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.13));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.13));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+const kinds = document.getElementById('kinds');
+['hero', 'beast', 'mage', 'pet'].forEach(k => {
+  const b = document.createElement('button');
+  b.textContent = T.k[k]; b.dataset.k = k;
+  b.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && ghost()) return;
+    initAudio(); tone(540, 0.08, 'sine');
+    kind = k; make();
+  });
+  kinds.appendChild(b);
+});
+
+const pick = a => a[Math.floor(Math.random() * a.length)];
+function make() {
+  initAudio(); tone(680, 0.11, 'triangle');
+  const a = useArm ? A : LA, b = useArm ? B : LB;
+  let n = pick(a) + pick(b);
+  if (Math.random() < 0.35) n += (useArm ? '' : '') + pick(b);   // երբեմն ավելի երկար անուն
+  current = n + ' ' + pick(T.e[kind]);
+  document.getElementById('kindLbl').textContent = T.k[kind].toUpperCase();
+  document.getElementById('nm').textContent = n;
+  document.getElementById('ep').textContent = pick(T.e[kind]);
+  current = n + ' — ' + document.getElementById('ep').textContent;
+  [...kinds.children].forEach(x => x.classList.toggle('on', x.dataset.k === kind));
+}
+document.getElementById('goBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return; make();
+});
+
+// ——— պահված անունները ———
+function loadSaved() { try { return JSON.parse(localStorage.getItem('aren-name-saved') || '[]'); } catch (e) { return []; } }
+function showSaved() {
+  const list = loadSaved(), box = document.getElementById('saved');
+  box.textContent = '';
+  if (!list.length) return;
+  const h = document.createElement('div'); h.textContent = T.savedT; box.appendChild(h);
+  list.forEach(x => { const d = document.createElement('div'); d.textContent = '⭐ ' + x; box.appendChild(d); });
+}
+document.getElementById('keepBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  if (!current) return;
+  initAudio(); tone(820, 0.15, 'triangle');
+  const list = loadSaved();
+  if (list.indexOf(current) < 0) list.unshift(current);
+  try { localStorage.setItem('aren-name-saved', JSON.stringify(list.slice(0, 12))); } catch (er) {}
+  showSaved();
+});
+
+make(); showSaved();
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="info" defer></script>
+</body>
+</html>

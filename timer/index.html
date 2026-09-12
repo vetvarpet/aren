@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Ժամաչափ ⏱️ · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #1a2138; color: #f5eede; font-family: Arial, Helvetica, sans-serif; }
+  body { display: flex; flex-direction: column; align-items: center; padding: 56px 14px 24px; min-height: 100vh; }
+  h1 { margin: 0 0 2px; font-size: 1.2rem; color: #f0c85a; }
+  .sub { margin: 0 0 14px; font-size: 0.74rem; opacity: 0.7; text-align: center; }
+  #clock { font-size: 3.4rem; font-weight: bold; letter-spacing: 2px; margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
+  #clock.ring { color: #f0c85a; }
+  #say { font-size: 0.82rem; min-height: 20px; margin-bottom: 8px; opacity: 0.85; text-align: center; }
+  canvas { width: 100%; max-width: 420px; height: auto; display: block; border-radius: 14px;
+           background: #223055; touch-action: none; border: 2px solid #33356b; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 12px 0 0; max-width: 420px; }
+  button {
+    font-family: inherit; font-size: 0.85rem; padding: 10px 15px; border-radius: 12px; cursor: pointer;
+    color: #f5eede; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.24);
+  }
+  button.on { background: rgba(240,200,90,0.2); border-color: #f0c85a; color: #ffe9a8; }
+  button.go { background: #f0c85a; border-color: #f0c85a; color: #10162a; font-weight: bold; min-width: 118px; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<h1 id="h1">Ոսկե Ժամաչափ ⏱️</h1>
+<p class="sub" id="sub">Դասերի համար։ Կատուն վազում է, մինչև ժամանակը լրանա։</p>
+
+<div id="clock">10:00</div>
+<div id="say"></div>
+
+<canvas id="cv" width="840" height="300"></canvas>
+
+<div class="row" id="mins"></div>
+<div class="row">
+  <button class="go" id="goBtn">▶ Սկսել</button>
+  <button id="resetBtn">↺ Զրոյացնել</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ԺԱՄԱՉԱՓ ⏱️ — Արենի միտքն է
+//  Դասերի համար։ Ընտրում ես րոպեները, ու կատուն սկսում է վազել
+//  դեպի դրոշակը։ Հասավ՝ ուրեմն ժամանակը լրացավ։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t: 'Ոսկե Ժամաչափ ⏱️', s: 'Դասերի համար։ Կատուն վազում է, մինչև ժամանակը լրանա։',
+        go: '▶ Սկսել', pause: '⏸ Դադար', res: '↺ Զրոյացնել', min: 'ր',
+        run: 'Վազո՛ւմ է…', paused: 'Դադար', done: 'Ժամանակը լրացավ 🎉 Ապրե՛ս', ready: 'Ընտրիր րոպեները ու սեղմիր «Սկսել»' },
+  ru: { t: 'Золотой Таймер ⏱️', s: 'Для уроков. Кот бежит, пока не выйдет время.',
+        go: '▶ Старт', pause: '⏸ Пауза', res: '↺ Сброс', min: 'м',
+        run: 'Бежит…', paused: 'Пауза', done: 'Время вышло 🎉 Молодец', ready: 'Выбери минуты и нажми «Старт»' },
+  en: { t: 'Golden Timer ⏱️', s: 'For homework. The cat runs until the time is up.',
+        go: '▶ Start', pause: '⏸ Pause', res: '↺ Reset', min: 'm',
+        run: 'Running…', paused: 'Paused', done: 'Time is up 🎉 Well done', ready: 'Pick the minutes and press Start' },
+  es: { t: 'Temporizador Dorado ⏱️', s: 'Para los deberes. El gato corre hasta que se acabe el tiempo.',
+        go: '▶ Empezar', pause: '⏸ Pausa', res: '↺ Reiniciar', min: 'm',
+        run: 'Corriendo…', paused: 'En pausa', done: 'Se acabó el tiempo 🎉 ¡Bien hecho!', ready: 'Elige los minutos y pulsa Empezar' },
+  fr: { t: 'Minuteur Doré ⏱️', s: 'Pour les devoirs. Le chat court jusqu’à la fin du temps.',
+        go: '▶ Démarrer', pause: '⏸ Pause', res: '↺ Remettre à zéro', min: 'm',
+        run: 'Il court…', paused: 'En pause', done: 'Temps écoulé 🎉 Bravo', ready: 'Choisis les minutes et appuie sur Démarrer' },
+  de: { t: 'Goldener Timer ⏱️', s: 'Für die Hausaufgaben. Die Katze läuft, bis die Zeit um ist.',
+        go: '▶ Start', pause: '⏸ Pause', res: '↺ Zurücksetzen', min: 'Min',
+        run: 'Läuft…', paused: 'Pause', done: 'Zeit ist um 🎉 Gut gemacht', ready: 'Wähle die Minuten und drücke Start' },
+  ja: { t: 'ゴールデン・タイマー ⏱️', s: 'しゅくだいよう。ねこが時間までずっと走るよ。',
+        go: '▶ スタート', pause: '⏸ いちじていし', res: '↺ リセット', min: 'ふん',
+        run: 'はしってる…', paused: 'ていし中', done: 'じかんだよ 🎉 よくできました', ready: 'ふんをえらんで「スタート」をおしてね' },
+  zh: { t: '黄金计时器 ⏱️', s: '写作业用。猫会一直跑到时间结束。',
+        go: '▶ 开始', pause: '⏸ 暂停', res: '↺ 重置', min: '分',
+        run: '跑步中…', paused: '已暂停', done: '时间到 🎉 做得好', ready: '选好分钟再按开始' },
+  it: { t: 'Timer Dorato ⏱️', s: 'Per i compiti. Il gatto corre finché il tempo non finisce.',
+        go: '▶ Avvia', pause: '⏸ Pausa', res: '↺ Azzera', min: 'm',
+        run: 'Sta correndo…', paused: 'In pausa', done: 'Tempo scaduto 🎉 Bravo', ready: 'Scegli i minuti e premi Avvia' },
+  ka: { t: 'ოქროს ტაიმერი ⏱️', s: 'გაკვეთილებისთვის. კატა დარბის, სანამ დრო არ ამოიწურება.',
+        go: '▶ დაწყება', pause: '⏸ პაუზა', res: '↺ განულება', min: 'წთ',
+        run: 'დარბის…', paused: 'პაუზა', done: 'დრო ამოიწურა 🎉 ყოჩაღ', ready: 'აირჩიე წუთები და დააჭირე «დაწყება»' },
+  hi: { t: 'गोल्डन टाइमर ⏱️', s: 'होमवर्क के लिए। बिल्ली तब तक दौड़ती है जब तक समय पूरा न हो।',
+        go: '▶ शुरू', pause: '⏸ रोको', res: '↺ रीसेट', min: 'मि',
+        run: 'दौड़ रही है…', paused: 'रुका हुआ', done: 'समय पूरा 🎉 शाबाश', ready: 'मिनट चुनो और शुरू दबाओ' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+document.getElementById('h1').textContent = T.t;
+document.getElementById('sub').textContent = T.s;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+const CHOICES = [1, 5, 10, 15, 25, 45];
+let chosen = 10;
+try { chosen = Number(localStorage.getItem('aren-timer-min')) || 10; } catch (e) {}
+if (CHOICES.indexOf(chosen) < 0) chosen = 10;
+
+let total = chosen * 60, left = total, running = false, finished = false, last = 0;
+
+// ——— ձայնը 🔊 ———
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.13, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.15));
+  o.connect(g); g.connect(actx.destination);
+  o.start(); o.stop(actx.currentTime + (d || 0.15));
+}
+// ուրվական-մկնիկի պաշտպանություն
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+// ——— րոպեների կոճակները ———
+const minsRow = document.getElementById('mins');
+CHOICES.forEach(m => {
+  const b = document.createElement('button');
+  b.textContent = m + ' ' + T.min;
+  b.dataset.m = m;
+  b.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && ghost()) return;
+    initAudio(); tone(560, 0.09, 'sine');
+    chosen = m; total = m * 60; left = total; running = false; finished = false;
+    try { localStorage.setItem('aren-timer-min', String(m)); } catch (er) {}
+    paint(); refresh();
+  });
+  minsRow.appendChild(b);
+});
+
+const goBtn = document.getElementById('resetBtn') && document.getElementById('goBtn');
+document.getElementById('resetBtn').textContent = T.res;
+goBtn.addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio();
+  if (finished) { left = total; finished = false; running = true; }
+  else running = !running;
+  last = performance.now();
+  tone(running ? 700 : 420, 0.12, 'triangle');
+  refresh();
+});
+document.getElementById('resetBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio(); tone(360, 0.12, 'sine');
+  running = false; finished = false; left = total; refresh(); paint();
+});
+
+function refresh() {
+  goBtn.textContent = running ? T.pause : T.go;
+  const cl = document.getElementById('clock');
+  cl.classList.toggle('ring', finished);
+  document.getElementById('say').textContent = finished ? T.done : (running ? T.run : (left === total ? T.ready : T.paused));
+  [...minsRow.children].forEach(b => b.classList.toggle('on', Number(b.dataset.m) === chosen));
+  const mm = Math.floor(Math.max(0, left) / 60), ss = Math.floor(Math.max(0, left) % 60);
+  cl.textContent = (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss;
+}
+
+// ——— նկարը. կատուն վազում է դեպի դրոշակը ———
+const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+let legPhase = 0;
+
+function paint() {
+  cx.clearRect(0, 0, W, H);
+  // երկինք ու գետին
+  const sky = cx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#2b3a63'); sky.addColorStop(1, '#3d5285');
+  cx.fillStyle = sky; cx.fillRect(0, 0, W, H);
+  cx.fillStyle = '#4e7d47'; cx.fillRect(0, H - 74, W, 74);
+  cx.fillStyle = '#3f6b45'; cx.fillRect(0, H - 74, W, 8);
+
+  // ճանապարհի գծանշումը
+  cx.strokeStyle = 'rgba(255,255,255,0.22)'; cx.lineWidth = 4; cx.setLineDash([26, 22]);
+  cx.beginPath(); cx.moveTo(40, H - 38); cx.lineTo(W - 40, H - 38); cx.stroke();
+  cx.setLineDash([]);
+
+  // դրոշակը վերջում
+  const fx = W - 62;
+  cx.strokeStyle = '#cfd6e6'; cx.lineWidth = 6;
+  cx.beginPath(); cx.moveTo(fx, H - 46); cx.lineTo(fx, H - 168); cx.stroke();
+  cx.fillStyle = finished ? '#f0c85a' : '#e8756a';
+  cx.beginPath(); cx.moveTo(fx, H - 168); cx.lineTo(fx + 62, H - 150); cx.lineTo(fx, H - 128); cx.closePath(); cx.fill();
+
+  // անցած ճանապարհը՝ ոսկե
+  const p = total > 0 ? Math.min(1, (total - left) / total) : 0;
+  const x0 = 56, x1 = fx - 34;
+  const cxp = x0 + (x1 - x0) * p;
+  cx.strokeStyle = '#f0c85a'; cx.lineWidth = 7; cx.lineCap = 'round';
+  cx.beginPath(); cx.moveTo(x0, H - 38); cx.lineTo(Math.max(x0, cxp), H - 38); cx.stroke();
+
+  drawCat(cxp, H - 46, running ? legPhase : 0);
+
+  // մնացած տոկոսը վերևում
+  cx.fillStyle = 'rgba(255,255,255,0.8)'; cx.font = 'bold 26px Arial';
+  cx.textAlign = 'left';
+  cx.fillText(Math.round(p * 100) + '%', 22, 40);
+}
+
+// կատուն՝ միայն ձևերով, ոչ մի emoji կտավի վրա
+function drawCat(x, y, ph) {
+  const s = 1.15;
+  cx.save(); cx.translate(x, y); cx.scale(s, s);
+  // պոչը
+  cx.strokeStyle = '#f0c85a'; cx.lineWidth = 7; cx.lineCap = 'round';
+  cx.beginPath(); cx.moveTo(-24, -26);
+  cx.quadraticCurveTo(-46, -34 + Math.sin(ph * 1.6) * 9, -40, -56 + Math.cos(ph * 1.6) * 7);
+  cx.stroke();
+  // ոտքերը
+  cx.strokeStyle = '#e0a93c'; cx.lineWidth = 6;
+  const l1 = Math.sin(ph) * 11, l2 = Math.sin(ph + Math.PI) * 11;
+  cx.beginPath(); cx.moveTo(-12, -14); cx.lineTo(-12 + l1, 0); cx.stroke();
+  cx.beginPath(); cx.moveTo(10, -14); cx.lineTo(10 + l2, 0); cx.stroke();
+  cx.beginPath(); cx.moveTo(-4, -14); cx.lineTo(-4 + l2, 0); cx.stroke();
+  cx.beginPath(); cx.moveTo(18, -14); cx.lineTo(18 + l1, 0); cx.stroke();
+  // մարմինը
+  cx.fillStyle = '#f0c85a';
+  cx.beginPath(); cx.ellipse(2, -26, 26, 15, 0, 0, Math.PI * 2); cx.fill();
+  // գլուխը
+  cx.beginPath(); cx.arc(28, -40, 15, 0, Math.PI * 2); cx.fill();
+  // ականջները
+  cx.beginPath(); cx.moveTo(19, -52); cx.lineTo(22, -66); cx.lineTo(31, -54); cx.closePath(); cx.fill();
+  cx.beginPath(); cx.moveTo(33, -54); cx.lineTo(42, -64); cx.lineTo(41, -50); cx.closePath(); cx.fill();
+  // աչքն ու քիթը
+  cx.fillStyle = '#10162a';
+  cx.beginPath(); cx.arc(33, -42, 2.6, 0, Math.PI * 2); cx.fill();
+  cx.fillStyle = '#e8756a';
+  cx.beginPath(); cx.arc(42, -38, 2.4, 0, Math.PI * 2); cx.fill();
+  cx.restore();
+}
+
+// ——— ժամացույցի սիրտը ———
+function loop(now) {
+  if (!last) last = now;
+  const dt = (now - last) / 1000; last = now;
+  if (running && !finished) {
+    left -= dt;
+    legPhase += dt * 9;
+    if (left <= 0) {
+      left = 0; running = false; finished = true;
+      refresh();
+      // վերջի շեփորը
+      [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.32, 'triangle', 0.17), i * 170));
+      try { navigator.vibrate && navigator.vibrate([40, 80, 40, 80, 120]); } catch (e) {}
+    } else if (Math.floor(left) !== Math.floor(left + dt)) {
+      refresh();
+      if (left <= 5) tone(880, 0.09, 'square', 0.1);   // վերջին 5 վայրկյանը
+    }
+  }
+  paint();
+  requestAnimationFrame(loop);
+}
+refresh(); paint();
+requestAnimationFrame(loop);
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="info" defer></script>
+</body>
+</html>

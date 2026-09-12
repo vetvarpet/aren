@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Նկարատախտակ ✏️ · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #1a2138; color: #f5eede; font-family: Arial, Helvetica, sans-serif; }
+  body { display: flex; flex-direction: column; align-items: center; padding: 52px 12px 20px; min-height: 100vh; }
+  h1 { margin: 0 0 2px; font-size: 1.12rem; color: #f0c85a; }
+  .sub { margin: 0 0 10px; font-size: 0.72rem; opacity: 0.7; text-align: center; }
+  canvas { width: 100%; max-width: 460px; height: auto; display: block; border-radius: 14px;
+           background: #fdfbf3; touch-action: none; border: 2px solid #33356b; cursor: crosshair; }
+  .row { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; margin-top: 10px; max-width: 460px; width: 100%; }
+  .chip { width: 34px; height: 34px; border-radius: 9px; border: 2px solid rgba(255,255,255,0.25); cursor: pointer; }
+  .chip.on { border-color: #f0c85a; transform: scale(1.14); }
+  .sz { width: 38px; height: 34px; border-radius: 9px; border: 2px solid rgba(255,255,255,0.25);
+        background: rgba(255,255,255,0.08); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .sz.on { border-color: #f0c85a; background: rgba(240,200,90,0.18); }
+  .sz i { display: block; background: #f5eede; border-radius: 50%; }
+  button {
+    font-family: inherit; font-size: 0.8rem; padding: 9px 13px; border-radius: 11px; cursor: pointer;
+    color: #f5eede; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.24);
+  }
+  button.on { background: rgba(240,200,90,0.2); border-color: #f0c85a; color: #ffe9a8; }
+  #note { font-size: 0.68rem; opacity: 0.55; margin-top: 8px; min-height: 15px; text-align: center; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<h1 id="h1">Ոսկե Նկարատախտակ ✏️</h1>
+<p class="sub" id="sub">Նկարիր մատով։ Նկարդ ինքնաբերաբար պահվում է։</p>
+
+<canvas id="cv" width="920" height="700"></canvas>
+
+<div class="row" id="cols"></div>
+<div class="row" id="szs"></div>
+<div class="row">
+  <button id="eraseBtn">🧽 Ջնջիչ</button>
+  <button id="undoBtn">↶ Ետ</button>
+  <button id="clearBtn">🗑️ Մաքրել</button>
+</div>
+<div id="note"></div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ՆԿԱՐԱՏԱԽՏԱԿ ✏️ — Արենի միտքն է
+//  Պարզ նկարիչ. գույն, հաստություն, ջնջիչ։ Ամեն քաշվածքից հետո
+//  նկարը պահվում է localStorage-ում, ու հաջորդ անգամ նույն տեղից ես շարունակում։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t: 'Ոսկե Նկարատախտակ ✏️', s: 'Նկարիր մատով։ Նկարդ ինքնաբերաբար պահվում է։',
+        er: '🧽 Ջնջիչ', un: '↶ Ետ', cl: '🗑️ Մաքրել', saved: 'Պահվեց ✅', ask: 'Մաքրե՞լ ամբողջը։ Սեղմիր նորից' },
+  ru: { t: 'Золотой Холст ✏️', s: 'Рисуй пальцем. Рисунок сохраняется сам.',
+        er: '🧽 Ластик', un: '↶ Назад', cl: '🗑️ Очистить', saved: 'Сохранено ✅', ask: 'Очистить всё? Нажми ещё раз' },
+  en: { t: 'Golden Draw Pad ✏️', s: 'Draw with your finger. Your picture saves itself.',
+        er: '🧽 Eraser', un: '↶ Undo', cl: '🗑️ Clear', saved: 'Saved ✅', ask: 'Clear everything? Tap again' },
+  es: { t: 'Lienzo Dorado ✏️', s: 'Dibuja con el dedo. Tu dibujo se guarda solo.',
+        er: '🧽 Borrador', un: '↶ Deshacer', cl: '🗑️ Borrar', saved: 'Guardado ✅', ask: '¿Borrar todo? Pulsa otra vez' },
+  fr: { t: 'Ardoise Dorée ✏️', s: 'Dessine avec le doigt. Ton dessin se sauvegarde tout seul.',
+        er: '🧽 Gomme', un: '↶ Annuler', cl: '🗑️ Effacer', saved: 'Sauvegardé ✅', ask: 'Tout effacer ? Retouche' },
+  de: { t: 'Goldenes Zeichenbrett ✏️', s: 'Male mit dem Finger. Dein Bild speichert sich selbst.',
+        er: '🧽 Radierer', un: '↶ Zurück', cl: '🗑️ Löschen', saved: 'Gespeichert ✅', ask: 'Alles löschen? Nochmal tippen' },
+  ja: { t: 'ゴールデン・おえかき ✏️', s: 'ゆびでかいてね。えはじどうでほぞんされるよ。',
+        er: '🧽 けしゴム', un: '↶ もどす', cl: '🗑️ ぜんぶけす', saved: 'ほぞんしたよ ✅', ask: 'ぜんぶけす？もういちどタップ' },
+  zh: { t: '黄金画板 ✏️', s: '用手指画。画会自动保存。',
+        er: '🧽 橡皮', un: '↶ 撤销', cl: '🗑️ 清空', saved: '已保存 ✅', ask: '要清空吗？再点一次' },
+  it: { t: 'Lavagna Dorata ✏️', s: 'Disegna col dito. Il disegno si salva da solo.',
+        er: '🧽 Gomma', un: '↶ Annulla', cl: '🗑️ Cancella', saved: 'Salvato ✅', ask: 'Cancellare tutto? Ritocca' },
+  ka: { t: 'ოქროს სახატავი ✏️', s: 'დახატე თითით. ნახატი ავტომატურად ინახება.',
+        er: '🧽 საშლელი', un: '↶ უკან', cl: '🗑️ გასუფთავება', saved: 'შენახულია ✅', ask: 'ყველაფერი წავშალოთ? კიდევ დააჭირე' },
+  hi: { t: 'गोल्डन ड्रॉइंग पैड ✏️', s: 'उंगली से बनाओ। तुम्हारी तस्वीर अपने आप सेव होती है।',
+        er: '🧽 रबर', un: '↶ वापस', cl: '🗑️ साफ़ करो', saved: 'सेव हो गया ✅', ask: 'सब मिटा दें? फिर से दबाओ' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('h1').textContent = T.t;
+document.getElementById('sub').textContent = T.s;
+document.getElementById('eraseBtn').textContent = T.er;
+document.getElementById('undoBtn').textContent = T.un;
+document.getElementById('clearBtn').textContent = T.cl;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.1, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.1));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.1));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+const COLORS = ['#10162a', '#e8756a', '#f0c85a', '#7fd1c1', '#5b8de8', '#a76fd6', '#4e9c53', '#c9825a', '#f5eede'];
+const SIZES = [4, 10, 20, 36];
+let color = '#10162a', size = 10, erasing = false, askClear = 0;
+
+const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+cx.lineCap = 'round'; cx.lineJoin = 'round';
+
+// ——— պահված նկարը ետ ենք բերում ———
+const KEY = 'aren-draw-pic';
+function blank() { cx.fillStyle = '#fdfbf3'; cx.fillRect(0, 0, W, H); }
+blank();
+try {
+  const d = localStorage.getItem(KEY);
+  if (d) { const img = new Image(); img.onload = () => cx.drawImage(img, 0, 0, W, H); img.src = d; }
+} catch (e) {}
+
+// մեկ քայլ ետ գնալու համար պահում ենք նախորդ վիճակը
+let undoShot = null;
+function snapshot() { try { undoShot = cx.getImageData(0, 0, W, H); } catch (e) { undoShot = null; } }
+
+let saveT = 0;
+function save() {
+  clearTimeout(saveT);
+  saveT = setTimeout(() => {
+    try {
+      localStorage.setItem(KEY, cv.toDataURL('image/png'));
+      document.getElementById('note').textContent = T.saved;
+      setTimeout(() => { document.getElementById('note').textContent = ''; }, 1200);
+    } catch (e) {}
+  }, 500);
+}
+
+// ——— գույների ու հաստության կոճակները ———
+const colsRow = document.getElementById('cols');
+COLORS.forEach(c => {
+  const d = document.createElement('div');
+  d.className = 'chip' + (c === color ? ' on' : '');
+  d.style.background = c; d.dataset.c = c;
+  d.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && ghost()) return;
+    initAudio(); tone(600, 0.07, 'sine');
+    color = c; erasing = false; refresh();
+  });
+  colsRow.appendChild(d);
+});
+const szsRow = document.getElementById('szs');
+SIZES.forEach(s => {
+  const d = document.createElement('div');
+  d.className = 'sz' + (s === size ? ' on' : ''); d.dataset.s = s;
+  const i = document.createElement('i');
+  const px = Math.max(4, Math.round(s * 0.5));
+  i.style.width = px + 'px'; i.style.height = px + 'px';
+  d.appendChild(i);
+  d.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && ghost()) return;
+    initAudio(); tone(480 + s * 6, 0.07, 'sine');
+    size = s; refresh();
+  });
+  szsRow.appendChild(d);
+});
+function refresh() {
+  [...colsRow.children].forEach(d => d.classList.toggle('on', !erasing && d.dataset.c === color));
+  [...szsRow.children].forEach(d => d.classList.toggle('on', Number(d.dataset.s) === size));
+  document.getElementById('eraseBtn').classList.toggle('on', erasing);
+}
+document.getElementById('eraseBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio(); tone(360, 0.09, 'sine');
+  erasing = !erasing; refresh();
+});
+document.getElementById('undoBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio(); tone(400, 0.1, 'triangle');
+  if (undoShot) { cx.putImageData(undoShot, 0, 0); undoShot = null; save(); }
+});
+document.getElementById('clearBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio();
+  // պատահաբար չմաքրես — երկու հպում է պետք
+  if (Date.now() - askClear > 2500) {
+    askClear = Date.now();
+    document.getElementById('note').textContent = T.ask;
+    tone(330, 0.1, 'sine');
+    setTimeout(() => { if (Date.now() - askClear >= 2400) document.getElementById('note').textContent = ''; }, 2500);
+    return;
+  }
+  askClear = 0;
+  snapshot(); blank(); save(); tone(240, 0.18, 'sawtooth', 0.1);
+  document.getElementById('note').textContent = '';
+});
+
+// ——— նկարելը ———
+let drawing = false, px = 0, py = 0;
+function pos(e) {
+  const r = cv.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * (W / r.width), y: (e.clientY - r.top) * (H / r.height) };
+}
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  initAudio();
+  snapshot();
+  drawing = true;
+  const p = pos(e); px = p.x; py = p.y;
+  cx.strokeStyle = erasing ? '#fdfbf3' : color;
+  cx.lineWidth = erasing ? size * 2.2 : size;
+  cx.beginPath(); cx.moveTo(px, py); cx.lineTo(px + 0.01, py); cx.stroke();
+});
+cv.addEventListener('pointermove', (e) => {
+  if (!drawing) return;
+  e.preventDefault();
+  const p = pos(e);
+  cx.strokeStyle = erasing ? '#fdfbf3' : color;
+  cx.lineWidth = erasing ? size * 2.2 : size;
+  cx.beginPath(); cx.moveTo(px, py); cx.lineTo(p.x, p.y); cx.stroke();
+  px = p.x; py = p.y;
+});
+function stop() { if (!drawing) return; drawing = false; save(); }
+cv.addEventListener('pointerup', stop);
+cv.addEventListener('pointercancel', stop);
+cv.addEventListener('pointerleave', stop);
+
+refresh();
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="info" defer></script>
+</body>
+</html>

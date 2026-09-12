@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Գույն 🎨 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #1a2138; color: #f5eede; font-family: Arial, Helvetica, sans-serif; }
+  body { display: flex; flex-direction: column; align-items: center; padding: 56px 14px 24px; min-height: 100vh; }
+  h1 { margin: 0 0 2px; font-size: 1.2rem; color: #f0c85a; }
+  .sub { margin: 0 0 14px; font-size: 0.74rem; opacity: 0.7; text-align: center; }
+  #swatch {
+    width: 100%; max-width: 420px; height: 150px; border-radius: 18px; border: 2px solid #33356b;
+    display: flex; align-items: center; justify-content: center; font-size: 1.7rem; font-weight: bold;
+    letter-spacing: 2px; transition: background 0.12s; cursor: pointer;
+  }
+  #hint { font-size: 0.7rem; opacity: 0.6; margin-top: 6px; min-height: 16px; }
+  .sl { width: 100%; max-width: 420px; margin-top: 12px; }
+  .sl label { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 3px; }
+  input[type=range] { width: 100%; height: 26px; -webkit-appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 12px; border-radius: 999px; }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 26px; height: 26px; border-radius: 50%; margin-top: -7px;
+    background: #f5eede; border: 3px solid #10162a; cursor: pointer;
+  }
+  #r::-webkit-slider-runnable-track { background: linear-gradient(90deg,#000,#f00); }
+  #g::-webkit-slider-runnable-track { background: linear-gradient(90deg,#000,#0f0); }
+  #b::-webkit-slider-runnable-track { background: linear-gradient(90deg,#000,#00f); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; max-width: 420px; }
+  button {
+    font-family: inherit; font-size: 0.82rem; padding: 9px 13px; border-radius: 12px; cursor: pointer;
+    color: #f5eede; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.24);
+  }
+  button.go { background: #f0c85a; border-color: #f0c85a; color: #10162a; font-weight: bold; }
+  #mix { display: flex; gap: 10px; width: 100%; max-width: 420px; margin-top: 16px; align-items: center; }
+  .mixbox { flex: 1; height: 56px; border-radius: 12px; border: 2px solid #33356b; cursor: pointer; }
+  .mixEq { font-size: 1.2rem; opacity: 0.7; }
+  #shelf { display: flex; flex-wrap: wrap; gap: 7px; max-width: 420px; margin-top: 14px; justify-content: center; }
+  .chip { width: 40px; height: 40px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.28); cursor: pointer; }
+  .lbl { font-size: 0.68rem; letter-spacing: 1.2px; opacity: 0.6; margin-top: 14px; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<h1 id="h1">Ոսկե Գույն 🎨</h1>
+<p class="sub" id="sub">Խառնիր գույները ու վերցրու hex կոդը։</p>
+
+<div id="swatch">#7FD1C1</div>
+<div id="hint"></div>
+
+<div class="sl"><label><span>R</span><span id="rv">127</span></label><input type="range" id="r" min="0" max="255" value="127"></div>
+<div class="sl"><label><span>G</span><span id="gv">209</span></label><input type="range" id="g" min="0" max="255" value="209"></div>
+<div class="sl"><label><span>B</span><span id="bv">193</span></label><input type="range" id="b" min="0" max="255" value="193"></div>
+
+<div class="row">
+  <button class="go" id="copyBtn">📋 Պատճենել</button>
+  <button id="randBtn">🎲 Պատահական</button>
+  <button id="keepBtn">⭐ Պահել</button>
+</div>
+
+<div class="lbl" id="mixLbl">ԽԱՌՆՈՒՐԴ</div>
+<div id="mix">
+  <div class="mixbox" id="mixA"></div>
+  <span class="mixEq">+</span>
+  <div class="mixbox" id="mixB"></div>
+  <span class="mixEq">=</span>
+  <div class="mixbox" id="mixC"></div>
+</div>
+
+<div class="lbl" id="shelfLbl">ՊԱՀՎԱԾ ԳՈՒՅՆԵՐ</div>
+<div id="shelf"></div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ԳՈՒՅՆ 🎨 — Արենի միտքն է
+//  Երեք սահիչ՝ կարմիր, կանաչ, կապույտ։ Ներքևում երկու գույն
+//  խառնվում են ու երրորդն են տալիս։ hex կոդը միշտ երևում է։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t: 'Ոսկե Գույն 🎨', s: 'Խառնիր գույները ու վերցրու hex կոդը։', copy: '📋 Պատճենել', rnd: '🎲 Պատահական',
+        keep: '⭐ Պահել', mix: 'ԽԱՌՆՈՒՐԴ', shelf: 'ՊԱՀՎԱԾ ԳՈՒՅՆԵՐ', done: 'Պատճենվեց ✅',
+        tip: 'Հպիր խառնուրդի քառակուսուն՝ այդ գույնը վերցնելու համար' },
+  ru: { t: 'Золотой Цвет 🎨', s: 'Смешивай цвета и забирай hex-код.', copy: '📋 Копировать', rnd: '🎲 Случайный',
+        keep: '⭐ Сохранить', mix: 'СМЕСЬ', shelf: 'СОХРАНЁННЫЕ ЦВЕТА', done: 'Скопировано ✅',
+        tip: 'Нажми на квадрат смеси, чтобы взять этот цвет' },
+  en: { t: 'Golden Colour 🎨', s: 'Mix colours and take the hex code.', copy: '📋 Copy', rnd: '🎲 Random',
+        keep: '⭐ Keep', mix: 'MIX', shelf: 'SAVED COLOURS', done: 'Copied ✅',
+        tip: 'Tap a mix square to load that colour' },
+  es: { t: 'Color Dorado 🎨', s: 'Mezcla colores y coge el código hex.', copy: '📋 Copiar', rnd: '🎲 Aleatorio',
+        keep: '⭐ Guardar', mix: 'MEZCLA', shelf: 'COLORES GUARDADOS', done: 'Copiado ✅',
+        tip: 'Toca un cuadro de la mezcla para cargar ese color' },
+  fr: { t: 'Couleur Dorée 🎨', s: 'Mélange les couleurs et prends le code hex.', copy: '📋 Copier', rnd: '🎲 Au hasard',
+        keep: '⭐ Garder', mix: 'MÉLANGE', shelf: 'COULEURS GARDÉES', done: 'Copié ✅',
+        tip: 'Touche un carré du mélange pour charger cette couleur' },
+  de: { t: 'Goldene Farbe 🎨', s: 'Mische Farben und nimm den Hex-Code.', copy: '📋 Kopieren', rnd: '🎲 Zufall',
+        keep: '⭐ Behalten', mix: 'MISCHUNG', shelf: 'GESPEICHERTE FARBEN', done: 'Kopiert ✅',
+        tip: 'Tippe ein Mischfeld an, um diese Farbe zu laden' },
+  ja: { t: 'ゴールデン・カラー 🎨', s: 'いろをまぜて hex コードをもらおう。', copy: '📋 コピー', rnd: '🎲 ランダム',
+        keep: '⭐ とっておく', mix: 'ミックス', shelf: 'とっておいたいろ', done: 'コピーしたよ ✅',
+        tip: 'ミックスのしかくをタップするとそのいろになるよ' },
+  zh: { t: '黄金颜色 🎨', s: '混合颜色，拿走 hex 代码。', copy: '📋 复制', rnd: '🎲 随机',
+        keep: '⭐ 留下', mix: '混色', shelf: '保存的颜色', done: '已复制 ✅',
+        tip: '点混色方块就能取那个颜色' },
+  it: { t: 'Colore Dorato 🎨', s: 'Mescola i colori e prendi il codice hex.', copy: '📋 Copia', rnd: '🎲 A caso',
+        keep: '⭐ Tieni', mix: 'MISCELA', shelf: 'COLORI TENUTI', done: 'Copiato ✅',
+        tip: 'Tocca un quadrato della miscela per caricare quel colore' },
+  ka: { t: 'ოქროს ფერი 🎨', s: 'შეურიე ფერები და აიღე hex კოდი.', copy: '📋 კოპირება', rnd: '🎲 შემთხვევითი',
+        keep: '⭐ შენახვა', mix: 'ნარევი', shelf: 'შენახული ფერები', done: 'დაკოპირდა ✅',
+        tip: 'შეეხე ნარევის კვადრატს ამ ფერის ასაღებად' },
+  hi: { t: 'गोल्डन रंग 🎨', s: 'रंग मिलाओ और hex कोड लो।', copy: '📋 कॉपी', rnd: '🎲 कोई भी',
+        keep: '⭐ रख लो', mix: 'मिश्रण', shelf: 'रखे हुए रंग', done: 'कॉपी हो गया ✅',
+        tip: 'मिश्रण के चौकोर को छूकर वह रंग ले लो' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('h1').textContent = T.t;
+document.getElementById('sub').textContent = T.s;
+document.getElementById('copyBtn').textContent = T.copy;
+document.getElementById('randBtn').textContent = T.rnd;
+document.getElementById('keepBtn').textContent = T.keep;
+document.getElementById('mixLbl').textContent = T.mix;
+document.getElementById('shelfLbl').textContent = T.shelf;
+document.getElementById('hint').textContent = T.tip;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.1, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.12));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.12));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+const R = document.getElementById('r'), G = document.getElementById('g'), B = document.getElementById('b');
+const sw = document.getElementById('swatch');
+const hex2 = n => ('0' + Number(n).toString(16)).slice(-2).toUpperCase();
+const toHex = (r, g, b) => '#' + hex2(r) + hex2(g) + hex2(b);
+function cur() { return [Number(R.value), Number(G.value), Number(B.value)]; }
+
+// երկու գույն, որ խառնվում են
+let mixA = [232, 117, 106], mixB = [127, 209, 193];
+
+function draw() {
+  const [r, g, b] = cur();
+  const h = toHex(r, g, b);
+  sw.style.background = h;
+  sw.textContent = h;
+  // տառը մուգ ֆոնի վրա բաց է, բաց ֆոնի վրա՝ մուգ
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  sw.style.color = lum > 0.55 ? '#10162a' : '#f5eede';
+  document.getElementById('rv').textContent = r;
+  document.getElementById('gv').textContent = g;
+  document.getElementById('bv').textContent = b;
+  document.getElementById('mixA').style.background = toHex(...mixA);
+  document.getElementById('mixB').style.background = toHex(...mixB);
+  const mc = [0, 1, 2].map(i => Math.round((mixA[i] + mixB[i]) / 2));
+  document.getElementById('mixC').style.background = toHex(...mc);
+  document.getElementById('mixC').dataset.hex = toHex(...mc);
+}
+[R, G, B].forEach(s => s.addEventListener('input', () => { draw(); tone(300 + Number(s.value), 0.03, 'sine', 0.03); }));
+
+function setRGB(a) { R.value = a[0]; G.value = a[1]; B.value = a[2]; draw(); }
+
+document.getElementById('randBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio(); tone(620, 0.1, 'triangle');
+  setRGB([0, 1, 2].map(() => Math.floor(Math.random() * 256)));
+});
+document.getElementById('copyBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio(); tone(780, 0.12, 'triangle');
+  const h = toHex(...cur());
+  try { navigator.clipboard && navigator.clipboard.writeText(h); } catch (er) {}
+  document.getElementById('hint').textContent = T.done + '  ' + h;
+  setTimeout(() => { document.getElementById('hint').textContent = T.tip; }, 1600);
+});
+
+// ——— խառնուրդի քառակուսիները ———
+document.getElementById('mixA').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio(); tone(500, 0.08, 'sine'); mixA = cur(); draw();
+});
+document.getElementById('mixB').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio(); tone(600, 0.08, 'sine'); mixB = cur(); draw();
+});
+document.getElementById('mixC').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio(); tone(700, 0.1, 'triangle');
+  setRGB([0, 1, 2].map(i => Math.round((mixA[i] + mixB[i]) / 2)));
+});
+sw.addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  document.getElementById('copyBtn').dispatchEvent(new PointerEvent('pointerdown', { pointerType: 'pen' }));
+});
+
+// ——— դարակը ———
+function loadShelf() { try { return JSON.parse(localStorage.getItem('aren-color-shelf') || '[]'); } catch (e) { return []; } }
+function showShelf() {
+  const list = loadShelf(), box = document.getElementById('shelf');
+  box.textContent = '';
+  list.forEach(h => {
+    const d = document.createElement('div');
+    d.className = 'chip'; d.style.background = h; d.title = h;
+    d.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && ghost()) return;
+      initAudio(); tone(660, 0.08, 'sine');
+      setRGB([1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)));
+    });
+    box.appendChild(d);
+  });
+}
+document.getElementById('keepBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio(); tone(840, 0.14, 'triangle');
+  const h = toHex(...cur()), list = loadShelf();
+  if (list.indexOf(h) < 0) list.unshift(h);
+  try { localStorage.setItem('aren-color-shelf', JSON.stringify(list.slice(0, 16))); } catch (er) {}
+  showShelf();
+});
+
+draw(); showShelf();
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="info" defer></script>
+</body>
+</html>

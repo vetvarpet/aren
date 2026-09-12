@@ -173,6 +173,26 @@
   #tipbox .tt { color: var(--ink); font-size: 1.02rem; line-height: 1.55; max-width: 32ch; }
   #tipbox .td { color: #6a6f96; font-size: 0.85rem; }
 
+  /* Գործիքները խաղեր չեն — իրենց առանձին բաժինն ունեն, ավելի փոքր քարտերով */
+  .secthead {
+    display: flex; align-items: center; gap: 10px; margin: 40px 0 14px;
+  }
+  .secthead h2 { margin: 0; font-size: 1.05rem; color: var(--accent); white-space: nowrap; }
+  .secthead .line { flex: 1; height: 2px; background: rgba(240,200,90,0.3); border-radius: 2px; }
+  .secthead .note { font-size: 0.72rem; opacity: 0.6; white-space: nowrap; }
+  .tools {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;
+  }
+  .tool {
+    background: var(--card); border: 2px solid #33356b; border-radius: 16px;
+    padding: 16px 12px; text-decoration: none; color: var(--ink); text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .tool:hover { transform: translateY(-4px); border-color: var(--accent); }
+  .tool .ic { font-size: 1.9rem; line-height: 1; }
+  .tool b { font-size: 0.92rem; }
+  .tool span { font-size: 0.72rem; opacity: 0.72; line-height: 1.35; }
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -1762,6 +1782,46 @@
 
   </div>
 
+
+  <!-- 🧰 Գործիքները. խաղեր չեն, բայց ամեն օր պետք են գալիս -->
+  <div class="secthead">
+    <h2 id="toolsT">🧰 Գործիքներ</h2>
+    <span class="line"></span>
+    <span class="note" id="toolsN">խաղեր չեն, բայց օգտակար են</span>
+  </div>
+  <div class="tools">
+    <a class="tool" href="./timer/">
+      <span class="ic">⏱️</span>
+      <b>Golden Timer</b>
+      <span>Դասերի համար. կատուն վազում է մինչև վերջ</span>
+    </a>
+    <a class="tool" href="./dice/">
+      <span class="ic">🎲</span>
+      <b>Golden Dice</b>
+      <span>Զառ ու մետաղադրամ՝ սեղանի խաղերի համար</span>
+    </a>
+    <a class="tool" href="./name/">
+      <span class="ic">🎭</span>
+      <b>Golden Name</b>
+      <span>Կերպարներիդ համար պատահական անուն</span>
+    </a>
+    <a class="tool" href="./color/">
+      <span class="ic">🎨</span>
+      <b>Golden Colour</b>
+      <span>Գույների միքսեր՝ hex կոդով</span>
+    </a>
+    <a class="tool" href="./draw/">
+      <span class="ic">✏️</span>
+      <b>Golden Draw Pad</b>
+      <span>Պարզ նկարիչ, ինքն է պահում նկարդ</span>
+    </a>
+    <a class="tool" href="./countdown/">
+      <span class="ic">🎂</span>
+      <b>Golden Countdown</b>
+      <span>Քանի օր է մնացել ծննդյանդ օրվան</span>
+    </a>
+  </div>
+
   <footer>
     Սարքել է Արեն Աղբալյանը՝ 10 տարեկան 😼 · Built by Aren Aghbalyan, age 10<br>
     Բոլոր խաղերը գրված են JavaScript-ով, ստեղծված Claude-ի հետ միասին՝ Կոդի վարպետ, լավագույն աշխատակից 🤖 ·
@@ -1816,6 +1876,15 @@ const DICT = {
     about: '😼 О нас',
     troph: '🏆 Кубки',
     quest: '🗺️ Поход',
+    toolsT: '🧰 Инструменты', toolsN: 'не игры, но полезные',
+    tools: {
+      'timer': 'Для уроков: кот бежит до самого конца',
+      'dice': 'Кубик и монета для настольных игр',
+      'name': 'Случайное имя для твоих героев',
+      'color': 'Миксер цветов с hex-кодом',
+      'draw': 'Простой рисовальщик, сам сохраняет рисунок',
+      'countdown': 'Сколько дней до твоего дня рождения',
+    },
     rand: '🎲 Случайная',
     moodQ: 'Во что сыграем?', moodSolo: '🙋 Я один', moodFriend: '👥 Я с другом', moodCalm: '🌿 Хочу спокойное', moodFast: '⚡ Хочу адреналина',
     dailyT: '🌍 Задание дня', dailyScore: (n, g) => 'Сегодня набери ' + n + ' в игре «' + g + '»', dailyLevel: (n, g) => 'Сегодня дойди до уровня ' + n + ' в игре «' + g + '»', dailyDone: '🏅 Сделано!', dailyGo: '▶ Попробовать',
@@ -1866,6 +1935,15 @@ const DICT = {
     about: '😼 About',
     troph: '🏆 Trophies',
     quest: '🗺️ Quest',
+    toolsT: '🧰 Tools', toolsN: 'not games, but handy',
+    tools: {
+      'timer': 'For homework: the cat runs all the way',
+      'dice': 'Dice and a coin for board games',
+      'name': 'A random name for your characters',
+      'color': 'A colour mixer that shows the hex',
+      'draw': 'A simple painter that saves your drawing',
+      'countdown': 'Days left until your birthday',
+    },
     rand: '🎲 Random',
     moodQ: 'What shall we play?', moodSolo: '🙋 On my own', moodFriend: '👥 With a friend', moodCalm: '🌿 Something calm', moodFast: '⚡ Adrenaline!',
     dailyT: '🌍 Daily challenge', dailyScore: (n, g) => 'Score ' + n + ' today in “' + g + '”', dailyLevel: (n, g) => 'Reach level ' + n + ' today in “' + g + '”', dailyDone: '🏅 Done!', dailyGo: '▶ Try it',
@@ -1916,6 +1994,15 @@ const DICT = {
     about: '😼 Sobre nosotros',
     troph: '🏆 Trofeos',
     quest: '🗺️ Búsqueda',
+    toolsT: '🧰 Herramientas', toolsN: 'no son juegos, pero sirven',
+    tools: {
+      'timer': 'Para los deberes: el gato corre hasta el final',
+      'dice': 'Dado y moneda para juegos de mesa',
+      'name': 'Un nombre al azar para tus personajes',
+      'color': 'Un mezclador de colores con el hex',
+      'draw': 'Un pintor simple que guarda tu dibujo',
+      'countdown': 'Días que faltan para tu cumpleaños',
+    },
     rand: '🎲 Al azar',
     moodQ: '¿A qué jugamos?', moodSolo: '🙋 Estoy solo', moodFriend: '👥 Con un amigo', moodCalm: '🌿 Algo tranquilo', moodFast: '⚡ ¡Adrenalina!',
     dailyT: '🌍 Reto del día', dailyScore: (n, g) => 'Consigue hoy ' + n + ' en «' + g + '»', dailyLevel: (n, g) => 'Llega hoy al nivel ' + n + ' en «' + g + '»', dailyDone: '🏅 ¡Hecho!', dailyGo: '▶ Intentar',
@@ -1966,6 +2053,15 @@ const DICT = {
     about: '😼 À propos',
     troph: '🏆 Trophées',
     quest: '🗺️ Quête',
+    toolsT: '🧰 Outils', toolsN: 'pas des jeux, mais utiles',
+    tools: {
+      'timer': 'Pour les devoirs : le chat court jusqu’au bout',
+      'dice': 'Dé et pièce pour les jeux de société',
+      'name': 'Un nom au hasard pour tes personnages',
+      'color': 'Un mélangeur de couleurs avec le hex',
+      'draw': 'Un dessinateur simple qui sauve ton dessin',
+      'countdown': 'Jours restants avant ton anniversaire',
+    },
     rand: '🎲 Au hasard',
     moodQ: 'On joue à quoi ?', moodSolo: '🙋 Je suis seul', moodFriend: '👥 Avec un ami', moodCalm: '🌿 Un truc calme', moodFast: '⚡ De l’adrénaline !',
     dailyT: '🌍 Défi du jour', dailyScore: (n, g) => 'Fais ' + n + ' aujourd’hui dans « ' + g + ' »', dailyLevel: (n, g) => 'Atteins le niveau ' + n + ' aujourd’hui dans « ' + g + ' »', dailyDone: '🏅 Fait !', dailyGo: '▶ Essayer',
@@ -2016,6 +2112,15 @@ const DICT = {
     about: '😼 Über uns',
     troph: '🏆 Pokale',
     quest: '🗺️ Reise',
+    toolsT: '🧰 Werkzeuge', toolsN: 'keine Spiele, aber nützlich',
+    tools: {
+      'timer': 'Für Hausaufgaben: die Katze läuft bis zum Ende',
+      'dice': 'Würfel und Münze für Brettspiele',
+      'name': 'Ein zufälliger Name für deine Figuren',
+      'color': 'Ein Farbmischer mit Hex-Code',
+      'draw': 'Ein einfacher Maler, der dein Bild speichert',
+      'countdown': 'Tage bis zu deinem Geburtstag',
+    },
     rand: '🎲 Zufall',
     moodQ: 'Was spielen wir?', moodSolo: '🙋 Ich bin allein', moodFriend: '👥 Mit einem Freund', moodCalm: '🌿 Etwas Ruhiges', moodFast: '⚡ Adrenalin!',
     dailyT: '🌍 Tages-Challenge', dailyScore: (n, g) => 'Hol heute ' + n + ' in „' + g + '“', dailyLevel: (n, g) => 'Erreiche heute Level ' + n + ' in „' + g + '“', dailyDone: '🏅 Geschafft!', dailyGo: '▶ Versuchen',
@@ -2066,6 +2171,15 @@ const DICT = {
     about: '😼 わたしたち',
     troph: '🏆 トロフィー',
     quest: '🗺️ クエスト',
+    toolsT: '🧰 どうぐ', toolsN: 'ゲームじゃないけどべんり',
+    tools: {
+      'timer': 'しゅくだいよう。ねこがさいごまではしるよ',
+      'dice': 'ボードゲームようのサイコロとコイン',
+      'name': 'キャラのなまえをてきとうにつくるよ',
+      'color': 'hexコードがみえるいろミキサー',
+      'draw': 'えをじどうでほぞんするおえかき',
+      'countdown': 'たんじょうびまであとなんにち',
+    },
     rand: '🎲 ランダム',
     moodQ: 'なにであそぶ？', moodSolo: '🙋 ひとりで', moodFriend: '👥 ともだちと', moodCalm: '🌿 のんびりしたい', moodFast: '⚡ ドキドキしたい',
     dailyT: '🌍 今日のチャレンジ', dailyScore: (n, g) => '今日「' + g + '」で' + n + 'をとろう', dailyLevel: (n, g) => '今日「' + g + '」でレベル' + n + 'までいこう', dailyDone: '🏅 クリア！', dailyGo: '▶ やってみる',
@@ -2116,6 +2230,15 @@ const DICT = {
     about: '😼 关于我们',
     troph: '🏆 奖杯',
     quest: '🗺️ 远征',
+    toolsT: '🧰 工具', toolsN: '不是游戏，但很好用',
+    tools: {
+      'timer': '写作业用：猫一直跑到终点',
+      'dice': '桌游用的骰子和硬币',
+      'name': '给角色随机取名',
+      'color': '带 hex 代码的调色器',
+      'draw': '会自动保存的简易画板',
+      'countdown': '离你的生日还有几天',
+    },
     rand: '🎲 随机',
     moodQ: '玩什么好呢？', moodSolo: '🙋 我一个人', moodFriend: '👥 和朋友一起', moodCalm: '🌿 想玩安静的', moodFast: '⚡ 想要刺激的',
     dailyT: '🌍 每日挑战', dailyScore: (n, g) => '今天在《' + g + '》拿到' + n, dailyLevel: (n, g) => '今天在《' + g + '》达到第' + n + '关', dailyDone: '🏅 完成！', dailyGo: '▶ 去试试',
@@ -2166,6 +2289,15 @@ const DICT = {
     about: '😼 Chi siamo',
     troph: '🏆 Trofei',
     quest: '🗺️ Avventura',
+    toolsT: '🧰 Strumenti', toolsN: 'non sono giochi, ma servono',
+    tools: {
+      'timer': 'Per i compiti: il gatto corre fino in fondo',
+      'dice': 'Dado e moneta per i giochi da tavolo',
+      'name': 'Un nome a caso per i tuoi personaggi',
+      'color': 'Un mixer di colori con il codice hex',
+      'draw': 'Un pittore semplice che salva il disegno',
+      'countdown': 'Giorni che mancano al compleanno',
+    },
     rand: '🎲 A caso',
     moodQ: 'A cosa giochiamo?', moodSolo: '🙋 Sono da solo', moodFriend: '👥 Con un amico', moodCalm: '🌿 Qualcosa di tranquillo', moodFast: '⚡ Adrenalina!',
     dailyT: '🌍 Sfida del giorno', dailyScore: (n, g) => 'Fai oggi ' + n + ' in «' + g + '»', dailyLevel: (n, g) => 'Arriva oggi al livello ' + n + ' in «' + g + '»', dailyDone: '🏅 Fatto!', dailyGo: '▶ Provaci',
@@ -2216,6 +2348,15 @@ const DICT = {
     about: '😼 ჩვენ შესახებ',
     troph: '🏆 თასები',
     quest: '🗺️ ლაშქრობა',
+    toolsT: '🧰 ხელსაწყოები', toolsN: 'თამაშები არაა, მაგრამ გამოსადეგია',
+    tools: {
+      'timer': 'გაკვეთილებისთვის: კატა ბოლომდე დარბის',
+      'dice': 'კამათელი და მონეტა სამაგიდო თამაშებისთვის',
+      'name': 'შემთხვევითი სახელი შენი პერსონაჟებისთვის',
+      'color': 'ფერების მიქსერი hex კოდით',
+      'draw': 'მარტივი სახატავი, თავად ინახავს ნახატს',
+      'countdown': 'რამდენი დღეა დაბადების დღემდე',
+    },
     rand: '🎲 შემთხვევითი',
     moodQ: 'რა ვითამაშოთ?', moodSolo: '🙋 მარტო ვარ', moodFriend: '👥 მეგობართან ერთად', moodCalm: '🌿 რამე მშვიდი მინდა', moodFast: '⚡ ადრენალინი მინდა',
     dailyT: '🌍 დღის გამოწვევა', dailyScore: (n, g) => 'დღეს დააგროვე ' + n + ' თამაშში «' + g + '»', dailyLevel: (n, g) => 'დღეს მიაღწიე ' + n + ' დონეს თამაშში «' + g + '»', dailyDone: '🏅 შესრულებულია!', dailyGo: '▶ სცადე',
@@ -2266,6 +2407,15 @@ const DICT = {
     about: '😼 हमारे बारे में',
     troph: '🏆 ट्रॉफ़ियाँ',
     quest: '🗺️ खोज',
+    toolsT: '🧰 औज़ार', toolsN: 'खेल नहीं, पर काम के',
+    tools: {
+      'timer': 'होमवर्क के लिए: बिल्ली आख़िर तक दौड़ती है',
+      'dice': 'बोर्ड गेम के लिए पासा और सिक्का',
+      'name': 'तुम्हारे किरदारों के लिए कोई नाम',
+      'color': 'hex कोड दिखाने वाला रंग मिक्सर',
+      'draw': 'आसान ड्रॉइंग पैड, ख़ुद सेव करता है',
+      'countdown': 'जन्मदिन में कितने दिन बाकी',
+    },
     rand: '🎲 कोई भी',
     moodQ: 'क्या खेलें?', moodSolo: '🙋 मैं अकेला हूँ', moodFriend: '👥 दोस्त के साथ', moodCalm: '🌿 कुछ शांत चाहिए', moodFast: '⚡ एड्रेनालिन चाहिए',
     dailyT: '🌍 आज की चुनौती', dailyScore: (n, g) => 'आज «' + g + '» में ' + n + ' बनाओ', dailyLevel: (n, g) => 'आज «' + g + '» में स्तर ' + n + ' तक पहुँचो', dailyDone: '🏅 हो गया!', dailyGo: '▶ आज़माओ',
@@ -2322,6 +2472,12 @@ function applyLang(lang) {
   document.getElementById('navAbout').textContent = d.about;
   document.getElementById('navTroph').textContent = d.troph;
   document.getElementById('navQuest').textContent = d.quest;
+  document.getElementById('toolsT').textContent = d.toolsT;
+  document.getElementById('toolsN').textContent = d.toolsN;
+  document.querySelectorAll('.tool').forEach(a => {
+    const k = a.getAttribute('href').replace(/[.\/]/g, '');
+    if (d.tools[k]) a.querySelector('span:last-child').textContent = d.tools[k];
+  });
   document.getElementById('navRand').textContent = d.rand;
   document.getElementById('moodQ').textContent = d.moodQ;
   document.getElementById('moodSolo').textContent = d.moodSolo;

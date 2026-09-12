@@ -46,6 +46,12 @@ and iterating on the code together with Claude, one change at a time.
 | [`dance`](./dance/) | 💃 Golden Dance (Քոչարի) | The kochari steps are shown in rhythm and you repeat them. Each round is one step longer. |
 | [`sasuntsi`](./sasuntsi/) | 🪨 Golden Sasuntsi (Սասունցի Դավիթ) | David with his sling against Msra Melik. Take aim, throw the stone and hit above the shield. |
 | [`quest`](./quest/) | 🗺️ Golden Quest (Ոսկե Արշավ) | One road through twelve games: finish the task at each stop and the road opens until the Golden Crown comes home |
+| [`timer`](./timer/) | ⏱️ Golden Timer (Ոսկե Ժամաչափ) | A homework timer: the cat runs along the track until the time is up |
+| [`dice`](./dice/) | 🎲 Golden Dice (Ոսկե Զառ) | One to three dice and a coin, for board games |
+| [`name`](./name/) | 🎭 Golden Name (Ոսկե Անուն) | Random character names with an epithet, in four flavours |
+| [`color`](./color/) | 🎨 Golden Colour (Ոսկե Գույն) | RGB sliders, a two-colour mixer and the hex code to copy |
+| [`draw`](./draw/) | ✏️ Golden Draw Pad (Ոսկե Նկարատախտակ) | A simple painter that saves the drawing to localStorage |
+| [`countdown`](./countdown/) | 🎂 Golden Countdown (Ոսկե Հաշվարկ) | Days left until your birthday, with a cake and confetti |
 | [`time`](./time/) | 🕰️ Golden Time (Ժամանակի մեքենա) | The site's whole story as a timeline, from the first flying cat to today |
 | [`museum`](./museum/) | 🏛️ Golden Museum (Թանգարան) | Memorial hall of deleted projects, pedestals, epitaphs and all |
 
