@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Հայելի 🪞 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #141a30; overflow: hidden;
+               font-family: Arial, Helvetica, sans-serif; color: #f5eede; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  .ov { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 24px;
+        background: rgba(12,15,32,0.88); }
+  .ov[hidden] { display: none !important; }
+  .ov h1 { margin: 0 0 6px; font-size: 1.5rem; color: #f0c85a; }
+  .ov p { margin: 0 0 18px; font-size: 0.92rem; line-height: 1.5; max-width: 330px; opacity: 0.9; }
+  .ov .big { font-size: 2.6rem; font-weight: bold; color: #ffe9a8; margin-bottom: 4px; }
+  .ov button { font-family: inherit; font-size: 1rem; font-weight: bold; padding: 13px 30px;
+               border-radius: 14px; border: none; background: #f0c85a; color: #10162a; cursor: pointer; }
+  #hud { position: fixed; top: 54px; left: 0; right: 0; z-index: 10; text-align: center;
+         font-size: 1.4rem; font-weight: bold; color: #ffe9a8; pointer-events: none; text-shadow: 0 2px 6px #000; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:30;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="hud"></div>
+
+<div class="ov" id="menu">
+  <h1 id="mT">Ոսկե Հայելի 🪞</h1>
+  <p id="mS">Ձախ կեսն ուղիղ է, աջը՝ հայելի։ Մատդ շարժում ես՝ երկուսն էլ շարժվում են, բայց հակառակ կողմ։</p>
+  <button id="startBtn">▶ Սկսել</button>
+</div>
+
+<div class="ov" id="over" hidden>
+  <div class="big" id="oScore">0</div>
+  <h1 id="oT">Վե՛րջ</h1>
+  <p id="oS"></p>
+  <button id="againBtn">↻ Նորից</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ՀԱՅԵԼԻ 🪞 — Արենի միտքն է
+//  Էկրանի ձախ կեսն ուղիղ է, աջը՝ հայելի։ Մեկ մատով երկուսին ես
+//  շարժում, բայց հակառակ ուղղություններով։ Ու վտանգները տարբեր են։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'Ոսկե Հայելի 🪞', s:'Ձախ կեսն ուղիղ է, աջը՝ հայելի։ Մատդ շարժում ես՝ երկուսն էլ շարժվում են, բայց հակառակ կողմ։',
+        go:'▶ Սկսել', again:'↻ Նորից', over:'Վե՛րջ', rec:'Նոր ռեկորդ 🎉', best:n=>'Ռեկորդ՝ '+n, lives:'Կյանք' },
+  ru: { t:'Золотое Зеркало 🪞', s:'Левая половина прямая, правая — зеркальная. Двигаешь пальцем — двигаются оба, но в разные стороны.',
+        go:'▶ Начать', again:'↻ Ещё раз', over:'Конец', rec:'Новый рекорд 🎉', best:n=>'Рекорд: '+n, lives:'Жизни' },
+  en: { t:'Golden Mirror 🪞', s:'The left half is straight, the right half is a mirror. One finger moves both, in opposite directions.',
+        go:'▶ Start', again:'↻ Again', over:'Game over', rec:'New best 🎉', best:n=>'Best: '+n, lives:'Lives' },
+  es: { t:'Espejo Dorado 🪞', s:'La mitad izquierda es normal, la derecha es un espejo. Un dedo mueve a los dos, en sentidos opuestos.',
+        go:'▶ Empezar', again:'↻ Otra vez', over:'Se acabó', rec:'¡Nuevo récord! 🎉', best:n=>'Récord: '+n, lives:'Vidas' },
+  fr: { t:'Miroir Doré 🪞', s:'La moitié gauche est normale, la droite est un miroir. Un doigt déplace les deux, en sens inverse.',
+        go:'▶ Démarrer', again:'↻ Encore', over:'Perdu', rec:'Nouveau record 🎉', best:n=>'Record : '+n, lives:'Vies' },
+  de: { t:'Goldener Spiegel 🪞', s:'Die linke Hälfte ist normal, die rechte ist ein Spiegel. Ein Finger bewegt beide, in Gegenrichtung.',
+        go:'▶ Start', again:'↻ Nochmal', over:'Vorbei', rec:'Neuer Rekord 🎉', best:n=>'Rekord: '+n, lives:'Leben' },
+  ja: { t:'ゴールデン・かがみ 🪞', s:'ひだりはふつう、みぎはかがみ。ゆび1ぽんでふたりうごくけど、はんたいむきだよ。',
+        go:'▶ スタート', again:'↻ もういちど', over:'おわり', rec:'しんきろく 🎉', best:n=>'ベスト：'+n, lives:'ライフ' },
+  zh: { t:'黄金镜子 🪞', s:'左半边是正的，右半边是镜像。一根手指同时动两个，方向相反。',
+        go:'▶ 开始', again:'↻ 再来', over:'结束', rec:'新纪录 🎉', best:n=>'纪录：'+n, lives:'生命' },
+  it: { t:'Specchio Dorato 🪞', s:'La metà sinistra è normale, la destra è uno specchio. Un dito muove entrambi, in direzioni opposte.',
+        go:'▶ Avvia', again:'↻ Ancora', over:'Finita', rec:'Nuovo record 🎉', best:n=>'Record: '+n, lives:'Vite' },
+  ka: { t:'ოქროს სარკე 🪞', s:'მარცხენა ნახევარი პირდაპირია, მარჯვენა — სარკე. ერთი თითი ორივეს ამოძრავებს, საპირისპირო მხარეს.',
+        go:'▶ დაწყება', again:'↻ თავიდან', over:'დასასრული', rec:'ახალი რეკორდი 🎉', best:n=>'რეკორდი: '+n, lives:'სიცოცხლე' },
+  hi: { t:'गोल्डन आईना 🪞', s:'बायाँ आधा सीधा है, दायाँ आईना। एक उंगली दोनों को हिलाती है, पर उल्टी दिशा में।',
+        go:'▶ शुरू', again:'↻ फिर से', over:'खेल ख़त्म', rec:'नया रिकॉर्ड 🎉', best:n=>'रिकॉर्ड: '+n, lives:'जान' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('mT').textContent = T.t;
+document.getElementById('mS').textContent = T.s;
+document.getElementById('startBtn').textContent = T.go;
+document.getElementById('againBtn').textContent = T.again;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let best = 0;
+try { best = Number(localStorage.getItem('aren-mirror-best') || 0) || 0; } catch (e) {}
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.12, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.12));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.12));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function fit() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+fit(); addEventListener('resize', fit);
+
+// ——— վիճակը ———
+let state = 'menu', score = 0, lives = 3, endedAt = 0, t = 0, spawnT = 0, inv = 0;
+let u = 0.5;           // 0..1 — դիրքը կիսադաշտում
+let items = [];        // { side, u, y, kind:'star'|'rock', v }
+
+const half = () => W / 2;
+const PY = () => H * 0.78;
+const R = 16;
+
+function reset() { score = 0; lives = 3; t = 0; spawnT = 0.5; items = []; u = 0.5; inv = 0; }
+function start() {
+  initAudio(); reset(); state = 'play';
+  document.getElementById('menu').hidden = true;
+  document.getElementById('over').hidden = true;
+  tone(700, 0.13, 'triangle');
+}
+function gameOver() {
+  state = 'over'; endedAt = Date.now();
+  const isRec = score > best;
+  if (isRec) { best = score; try { localStorage.setItem('aren-mirror-best', String(best)); } catch (e) {} }
+  document.getElementById('oScore').textContent = String(score);
+  document.getElementById('oT').textContent = isRec ? T.rec : T.over;
+  document.getElementById('oS').textContent = T.best(best);
+  document.getElementById('over').hidden = false;
+  tone(190, 0.36, 'sawtooth', 0.14);
+}
+
+// ——— մատը ———
+function moveTo(clientX) {
+  // մատդ ձախ կեսում է թե աջ — միևնույն է, ուղիղ կեսի դիրքն ենք վերցնում
+  let x = clientX;
+  if (x > half()) x = W - x;                 // աջ կեսում մատը հայելային է
+  u = Math.max(0.08, Math.min(0.92, x / half()));
+}
+function press(e) {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio();
+  if (state === 'play') { moveTo(e.clientX); return; }
+  if (state === 'over' && Date.now() - endedAt > 1100) start();
+}
+cv.addEventListener('pointerdown', (e) => { e.preventDefault(); press(e); });
+cv.addEventListener('pointermove', (e) => { if (state === 'play' && e.buttons) { e.preventDefault(); moveTo(e.clientX); } });
+cv.addEventListener('touchmove', (e) => { if (state === 'play' && e.touches[0]) { e.preventDefault(); moveTo(e.touches[0].clientX); } }, { passive: false });
+document.getElementById('startBtn').addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && ghost()) return; start(); });
+document.getElementById('againBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  if (Date.now() - endedAt > 1100) start();
+});
+addEventListener('keydown', (e) => {
+  if (state !== 'play') return;
+  if (e.code === 'ArrowLeft') u = Math.max(0.08, u - 0.07);
+  if (e.code === 'ArrowRight') u = Math.min(0.92, u + 0.07);
+});
+
+function step(dt) {
+  t += dt; if (inv > 0) inv -= dt;
+  spawnT -= dt;
+  if (spawnT <= 0) {
+    const side = Math.random() < 0.5 ? 0 : 1;
+    const isRock = Math.random() < 0.52;
+    items.push({ side: side, u: 0.12 + Math.random() * 0.76, y: -30,
+                 kind: isRock ? 'rock' : 'star', v: 200 + t * 5 + Math.random() * 60 });
+    spawnT = Math.max(0.34, 0.95 - t * 0.016);
+  }
+  for (const it of items) {
+    it.y += it.v * dt;
+    // ձախում կերպարը u-ի վրա է, աջում՝ 1-u-ի (հայելի)
+    const cu = it.side === 0 ? u : (1 - u);
+    const dx = Math.abs(it.u - cu) * half();
+    if (!it.done && it.y > PY() - R - 12 && it.y < PY() + R + 12 && dx < R + 15) {
+      it.done = true;
+      if (it.kind === 'star') { score++; tone(900, 0.08, 'triangle', 0.1); }
+      else if (inv <= 0) {
+        lives--; inv = 1.1; tone(160, 0.22, 'sawtooth', 0.13);
+        try { navigator.vibrate && navigator.vibrate(60); } catch (e) {}
+        if (lives <= 0) { gameOver(); return; }
+      }
+    }
+  }
+  items = items.filter(it => it.y < H + 40);
+}
+
+function twin(px, py, col, mirrored) {
+  cx.save(); cx.translate(px, py); if (mirrored) cx.scale(-1, 1);
+  if (inv > 0 && Math.floor(inv * 12) % 2 === 0) cx.globalAlpha = 0.35;
+  cx.fillStyle = col;
+  cx.beginPath(); cx.arc(0, 0, R, 0, Math.PI * 2); cx.fill();
+  // ականջներ, որ երևա՝ ուր է նայում
+  cx.beginPath(); cx.moveTo(-2, -R + 2); cx.lineTo(2, -R - 9); cx.lineTo(10, -R + 3); cx.closePath(); cx.fill();
+  cx.fillStyle = '#10162a';
+  cx.beginPath(); cx.arc(6, -3, 3, 0, Math.PI * 2); cx.fill();
+  cx.restore();
+}
+function star(x, y, r) {
+  cx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r;
+    cx[i ? 'lineTo' : 'moveTo'](x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+  }
+  cx.closePath(); cx.fill();
+}
+
+function draw() {
+  cx.clearRect(0, 0, W, H);
+  const hw = half();
+  const g1 = cx.createLinearGradient(0, 0, 0, H);
+  g1.addColorStop(0, '#1e2748'); g1.addColorStop(1, '#2b3765');
+  cx.fillStyle = g1; cx.fillRect(0, 0, hw, H);
+  const g2 = cx.createLinearGradient(0, 0, 0, H);
+  g2.addColorStop(0, '#2a2247'); g2.addColorStop(1, '#3a2f63');
+  cx.fillStyle = g2; cx.fillRect(hw, 0, hw, H);
+  // հայելու շրջանակը
+  cx.fillStyle = 'rgba(240,200,90,0.5)'; cx.fillRect(hw - 2, 0, 4, H);
+  cx.fillStyle = 'rgba(255,255,255,0.06)'; cx.fillRect(hw + 2, 0, hw, H);
+
+  // գետինը
+  cx.fillStyle = 'rgba(255,255,255,0.1)'; cx.fillRect(0, PY() + R + 6, W, 3);
+
+  for (const it of items) {
+    if (it.done) continue;
+    const x = (it.side === 0 ? 0 : hw) + it.u * hw;
+    if (it.kind === 'star') { cx.fillStyle = '#ffe9a8'; star(x, it.y, 13); }
+    else {
+      cx.fillStyle = '#e8756a';
+      cx.beginPath(); cx.roundRect(x - 13, it.y - 13, 26, 26, 6); cx.fill();
+      cx.fillStyle = '#c25a51'; cx.fillRect(x - 7, it.y - 4, 14, 4);
+    }
+  }
+
+  twin(u * hw, PY(), '#7fd1c1', false);
+  twin(hw + (1 - u) * hw, PY(), '#f0c85a', true);
+
+  document.getElementById('hud').textContent = state === 'play'
+    ? score + '   ' + '♥'.repeat(Math.max(0, lives)) : '';
+}
+
+let prev = 0;
+function loop(now) {
+  const dt = Math.min(0.033, (now - prev) / 1000 || 0); prev = now;
+  if (state === 'play') step(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+draw(); requestAnimationFrame(loop);
+
+window.MIRROR = {
+  get state() { return state; }, get score() { return score; }, get lives() { return lives; },
+  get best() { return best; }, get items() { return items; }, get u() { return u; },
+  set u(v) { u = v; }, start: start,
+};
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
+</body>
+</html>

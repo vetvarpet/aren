@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Երկուսը 👯 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #171c33; overflow: hidden;
+               font-family: Arial, Helvetica, sans-serif; color: #f5eede; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  .ov { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 24px;
+        background: rgba(12,15,32,0.88); }
+  .ov[hidden] { display: none !important; }
+  .ov h1 { margin: 0 0 6px; font-size: 1.5rem; color: #f0c85a; }
+  .ov p { margin: 0 0 18px; font-size: 0.92rem; line-height: 1.5; max-width: 320px; opacity: 0.9; }
+  .ov .big { font-size: 2.6rem; font-weight: bold; color: #ffe9a8; margin-bottom: 4px; }
+  .ov button {
+    font-family: inherit; font-size: 1rem; font-weight: bold; padding: 13px 30px; border-radius: 14px;
+    border: none; background: #f0c85a; color: #10162a; cursor: pointer;
+  }
+  #hud { position: fixed; top: 54px; left: 0; right: 0; z-index: 10; text-align: center;
+         font-size: 1.5rem; font-weight: bold; color: #ffe9a8; pointer-events: none; text-shadow: 0 2px 6px #000; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:30;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="hud"></div>
+
+<div class="ov" id="menu">
+  <h1 id="mT">Ոսկե Երկուսը 👯</h1>
+  <p id="mS">Մեկ հպումով երկուսն էլ թռչում են։ Երկուսն էլ պիտի ողջ մնան։</p>
+  <button id="startBtn">▶ Սկսել</button>
+</div>
+
+<div class="ov" id="over" hidden>
+  <div class="big" id="oScore">0</div>
+  <h1 id="oT">Վե՛րջ</h1>
+  <p id="oS"></p>
+  <button id="againBtn">↻ Նորից</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ԵՐԿՈՒՍԸ 👯 — Արենի միտքն է
+//  Մեկ կոճակով երկու կերպար ես կառավարում միաժամանակ։
+//  Հպում ես՝ երկուսն էլ թռչում են։ Ուրիշ ձև չկա։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'Ոսկե Երկուսը 👯', s:'Մեկ հպումով երկուսն էլ թռչում են։ Երկուսն էլ պիտի ողջ մնան։',
+        go:'▶ Սկսել', again:'↻ Նորից', over:'Վե՛րջ', rec:'Նոր ռեկորդ 🎉',
+        best:n=>'Ռեկորդ՝ '+n, died:w=>(w==='L'?'Ձախը':'Աջը')+' բախվեց' },
+  ru: { t:'Золотая Двойка 👯', s:'Одно нажатие — прыгают оба. Выжить должны оба.',
+        go:'▶ Начать', again:'↻ Ещё раз', over:'Конец', rec:'Новый рекорд 🎉',
+        best:n=>'Рекорд: '+n, died:w=>(w==='L'?'Левый':'Правый')+' врезался' },
+  en: { t:'Golden Two 👯', s:'One tap makes both jump. Both have to survive.',
+        go:'▶ Start', again:'↻ Again', over:'Game over', rec:'New best 🎉',
+        best:n=>'Best: '+n, died:w=>'The '+(w==='L'?'left':'right')+' one crashed' },
+  es: { t:'El Dúo Dorado 👯', s:'Un toque y saltan los dos. Los dos tienen que sobrevivir.',
+        go:'▶ Empezar', again:'↻ Otra vez', over:'Se acabó', rec:'¡Nuevo récord! 🎉',
+        best:n=>'Récord: '+n, died:w=>'El de la '+(w==='L'?'izquierda':'derecha')+' chocó' },
+  fr: { t:'Le Duo Doré 👯', s:'Une touche et les deux sautent. Les deux doivent survivre.',
+        go:'▶ Démarrer', again:'↻ Encore', over:'Perdu', rec:'Nouveau record 🎉',
+        best:n=>'Record : '+n, died:w=>'Celui de '+(w==='L'?'gauche':'droite')+' s’est écrasé' },
+  de: { t:'Das Goldene Duo 👯', s:'Ein Tippen und beide springen. Beide müssen überleben.',
+        go:'▶ Start', again:'↻ Nochmal', over:'Vorbei', rec:'Neuer Rekord 🎉',
+        best:n=>'Rekord: '+n, died:w=>'Der '+(w==='L'?'linke':'rechte')+' ist gecrasht' },
+  ja: { t:'ゴールデン・ふたり 👯', s:'1かいタップでふたりともジャンプ。ふたりともいきのころう。',
+        go:'▶ スタート', again:'↻ もういちど', over:'おわり', rec:'しんきろく 🎉',
+        best:n=>'ベスト：'+n, died:w=>(w==='L'?'ひだり':'みぎ')+'がぶつかった' },
+  zh: { t:'黄金二人组 👯', s:'点一下两个一起跳。两个都要活下来。',
+        go:'▶ 开始', again:'↻ 再来', over:'结束', rec:'新纪录 🎉',
+        best:n=>'纪录：'+n, died:w=>(w==='L'?'左边':'右边')+'的撞到了' },
+  it: { t:'Il Duo Dorato 👯', s:'Un tocco e saltano entrambi. Devono sopravvivere entrambi.',
+        go:'▶ Avvia', again:'↻ Ancora', over:'Finita', rec:'Nuovo record 🎉',
+        best:n=>'Record: '+n, died:w=>'Quello di '+(w==='L'?'sinistra':'destra')+' si è schiantato' },
+  ka: { t:'ოქროს ორეული 👯', s:'ერთი შეხებით ორივე ხტება. ორივემ უნდა გადარჩეს.',
+        go:'▶ დაწყება', again:'↻ თავიდან', over:'დასასრული', rec:'ახალი რეკორდი 🎉',
+        best:n=>'რეკორდი: '+n, died:w=>(w==='L'?'მარცხენა':'მარჯვენა')+' შეეჯახა' },
+  hi: { t:'गोल्डन जोड़ी 👯', s:'एक टैप से दोनों कूदते हैं। दोनों को बचना है।',
+        go:'▶ शुरू', again:'↻ फिर से', over:'खेल ख़त्म', rec:'नया रिकॉर्ड 🎉',
+        best:n=>'रिकॉर्ड: '+n, died:w=>(w==='L'?'बायाँ':'दायाँ')+' टकरा गया' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('mT').textContent = T.t;
+document.getElementById('mS').textContent = T.s;
+document.getElementById('startBtn').textContent = T.go;
+document.getElementById('againBtn').textContent = T.again;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let best = 0;
+try { best = Number(localStorage.getItem('aren-two-best') || 0) || 0; } catch (e) {}
+
+// ——— ձայն ———
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.12, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.12));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.12));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+// ——— կտավը ———
+const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function fit() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+fit(); addEventListener('resize', fit);
+
+// ——— վիճակը ———
+let state = 'menu', score = 0, endedAt = 0, whoDied = 'L';
+let speed = 0, spawnT = 0, t = 0;
+// երկու վազորդ. y=0 գետնին, vy՝ արագություն
+const P = [ { y: 0, vy: 0, dead: false }, { y: 0, vy: 0, dead: false } ];
+let obs = [];   // { side: 0|1, x, w, h, kind }
+
+// Երկու գոտի՝ վերևը ու ներքևը։ Ամբողջ լայնությունը ճանապարհ է,
+// որ խոչընդոտը տեսնելու ու արձագանքելու ժամանակ լինի։
+const GROUND = (side) => side === 0 ? H * 0.40 : H * 0.90;
+const PX = () => Math.max(46, W * 0.16);
+const G = 2600;          // ձգողություն
+const JUMP = -820;
+
+function reset() {
+  score = 0; speed = 230; spawnT = 1.1; t = 0; obs = [];
+  P.forEach(p => { p.y = 0; p.vy = 0; p.dead = false; });
+}
+function start() {
+  initAudio(); reset(); state = 'play';
+  document.getElementById('menu').hidden = true;
+  document.getElementById('over').hidden = true;
+  tone(720, 0.13, 'triangle');
+}
+function jump() {
+  if (state !== 'play') return;
+  // երկուսն էլ միասին — ուրիշ ձև չկա
+  let any = false;
+  P.forEach(p => { if (p.y === 0) { p.vy = JUMP; any = true; } });
+  if (any) tone(520, 0.09, 'triangle', 0.1);
+}
+function gameOver(side) {
+  state = 'over'; endedAt = Date.now(); whoDied = side === 0 ? 'L' : 'R';
+  const isRec = score > best;
+  if (isRec) { best = score; try { localStorage.setItem('aren-two-best', String(best)); } catch (e) {} }
+  document.getElementById('oScore').textContent = String(score);
+  document.getElementById('oT').textContent = isRec ? T.rec : T.over;
+  document.getElementById('oS').textContent = T.died(whoDied) + ' · ' + T.best(best);
+  document.getElementById('over').hidden = false;
+  tone(200, 0.34, 'sawtooth', 0.14);
+}
+
+// ——— կառավարումը ———
+function press(e) {
+  if (e && e.pointerType === 'mouse' && ghost()) return;
+  initAudio();
+  if (state === 'play') { jump(); return; }
+  if (state === 'over' && Date.now() - endedAt > 1100) start();
+}
+cv.addEventListener('pointerdown', (e) => { e.preventDefault(); press(e); });
+document.getElementById('startBtn').addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && ghost()) return; start(); });
+document.getElementById('againBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  if (Date.now() - endedAt > 1100) start();
+});
+addEventListener('keydown', (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); press(null); } });
+
+// ——— խոչընդոտների ծնունդը ———
+// Կարևորը՝ երբեք չդնել երկու կողմում այնպես, որ մեկ թռիչքով անհնար լինի։
+let lastSide = -1;
+function spawn() {
+  const side = Math.random() < 0.5 ? 0 : 1;
+  obs.push({ side: side, x: W + 20, w: 26 + Math.random() * 12, h: 40, hit: false });
+  // երբեմն երկուսի վրա միանգամից՝ նույն տեղում, որ մեկ թռիչքը բավական լինի
+  if (Math.random() < 0.22) obs.push({ side: 1 - side, x: W + 20, w: 30, h: 40, hit: false });
+  lastSide = side;
+}
+
+function step(dt) {
+  t += dt;
+  speed = Math.min(520, 230 + t * 8);
+  spawnT -= dt;
+  if (spawnT <= 0) { spawn(); spawnT = Math.max(0.62, 1.35 - t * 0.022); }
+
+  P.forEach(p => {
+    p.vy += G * dt;
+    p.y += p.vy * dt;
+    if (p.y > 0) { p.y = 0; p.vy = 0; }
+  });
+
+  const px = PX(), pw = 26;
+  for (const o of obs) {
+    o.x -= speed * dt;
+    const p = P[o.side];
+    const py = GROUND(o.side) + p.y;
+    // բախում. ուղղանկյուն-ուղղանկյուն
+    if (!o.hit && o.x < px + pw && o.x + o.w > px && py > GROUND(o.side) - o.h) {
+      o.hit = true;
+      gameOver(o.side);
+      return;
+    }
+    if (!o.passed && o.x + o.w < px) { o.passed = true; score++; tone(880, 0.05, 'square', 0.05); }
+  }
+  obs = obs.filter(o => o.x + o.w > -40);
+}
+
+// ——— նկարը. ամեն ինչ ձևերով ———
+function runner(x, y, col, phase, jumping) {
+  cx.save(); cx.translate(x, y);
+  // ոտքերը
+  cx.strokeStyle = col; cx.lineWidth = 5; cx.lineCap = 'round';
+  const a = jumping ? 0.5 : Math.sin(phase) * 0.7;
+  cx.beginPath(); cx.moveTo(4, -8); cx.lineTo(4 + Math.sin(a) * 10, 0); cx.stroke();
+  cx.beginPath(); cx.moveTo(10, -8); cx.lineTo(10 - Math.sin(a) * 10, 0); cx.stroke();
+  // մարմինը
+  cx.fillStyle = col;
+  cx.beginPath(); cx.roundRect(0, -30, 16, 24, 6); cx.fill();
+  // գլուխը
+  cx.beginPath(); cx.arc(8, -37, 8, 0, Math.PI * 2); cx.fill();
+  // աչքը
+  cx.fillStyle = '#10162a';
+  cx.beginPath(); cx.arc(12, -38, 2, 0, Math.PI * 2); cx.fill();
+  cx.restore();
+}
+
+function draw() {
+  cx.clearRect(0, 0, W, H);
+  const mid = H / 2;
+  const g1 = cx.createLinearGradient(0, 0, 0, mid);
+  g1.addColorStop(0, '#222b52'); g1.addColorStop(1, '#2f3a6b');
+  cx.fillStyle = g1; cx.fillRect(0, 0, W, mid);
+  const g2 = cx.createLinearGradient(0, mid, 0, H);
+  g2.addColorStop(0, '#2a2450'); g2.addColorStop(1, '#3a3068');
+  cx.fillStyle = g2; cx.fillRect(0, mid, W, H - mid);
+
+  // գետինը՝ ամեն գոտու համար
+  for (const side of [0, 1]) {
+    const gy = GROUND(side), bottom = side === 0 ? mid : H;
+    cx.fillStyle = '#4e7d47'; cx.fillRect(0, gy, W, bottom - gy);
+    cx.fillStyle = '#3f6b45'; cx.fillRect(0, gy, W, 6);
+  }
+  // բաժանարարը
+  cx.fillStyle = 'rgba(240,200,90,0.45)'; cx.fillRect(0, mid - 1.5, W, 3);
+
+  for (const o of obs) {
+    const gy = GROUND(o.side);
+    cx.fillStyle = '#e8756a';
+    cx.beginPath(); cx.roundRect(o.x, gy - o.h, o.w, o.h, 5); cx.fill();
+    cx.fillStyle = '#c25a51';
+    cx.fillRect(o.x + 4, gy - o.h + 5, o.w - 8, 4);
+  }
+
+  const ph = t * 13, px = PX();
+  runner(px, GROUND(0) + P[0].y, '#7fd1c1', ph, P[0].y < -2);
+  runner(px, GROUND(1) + P[1].y, '#f0c85a', ph, P[1].y < -2);
+
+  document.getElementById('hud').textContent = state === 'play' ? String(score) : '';
+}
+
+let prev = 0;
+function loop(now) {
+  const dt = Math.min(0.033, (now - prev) / 1000 || 0); prev = now;
+  if (state === 'play') step(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+draw();
+requestAnimationFrame(loop);
+
+// թեստի համար
+window.TWO = {
+  get state() { return state; }, get score() { return score; }, get best() { return best; },
+  get obs() { return obs; }, get P() { return P; },
+  start: start, jump: jump,
+};
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Մեկ Կյանք 💛 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #14182c; overflow: hidden;
+               font-family: Arial, Helvetica, sans-serif; color: #f5eede; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  .ov { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 24px;
+        background: rgba(12,15,32,0.9); }
+  .ov[hidden] { display: none !important; }
+  .ov h1 { margin: 0 0 6px; font-size: 1.45rem; color: #f0c85a; }
+  .ov p { margin: 0 0 18px; font-size: 0.92rem; line-height: 1.5; max-width: 330px; opacity: 0.9; }
+  .ov .big { font-size: 2.5rem; font-weight: bold; color: #ffe9a8; margin-bottom: 2px; }
+  .ov button { font-family: inherit; font-size: 1rem; font-weight: bold; padding: 13px 30px;
+               border-radius: 14px; border: none; background: #f0c85a; color: #10162a; cursor: pointer; }
+  #hud { position: fixed; top: 54px; left: 0; right: 0; z-index: 10; text-align: center;
+         pointer-events: none; text-shadow: 0 2px 6px #000; }
+  #hud .lv { font-size: 1.3rem; font-weight: bold; color: #ffe9a8; }
+  #hud .tip { font-size: 0.86rem; opacity: 0.85; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:30;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="hud"><div class="lv"></div><div class="tip"></div></div>
+
+<div class="ov" id="menu">
+  <h1 id="mT">Ոսկե Մեկ Կյանք 💛</h1>
+  <p id="mS">Տասը մակարդակ, մեկ կյանք։ Սխալվեցիր՝ ամեն ինչ սկսվում է առաջինից։</p>
+  <button id="startBtn">▶ Սկսել</button>
+</div>
+
+<div class="ov" id="over" hidden>
+  <div class="big" id="oScore">1</div>
+  <h1 id="oT">Վե՛րջ</h1>
+  <p id="oS"></p>
+  <button id="againBtn">↻ Նորից</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ՄԵԿ ԿՅԱՆՔ 💛 — Արենի միտքն է
+//  Տասը կարճ մարտահրավեր, բայց կյանքը մեկն է բոլորի համար։
+//  Սխալվեցիր՝ վերադառնում ես առաջին մակարդակ։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'Ոսկե Մեկ Կյանք 💛', s:'Տասը մակարդակ, մեկ կյանք։ Սխալվեցիր՝ ամեն ինչ սկսվում է առաջինից։',
+        go:'▶ Սկսել', again:'↻ Նորից', over:'Վե՛րջ', win:'Անցա՛ր բոլորը 👑', rec:'Նոր ռեկորդ 🎉',
+        lv:n=>'Մակարդակ '+n+'/10', best:n=>'Ամենահեռուն՝ '+n+'/10',
+        jump:'Հպիր՝ ցատկելու համար', stop:'Հպիր, երբ սլաքը կանաչի մեջ է', dodge:'Հպիր՝ մյուս կողմն անցնելու համար',
+        ready:n=>'Մակարդակ '+n+'…' },
+  ru: { t:'Золотая Одна Жизнь 💛', s:'Десять уровней, одна жизнь. Ошибся — всё сначала.',
+        go:'▶ Начать', again:'↻ Ещё раз', over:'Конец', win:'Ты прошёл всё 👑', rec:'Новый рекорд 🎉',
+        lv:n=>'Уровень '+n+'/10', best:n=>'Дальше всего: '+n+'/10',
+        jump:'Нажми, чтобы прыгнуть', stop:'Нажми, когда стрелка в зелёном', dodge:'Нажми, чтобы перейти на другую сторону',
+        ready:n=>'Уровень '+n+'…' },
+  en: { t:'Golden One Life 💛', s:'Ten levels, one life. Slip up and it all starts from the first.',
+        go:'▶ Start', again:'↻ Again', over:'Game over', win:'You cleared them all 👑', rec:'New best 🎉',
+        lv:n=>'Level '+n+'/10', best:n=>'Furthest: '+n+'/10',
+        jump:'Tap to jump', stop:'Tap when the arrow is in the green', dodge:'Tap to switch sides',
+        ready:n=>'Level '+n+'…' },
+  es: { t:'Una Sola Vida Dorada 💛', s:'Diez niveles, una vida. Si fallas, todo vuelve al primero.',
+        go:'▶ Empezar', again:'↻ Otra vez', over:'Se acabó', win:'¡Los pasaste todos! 👑', rec:'¡Nuevo récord! 🎉',
+        lv:n=>'Nivel '+n+'/10', best:n=>'Lo más lejos: '+n+'/10',
+        jump:'Toca para saltar', stop:'Toca cuando la flecha esté en verde', dodge:'Toca para cambiar de lado',
+        ready:n=>'Nivel '+n+'…' },
+  fr: { t:'Une Seule Vie Dorée 💛', s:'Dix niveaux, une vie. Tu rates, tout repart du premier.',
+        go:'▶ Démarrer', again:'↻ Encore', over:'Perdu', win:'Tu as tout passé 👑', rec:'Nouveau record 🎉',
+        lv:n=>'Niveau '+n+'/10', best:n=>'Le plus loin : '+n+'/10',
+        jump:'Touche pour sauter', stop:'Touche quand la flèche est dans le vert', dodge:'Touche pour changer de côté',
+        ready:n=>'Niveau '+n+'…' },
+  de: { t:'Ein Goldenes Leben 💛', s:'Zehn Level, ein Leben. Ein Fehler und alles beginnt von vorn.',
+        go:'▶ Start', again:'↻ Nochmal', over:'Vorbei', win:'Du hast alle geschafft 👑', rec:'Neuer Rekord 🎉',
+        lv:n=>'Level '+n+'/10', best:n=>'Am weitesten: '+n+'/10',
+        jump:'Tippe zum Springen', stop:'Tippe, wenn der Pfeil im Grünen ist', dodge:'Tippe, um die Seite zu wechseln',
+        ready:n=>'Level '+n+'…' },
+  ja: { t:'ゴールデン・いのちひとつ 💛', s:'10レベル、いのちはひとつ。ミスしたらさいしょから。',
+        go:'▶ スタート', again:'↻ もういちど', over:'おわり', win:'ぜんぶクリア 👑', rec:'しんきろく 🎉',
+        lv:n=>'レベル '+n+'/10', best:n=>'さいこう：'+n+'/10',
+        jump:'タップでジャンプ', stop:'やじるしがみどりのときにタップ', dodge:'タップではんたいがわへ',
+        ready:n=>'レベル '+n+'…' },
+  zh: { t:'黄金一条命 💛', s:'十关，只有一条命。失手就从第一关重来。',
+        go:'▶ 开始', again:'↻ 再来', over:'结束', win:'全部通关 👑', rec:'新纪录 🎉',
+        lv:n=>'第'+n+'关 / 10', best:n=>'最远：'+n+'/10',
+        jump:'点一下跳', stop:'箭头在绿色时点一下', dodge:'点一下换到另一边',
+        ready:n=>'第'+n+'关…' },
+  it: { t:'Una Sola Vita Dorata 💛', s:'Dieci livelli, una vita. Sbagli e si riparte dal primo.',
+        go:'▶ Avvia', again:'↻ Ancora', over:'Finita', win:'Li hai superati tutti 👑', rec:'Nuovo record 🎉',
+        lv:n=>'Livello '+n+'/10', best:n=>'Più lontano: '+n+'/10',
+        jump:'Tocca per saltare', stop:'Tocca quando la freccia è nel verde', dodge:'Tocca per cambiare lato',
+        ready:n=>'Livello '+n+'…' },
+  ka: { t:'ოქროს ერთი სიცოცხლე 💛', s:'ათი დონე, ერთი სიცოცხლე. შეცდი — ყველაფერი პირველიდან იწყება.',
+        go:'▶ დაწყება', again:'↻ თავიდან', over:'დასასრული', win:'ყველა გაიარე 👑', rec:'ახალი რეკორდი 🎉',
+        lv:n=>'დონე '+n+'/10', best:n=>'ყველაზე შორს: '+n+'/10',
+        jump:'შეეხე ასახტომად', stop:'შეეხე, როცა ისარი მწვანეშია', dodge:'შეეხე მეორე მხარეს გადასასვლელად',
+        ready:n=>'დონე '+n+'…' },
+  hi: { t:'गोल्डन एक जान 💛', s:'दस लेवल, एक जान। चूके तो सब पहले से शुरू।',
+        go:'▶ शुरू', again:'↻ फिर से', over:'खेल ख़त्म', win:'सब पार कर लिए 👑', rec:'नया रिकॉर्ड 🎉',
+        lv:n=>'लेवल '+n+'/10', best:n=>'सबसे दूर: '+n+'/10',
+        jump:'कूदने के लिए टैप करो', stop:'तीर हरे में हो तब टैप करो', dodge:'दूसरी तरफ़ जाने के लिए टैप करो',
+        ready:n=>'लेवल '+n+'…' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('mT').textContent = T.t;
+document.getElementById('mS').textContent = T.s;
+document.getElementById('startBtn').textContent = T.go;
+document.getElementById('againBtn').textContent = T.again;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let best = 0;
+try { best = Number(localStorage.getItem('aren-onelife-best') || 0) || 0; } catch (e) {}
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.12, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.12));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.12));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function fit() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+fit(); addEventListener('resize', fit);
+
+// ——— 10 մակարդակ, երեք տեսակի մարտահրավեր ———
+// Դժվարությունը աճում է, բայց ամեն մեկը կարճ է ու արդար։
+const KINDS = ['jump', 'stop', 'dodge', 'jump', 'stop', 'dodge', 'jump', 'stop', 'dodge', 'jump'];
+let state = 'menu', level = 1, endedAt = 0, ready = 0;
+let L = null;   // ընթացիկ մարտահրավերի վիճակը
+
+function makeLevel(n) {
+  const k = KINDS[n - 1];
+  const d = (n - 1) / 9;                     // 0..1 դժվարություն
+  if (k === 'jump') {
+    return { k: k, x: W + 40, sp: 260 + d * 300, y: 0, vy: 0, jumped: false, passed: false, w: 26 + d * 12 };
+  }
+  if (k === 'stop') {
+    // սլաքը գնում-գալիս է, կանաչ գոտին նեղանում է
+    return { k: k, p: 0, dir: 1, sp: 0.55 + d * 0.85, zone: 0.30 - d * 0.17, center: 0.32 + Math.random() * 0.36 };
+  }
+  return { k: k, side: 0, wallY: -60, sp: 230 + d * 300, gap: 0, passed: false };
+}
+function beginLevel() {
+  L = makeLevel(level);
+  ready = 0.85;
+  if (L.k === 'dodge') L.gap = Math.random() < 0.5 ? 0 : 1;   // որ կողմն է բաց
+}
+function start() {
+  initAudio(); level = 1; state = 'play'; beginLevel();
+  document.getElementById('menu').hidden = true;
+  document.getElementById('over').hidden = true;
+  tone(700, 0.13, 'triangle');
+}
+function nextLevel() {
+  tone(880, 0.13, 'triangle', 0.12);
+  if (level >= 10) { finish(true); return; }
+  level++; beginLevel();
+}
+function finish(won) {
+  state = 'over'; endedAt = Date.now();
+  const reached = won ? 10 : level;
+  const isRec = reached > best;
+  if (isRec) { best = reached; try { localStorage.setItem('aren-onelife-best', String(best)); } catch (e) {} }
+  document.getElementById('oScore').textContent = reached + '/10';
+  document.getElementById('oT').textContent = won ? T.win : (isRec ? T.rec : T.over);
+  document.getElementById('oS').textContent = T.best(best);
+  document.getElementById('over').hidden = false;
+  if (won) { [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.3,'triangle',0.16), i*160)); }
+  else tone(190, 0.36, 'sawtooth', 0.14);
+  try { navigator.vibrate && navigator.vibrate(won ? [40,70,40,70,140] : 90); } catch (e) {}
+}
+function fail() { finish(false); }
+
+// ——— հպումը ———
+function press(e) {
+  if (e && e.pointerType === 'mouse' && ghost()) return;
+  initAudio();
+  if (state === 'over') { if (Date.now() - endedAt > 1100) start(); return; }
+  if (state !== 'play' || !L || ready > 0) return;
+  if (L.k === 'jump') { if (L.y === 0) { L.vy = -900; L.jumped = true; tone(560, 0.08, 'triangle', 0.1); } }
+  else if (L.k === 'stop') {
+    const ok = Math.abs(L.p - L.center) <= L.zone / 2;
+    if (ok) nextLevel(); else fail();
+  } else if (L.k === 'dodge') { L.side = 1 - L.side; tone(600, 0.07, 'square', 0.08); }
+}
+cv.addEventListener('pointerdown', (e) => { e.preventDefault(); press(e); });
+document.getElementById('startBtn').addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && ghost()) return; start(); });
+document.getElementById('againBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  if (Date.now() - endedAt > 1100) start();
+});
+addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); press(null); } });
+
+const GY = () => H * 0.66;
+
+function step(dt) {
+  if (ready > 0) { ready -= dt; return; }
+  if (!L) return;
+  if (L.k === 'jump') {
+    L.x -= L.sp * dt;
+    L.vy += 2600 * dt; L.y += L.vy * dt;
+    if (L.y > 0) { L.y = 0; L.vy = 0; }
+    const px = W * 0.26;
+    if (!L.passed && L.x < px + 24 && L.x + L.w > px - 24) {
+      if (L.y > -34) { fail(); return; }      // չհասցրիր ցատկել
+    }
+    if (!L.passed && L.x + L.w < px - 24) { L.passed = true; nextLevel(); }
+    if (L.x < -80) { L.passed = true; nextLevel(); }
+  } else if (L.k === 'stop') {
+    L.p += L.dir * L.sp * dt;
+    if (L.p > 1) { L.p = 1; L.dir = -1; }
+    if (L.p < 0) { L.p = 0; L.dir = 1; }
+  } else {
+    L.wallY += L.sp * dt;
+    const py = H * 0.7;
+    if (!L.passed && L.wallY > py - 24 && L.wallY < py + 24) {
+      if (L.side !== L.gap) { fail(); return; }
+    }
+    if (!L.passed && L.wallY > py + 30) { L.passed = true; nextLevel(); }
+  }
+}
+
+function hero(x, y, s) {
+  cx.save(); cx.translate(x, y); cx.scale(s || 1, s || 1);
+  cx.fillStyle = '#f0c85a';
+  cx.beginPath(); cx.roundRect(-11, -30, 22, 24, 7); cx.fill();
+  cx.beginPath(); cx.arc(0, -38, 10, 0, Math.PI * 2); cx.fill();
+  cx.beginPath(); cx.moveTo(-9, -45); cx.lineTo(-6, -56); cx.lineTo(1, -45); cx.closePath(); cx.fill();
+  cx.beginPath(); cx.moveTo(3, -45); cx.lineTo(10, -55); cx.lineTo(10, -44); cx.closePath(); cx.fill();
+  cx.fillStyle = '#10162a';
+  cx.beginPath(); cx.arc(4, -39, 2.6, 0, Math.PI * 2); cx.fill();
+  cx.restore();
+}
+
+function draw() {
+  cx.clearRect(0, 0, W, H);
+  const g = cx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#1b2140'); g.addColorStop(1, '#2b2450');
+  cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+
+  const lvEl = document.querySelector('#hud .lv'), tipEl = document.querySelector('#hud .tip');
+  if (state !== 'play') { lvEl.textContent = ''; tipEl.textContent = ''; }
+  else {
+    lvEl.textContent = T.lv(level);
+    tipEl.textContent = ready > 0 ? T.ready(level) : (L ? T[L.k] : '');
+  }
+  if (state !== 'play' || !L) return;
+
+  if (L.k === 'jump') {
+    cx.fillStyle = '#4e7d47'; cx.fillRect(0, GY(), W, H - GY());
+    cx.fillStyle = '#3f6b45'; cx.fillRect(0, GY(), W, 6);
+    cx.fillStyle = '#e8756a';
+    cx.beginPath(); cx.moveTo(L.x, GY()); cx.lineTo(L.x + L.w / 2, GY() - 46); cx.lineTo(L.x + L.w, GY()); cx.closePath(); cx.fill();
+    hero(W * 0.26, GY() + L.y);
+  } else if (L.k === 'stop') {
+    const bx = W * 0.12, bw = W * 0.76, by = H * 0.5, bh = 46;
+    cx.fillStyle = 'rgba(255,255,255,0.1)';
+    cx.beginPath(); cx.roundRect(bx, by, bw, bh, 12); cx.fill();
+    cx.fillStyle = '#7fd1c1';
+    cx.beginPath(); cx.roundRect(bx + (L.center - L.zone / 2) * bw, by, L.zone * bw, bh, 8); cx.fill();
+    cx.fillStyle = '#ffe9a8';
+    cx.fillRect(bx + L.p * bw - 3, by - 12, 6, bh + 24);
+    hero(W / 2, by - 40, 0.9);
+  } else {
+    const py = H * 0.7, lx = W * 0.3, rx = W * 0.7;
+    cx.fillStyle = 'rgba(255,255,255,0.08)';
+    cx.fillRect(W * 0.12, 0, 2, H); cx.fillRect(W * 0.88 - 2, 0, 2, H);
+    // պատը՝ մի կողմը բաց
+    cx.fillStyle = '#e8756a';
+    if (L.gap === 0) cx.fillRect(W * 0.5, L.wallY - 14, W * 0.38, 28);
+    else cx.fillRect(W * 0.12, L.wallY - 14, W * 0.38, 28);
+    hero(L.side === 0 ? lx : rx, py);
+  }
+}
+
+let prev = 0;
+function loop(now) {
+  const dt = Math.min(0.033, (now - prev) / 1000 || 0); prev = now;
+  if (state === 'play') step(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+draw(); requestAnimationFrame(loop);
+
+window.ONELIFE = {
+  get state() { return state; }, get level() { return level; }, get best() { return best; },
+  get L() { return L; }, get ready() { return ready; },
+  start: start, press: () => press(null), skipReady: () => { ready = 0; },
+};
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
+</body>
+</html>
