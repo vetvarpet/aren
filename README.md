@@ -45,6 +45,14 @@ and iterating on the code together with Claude, one change at a time.
 | [`lavash`](./lavash/) | 🫓 Golden Lavash (Լավաշ) | Slap the dough onto the tonir and pull it out at the right second. Too early is raw, too late is burnt. |
 | [`dance`](./dance/) | 💃 Golden Dance (Քոչարի) | The kochari steps are shown in rhythm and you repeat them. Each round is one step longer. |
 | [`sasuntsi`](./sasuntsi/) | 🪨 Golden Sasuntsi (Սասունցի Դավիթ) | David with his sling against Msra Melik. Take aim, throw the stone and hit above the shield. |
+| [`rewind`](./rewind/) | ⏪ Golden Rewind (Ետընթաց) | You rewind time and your ghost repeats your steps. Ghosts stand on the buttons and hold the door open. |
+| [`two`](./two/) | 👯 Golden Two (Երկուսը) | One tap steers two runners at once. Both have to survive. |
+| [`mirror`](./mirror/) | 🪞 Golden Mirror (Հայելի) | The left half is straight, the right half is a mirror. One finger moves both in opposite directions. |
+| [`grow`](./grow/) | 🎈 Golden Grow (Մեծացող) | Whatever you eat makes you bigger, and big will not fit through a narrow door. |
+| [`silence`](./silence/) | 🤫 Golden Silence (Լռություն) | They are asleep. Move fast and the noise wakes them. |
+| [`onelife`](./onelife/) | 💛 Golden Onelife (Մեկ Կյանք) | Ten levels, one life for all of them. Slip up and it starts from the first. |
+| [`slow`](./slow/) | 🐌 Golden Slow (Դանդաղ) | The slower you play, the more points. But you must finish within 60 seconds. |
+| [`swap`](./swap/) | 🔀 Golden Swap (Փոխանակ) | Every 10 seconds the game becomes a different game. One shared score. |
 | [`quest`](./quest/) | 🗺️ Golden Quest (Ոսկե Արշավ) | One road through twelve games: finish the task at each stop and the road opens until the Golden Crown comes home |
 | [`timer`](./timer/) | ⏱️ Golden Timer (Ոսկե Ժամաչափ) | A homework timer: the cat runs along the track until the time is up |
 | [`dice`](./dice/) | 🎲 Golden Dice (Ոսկե Զառ) | One to three dice and a coin, for board games |

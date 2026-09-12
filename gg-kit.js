@@ -424,7 +424,15 @@
     'nardi':      { h:['tap','think','free'],          s:2 },
     'lavash':     { h:['tap','time','faster'],         s:2 },
     'dance':      { h:['btn','repeat','rhythm'],       s:2 },
-    'sasuntsi':   { h:['aim','avoid','lives'],         s:3 }
+    'sasuntsi':   { h:['aim','avoid','lives'],         s:3 },
+    'rewind':      { h:['btn','think','levels'], s:3 },
+    'two':         { h:['tap','avoid','faster'], s:2 },
+    'mirror':      { h:['drag','collect','avoid'], s:3 },
+    'grow':        { h:['drag','collect','think'], s:2 },
+    'silence':     { h:['drag','think','levels'], s:3 },
+    'onelife':     { h:['tap','think','levels'], s:3 },
+    'slow':        { h:['drag','think','time'], s:2 },
+    'swap':        { h:['tap','collect','faster'], s:2 }
   };
 
   var HOW_T = {
