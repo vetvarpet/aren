@@ -22,17 +22,17 @@
   };
   var lang = ls.get('gg-lang', 'hy');
   var TR = {
-    hy: { paused: 'ԴԱԴԱՐ', resume: 'Շարունակելու համար հպիր', sound: 'Ձայն', shot: 'Ռեկորդի նկարը', saved: 'Նկարը պահվեց 📸', rec: 'Ռեկորդ' },
-    ru: { paused: 'ПАУЗА', resume: 'Коснись, чтобы продолжить', sound: 'Звук', shot: 'Картинка рекорда', saved: 'Картинка сохранена 📸', rec: 'Рекорд' },
-    en: { paused: 'PAUSED', resume: 'Tap to continue', sound: 'Sound', shot: 'Record picture', saved: 'Picture saved 📸', rec: 'Best' },
-    es: { paused: 'PAUSA', resume: 'Toca para continuar', sound: 'Sonido', shot: 'Imagen del récord', saved: 'Imagen guardada 📸', rec: 'Récord' },
-    fr: { paused: 'PAUSE', resume: 'Touche pour continuer', sound: 'Son', shot: 'Image du record', saved: 'Image enregistrée 📸', rec: 'Record' },
-    de: { paused: 'PAUSE', resume: 'Tippe zum Weitermachen', sound: 'Ton', shot: 'Rekordbild', saved: 'Bild gespeichert 📸', rec: 'Rekord' },
-    ja: { paused: 'ポーズ', resume: 'タップでつづける', sound: '音', shot: 'きろくの画ぞう', saved: '画ぞうをほぞんしたよ 📸', rec: 'ベスト' },
-    zh: { paused: '暂停', resume: '点一下继续', sound: '声音', shot: '纪录图片', saved: '图片已保存 📸', rec: '纪录' },
-    it: { paused: 'PAUSA', resume: 'Tocca per continuare', sound: 'Suono', shot: 'Immagine del record', saved: 'Immagine salvata 📸', rec: 'Record' },
-    ka: { paused: 'პაუზა', resume: 'შეეხე გასაგრძელებლად', sound: 'ხმა', shot: 'რეკორდის სურათი', saved: 'სურათი შენახულია 📸', rec: 'რეკორდი' },
-    hi: { paused: 'रुका हुआ', resume: 'जारी रखने के लिए टैप करो', sound: 'आवाज़', shot: 'रिकॉर्ड की तस्वीर', saved: 'तस्वीर सेव हो गई 📸', rec: 'रिकॉर्ड' }
+    hy: { paused: 'ԴԱԴԱՐ', resume: 'Շարունակելու համար հպիր', sound: 'Ձայն', shot: 'Ռեկորդի նկարը', saved: 'Նկարը պահվեց 📸', rec: 'Ռեկորդ', shop: 'Խանութ', wDaily: 'օրվա մարտահրավեր', wTroph: 'նոր գավաթ', wRec: 'նոր ռեկորդ', gift: 'Բացման նվեր' },
+    ru: { paused: 'ПАУЗА', resume: 'Коснись, чтобы продолжить', sound: 'Звук', shot: 'Картинка рекорда', saved: 'Картинка сохранена 📸', rec: 'Рекорд', shop: 'Магазин', wDaily: 'задание дня', wTroph: 'новый кубок', wRec: 'новый рекорд', gift: 'Подарок на старт' },
+    en: { paused: 'PAUSED', resume: 'Tap to continue', sound: 'Sound', shot: 'Record picture', saved: 'Picture saved 📸', rec: 'Best', shop: 'Shop', wDaily: 'daily challenge', wTroph: 'new trophy', wRec: 'new record', gift: 'Welcome gift' },
+    es: { paused: 'PAUSA', resume: 'Toca para continuar', sound: 'Sonido', shot: 'Imagen del récord', saved: 'Imagen guardada 📸', rec: 'Récord', shop: 'Tienda', wDaily: 'reto del día', wTroph: 'nuevo trofeo', wRec: 'nuevo récord', gift: 'Regalo de bienvenida' },
+    fr: { paused: 'PAUSE', resume: 'Touche pour continuer', sound: 'Son', shot: 'Image du record', saved: 'Image enregistrée 📸', rec: 'Record', shop: 'Boutique', wDaily: 'défi du jour', wTroph: 'nouveau trophée', wRec: 'nouveau record', gift: 'Cadeau de bienvenue' },
+    de: { paused: 'PAUSE', resume: 'Tippe zum Weitermachen', sound: 'Ton', shot: 'Rekordbild', saved: 'Bild gespeichert 📸', rec: 'Rekord', shop: 'Laden', wDaily: 'Tages-Challenge', wTroph: 'neuer Pokal', wRec: 'neuer Rekord', gift: 'Willkommensgeschenk' },
+    ja: { paused: 'ポーズ', resume: 'タップでつづける', sound: '音', shot: 'きろくの画ぞう', saved: '画ぞうをほぞんしたよ 📸', rec: 'ベスト', shop: 'おみせ', wDaily: 'まいにちチャレンジ', wTroph: 'あたらしいトロフィー', wRec: 'しんきろく', gift: 'はじめのプレゼント' },
+    zh: { paused: '暂停', resume: '点一下继续', sound: '声音', shot: '纪录图片', saved: '图片已保存 📸', rec: '纪录', shop: '商店', wDaily: '每日挑战', wTroph: '新奖杯', wRec: '新纪录', gift: '开局礼物' },
+    it: { paused: 'PAUSA', resume: 'Tocca per continuare', sound: 'Suono', shot: 'Immagine del record', saved: 'Immagine salvata 📸', rec: 'Record', shop: 'Negozio', wDaily: 'sfida del giorno', wTroph: 'nuovo trofeo', wRec: 'nuovo record', gift: 'Regalo di benvenuto' },
+    ka: { paused: 'პაუზა', resume: 'შეეხე გასაგრძელებლად', sound: 'ხმა', shot: 'რეკორდის სურათი', saved: 'სურათი შენახულია 📸', rec: 'რეკორდი', shop: 'მაღაზია', wDaily: 'დღის გამოწვევა', wTroph: 'ახალი თასი', wRec: 'ახალი რეკორდი', gift: 'მისალმების საჩუქარი' },
+    hi: { paused: 'रुका हुआ', resume: 'जारी रखने के लिए टैप करो', sound: 'आवाज़', shot: 'रिकॉर्ड की तस्वीर', saved: 'तस्वीर सेव हो गई 📸', rec: 'रिकॉर्ड', shop: 'दुकान', wDaily: 'आज की चुनौती', wTroph: 'नई ट्रॉफ़ी', wRec: 'नया रिकॉर्ड', gift: 'स्वागत तोहफ़ा' }
   };
   var T = TR[lang] || TR.hy;
 
@@ -44,6 +44,13 @@
     'border:2px solid rgba(255,255,255,0.4);background:rgba(20,26,34,0.75);color:#f5eede;cursor:pointer;padding:0;line-height:1}',
     '#ggBar button:active{transform:scale(0.92)}',
     '#ggBar button.off{opacity:0.55}',
+    // 🪙 ոսկու պիտակը՝ նույն շերտում, բայց լայնությունն ազատ է
+    '#ggBar a#ggCoin{display:flex;align-items:center;gap:3px;height:38px;padding:0 11px;border-radius:12px;',
+    'border:2px solid rgba(255,209,102,0.75);background:rgba(20,26,34,0.78);color:#ffd166;text-decoration:none;',
+    'font-family:"Arial Rounded MT Bold","Noto Sans Armenian",Arial,sans-serif;font-weight:bold;font-size:0.9rem;line-height:1;white-space:nowrap}',
+    '#ggBar a#ggCoin:active{transform:scale(0.94)}',
+    '#ggBar a#ggCoin.up{animation:ggCoinPop 0.5s}',
+    '@keyframes ggCoinPop{0%{transform:scale(1)}40%{transform:scale(1.25);border-color:#fff}100%{transform:scale(1)}}',
     '#ggPause[hidden],#ggBar[hidden],#ggLoad[hidden],#ggToast[hidden]{display:none!important}',
     '#ggPause{position:fixed;inset:0;z-index:130;background:rgba(10,12,28,0.82);display:flex;flex-direction:column;',
     'align-items:center;justify-content:center;gap:10px;color:#f5eede;font-family:"Arial Rounded MT Bold","Noto Sans Armenian",Arial,sans-serif}',
@@ -130,24 +137,130 @@
     }
   }
 
-  // ——— 📳 Թրթռոց՝ երբ նոր ռեկորդ է գրվում ———
-  // Չենք կարող ամեն խաղում «հաղթանակը» ճանաչել, բայց ամեն խաղ ռեկորդը
-  // պահում է localStorage-ում. հենց թիվը մեծանում է — ուրեմն հաղթել ես 🎉
+  // ——————————————————————————————————————————————————————
+  //  🪙 ՈՍԿԻՆ — ընդհանուր գանձարան ԲՈԼՈՐ խաղերի համար
+  //  Արենի միտքն է. «40 խաղը հիմա 40 առանձին կղզի են։ Մեկ ընդհանուր
+  //  ոսկի, որ կապում է բոլորը իրար»։
+  //    ամեն 10 միավոր ռեկորդից = 1 🪙 · ամեն նոր մակարդակ = 3 🪙
+  //    օրվա մարտահրավերը = +20 🪙 · նոր գավաթ = +50 🪙
+  //  Ոչ մի խաղի կոդ չենք փոխում — ոսկին ինքն է լսում localStorage-ը։
+  // ——————————————————————————————————————————————————————
+  var origSet = Storage.prototype.setItem;
+  // Ուղիղ կարդալ-գրել՝ առանց մեր թակարդի, որ ոսկին ինքն իրեն չհաշվի
+  function rawGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function rawSet(k, v) { try { origSet.call(localStorage, k, String(v)); } catch (e) {} }
+  function num(v) { var n = Number(v); return isNaN(n) ? 0 : n; }
+
+  // Ռեկորդի բանալի՞ է. ամեն խաղ իր ռեկորդը պահում է այս ձևով
+  function isRec(k) { return typeof k === 'string' && /^(aren-|cat-best)/.test(k) && /(best|level|ends|max)$/.test(k); }
+  // Որքա՞ն ոսկի է արժե այս ռեկորդը. մակարդակն ավելի թանկ է, քան մեկ միավորը
+  function worth(k, v) {
+    if (!(v > 0)) return 0;
+    return /(level|ends|max)$/.test(k) ? Math.floor(v) * 3 : Math.floor(v / 10);
+  }
+
+  var coins = num(rawGet('gg-coins'));
+  var coinsTotal = num(rawGet('gg-coins-total'));
+  var own = (rawGet('gg-own') || '').split(',').filter(function (x) { return x; });
+  var coinEl = null, giftLater = 0;
+
+  // ——— Առաջին անգամ. հին ռեկորդները նշում ենք «արդեն հաշված» ———
+  // Այլապես 38 գավաթը միանգամից 1900 ոսկի կտար ու մեծ նպատակը կկորչեր։
+  if (rawGet('gg-coins-init') !== '1') {
+    try {
+      var olds = [];
+      for (var i = 0; i < localStorage.length; i++) olds.push(localStorage.key(i));
+      for (var j = 0; j < olds.length; j++) {
+        var ok = olds[j];
+        if (!isRec(ok)) continue;
+        var ov = num(rawGet(ok));
+        rawSet('gg-cm-' + ok, worth(ok, ov));
+        if (ov > 0) rawSet('gg-t-' + ok, '1');
+      }
+    } catch (e) {}
+    coins = coinsTotal = 100;               // բացման նվեր, որ խանութը դատարկ չլինի
+    rawSet('gg-coins', coins);
+    rawSet('gg-coins-total', coinsTotal);
+    rawSet('gg-coins-init', '1');
+    giftLater = 100;
+  }
+
+  function paintCoin(pop) {
+    if (!coinEl) return;
+    coinEl.textContent = '🪙 ' + coins;
+    if (pop) {
+      coinEl.classList.remove('up');
+      void coinEl.offsetWidth;              // որ անիմացիան ամեն անգամ նորից սկսվի
+      coinEl.classList.add('up');
+    }
+  }
+
+  function award(n, why) {
+    if (!(n > 0)) return;
+    coins += n; coinsTotal += n;
+    rawSet('gg-coins', coins);
+    rawSet('gg-coins-total', coinsTotal);
+    paintCoin(true);
+    try { if (navigator.vibrate) navigator.vibrate([18, 40, 40]); } catch (e) {}
+    if (document.body) toast('+' + n + ' 🪙' + (why ? ' · ' + why : ''));
+  }
+
+  // ——— Ամեն localStorage-ի գրառում անցնում է այստեղից ———
+  function coinCheck(k, v) {
+    if (typeof k !== 'string' || k.indexOf('gg-') === 0) return;
+
+    // 🌍 օրվա մարտահրավերը. գլխավոր էջն է գրում, երբ կատարված է
+    if (/^aren-daily-/.test(k) && String(v) === '1') {
+      if (rawGet('gg-d-' + k) !== '1') { rawSet('gg-d-' + k, '1'); award(20, T.wDaily); }
+      return;
+    }
+    if (!isRec(k)) return;
+
+    var val = Number(v);
+    if (isNaN(val)) return;
+    var n = 0, why = T.wRec;
+
+    // 🏆 նոր գավաթ — առաջին անգամ, որ այս խաղում միավոր ես գրել
+    if (val > 0 && rawGet('gg-t-' + k) !== '1') { rawSet('gg-t-' + k, '1'); n += 50; why = T.wTroph; }
+
+    // 🪙 ռեկորդի ոսկին. հաշվում ենք միայն նոր աճը, նույնը երկու անգամ չի վճարվում
+    var want = worth(k, val), had = num(rawGet('gg-cm-' + k));
+    if (want > had) { rawSet('gg-cm-' + k, want); n += want - had; }
+
+    award(n, why);
+  }
+
   try {
-    var origSet = Storage.prototype.setItem;
     Storage.prototype.setItem = function (k, v) {
-      var isRec = typeof k === 'string' && /^(aren-|cat-best)/.test(k) &&
-                  /(best|level|ends)$/.test(k);
-      var before = isRec ? Number(origSet.call && localStorage.getItem(k)) : 0;
+      // 📳 Թրթռոց՝ երբ նոր ռեկորդ է գրվում
+      var rec = isRec(k);
+      var before = rec ? num(localStorage.getItem(k)) : 0;
       origSet.apply(this, arguments);
-      if (isRec) {
+      if (rec) {
         var after = Number(v);
-        if (!isNaN(after) && after > (isNaN(before) ? 0 : before)) {
+        if (!isNaN(after) && after > before) {
           try { if (navigator.vibrate) navigator.vibrate([28, 60, 90]); } catch (e) {}
         }
       }
+      try { coinCheck(k, v); } catch (e) {}
     };
   } catch (e) {}
+
+  // ——— 🎨 Կայքի գույնը. խանութից գնված տեսքը ———
+  // Գլխավոր էջերը ապրում են CSS փոփոխականներով — դրանք վերևից փոխում ենք։
+  var THEMES = {
+    gold:  { bg: '#241b06', card: '#3d2e0d', ink: '#fff6df', dim: '#d9c183', accent: '#ffd166', accent2: '#ffe9a8' },
+    green: { bg: '#0b2018', card: '#123528', ink: '#e9fff4', dim: '#8fc7ac', accent: '#6ee7b7', accent2: '#c7f9e5' },
+    space: { bg: '#05060f', card: '#151b36', ink: '#e8ecff', dim: '#8b93c7', accent: '#a78bfa', accent2: '#67e8f9' }
+  };
+  function applyTheme(t) {
+    var th = THEMES[t], el = document.documentElement;
+    ['bg', 'card', 'ink', 'dim', 'accent', 'accent2'].forEach(function (nm) {
+      if (th) el.style.setProperty('--' + nm, th[nm]);
+      else el.style.removeProperty('--' + nm);
+    });
+  }
+  applyTheme(rawGet('gg-theme') || '');
 
   // ——— Փոքրիկ ծանուցում ———
   function toast(txt) {
@@ -257,6 +370,22 @@
   // ——— Կոճակների շերտը ———
   var bar = document.createElement('div');
   bar.id = 'ggBar';
+
+  // 🪙 Ոսկու հաշվիչը. սեղմում ես — գնում ես խանութ։
+  // Ինքն իր ճանապարհը գտնում է. cat-jump/run/-ից «../../», գլխավոր էջից՝ «./»։
+  var segs = location.pathname.split('/').filter(function (x) { return x && x.indexOf('.html') < 0; });
+  var up = segs.length ? new Array(segs.length + 1).join('../') : './';
+  // Խաղի էջին պիտակը ՉԵՆՔ դնում — վերևի անկյունը խաղինն է (սրտիկներ, ռեկորդ)։
+  // Ոսկին այնտեղ երևում է «+N 🪙» ծանուցումով, հենց վաստակելու պահին։
+  if (isPortal && segs[segs.length - 1] !== 'shop') {
+    coinEl = document.createElement('a');
+    coinEl.id = 'ggCoin';
+    coinEl.href = up + 'shop/';
+    coinEl.title = T.shop;
+    bar.appendChild(coinEl);
+    paintCoin(false);
+  }
+
   var bSound = document.createElement('button');
   bSound.id = 'ggSoundBtn';
   bSound.title = T.sound;
@@ -287,6 +416,7 @@
     bar.appendChild(bShot);
   }
   (document.body || document.documentElement).appendChild(bar);
+  if (giftLater) toast(T.gift + ' +' + giftLater + ' 🪙');
 
   // Դրսից էլ կարելի է կանչել (թեստերի ու ապագա խաղերի համար)
 
@@ -512,6 +642,28 @@
       }
     }
   }
+
+  // 🪙 Խանութն ու ապագա խաղերը ոսկու հետ խոսում են այս դռնով
+  window.ggCoins = {
+    get: function () { return coins; },
+    total: function () { return coinsTotal; },
+    add: award,
+    spend: function (n) {
+      if (!(n >= 0) || coins < n) return false;
+      coins -= n;
+      rawSet('gg-coins', coins);
+      paintCoin(true);
+      return true;
+    },
+    owned: function (id) { return own.indexOf(id) >= 0; },
+    list: function () { return own.slice(); },
+    give: function (id) {
+      if (own.indexOf(id) < 0) { own.push(id); rawSet('gg-own', own.join(',')); }
+    },
+    theme: function (t) { rawSet('gg-theme', t || ''); applyTheme(t || ''); },
+    themeNow: function () { return rawGet('gg-theme') || ''; },
+    themes: THEMES
+  };
 
   window.ggKit = {
     pause: setPause,

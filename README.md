@@ -61,6 +61,7 @@ and iterating on the code together with Claude, one change at a time.
 | [`draw`](./draw/) | ✏️ Golden Draw Pad (Ոսկե Նկարատախտակ) | A simple painter that saves the drawing to localStorage |
 | [`countdown`](./countdown/) | 🎂 Golden Countdown (Ոսկե Հաշվարկ) | Days left until your birthday, with a cake and confetti |
 | [`time`](./time/) | 🕰️ Golden Time (Ժամանակի մեքենա) | The site's whole story as a timeline, from the first flying cat to today |
+| [`shop`](./shop/) | 🪙 Golden Shop (Ոսկե Խանութ) | One gold purse shared by every game: 10 points of a record earn a coin, a daily challenge +20, a new trophy +50. Spend it on heroes, car paint and site colours |
 | [`museum`](./museum/) | 🏛️ Golden Museum (Թանգարան) | Memorial hall of deleted projects, pedestals, epitaphs and all |
 
 Every project is a single self-contained `index.html` — no frameworks, no

@@ -471,6 +471,7 @@
       <a href="./about.html" id="navAbout">😼 Մեր մասին</a>
       <a href="./trophies/" id="navTroph">🏆 Գավաթներ</a>
       <a href="./quest/" id="navQuest">🗺️ Արշավ</a>
+      <a href="./shop/" id="navShop">🪙 Խանութ</a>
       <a href="#" id="navRand" title="Պատահական խաղ">🎲 Պատահական</a>
       <a href="./qr.html">📱 QR</a>
       <a href="https://github.com/vetvarpet/aren">⭐ GitHub</a>
@@ -1985,6 +1986,11 @@
       <b>Golden Countdown</b>
       <span>Քանի օր է մնացել ծննդյանդ օրվան</span>
     </a>
+    <a class="tool" href="./shop/">
+      <span class="ic">🪙</span>
+      <b>Golden Shop</b>
+      <span>Վաստակած ոսկով գնիր հերոս, ներկ ու գույն</span>
+    </a>
   </div>
 
   <footer>
@@ -2041,6 +2047,7 @@ const DICT = {
     about: '😼 О нас',
     troph: '🏆 Кубки',
     quest: '🗺️ Поход',
+    shop: '🪙 Магазин',
     toolsT: '🧰 Инструменты', toolsN: 'не игры, но полезные',
     tools: {
       'timer': 'Для уроков: кот бежит до самого конца',
@@ -2049,6 +2056,7 @@ const DICT = {
       'color': 'Миксер цветов с hex-кодом',
       'draw': 'Простой рисовальщик, сам сохраняет рисунок',
       'countdown': 'Сколько дней до твоего дня рождения',
+      'shop': 'Покупай героев, краску и цвета за золото',
     },
     rand: '🎲 Случайная',
     moodQ: 'Во что сыграем?', moodFast: '⚡ Быстрое', moodCalm: '🌿 Спокойное', moodTwo: '👥 Вдвоём', moodThink: '🧠 Подумать',
@@ -2108,6 +2116,7 @@ const DICT = {
     about: '😼 About',
     troph: '🏆 Trophies',
     quest: '🗺️ Quest',
+    shop: '🪙 Shop',
     toolsT: '🧰 Tools', toolsN: 'not games, but handy',
     tools: {
       'timer': 'For homework: the cat runs all the way',
@@ -2116,6 +2125,7 @@ const DICT = {
       'color': 'A colour mixer that shows the hex',
       'draw': 'A simple painter that saves your drawing',
       'countdown': 'Days left until your birthday',
+      'shop': 'Spend your gold on heroes, paint and colours',
     },
     rand: '🎲 Random',
     moodQ: 'What shall we play?', moodFast: '⚡ Fast', moodCalm: '🌿 Calm', moodTwo: '👥 Two players', moodThink: '🧠 Thinking',
@@ -2175,6 +2185,7 @@ const DICT = {
     about: '😼 Sobre nosotros',
     troph: '🏆 Trofeos',
     quest: '🗺️ Búsqueda',
+    shop: '🪙 Tienda',
     toolsT: '🧰 Herramientas', toolsN: 'no son juegos, pero sirven',
     tools: {
       'timer': 'Para los deberes: el gato corre hasta el final',
@@ -2183,6 +2194,7 @@ const DICT = {
       'color': 'Un mezclador de colores con el hex',
       'draw': 'Un pintor simple que guarda tu dibujo',
       'countdown': 'Días que faltan para tu cumpleaños',
+      'shop': 'Gasta tu oro en héroes, pintura y colores',
     },
     rand: '🎲 Al azar',
     moodQ: '¿A qué jugamos?', moodFast: '⚡ Rápido', moodCalm: '🌿 Tranquilo', moodTwo: '👥 Entre dos', moodThink: '🧠 Para pensar',
@@ -2242,6 +2254,7 @@ const DICT = {
     about: '😼 À propos',
     troph: '🏆 Trophées',
     quest: '🗺️ Quête',
+    shop: '🪙 Boutique',
     toolsT: '🧰 Outils', toolsN: 'pas des jeux, mais utiles',
     tools: {
       'timer': 'Pour les devoirs : le chat court jusqu’au bout',
@@ -2250,6 +2263,7 @@ const DICT = {
       'color': 'Un mélangeur de couleurs avec le hex',
       'draw': 'Un dessinateur simple qui sauve ton dessin',
       'countdown': 'Jours restants avant ton anniversaire',
+      'shop': 'Dépense ton or en héros, peinture et couleurs',
     },
     rand: '🎲 Au hasard',
     moodQ: 'On joue à quoi ?', moodFast: '⚡ Rapide', moodCalm: '🌿 Calme', moodTwo: '👥 À deux', moodThink: '🧠 Réfléchir',
@@ -2309,6 +2323,7 @@ const DICT = {
     about: '😼 Über uns',
     troph: '🏆 Pokale',
     quest: '🗺️ Reise',
+    shop: '🪙 Laden',
     toolsT: '🧰 Werkzeuge', toolsN: 'keine Spiele, aber nützlich',
     tools: {
       'timer': 'Für Hausaufgaben: die Katze läuft bis zum Ende',
@@ -2317,6 +2332,7 @@ const DICT = {
       'color': 'Ein Farbmischer mit Hex-Code',
       'draw': 'Ein einfacher Maler, der dein Bild speichert',
       'countdown': 'Tage bis zu deinem Geburtstag',
+      'shop': 'Gib dein Gold für Helden, Lack und Farben aus',
     },
     rand: '🎲 Zufall',
     moodQ: 'Was spielen wir?', moodFast: '⚡ Schnell', moodCalm: '🌿 Ruhig', moodTwo: '👥 Zu zweit', moodThink: '🧠 Nachdenken',
@@ -2376,6 +2392,7 @@ const DICT = {
     about: '😼 わたしたち',
     troph: '🏆 トロフィー',
     quest: '🗺️ クエスト',
+    shop: '🪙 おみせ',
     toolsT: '🧰 どうぐ', toolsN: 'ゲームじゃないけどべんり',
     tools: {
       'timer': 'しゅくだいよう。ねこがさいごまではしるよ',
@@ -2384,6 +2401,7 @@ const DICT = {
       'color': 'hexコードがみえるいろミキサー',
       'draw': 'えをじどうでほぞんするおえかき',
       'countdown': 'たんじょうびまであとなんにち',
+      'shop': 'ゴールドでヒーロー・ペイント・いろをかおう',
     },
     rand: '🎲 ランダム',
     moodQ: 'なにであそぶ？', moodFast: '⚡ はやい', moodCalm: '🌿 のんびり', moodTwo: '👥 ふたりで', moodThink: '🧠 かんがえる',
@@ -2443,6 +2461,7 @@ const DICT = {
     about: '😼 关于我们',
     troph: '🏆 奖杯',
     quest: '🗺️ 远征',
+    shop: '🪙 商店',
     toolsT: '🧰 工具', toolsN: '不是游戏，但很好用',
     tools: {
       'timer': '写作业用：猫一直跑到终点',
@@ -2451,6 +2470,7 @@ const DICT = {
       'color': '带 hex 代码的调色器',
       'draw': '会自动保存的简易画板',
       'countdown': '离你的生日还有几天',
+      'shop': '用金币买角色、车漆和颜色',
     },
     rand: '🎲 随机',
     moodQ: '玩什么好呢？', moodFast: '⚡ 快节奏', moodCalm: '🌿 安静', moodTwo: '👥 两个人', moodThink: '🧠 动脑',
@@ -2510,6 +2530,7 @@ const DICT = {
     about: '😼 Chi siamo',
     troph: '🏆 Trofei',
     quest: '🗺️ Avventura',
+    shop: '🪙 Negozio',
     toolsT: '🧰 Strumenti', toolsN: 'non sono giochi, ma servono',
     tools: {
       'timer': 'Per i compiti: il gatto corre fino in fondo',
@@ -2518,6 +2539,7 @@ const DICT = {
       'color': 'Un mixer di colori con il codice hex',
       'draw': 'Un pittore semplice che salva il disegno',
       'countdown': 'Giorni che mancano al compleanno',
+      'shop': 'Spendi il tuo oro in eroi, vernici e colori',
     },
     rand: '🎲 A caso',
     moodQ: 'A cosa giochiamo?', moodFast: '⚡ Veloce', moodCalm: '🌿 Tranquillo', moodTwo: '👥 In due', moodThink: '🧠 Da pensare',
@@ -2577,6 +2599,7 @@ const DICT = {
     about: '😼 ჩვენ შესახებ',
     troph: '🏆 თასები',
     quest: '🗺️ ლაშქრობა',
+    shop: '🪙 მაღაზია',
     toolsT: '🧰 ხელსაწყოები', toolsN: 'თამაშები არაა, მაგრამ გამოსადეგია',
     tools: {
       'timer': 'გაკვეთილებისთვის: კატა ბოლომდე დარბის',
@@ -2585,6 +2608,7 @@ const DICT = {
       'color': 'ფერების მიქსერი hex კოდით',
       'draw': 'მარტივი სახატავი, თავად ინახავს ნახატს',
       'countdown': 'რამდენი დღეა დაბადების დღემდე',
+      'shop': 'დახარჯე ოქრო გმირებზე, საღებავზე და ფერებზე',
     },
     rand: '🎲 შემთხვევითი',
     moodQ: 'რა ვითამაშოთ?', moodFast: '⚡ სწრაფი', moodCalm: '🌿 მშვიდი', moodTwo: '👥 ორნი', moodThink: '🧠 დასაფიქრებელი',
@@ -2644,6 +2668,7 @@ const DICT = {
     about: '😼 हमारे बारे में',
     troph: '🏆 ट्रॉफ़ियाँ',
     quest: '🗺️ खोज',
+    shop: '🪙 दुकान',
     toolsT: '🧰 औज़ार', toolsN: 'खेल नहीं, पर काम के',
     tools: {
       'timer': 'होमवर्क के लिए: बिल्ली आख़िर तक दौड़ती है',
@@ -2652,6 +2677,7 @@ const DICT = {
       'color': 'hex कोड दिखाने वाला रंग मिक्सर',
       'draw': 'आसान ड्रॉइंग पैड, ख़ुद सेव करता है',
       'countdown': 'जन्मदिन में कितने दिन बाकी',
+      'shop': 'सोने से हीरो, रंग और थीम ख़रीदो',
     },
     rand: '🎲 कोई भी',
     moodQ: 'क्या खेलें?', moodFast: '⚡ तेज़', moodCalm: '🌿 शांत', moodTwo: '👥 दो लोग', moodThink: '🧠 सोचने वाला',
@@ -2717,6 +2743,7 @@ function applyLang(lang) {
   document.getElementById('navAbout').textContent = d.about;
   document.getElementById('navTroph').textContent = d.troph;
   document.getElementById('navQuest').textContent = d.quest;
+  document.getElementById('navShop').textContent = d.shop;
   document.getElementById('toolsT').textContent = d.toolsT;
   document.getElementById('toolsN').textContent = d.toolsN;
   document.querySelectorAll('.tool').forEach(a => {

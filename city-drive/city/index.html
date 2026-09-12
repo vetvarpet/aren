@@ -82,6 +82,12 @@ let maxSpeed = 7;             // սովորական մեքենայի առավե�
 let accel = 0.14;             // ինչ արագ է թափ հավաքում
 let carLevel = 0;             // 0 = սովորական, 1 = սպորտային, 2 = ՈՍԿԵ 👑
 
+// ——— 🎨 Խանութից գնված ներկը (Արենի ոսկե խանութը) ———
+// Ներկ չես գնել՝ մեքենան մնում է այնպես, ինչպես միշտ եղել է։
+const PAINTS = { blue: '#3d8bfd', purple: '#a06cd5', fire: '#ff7a18' };
+let MY_PAINT = '';
+try { MY_PAINT = PAINTS[localStorage.getItem('gg-car') || ''] || ''; } catch (e) {}
+
 // ——— Մեքենաների խանութը ———
 // Երկու մակարդակ կա. սպորտայինը՝ 200֏, իսկ ՈՍԿԵՆ՝ 500֏ ու ամենաարագն է
 const SHOP = { x: 1750, y: 750 };
@@ -523,7 +529,7 @@ function draw() {
   drawCar(police.x, police.y, police.angle, '#f2f4f8', false, true);
 
   // քո մեքենան. կարմիր՝ սովորական, սպիտակ՝ սպորտային, փայլուն ոսկե՝ 👑
-  const myColor = carLevel === 2 ? '#ffd700' : carLevel === 1 ? '#f7f9fc' : '#e63946';
+  const myColor = MY_PAINT || (carLevel === 2 ? '#ffd700' : carLevel === 1 ? '#f7f9fc' : '#e63946');
   drawCar(car.x, car.y, car.angle, myColor, true);
   if (carLevel === 2) {
     drawSparkles(car.x, car.y);        // փայլիկները պտտվում են մեքենայի շուրջ

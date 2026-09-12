@@ -35,7 +35,7 @@
 
 <!-- Կերպարի ընտրություն 🎨 — Արենի միտքն է. կատու, շուն, նինձյա, ռոբոտ -->
 <style>
-  #heroPick { position: fixed; top: 46px; right: 10px; z-index: 10; display: flex; gap: 6px; }
+  #heroPick { position: fixed; top: 54px; right: 10px; z-index: 10; display: flex; gap: 6px; }
   #heroPick button {
     font-size: 1.15rem;
     width: 40px; height: 40px;
@@ -47,12 +47,19 @@
     transition: transform 0.12s, border-color 0.12s;
   }
   #heroPick button.on { border-color: #ffd166; background: rgba(255,209,102,0.3); transform: scale(1.12); }
+  /* 🔒 դեռ չգնված կերպար. սեղմում ես՝ գնում ես խանութ */
+  #heroPick button.lock { opacity: 0.42; position: relative; }
+  #heroPick button.lock::after {
+    content: '🔒'; position: absolute; right: -3px; bottom: -3px; font-size: 0.68rem;
+  }
+  #heroPick button { font-size: 1.15rem; }
 </style>
 <div id="heroPick">
   <button data-h="cat">🐱</button>
   <button data-h="dog">🐶</button>
   <button data-h="ninja">🥷</button>
   <button data-h="robot">🤖</button>
+  <button data-h="gold">👑</button>
 </div>
 <canvas id="game"></canvas>
 
@@ -105,14 +112,26 @@ const HEROES = {
   dog:   { body: '#b98156', stripe: '#8f5f3a' },
   ninja: { body: '#3b4668', stripe: '#2c3550' },
   robot: { body: '#9aa5b1', stripe: '#6f7b8a' },
+  gold:  { body: '#ffd166', stripe: '#e0a92b' },   // 🪙 խանութի ամենամեծ նպատակը՝ փայլփլուն հետքով
 };
+// 🪙 Կերպարները խանութից են գնվում — բացի կատվից, որ միշտ քոնն է
+let OWN = [];
+try { OWN = (localStorage.getItem('gg-own') || '').split(','); } catch (e) {}
+const ownsHero = h => h === 'cat' || OWN.indexOf('hero:' + h) >= 0;
+
 let hero = 'cat';
 try { hero = localStorage.getItem('aren-hero') || 'cat'; } catch (e) {}
-if (!HEROES[hero]) hero = 'cat';
+if (!HEROES[hero] || !ownsHero(hero)) hero = 'cat';    // չգնածը չի հագնվում
+
 document.querySelectorAll('#heroPick button').forEach(b => {
-  b.classList.toggle('on', b.dataset.h === hero);
+  const h = b.dataset.h;
+  const mine = ownsHero(h);
+  b.classList.toggle('on', h === hero);
+  b.classList.toggle('lock', !mine);
+  if (!mine) b.title = '🔒';
   b.addEventListener('click', () => {
-    hero = b.dataset.h;
+    if (!ownsHero(h)) { location.href = '../../shop/'; return; }   // կողպածն ուղարկում է խանութ
+    hero = h;
     try { localStorage.setItem('aren-hero', hero); } catch (e) {}
     document.querySelectorAll('#heroPick button').forEach(x => x.classList.toggle('on', x.dataset.h === hero));
   });
@@ -123,6 +142,7 @@ let boxes = [];               // արկղերը, որ գալիս են
 let fishes = [];              // ձկները, որ լողում են օդում
 let popups = [];              // «+3» գրությունները, երբ ձուկ ես բռնում
 let clouds = [];              // ամպերը երկնքում
+let sparks = [];              // ✨ ոսկե փոշին Ոսկե Կատվիկի հետևից
 let score = 0;                // միավորներ
 let best = Number(localStorage.getItem('cat-best') || 0);
 let speed = 5;                // ինչ արագ են գալիս արկղերը
@@ -360,6 +380,7 @@ function restart() {
   boxes = [];
   fishes = [];
   popups = [];
+  sparks = [];
   confetti = [];
   won = false;
   lives = 3;
@@ -514,7 +535,7 @@ function drawCat() {
   }
 
   // քիթն ու բեղերը
-  if (hero === 'cat') {
+  if (hero === 'cat' || hero === 'gold') {
     ctx.fillStyle = '#ff8fa3';
     ctx.beginPath();
     ctx.arc(39, -38, 2.2, 0, Math.PI * 2);
@@ -535,10 +556,23 @@ function drawCat() {
     ctx.stroke();
   }
 
+  // 👑 Ոսկե Կատվիկի թագը — 1000 ոսկի արժեր, թող երևա
+  if (hero === 'gold') {
+    ctx.fillStyle = '#ffe9a8';
+    ctx.beginPath();
+    ctx.moveTo(14, -54);
+    ctx.lineTo(18, -66); ctx.lineTo(24, -58); ctx.lineTo(30, -68); ctx.lineTo(34, -57);
+    ctx.lineTo(38, -66); ctx.lineTo(40, -52);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#e63946';
+    ctx.beginPath(); ctx.arc(27, -58, 2, 0, Math.PI * 2); ctx.fill();
+  }
+
   // ↓↓↓ ԱՐԵՆԻ ԴԱՍ 3 ՏՈՂԸ ԳԱԼՈՒ Է ԱՅՍՏԵՂ ↓↓↓
 
   // ↑↑↑ ------------------------------------ ↑↑↑
-  if (hero === 'cat' || hero === 'dog') {
+  if (hero === 'cat' || hero === 'dog' || hero === 'gold') {
     ctx.strokeStyle = 'rgba(35,64,92,0.55)';
     ctx.lineWidth = 1.2;
     ctx.beginPath();
@@ -548,6 +582,23 @@ function drawCat() {
   }
 
   ctx.restore();
+}
+
+// ——— ✨ Ոսկե փոշին. Ոսկե Կատվիկի հետքը ———
+function drawSparks() {
+  for (const sp of sparks) {
+    const a = sp.life / sp.max;
+    ctx.globalAlpha = Math.max(0, Math.min(1, a));
+    ctx.fillStyle = '#fff6d8';
+    ctx.beginPath();
+    ctx.arc(sp.x, sp.y, sp.r * a, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,209,102,0.85)';
+    ctx.beginPath();
+    ctx.arc(sp.x, sp.y, sp.r * a * 1.9, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
 }
 
 // ——— Նկարում ենք արկղը ———
@@ -1094,6 +1145,19 @@ function update() {
     for (const p of popups) { p.y -= 1.2; p.life--; }
     popups = popups.filter(p => p.life > 0);
 
+    // ✨ Ոսկե Կատվիկը հետքում ոսկե փոշի է թողնում
+    if (hero === 'gold' && frame % 3 === 0) {
+      sparks.push({
+        x: cat.x - 18 + Math.random() * 10,
+        y: cat.y - 20 - Math.random() * 26,
+        r: 1.6 + Math.random() * 2.6,
+        life: 34 + Math.random() * 16,
+        max: 50,
+      });
+    }
+    for (const sp of sparks) { sp.x -= 3.4; sp.y -= 0.35; sp.life--; }
+    sparks = sparks.filter(sp => sp.life > 0);
+
     // արկղերը շարժվում են
     for (const b of boxes) {
       b.x -= speed;
@@ -1145,6 +1209,7 @@ function update() {
   for (const b of boxes) b.type === 'bird' ? drawBird(b) : drawBox(b);
   for (const f of fishes) drawFish(f);
   if (boss) drawBoss();
+  drawSparks();
   drawCat();
   drawPopups();
   drawScore();
