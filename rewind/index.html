@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Ետընթաց ⏪ · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #131a2e; overflow: hidden;
+               font-family: Arial, Helvetica, sans-serif; color: #f5eede; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  .ov { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 24px;
+        background: rgba(10,14,28,0.92); }
+  .ov[hidden] { display: none !important; }
+  .ov h1 { margin: 0 0 6px; font-size: 1.4rem; color: #f0c85a; }
+  .ov p { margin: 0 0 18px; font-size: 0.9rem; line-height: 1.5; max-width: 340px; opacity: 0.9; }
+  .ov .big { font-size: 2.4rem; font-weight: bold; color: #ffe9a8; margin-bottom: 2px; }
+  .ov button { font-family: inherit; font-size: 1rem; font-weight: bold; padding: 13px 30px;
+               border-radius: 14px; border: none; background: #f0c85a; color: #10162a; cursor: pointer; }
+  #hud { position: fixed; top: 54px; left: 0; right: 0; z-index: 10; text-align: center;
+         pointer-events: none; text-shadow: 0 2px 6px #000; }
+  #hud .lv { font-size: 1.1rem; font-weight: bold; color: #ffe9a8; }
+  #hud .tip { font-size: 0.78rem; opacity: 0.85; margin-top: 3px; }
+  #pad { position: fixed; left: 0; right: 0; bottom: 14px; z-index: 15;
+         display: grid; grid-template-columns: repeat(3, 64px); grid-template-rows: repeat(2, 58px);
+         gap: 8px; justify-content: center; }
+  #pad[hidden] { display: none !important; }
+  #pad button {
+    font-family: inherit; font-size: 1.5rem; border-radius: 14px; cursor: pointer;
+    background: rgba(255,255,255,0.09); border: 2px solid rgba(255,255,255,0.26); color: #f5eede;
+  }
+  #pad button:active { background: rgba(240,200,90,0.25); }
+  #pad .wide { grid-column: 1 / span 3; font-size: 0.86rem; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:30;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="hud"><div class="lv"></div><div class="tip"></div></div>
+
+<div id="pad" hidden>
+  <button data-d="up">▲</button>
+  <button data-d="left">◀</button>
+  <button data-d="right">▶</button>
+  <button data-d="down">▼</button>
+  <button data-d="wait">⏸</button>
+  <button data-d="rew">⏪</button>
+  <button class="wide" data-d="rew2">⏪ Ետ գցել ժամանակը</button>
+</div>
+
+<div class="ov" id="menu">
+  <h1 id="mT">Ոսկե Ետընթաց ⏪</h1>
+  <p id="mS">Ժամանակը ետ ես գցում, ու քո նախորդ ուրվականը կրկնում է այն, ինչ արել ես։ Ուրվականները կանգնում են կոճակների վրա ու դուռը բացում։</p>
+  <button id="startBtn">▶ Սկսել</button>
+</div>
+
+<div class="ov" id="over" hidden>
+  <div class="big" id="oScore">0</div>
+  <h1 id="oT">Վե՛րջ</h1>
+  <p id="oS"></p>
+  <button id="againBtn">↻ Նորից</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ԵՏԸՆԹԱՑ ⏪ — Արենի միտքն է
+//  Մեռնում ես կամ ժամանակդ լրանում է՝ ժամանակը ետ է գնում, բայց
+//  քո նախորդ քայլերը մնում են՝ որպես ուրվական։ Ուրվականը կանգնում է
+//  կոճակի վրա, դուռը բացվում է, ու դու ուրիշ ճանապարհով ես անցնում։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'Ոսկե Ետընթաց ⏪', s:'Ժամանակը ետ ես գցում, ու քո նախորդ ուրվականը կրկնում է այն, ինչ արել ես։ Ուրվականները կանգնում են կոճակների վրա ու դուռը բացում։',
+        go:'▶ Սկսել', again:'↻ Նորից', over:'Ուրվականները վերջացան', win:'Անցա՛ր բոլորը 👑', rec:'Նոր ռեկորդ 🎉',
+        lv:(n,m)=>'Մակարդակ '+n+'/'+m, best:n=>'Ամենահեռուն՝ '+n, rew:'⏪ Ետ գցել ժամանակը',
+        ghosts:(a,b)=>'Ուրվական՝ '+a+'/'+b, steps:(a,b)=>'Քայլ՝ '+a+'/'+b,
+        tip:'Հասիր ոսկե դռանը', tipLocked:'Դուռը փակ է — կոճակի վրա ինչ-որ մեկը պիտի կանգնի' },
+  ru: { t:'Золотая Перемотка ⏪', s:'Отматываешь время, и твой прошлый призрак повторяет всё, что ты делал. Призраки встают на кнопки и открывают дверь.',
+        go:'▶ Начать', again:'↻ Ещё раз', over:'Призраки кончились', win:'Ты прошёл всё 👑', rec:'Новый рекорд 🎉',
+        lv:(n,m)=>'Уровень '+n+'/'+m, best:n=>'Дальше всего: '+n, rew:'⏪ Отмотать время',
+        ghosts:(a,b)=>'Призраки: '+a+'/'+b, steps:(a,b)=>'Шаги: '+a+'/'+b,
+        tip:'Дойди до золотой двери', tipLocked:'Дверь закрыта — кто-то должен встать на кнопку' },
+  en: { t:'Golden Rewind ⏪', s:'You rewind time, and your past ghost repeats everything you did. Ghosts stand on the buttons and hold the door open.',
+        go:'▶ Start', again:'↻ Again', over:'No ghosts left', win:'You cleared them all 👑', rec:'New best 🎉',
+        lv:(n,m)=>'Level '+n+'/'+m, best:n=>'Furthest: '+n, rew:'⏪ Rewind time',
+        ghosts:(a,b)=>'Ghosts: '+a+'/'+b, steps:(a,b)=>'Steps: '+a+'/'+b,
+        tip:'Reach the golden door', tipLocked:'The door is shut — someone must stand on the button' },
+  es: { t:'Rebobinado Dorado ⏪', s:'Rebobinas el tiempo y tu fantasma anterior repite lo que hiciste. Los fantasmas se ponen en los botones y abren la puerta.',
+        go:'▶ Empezar', again:'↻ Otra vez', over:'Se acabaron los fantasmas', win:'¡Los pasaste todos! 👑', rec:'¡Nuevo récord! 🎉',
+        lv:(n,m)=>'Nivel '+n+'/'+m, best:n=>'Lo más lejos: '+n, rew:'⏪ Rebobinar el tiempo',
+        ghosts:(a,b)=>'Fantasmas: '+a+'/'+b, steps:(a,b)=>'Pasos: '+a+'/'+b,
+        tip:'Llega a la puerta dorada', tipLocked:'La puerta está cerrada: alguien debe pisar el botón' },
+  fr: { t:'Rembobinage Doré ⏪', s:'Tu rembobines le temps et ton fantôme d’avant refait tout ce que tu as fait. Les fantômes se placent sur les boutons et ouvrent la porte.',
+        go:'▶ Démarrer', again:'↻ Encore', over:'Plus de fantômes', win:'Tu as tout passé 👑', rec:'Nouveau record 🎉',
+        lv:(n,m)=>'Niveau '+n+'/'+m, best:n=>'Le plus loin : '+n, rew:'⏪ Rembobiner le temps',
+        ghosts:(a,b)=>'Fantômes : '+a+'/'+b, steps:(a,b)=>'Pas : '+a+'/'+b,
+        tip:'Atteins la porte dorée', tipLocked:'La porte est fermée — quelqu’un doit rester sur le bouton' },
+  de: { t:'Goldener Rücklauf ⏪', s:'Du spulst die Zeit zurück und dein früherer Geist wiederholt alles. Die Geister stellen sich auf die Knöpfe und halten die Tür offen.',
+        go:'▶ Start', again:'↻ Nochmal', over:'Keine Geister mehr', win:'Du hast alle geschafft 👑', rec:'Neuer Rekord 🎉',
+        lv:(n,m)=>'Level '+n+'/'+m, best:n=>'Am weitesten: '+n, rew:'⏪ Zeit zurückspulen',
+        ghosts:(a,b)=>'Geister: '+a+'/'+b, steps:(a,b)=>'Schritte: '+a+'/'+b,
+        tip:'Erreiche die goldene Tür', tipLocked:'Die Tür ist zu — jemand muss auf dem Knopf stehen' },
+  ja: { t:'ゴールデン・まきもどし ⏪', s:'じかんをまきもどすと、まえのゴーストがきみのうごきをくりかえすよ。ゴーストがボタンにのるとドアがひらく。',
+        go:'▶ スタート', again:'↻ もういちど', over:'ゴーストがなくなった', win:'ぜんぶクリア 👑', rec:'しんきろく 🎉',
+        lv:(n,m)=>'レベル '+n+'/'+m, best:n=>'さいこう：'+n, rew:'⏪ じかんをまきもどす',
+        ghosts:(a,b)=>'ゴースト：'+a+'/'+b, steps:(a,b)=>'ステップ：'+a+'/'+b,
+        tip:'金のドアへいこう', tipLocked:'ドアがしまってる — だれかがボタンにのらないと' },
+  zh: { t:'黄金倒带 ⏪', s:'你把时间倒回去，之前的幽灵会重复你做过的动作。幽灵站在按钮上，门就会打开。',
+        go:'▶ 开始', again:'↻ 再来', over:'没有幽灵了', win:'全部通关 👑', rec:'新纪录 🎉',
+        lv:(n,m)=>'第'+n+'关 / '+m, best:n=>'最远：'+n, rew:'⏪ 倒回时间',
+        ghosts:(a,b)=>'幽灵：'+a+'/'+b, steps:(a,b)=>'步数：'+a+'/'+b,
+        tip:'走到金色的门', tipLocked:'门锁着 — 得有人站在按钮上' },
+  it: { t:'Riavvolgimento Dorato ⏪', s:'Riavvolgi il tempo e il tuo fantasma di prima ripete tutto quello che hai fatto. I fantasmi stanno sui pulsanti e tengono aperta la porta.',
+        go:'▶ Avvia', again:'↻ Ancora', over:'Fantasmi finiti', win:'Li hai superati tutti 👑', rec:'Nuovo record 🎉',
+        lv:(n,m)=>'Livello '+n+'/'+m, best:n=>'Più lontano: '+n, rew:'⏪ Riavvolgi il tempo',
+        ghosts:(a,b)=>'Fantasmi: '+a+'/'+b, steps:(a,b)=>'Passi: '+a+'/'+b,
+        tip:'Raggiungi la porta dorata', tipLocked:'La porta è chiusa: qualcuno deve stare sul pulsante' },
+  ka: { t:'ოქროს უკუგრაგნვა ⏪', s:'დროს უკან აბრუნებ და შენი წინა მოჩვენება იმეორებს ყველაფერს. მოჩვენებები დგებიან ღილაკებზე და კარს აღებენ.',
+        go:'▶ დაწყება', again:'↻ თავიდან', over:'მოჩვენებები გათავდა', win:'ყველა გაიარე 👑', rec:'ახალი რეკორდი 🎉',
+        lv:(n,m)=>'დონე '+n+'/'+m, best:n=>'ყველაზე შორს: '+n, rew:'⏪ დროის უკან დაბრუნება',
+        ghosts:(a,b)=>'მოჩვენება: '+a+'/'+b, steps:(a,b)=>'ნაბიჯი: '+a+'/'+b,
+        tip:'მიაღწიე ოქროს კარს', tipLocked:'კარი დაკეტილია — ვიღაც ღილაკზე უნდა იდგეს' },
+  hi: { t:'गोल्डन रिवाइंड ⏪', s:'तुम समय पीछे करते हो और तुम्हारा पुराना भूत वही दोहराता है जो तुमने किया। भूत बटन पर खड़े होकर दरवाज़ा खोलते हैं।',
+        go:'▶ शुरू', again:'↻ फिर से', over:'भूत ख़त्म हो गए', win:'सब पार कर लिए 👑', rec:'नया रिकॉर्ड 🎉',
+        lv:(n,m)=>'लेवल '+n+'/'+m, best:n=>'सबसे दूर: '+n, rew:'⏪ समय पीछे करो',
+        ghosts:(a,b)=>'भूत: '+a+'/'+b, steps:(a,b)=>'कदम: '+a+'/'+b,
+        tip:'सुनहरे दरवाज़े तक पहुँचो', tipLocked:'दरवाज़ा बंद है — किसी को बटन पर खड़ा होना होगा' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('mT').textContent = T.t;
+document.getElementById('mS').textContent = T.s;
+document.getElementById('startBtn').textContent = T.go;
+document.getElementById('againBtn').textContent = T.again;
+document.querySelector('#pad .wide').textContent = T.rew;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let best = 0;
+try { best = Number(localStorage.getItem('aren-rewind-best') || 0) || 0; } catch (e) {}
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.11, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.12));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.12));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function fit() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+fit(); addEventListener('resize', fit);
+
+// ——— մակարդակները. # պատ, . դատարկ, S մեկնարկ, D դուռ, B կոճակ, X փուշ ———
+const LEVELS = [
+  { g: ['#######',
+        '#..D..#',
+        '#.###.#',
+        '#..B..#',
+        '#.###.#',
+        '#..S..#',
+        '#######'], steps: 10, ghosts: 1 },
+  { g: ['#######',
+        '#B...D#',
+        '#.###.#',
+        '#.....#',
+        '#.###.#',
+        '#..S..#',
+        '#######'], steps: 12, ghosts: 1 },
+  { g: ['#######',
+        '#B.D.B#',
+        '#.###.#',
+        '#..X..#',
+        '#.###.#',
+        '#..S..#',
+        '#######'], steps: 12, ghosts: 2 },
+  { g: ['#########',
+        '#B..X..B#',
+        '#.#####.#',
+        '#...D...#',
+        '#.#####.#',
+        '#...S...#',
+        '#########'], steps: 14, ghosts: 2 },
+  { g: ['#########',
+        '#B.....B#',
+        '#.#####.#',
+        '#..X.X..#',
+        '#.##D##.#',
+        '#...S...#',
+        '#########'], steps: 16, ghosts: 2 },
+];
+
+let state = 'menu', level = 0, endedAt = 0;
+let grid = [], cols = 0, rows = 0;
+let me = { c: 0, r: 0 }, startPos = { c: 0, r: 0 }, doorPos = { c: 0, r: 0 };
+let buttons = [], spikes = [];
+let tape = [];          // ընթացիկ քայլերը
+let ghosts = [];        // { moves: [...], c, r, i }
+let stepsLeft = 0, ghostsLeft = 0, anim = 0, rewinding = 0;
+
+function loadLevel(n) {
+  const L = LEVELS[n];
+  grid = L.g.map(row => row.split(''));
+  rows = grid.length; cols = grid[0].length;
+  buttons = []; spikes = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const ch = grid[r][c];
+    if (ch === 'S') startPos = { c: c, r: r };
+    if (ch === 'D') doorPos = { c: c, r: r };
+    if (ch === 'B') buttons.push({ c: c, r: r });
+    if (ch === 'X') spikes.push({ c: c, r: r });
+  }
+  ghosts = []; ghostsLeft = L.ghosts;
+  newAttempt();
+}
+function newAttempt() {
+  const L = LEVELS[level];
+  me = { c: startPos.c, r: startPos.r };
+  tape = []; stepsLeft = L.steps;
+  ghosts.forEach(g => { g.i = 0; g.c = startPos.c; g.r = startPos.r; });
+}
+function start() {
+  initAudio(); level = 0; state = 'play'; loadLevel(0);
+  document.getElementById('menu').hidden = true;
+  document.getElementById('over').hidden = true;
+  document.getElementById('pad').hidden = false;
+  tone(680, 0.13, 'triangle');
+}
+function finish(won) {
+  state = 'over'; endedAt = Date.now();
+  const reached = won ? LEVELS.length : level;
+  const isRec = reached > best;
+  if (isRec) { best = reached; try { localStorage.setItem('aren-rewind-best', String(best)); } catch (e) {} }
+  document.getElementById('oScore').textContent = reached + '/' + LEVELS.length;
+  document.getElementById('oT').textContent = won ? T.win : (isRec ? T.rec : T.over);
+  document.getElementById('oS').textContent = T.best(best);
+  document.getElementById('over').hidden = false;
+  document.getElementById('pad').hidden = true;
+  if (won) [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.3,'triangle',0.15), i*160));
+  else tone(190, 0.34, 'sawtooth', 0.13);
+}
+
+function walkable(c, r) { return c >= 0 && r >= 0 && c < cols && r < rows && grid[r][c] !== '#'; }
+function onButton(c, r) { return buttons.some(b => b.c === c && b.r === r); }
+function doorOpen() {
+  // դուռը բաց է, եթե ամեն կոճակի վրա ինչ-որ մեկը կանգնած է
+  if (!buttons.length) return true;
+  return buttons.every(b => (me.c === b.c && me.r === b.r) || ghosts.some(g => g.c === b.c && g.r === b.r));
+}
+
+const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0], wait: [0, 0] };
+
+function doStep(dir) {
+  if (state !== 'play' || rewinding > 0 || anim > 0) return;
+  const d = DIRS[dir];
+  if (!d) return;
+  const nc = me.c + d[0], nr = me.r + d[1];
+  if (walkable(nc, nr)) { me.c = nc; me.r = nr; }
+  tape.push(dir);
+  // ուրվականները քայլում են նույն պահին
+  for (const g of ghosts) {
+    const mv = g.moves[g.i++];
+    if (mv) {
+      const gd = DIRS[mv];
+      if (gd && walkable(g.c + gd[0], g.r + gd[1])) { g.c += gd[0]; g.r += gd[1]; }
+    }
+  }
+  stepsLeft--;
+  anim = 0.09;
+  tone(430 + (dir === 'wait' ? 0 : 90), 0.05, 'square', 0.05);
+
+  // փուշ — ետընթաց
+  if (spikes.some(s => s.c === me.c && s.r === me.r)) { tone(200, 0.2, 'sawtooth', 0.12); rewind(); return; }
+  // դուռ
+  if (me.c === doorPos.c && me.r === doorPos.r && doorOpen()) {
+    tone(980, 0.18, 'triangle', 0.13);
+    if (level >= LEVELS.length - 1) { finish(true); return; }
+    level++; loadLevel(level); return;
+  }
+  if (stepsLeft <= 0) rewind();
+}
+
+function rewind() {
+  if (rewinding > 0) return;
+  if (ghostsLeft <= 0) { finish(false); return; }
+  rewinding = 0.75;
+  ghostsLeft--;
+  ghosts.push({ moves: tape.slice(), i: 0, c: startPos.c, r: startPos.r });
+  tone(300, 0.3, 'sine', 0.1);
+  setTimeout(() => { newAttempt(); rewinding = 0; }, 750);
+}
+
+document.querySelectorAll('#pad button').forEach(b => {
+  b.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (e.pointerType === 'mouse' && ghost()) return;
+    initAudio();
+    const d = b.dataset.d;
+    if (d === 'rew' || d === 'rew2') rewind(); else doStep(d);
+  });
+});
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (e.pointerType === 'mouse' && ghost()) return;
+  if (state === 'over' && Date.now() - endedAt > 1100) start();
+});
+document.getElementById('startBtn').addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && ghost()) return; start(); });
+document.getElementById('againBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  if (Date.now() - endedAt > 1100) start();
+});
+addEventListener('keydown', (e) => {
+  const m = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', Space: 'wait', KeyR: 'rew' }[e.code];
+  if (!m) return;
+  e.preventDefault();
+  if (m === 'rew') rewind(); else doStep(m);
+});
+
+function draw() {
+  cx.clearRect(0, 0, W, H);
+  const g = cx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#161d34'); g.addColorStop(1, '#232c4c');
+  cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+  if (state === 'menu' || !cols) return;
+
+  const padH = 150, topH = 110;
+  const cell = Math.floor(Math.min((W - 24) / cols, (H - padH - topH) / rows));
+  const ox = (W - cell * cols) / 2, oy = topH + (H - padH - topH - cell * rows) / 2;
+  const cxy = (c, r) => ({ x: ox + c * cell + cell / 2, y: oy + r * cell + cell / 2 });
+
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const x = ox + c * cell, y = oy + r * cell;
+    const ch = grid[r][c];
+    if (ch === '#') {
+      cx.fillStyle = '#3c4468';
+      cx.beginPath(); cx.roundRect(x + 1, y + 1, cell - 2, cell - 2, 4); cx.fill();
+    } else {
+      cx.fillStyle = 'rgba(255,255,255,0.045)';
+      cx.beginPath(); cx.roundRect(x + 2, y + 2, cell - 4, cell - 4, 5); cx.fill();
+    }
+  }
+  // կոճակները
+  for (const b of buttons) {
+    const p = cxy(b.c, b.r);
+    const pressed = (me.c === b.c && me.r === b.r) || ghosts.some(gh => gh.c === b.c && gh.r === b.r);
+    cx.fillStyle = pressed ? '#7fd1c1' : '#5a6088';
+    cx.beginPath(); cx.arc(p.x, p.y, cell * 0.3, 0, Math.PI * 2); cx.fill();
+    cx.strokeStyle = pressed ? '#bff0e4' : '#7a80ab'; cx.lineWidth = 3; cx.stroke();
+  }
+  // փշերը
+  for (const s of spikes) {
+    const p = cxy(s.c, s.r);
+    cx.fillStyle = '#e8756a';
+    for (let i = -1; i <= 1; i++) {
+      cx.beginPath();
+      cx.moveTo(p.x + i * cell * 0.26 - cell * 0.11, p.y + cell * 0.24);
+      cx.lineTo(p.x + i * cell * 0.26, p.y - cell * 0.24);
+      cx.lineTo(p.x + i * cell * 0.26 + cell * 0.11, p.y + cell * 0.24);
+      cx.closePath(); cx.fill();
+    }
+  }
+  // դուռը
+  {
+    const p = cxy(doorPos.c, doorPos.r), open = doorOpen();
+    cx.fillStyle = open ? '#f0c85a' : '#6b5a3c';
+    cx.beginPath(); cx.roundRect(p.x - cell * 0.32, p.y - cell * 0.38, cell * 0.64, cell * 0.76, 5); cx.fill();
+    cx.fillStyle = open ? '#10162a' : '#3a3020';
+    cx.beginPath(); cx.arc(p.x + cell * 0.17, p.y, cell * 0.06, 0, Math.PI * 2); cx.fill();
+  }
+  // ուրվականները
+  for (const gh of ghosts) {
+    const p = cxy(gh.c, gh.r);
+    cx.globalAlpha = 0.55;
+    cx.fillStyle = '#a8b4e8';
+    cx.beginPath(); cx.arc(p.x, p.y - cell * 0.06, cell * 0.27, Math.PI, 0); cx.fill();
+    cx.fillRect(p.x - cell * 0.27, p.y - cell * 0.06, cell * 0.54, cell * 0.3);
+    cx.fillStyle = '#10162a';
+    cx.beginPath(); cx.arc(p.x - cell * 0.1, p.y - cell * 0.08, cell * 0.05, 0, Math.PI * 2); cx.fill();
+    cx.beginPath(); cx.arc(p.x + cell * 0.1, p.y - cell * 0.08, cell * 0.05, 0, Math.PI * 2); cx.fill();
+    cx.globalAlpha = 1;
+  }
+  // դու
+  {
+    const p = cxy(me.c, me.r);
+    cx.fillStyle = '#f0c85a';
+    cx.beginPath(); cx.arc(p.x, p.y, cell * 0.3, 0, Math.PI * 2); cx.fill();
+    cx.beginPath(); cx.moveTo(p.x - cell * 0.24, p.y - cell * 0.16);
+    cx.lineTo(p.x - cell * 0.19, p.y - cell * 0.38); cx.lineTo(p.x - cell * 0.05, p.y - cell * 0.24); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(p.x + cell * 0.05, p.y - cell * 0.24);
+    cx.lineTo(p.x + cell * 0.19, p.y - cell * 0.38); cx.lineTo(p.x + cell * 0.24, p.y - cell * 0.16); cx.closePath(); cx.fill();
+    cx.fillStyle = '#10162a';
+    cx.beginPath(); cx.arc(p.x - cell * 0.1, p.y - cell * 0.03, cell * 0.05, 0, Math.PI * 2); cx.fill();
+    cx.beginPath(); cx.arc(p.x + cell * 0.1, p.y - cell * 0.03, cell * 0.05, 0, Math.PI * 2); cx.fill();
+  }
+  // ետընթացի փայլը
+  if (rewinding > 0) {
+    cx.fillStyle = 'rgba(168,180,232,' + (rewinding * 0.35) + ')';
+    cx.fillRect(0, 0, W, H);
+  }
+
+  const lv = document.querySelector('#hud .lv'), tip = document.querySelector('#hud .tip');
+  lv.textContent = T.lv(level + 1, LEVELS.length) + '   ' + T.steps(stepsLeft, LEVELS[level].steps)
+    + '   ' + T.ghosts(ghostsLeft, LEVELS[level].ghosts);
+  tip.textContent = doorOpen() ? T.tip : T.tipLocked;
+}
+
+let prev = 0;
+function loop(now) {
+  const dt = Math.min(0.033, (now - prev) / 1000 || 0); prev = now;
+  if (anim > 0) anim -= dt;
+  if (rewinding > 0) rewinding = Math.max(0, rewinding - dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+draw(); requestAnimationFrame(loop);
+
+window.REWIND = {
+  get state() { return state; }, get level() { return level; }, get best() { return best; },
+  get me() { return me; }, get ghosts() { return ghosts; }, get stepsLeft() { return stepsLeft; },
+  get ghostsLeft() { return ghostsLeft; }, get doorOpen() { return doorOpen(); },
+  get door() { return doorPos; }, get buttons() { return buttons; }, get levels() { return LEVELS.length; },
+  step: doStep, rewind: rewind, start: start,
+};
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
+</body>
+</html>

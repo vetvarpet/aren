@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Փոխանակ 🔀 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #191430; overflow: hidden;
+               font-family: Arial, Helvetica, sans-serif; color: #f5eede; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  .ov { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 24px;
+        background: rgba(12,10,28,0.92); }
+  .ov[hidden] { display: none !important; }
+  .ov h1 { margin: 0 0 6px; font-size: 1.45rem; color: #f0c85a; }
+  .ov p { margin: 0 0 18px; font-size: 0.92rem; line-height: 1.5; max-width: 330px; opacity: 0.9; }
+  .ov .big { font-size: 2.6rem; font-weight: bold; color: #ffe9a8; margin-bottom: 2px; }
+  .ov button { font-family: inherit; font-size: 1rem; font-weight: bold; padding: 13px 30px;
+               border-radius: 14px; border: none; background: #f0c85a; color: #10162a; cursor: pointer; }
+  #hud { position: fixed; top: 54px; left: 0; right: 0; z-index: 10; text-align: center;
+         pointer-events: none; text-shadow: 0 2px 6px #000; }
+  #hud .sc { font-size: 1.4rem; font-weight: bold; color: #ffe9a8; }
+  #hud .md { font-size: 0.84rem; opacity: 0.9; margin-top: 3px; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:30;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="hud"><div class="sc"></div><div class="md"></div></div>
+
+<div class="ov" id="menu">
+  <h1 id="mT">Ոսկե Փոխանակ 🔀</h1>
+  <p id="mS">Ամեն 10 վայրկյանը մեկ խաղը փոխվում է ուրիշ խաղի։ Միավորը մեկն է՝ ընդհանուր։ 60 վայրկյան, վեց փոխանակում։</p>
+  <button id="startBtn">▶ Սկսել</button>
+</div>
+
+<div class="ov" id="over" hidden>
+  <div class="big" id="oScore">0</div>
+  <h1 id="oT">Վե՛րջ</h1>
+  <p id="oS"></p>
+  <button id="againBtn">↻ Նորից</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ՓՈԽԱՆԱԿ 🔀 — Արենի միտքն է
+//  Ամեն 10 վայրկյանը մեկ խաղը դառնում է ուրիշ խաղ։ Հենց սովորում ես՝
+//  կանոնները փոխվում են։ Միավորը մեկն է բոլորի համար։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'Ոսկե Փոխանակ 🔀', s:'Ամեն 10 վայրկյանը մեկ խաղը փոխվում է ուրիշ խաղի։ Միավորը մեկն է՝ ընդհանուր։ 60 վայրկյան, վեց փոխանակում։',
+        go:'▶ Սկսել', again:'↻ Նորից', over:'Վե՛րջ', rec:'Նոր ռեկորդ 🎉', best:n=>'Ռեկորդ՝ '+n,
+        m:{ tap:'👆 Հպիր ոսկե կետերին', dodge:'🏃 Խույս տուր քարերից', catch:'🧺 Բռնիր աստղերը', mole:'🕳️ Հպիր դուրս եկածին' },
+        swap:'ՓՈԽՎՈ՛ՒՄ Է' },
+  ru: { t:'Золотая Подмена 🔀', s:'Каждые 10 секунд игра превращается в другую. Очки общие. 60 секунд, шесть подмен.',
+        go:'▶ Начать', again:'↻ Ещё раз', over:'Конец', rec:'Новый рекорд 🎉', best:n=>'Рекорд: '+n,
+        m:{ tap:'👆 Нажимай на золотые точки', dodge:'🏃 Уворачивайся от камней', catch:'🧺 Лови звёзды', mole:'🕳️ Бей того, кто вылез' },
+        swap:'МЕНЯЕТСЯ!' },
+  en: { t:'Golden Swap 🔀', s:'Every 10 seconds the game turns into a different game. One shared score. 60 seconds, six swaps.',
+        go:'▶ Start', again:'↻ Again', over:'Game over', rec:'New best 🎉', best:n=>'Best: '+n,
+        m:{ tap:'👆 Tap the golden dots', dodge:'🏃 Dodge the rocks', catch:'🧺 Catch the stars', mole:'🕳️ Tap whoever pops up' },
+        swap:'SWAPPING!' },
+  es: { t:'Cambiazo Dorado 🔀', s:'Cada 10 segundos el juego se convierte en otro. Los puntos son comunes. 60 segundos, seis cambios.',
+        go:'▶ Empezar', again:'↻ Otra vez', over:'Se acabó', rec:'¡Nuevo récord! 🎉', best:n=>'Récord: '+n,
+        m:{ tap:'👆 Toca los puntos dorados', dodge:'🏃 Esquiva las rocas', catch:'🧺 Atrapa las estrellas', mole:'🕳️ Toca al que asome' },
+        swap:'¡CAMBIO!' },
+  fr: { t:'Échange Doré 🔀', s:'Toutes les 10 secondes, le jeu devient un autre jeu. Un seul score. 60 secondes, six échanges.',
+        go:'▶ Démarrer', again:'↻ Encore', over:'Perdu', rec:'Nouveau record 🎉', best:n=>'Record : '+n,
+        m:{ tap:'👆 Touche les points dorés', dodge:'🏃 Évite les rochers', catch:'🧺 Attrape les étoiles', mole:'🕳️ Touche celui qui sort' },
+        swap:'ÇA CHANGE !' },
+  de: { t:'Goldener Tausch 🔀', s:'Alle 10 Sekunden wird das Spiel zu einem anderen Spiel. Eine gemeinsame Punktzahl. 60 Sekunden, sechs Wechsel.',
+        go:'▶ Start', again:'↻ Nochmal', over:'Vorbei', rec:'Neuer Rekord 🎉', best:n=>'Rekord: '+n,
+        m:{ tap:'👆 Tippe die goldenen Punkte', dodge:'🏃 Weiche den Steinen aus', catch:'🧺 Fang die Sterne', mole:'🕳️ Tippe den, der rauskommt' },
+        swap:'WECHSEL!' },
+  ja: { t:'ゴールデン・いれかわり 🔀', s:'10びょうごとにゲームがべつのゲームにかわるよ。スコアはひとつ。60びょうで6かいいれかわる。',
+        go:'▶ スタート', again:'↻ もういちど', over:'おわり', rec:'しんきろく 🎉', best:n=>'ベスト：'+n,
+        m:{ tap:'👆 金のてんをタップ', dodge:'🏃 いしをよけて', catch:'🧺 ほしをキャッチ', mole:'🕳️ でてきたのをタップ' },
+        swap:'いれかわる！' },
+  zh: { t:'黄金调包 🔀', s:'每 10 秒游戏就变成另一个游戏。分数是共用的。60 秒，六次调包。',
+        go:'▶ 开始', again:'↻ 再来', over:'结束', rec:'新纪录 🎉', best:n=>'纪录：'+n,
+        m:{ tap:'👆 点金色的点', dodge:'🏃 躲开石头', catch:'🧺 接住星星', mole:'🕳️ 谁冒头就点谁' },
+        swap:'换游戏啦！' },
+  it: { t:'Scambio Dorato 🔀', s:'Ogni 10 secondi il gioco diventa un altro gioco. Il punteggio è uno solo. 60 secondi, sei scambi.',
+        go:'▶ Avvia', again:'↻ Ancora', over:'Finita', rec:'Nuovo record 🎉', best:n=>'Record: '+n,
+        m:{ tap:'👆 Tocca i punti dorati', dodge:'🏃 Schiva i sassi', catch:'🧺 Prendi le stelle', mole:'🕳️ Tocca chi spunta' },
+        swap:'SI CAMBIA!' },
+  ka: { t:'ოქროს გაცვლა 🔀', s:'ყოველ 10 წამში თამაში სხვა თამაშად იქცევა. ქულა საერთოა. 60 წამი, ექვსი გაცვლა.',
+        go:'▶ დაწყება', again:'↻ თავიდან', over:'დასასრული', rec:'ახალი რეკორდი 🎉', best:n=>'რეკორდი: '+n,
+        m:{ tap:'👆 შეეხე ოქროს წერტილებს', dodge:'🏃 აარიდე ქვებს', catch:'🧺 დაიჭირე ვარსკვლავები', mole:'🕳️ შეეხე ვინც ამოძვრა' },
+        swap:'იცვლება!' },
+  hi: { t:'गोल्डन अदला-बदली 🔀', s:'हर 10 सेकंड में खेल दूसरा खेल बन जाता है। स्कोर एक ही है। 60 सेकंड, छह बदलाव।',
+        go:'▶ शुरू', again:'↻ फिर से', over:'खेल ख़त्म', rec:'नया रिकॉर्ड 🎉', best:n=>'रिकॉर्ड: '+n,
+        m:{ tap:'👆 सुनहरे बिंदु छुओ', dodge:'🏃 पत्थरों से बचो', catch:'🧺 तारे पकड़ो', mole:'🕳️ जो निकले उसे छुओ' },
+        swap:'बदल रहा है!' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('mT').textContent = T.t;
+document.getElementById('mS').textContent = T.s;
+document.getElementById('startBtn').textContent = T.go;
+document.getElementById('againBtn').textContent = T.again;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let best = 0;
+try { best = Number(localStorage.getItem('aren-swap-best') || 0) || 0; } catch (e) {}
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.11, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.12));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.12));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function fit() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+fit(); addEventListener('resize', fit);
+
+const MODES = ['tap', 'dodge', 'catch', 'mole'];
+const ROUND = 10, TOTAL = 60;
+
+let state = 'menu', score = 0, left = TOTAL, modeLeft = ROUND, mode = 'tap', endedAt = 0, flash = 0, hurt = 0;
+let dots = [], rocks = [], stars = [], moles = [], px = 0, spawnT = 0, moleT = 0;
+
+function pickMode() {
+  const others = MODES.filter(m => m !== mode);
+  mode = others[Math.floor(Math.random() * others.length)];
+  dots = []; rocks = []; stars = []; spawnT = 0.25;
+  px = W / 2;
+  moles = [];
+  if (mode === 'mole') {
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++)
+      moles.push({ x: W * (0.25 + c * 0.25), y: H * (0.38 + r * 0.16), up: 0, t: 0 });
+    moleT = 0.4;
+  }
+  flash = 0.7;
+  tone(760, 0.16, 'triangle', 0.13);
+  setTimeout(() => tone(980, 0.16, 'triangle', 0.12), 130);
+}
+function reset() {
+  score = 0; left = TOTAL; modeLeft = ROUND; mode = MODES[Math.floor(Math.random() * MODES.length)];
+  dots = []; rocks = []; stars = []; moles = []; px = W / 2; spawnT = 0.3; hurt = 0; flash = 0.7;
+  if (mode === 'mole') {
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++)
+      moles.push({ x: W * (0.25 + c * 0.25), y: H * (0.38 + r * 0.16), up: 0, t: 0 });
+    moleT = 0.4;
+  }
+}
+function start() {
+  initAudio(); reset(); state = 'play';
+  document.getElementById('menu').hidden = true;
+  document.getElementById('over').hidden = true;
+  tone(660, 0.14, 'triangle');
+}
+function finish() {
+  state = 'over'; endedAt = Date.now();
+  const isRec = score > best;
+  if (isRec) { best = score; try { localStorage.setItem('aren-swap-best', String(best)); } catch (e) {} }
+  document.getElementById('oScore').textContent = String(score);
+  document.getElementById('oT').textContent = isRec ? T.rec : T.over;
+  document.getElementById('oS').textContent = T.best(best);
+  document.getElementById('over').hidden = false;
+  tone(260, 0.3, 'triangle', 0.13);
+}
+
+function at(e) { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+function hit(p) {
+  if (mode === 'tap') {
+    for (const d of dots) {
+      if (!d.gone && Math.hypot(d.x - p.x, d.y - p.y) < d.r + 14) {
+        d.gone = true; score++; tone(900, 0.07, 'triangle', 0.1); return;
+      }
+    }
+  } else if (mode === 'mole') {
+    for (const m of moles) {
+      if (m.up > 0.25 && Math.hypot(m.x - p.x, m.y - p.y) < 40) {
+        m.up = 0; m.t = 0.5 + Math.random(); score++; tone(820, 0.07, 'square', 0.09); return;
+      }
+    }
+  }
+}
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio();
+  if (state === 'over') { if (Date.now() - endedAt > 1100) start(); return; }
+  if (state !== 'play') return;
+  const p = at(e);
+  px = p.x;
+  hit(p);
+});
+cv.addEventListener('pointermove', (e) => { if (state === 'play' && e.buttons) { e.preventDefault(); px = at(e).x; } });
+cv.addEventListener('touchmove', (e) => {
+  if (state === 'play' && e.touches[0]) {
+    e.preventDefault();
+    const r = cv.getBoundingClientRect();
+    px = e.touches[0].clientX - r.left;
+  }
+}, { passive: false });
+document.getElementById('startBtn').addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && ghost()) return; start(); });
+document.getElementById('againBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  if (Date.now() - endedAt > 1100) start();
+});
+
+const PY = () => H * 0.84;
+
+function step(dt) {
+  left -= dt; modeLeft -= dt;
+  if (flash > 0) flash -= dt;
+  if (hurt > 0) hurt -= dt;
+  if (left <= 0) { left = 0; finish(); return; }
+  if (modeLeft <= 0) { modeLeft = ROUND; pickMode(); }
+  px = Math.max(26, Math.min(W - 26, px));
+  spawnT -= dt;
+
+  if (mode === 'tap') {
+    if (spawnT <= 0) {
+      dots.push({ x: 40 + Math.random() * (W - 80), y: H * 0.28 + Math.random() * H * 0.45, r: 26, life: 1.5 });
+      spawnT = 0.55;
+    }
+    for (const d of dots) { d.life -= dt; d.r = 26 * Math.max(0.25, d.life / 1.5); }
+    dots = dots.filter(d => !d.gone && d.life > 0);
+  } else if (mode === 'dodge') {
+    if (spawnT <= 0) { rocks.push({ x: 30 + Math.random() * (W - 60), y: -30, v: 220 + Math.random() * 160 }); spawnT = 0.34; }
+    for (const r of rocks) {
+      r.y += r.v * dt;
+      if (!r.done && Math.abs(r.x - px) < 30 && Math.abs(r.y - PY()) < 28) {
+        r.done = true;
+        if (hurt <= 0) {
+          score = Math.max(0, score - 2); hurt = 0.7;
+          tone(170, 0.2, 'sawtooth', 0.12);
+          try { navigator.vibrate && navigator.vibrate(50); } catch (e) {}
+        }
+      }
+      if (!r.scored && r.y > PY() + 40) { r.scored = true; score++; }
+    }
+    rocks = rocks.filter(r => r.y < H + 40);
+  } else if (mode === 'catch') {
+    if (spawnT <= 0) {
+      stars.push({ x: 30 + Math.random() * (W - 60), y: -24, v: 190 + Math.random() * 130, bad: Math.random() < 0.26 });
+      spawnT = 0.46;
+    }
+    for (const s of stars) {
+      s.y += s.v * dt;
+      if (!s.done && Math.abs(s.x - px) < 36 && Math.abs(s.y - PY()) < 26) {
+        s.done = true;
+        if (s.bad) { score = Math.max(0, score - 2); hurt = 0.55; tone(180, 0.18, 'sawtooth', 0.11); }
+        else { score++; tone(880, 0.07, 'triangle', 0.1); }
+      }
+    }
+    stars = stars.filter(s => s.y < H + 40 && !s.done);
+  } else {
+    moleT -= dt;
+    if (moleT <= 0) {
+      const down = moles.filter(m => m.up <= 0 && m.t <= 0);
+      if (down.length) { down[Math.floor(Math.random() * down.length)].up = 1.15; }
+      moleT = 0.42;
+    }
+    for (const m of moles) {
+      if (m.up > 0) m.up -= dt; else if (m.t > 0) m.t -= dt;
+    }
+  }
+}
+
+function star(x, y, r) {
+  cx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r;
+    cx[i ? 'lineTo' : 'moveTo'](x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+  }
+  cx.closePath(); cx.fill();
+}
+
+function draw() {
+  cx.clearRect(0, 0, W, H);
+  const bg = { tap: ['#231a45','#33265e'], dodge: ['#3a2340','#4a2a48'],
+               catch: ['#1c3350','#28486b'], mole: ['#2a3520','#3b4a2b'] }[mode] || ['#231a45','#33265e'];
+  const g = cx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, bg[0]); g.addColorStop(1, bg[1]);
+  cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+
+  if (state === 'play') {
+    if (mode === 'tap') {
+      for (const d of dots) {
+        cx.fillStyle = '#f0c85a';
+        cx.beginPath(); cx.arc(d.x, d.y, d.r, 0, Math.PI * 2); cx.fill();
+        cx.strokeStyle = '#ffe9a8'; cx.lineWidth = 3; cx.stroke();
+      }
+    } else if (mode === 'dodge') {
+      for (const r of rocks) {
+        cx.fillStyle = '#8a8fb5';
+        cx.beginPath(); cx.arc(r.x, r.y, 17, 0, Math.PI * 2); cx.fill();
+        cx.fillStyle = '#6c7196';
+        cx.beginPath(); cx.arc(r.x - 5, r.y - 4, 6, 0, Math.PI * 2); cx.fill();
+      }
+      cx.fillStyle = hurt > 0 ? '#e8756a' : '#7fd1c1';
+      cx.beginPath(); cx.arc(px, PY(), 20, 0, Math.PI * 2); cx.fill();
+    } else if (mode === 'catch') {
+      for (const s of stars) {
+        if (s.bad) {
+          cx.fillStyle = '#4a4a58';
+          cx.beginPath(); cx.arc(s.x, s.y, 15, 0, Math.PI * 2); cx.fill();
+          cx.strokeStyle = '#e8756a'; cx.lineWidth = 3; cx.stroke();
+        } else { cx.fillStyle = '#ffe9a8'; star(s.x, s.y, 15); }
+      }
+      cx.fillStyle = hurt > 0 ? '#e8756a' : '#c9825a';
+      cx.beginPath(); cx.roundRect(px - 34, PY() - 14, 68, 30, 8); cx.fill();
+      cx.fillStyle = '#a8663f'; cx.fillRect(px - 34, PY() - 14, 68, 6);
+    } else {
+      for (const m of moles) {
+        cx.fillStyle = '#2b2417';
+        cx.beginPath(); cx.ellipse(m.x, m.y + 20, 38, 13, 0, 0, Math.PI * 2); cx.fill();
+        if (m.up > 0) {
+          const up = Math.min(1, m.up / 0.5);
+          cx.save();
+          cx.beginPath(); cx.rect(m.x - 38, m.y - 60, 76, 78); cx.clip();
+          cx.translate(0, (1 - up) * 40);
+          cx.fillStyle = '#a8763f';
+          cx.beginPath(); cx.arc(m.x, m.y - 4, 26, 0, Math.PI * 2); cx.fill();
+          cx.fillStyle = '#10162a';
+          cx.beginPath(); cx.arc(m.x - 9, m.y - 8, 3.4, 0, Math.PI * 2); cx.fill();
+          cx.beginPath(); cx.arc(m.x + 9, m.y - 8, 3.4, 0, Math.PI * 2); cx.fill();
+          cx.fillStyle = '#e8756a';
+          cx.beginPath(); cx.arc(m.x, m.y + 2, 5, 0, Math.PI * 2); cx.fill();
+          cx.restore();
+        }
+      }
+    }
+
+    // փոխանակման փայլը
+    if (flash > 0) {
+      cx.fillStyle = 'rgba(240,200,90,' + (flash * 0.45) + ')';
+      cx.fillRect(0, 0, W, H);
+      cx.fillStyle = 'rgba(16,22,42,' + Math.min(1, flash * 1.5) + ')';
+      cx.font = 'bold ' + Math.round(W * 0.09) + 'px Arial';
+      cx.textAlign = 'center';
+      cx.fillText(T.swap, W / 2, H * 0.5);
+    }
+
+    // ժամանակի սանդղակները
+    const bw = W * 0.7, bx = (W - bw) / 2;
+    cx.fillStyle = 'rgba(255,255,255,0.12)';
+    cx.beginPath(); cx.roundRect(bx, H - 40, bw, 8, 4); cx.fill();
+    cx.fillStyle = '#f0c85a';
+    cx.beginPath(); cx.roundRect(bx, H - 40, bw * (left / TOTAL), 8, 4); cx.fill();
+    cx.fillStyle = 'rgba(255,255,255,0.12)';
+    cx.beginPath(); cx.roundRect(bx, H - 26, bw, 6, 3); cx.fill();
+    cx.fillStyle = '#7fd1c1';
+    cx.beginPath(); cx.roundRect(bx, H - 26, bw * (modeLeft / ROUND), 6, 3); cx.fill();
+  }
+
+  const sc = document.querySelector('#hud .sc'), md = document.querySelector('#hud .md');
+  if (state !== 'play') { sc.textContent = ''; md.textContent = ''; }
+  else { sc.textContent = score + '   ⏱ ' + Math.ceil(left); md.textContent = T.m[mode]; }
+}
+
+let prev = 0;
+function loop(now) {
+  const dt = Math.min(0.033, (now - prev) / 1000 || 0); prev = now;
+  if (state === 'play') step(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+draw(); requestAnimationFrame(loop);
+
+window.SWAP = {
+  get state() { return state; }, get score() { return score; }, get best() { return best; },
+  get mode() { return mode; }, get left() { return left; }, get modeLeft() { return modeLeft; },
+  get dots() { return dots; }, get rocks() { return rocks; }, get stars() { return stars; }, get moles() { return moles; },
+  setModeLeft: v => { modeLeft = v; }, setLeft: v => { left = v; }, start: start,
+};
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
+</body>
+</html>
