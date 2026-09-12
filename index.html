@@ -473,10 +473,10 @@
   <!-- «Ի՞նչ խաղանք» զտիչը. սեղմիր ու կմնան միայն տրամադրությանդ հարմար խաղերը -->
   <div class="mood" id="mood">
     <span class="mq" id="moodQ">Ի՞նչ խաղանք՝</span>
-    <button data-mood="solo" id="moodSolo">🙋 Մենակ եմ</button>
-    <button data-mood="friend" id="moodFriend">👥 Ընկերոջ հետ եմ</button>
-    <button data-mood="calm" id="moodCalm">🌿 Հանգիստ բան եմ ուզում</button>
-    <button data-mood="fast" id="moodFast">⚡ Ադրենալին եմ ուզում</button>
+    <button data-mood="fast" id="moodFast">⚡ Արագ</button>
+    <button data-mood="calm" id="moodCalm">🌿 Հանգիստ</button>
+    <button data-mood="two" id="moodTwo">👥 Երկուսով</button>
+    <button data-mood="think" id="moodThink">🧠 Մտածելու</button>
   </div>
 
   <!-- Օրվա մարտահրավերը. ամեն օր՝ նոր առաջադրանք, ամբողջ աշխարհի համար նույնը -->
@@ -1886,7 +1886,7 @@ const DICT = {
       'countdown': 'Сколько дней до твоего дня рождения',
     },
     rand: '🎲 Случайная',
-    moodQ: 'Во что сыграем?', moodSolo: '🙋 Я один', moodFriend: '👥 Я с другом', moodCalm: '🌿 Хочу спокойное', moodFast: '⚡ Хочу адреналина',
+    moodQ: 'Во что сыграем?', moodFast: '⚡ Быстрое', moodCalm: '🌿 Спокойное', moodTwo: '👥 Вдвоём', moodThink: '🧠 Подумать',
     dailyT: '🌍 Задание дня', dailyScore: (n, g) => 'Сегодня набери ' + n + ' в игре «' + g + '»', dailyLevel: (n, g) => 'Сегодня дойди до уровня ' + n + ' в игре «' + g + '»', dailyDone: '🏅 Сделано!', dailyGo: '▶ Попробовать',
     newTag: 'NEW',
     cards: {
@@ -1945,7 +1945,7 @@ const DICT = {
       'countdown': 'Days left until your birthday',
     },
     rand: '🎲 Random',
-    moodQ: 'What shall we play?', moodSolo: '🙋 On my own', moodFriend: '👥 With a friend', moodCalm: '🌿 Something calm', moodFast: '⚡ Adrenaline!',
+    moodQ: 'What shall we play?', moodFast: '⚡ Fast', moodCalm: '🌿 Calm', moodTwo: '👥 Two players', moodThink: '🧠 Thinking',
     dailyT: '🌍 Daily challenge', dailyScore: (n, g) => 'Score ' + n + ' today in “' + g + '”', dailyLevel: (n, g) => 'Reach level ' + n + ' today in “' + g + '”', dailyDone: '🏅 Done!', dailyGo: '▶ Try it',
     newTag: 'NEW',
     cards: {
@@ -2004,7 +2004,7 @@ const DICT = {
       'countdown': 'Días que faltan para tu cumpleaños',
     },
     rand: '🎲 Al azar',
-    moodQ: '¿A qué jugamos?', moodSolo: '🙋 Estoy solo', moodFriend: '👥 Con un amigo', moodCalm: '🌿 Algo tranquilo', moodFast: '⚡ ¡Adrenalina!',
+    moodQ: '¿A qué jugamos?', moodFast: '⚡ Rápido', moodCalm: '🌿 Tranquilo', moodTwo: '👥 Entre dos', moodThink: '🧠 Para pensar',
     dailyT: '🌍 Reto del día', dailyScore: (n, g) => 'Consigue hoy ' + n + ' en «' + g + '»', dailyLevel: (n, g) => 'Llega hoy al nivel ' + n + ' en «' + g + '»', dailyDone: '🏅 ¡Hecho!', dailyGo: '▶ Intentar',
     newTag: 'NUEVO',
     cards: {
@@ -2063,7 +2063,7 @@ const DICT = {
       'countdown': 'Jours restants avant ton anniversaire',
     },
     rand: '🎲 Au hasard',
-    moodQ: 'On joue à quoi ?', moodSolo: '🙋 Je suis seul', moodFriend: '👥 Avec un ami', moodCalm: '🌿 Un truc calme', moodFast: '⚡ De l’adrénaline !',
+    moodQ: 'On joue à quoi ?', moodFast: '⚡ Rapide', moodCalm: '🌿 Calme', moodTwo: '👥 À deux', moodThink: '🧠 Réfléchir',
     dailyT: '🌍 Défi du jour', dailyScore: (n, g) => 'Fais ' + n + ' aujourd’hui dans « ' + g + ' »', dailyLevel: (n, g) => 'Atteins le niveau ' + n + ' aujourd’hui dans « ' + g + ' »', dailyDone: '🏅 Fait !', dailyGo: '▶ Essayer',
     newTag: 'NOUVEAU',
     cards: {
@@ -2122,7 +2122,7 @@ const DICT = {
       'countdown': 'Tage bis zu deinem Geburtstag',
     },
     rand: '🎲 Zufall',
-    moodQ: 'Was spielen wir?', moodSolo: '🙋 Ich bin allein', moodFriend: '👥 Mit einem Freund', moodCalm: '🌿 Etwas Ruhiges', moodFast: '⚡ Adrenalin!',
+    moodQ: 'Was spielen wir?', moodFast: '⚡ Schnell', moodCalm: '🌿 Ruhig', moodTwo: '👥 Zu zweit', moodThink: '🧠 Nachdenken',
     dailyT: '🌍 Tages-Challenge', dailyScore: (n, g) => 'Hol heute ' + n + ' in „' + g + '“', dailyLevel: (n, g) => 'Erreiche heute Level ' + n + ' in „' + g + '“', dailyDone: '🏅 Geschafft!', dailyGo: '▶ Versuchen',
     newTag: 'NEU',
     cards: {
@@ -2181,7 +2181,7 @@ const DICT = {
       'countdown': 'たんじょうびまであとなんにち',
     },
     rand: '🎲 ランダム',
-    moodQ: 'なにであそぶ？', moodSolo: '🙋 ひとりで', moodFriend: '👥 ともだちと', moodCalm: '🌿 のんびりしたい', moodFast: '⚡ ドキドキしたい',
+    moodQ: 'なにであそぶ？', moodFast: '⚡ はやい', moodCalm: '🌿 のんびり', moodTwo: '👥 ふたりで', moodThink: '🧠 かんがえる',
     dailyT: '🌍 今日のチャレンジ', dailyScore: (n, g) => '今日「' + g + '」で' + n + 'をとろう', dailyLevel: (n, g) => '今日「' + g + '」でレベル' + n + 'までいこう', dailyDone: '🏅 クリア！', dailyGo: '▶ やってみる',
     newTag: '新',
     cards: {
@@ -2240,7 +2240,7 @@ const DICT = {
       'countdown': '离你的生日还有几天',
     },
     rand: '🎲 随机',
-    moodQ: '玩什么好呢？', moodSolo: '🙋 我一个人', moodFriend: '👥 和朋友一起', moodCalm: '🌿 想玩安静的', moodFast: '⚡ 想要刺激的',
+    moodQ: '玩什么好呢？', moodFast: '⚡ 快节奏', moodCalm: '🌿 安静', moodTwo: '👥 两个人', moodThink: '🧠 动脑',
     dailyT: '🌍 每日挑战', dailyScore: (n, g) => '今天在《' + g + '》拿到' + n, dailyLevel: (n, g) => '今天在《' + g + '》达到第' + n + '关', dailyDone: '🏅 完成！', dailyGo: '▶ 去试试',
     newTag: '新',
     cards: {
@@ -2299,7 +2299,7 @@ const DICT = {
       'countdown': 'Giorni che mancano al compleanno',
     },
     rand: '🎲 A caso',
-    moodQ: 'A cosa giochiamo?', moodSolo: '🙋 Sono da solo', moodFriend: '👥 Con un amico', moodCalm: '🌿 Qualcosa di tranquillo', moodFast: '⚡ Adrenalina!',
+    moodQ: 'A cosa giochiamo?', moodFast: '⚡ Veloce', moodCalm: '🌿 Tranquillo', moodTwo: '👥 In due', moodThink: '🧠 Da pensare',
     dailyT: '🌍 Sfida del giorno', dailyScore: (n, g) => 'Fai oggi ' + n + ' in «' + g + '»', dailyLevel: (n, g) => 'Arriva oggi al livello ' + n + ' in «' + g + '»', dailyDone: '🏅 Fatto!', dailyGo: '▶ Provaci',
     newTag: 'NEW',
     cards: {
@@ -2358,7 +2358,7 @@ const DICT = {
       'countdown': 'რამდენი დღეა დაბადების დღემდე',
     },
     rand: '🎲 შემთხვევითი',
-    moodQ: 'რა ვითამაშოთ?', moodSolo: '🙋 მარტო ვარ', moodFriend: '👥 მეგობართან ერთად', moodCalm: '🌿 რამე მშვიდი მინდა', moodFast: '⚡ ადრენალინი მინდა',
+    moodQ: 'რა ვითამაშოთ?', moodFast: '⚡ სწრაფი', moodCalm: '🌿 მშვიდი', moodTwo: '👥 ორნი', moodThink: '🧠 დასაფიქრებელი',
     dailyT: '🌍 დღის გამოწვევა', dailyScore: (n, g) => 'დღეს დააგროვე ' + n + ' თამაშში «' + g + '»', dailyLevel: (n, g) => 'დღეს მიაღწიე ' + n + ' დონეს თამაშში «' + g + '»', dailyDone: '🏅 შესრულებულია!', dailyGo: '▶ სცადე',
     newTag: 'NEW',
     cards: {
@@ -2417,7 +2417,7 @@ const DICT = {
       'countdown': 'जन्मदिन में कितने दिन बाकी',
     },
     rand: '🎲 कोई भी',
-    moodQ: 'क्या खेलें?', moodSolo: '🙋 मैं अकेला हूँ', moodFriend: '👥 दोस्त के साथ', moodCalm: '🌿 कुछ शांत चाहिए', moodFast: '⚡ एड्रेनालिन चाहिए',
+    moodQ: 'क्या खेलें?', moodFast: '⚡ तेज़', moodCalm: '🌿 शांत', moodTwo: '👥 दो लोग', moodThink: '🧠 सोचने वाला',
     dailyT: '🌍 आज की चुनौती', dailyScore: (n, g) => 'आज «' + g + '» में ' + n + ' बनाओ', dailyLevel: (n, g) => 'आज «' + g + '» में स्तर ' + n + ' तक पहुँचो', dailyDone: '🏅 हो गया!', dailyGo: '▶ आज़माओ',
     newTag: 'NEW',
     cards: {
@@ -2480,10 +2480,10 @@ function applyLang(lang) {
   });
   document.getElementById('navRand').textContent = d.rand;
   document.getElementById('moodQ').textContent = d.moodQ;
-  document.getElementById('moodSolo').textContent = d.moodSolo;
-  document.getElementById('moodFriend').textContent = d.moodFriend;
-  document.getElementById('moodCalm').textContent = d.moodCalm;
   document.getElementById('moodFast').textContent = d.moodFast;
+  document.getElementById('moodCalm').textContent = d.moodCalm;
+  document.getElementById('moodTwo').textContent = d.moodTwo;
+  document.getElementById('moodThink').textContent = d.moodThink;
   DL = { T: d.dailyT, score: d.dailyScore, level: d.dailyLevel, done: d.dailyDone, go: d.dailyGo };
   document.querySelectorAll('.game').forEach(card => {
     const c = d.cards[card.getAttribute('href')];
@@ -2641,42 +2641,42 @@ renderDaily();
 // ——— «Ի՞նչ խաղանք» զտիչը 💡 — Արենի միտքն է ———
 // Ամեն խաղ ունի պիտակներ. մենակ / ընկերոջ հետ / հանգիստ / ադրենալին
 const MOODS = {
-  './cat-jump/': ['solo', 'fast'],
-  './city-drive/': ['solo', 'fast'],
-  './piano/': ['solo', 'friend', 'calm'],
-  './rocket/': ['solo', 'fast'],
-  './memory/': ['solo', 'calm'],
-  './fishing/': ['solo', 'calm'],
-  './duel/': ['friend', 'fast'],
-  './maze/': ['solo', 'calm'],
-  './tower/': ['solo', 'calm'],
-  './moles/': ['solo', 'fast'],
-  './beat/': ['solo', 'fast'],
-  './ninja/': ['solo', 'fast'],
-  './men/': ['solo', 'fast'],
-  './runner/': ['solo', 'fast'],
-  './pipes/': ['solo', 'calm'],
-  './words/': ['solo', 'calm'],
-  './blocks/': ['solo', 'fast'],
-  './drums/': ['solo', 'friend', 'calm'],
-  './map/': ['solo', 'calm'],
-  './story/': ['solo', 'calm'],
-  './bridge/': ['solo', 'calm'],
-  './detective/': ['solo', 'calm'],
-  './elevator/': ['solo', 'calm'],
-  './traffic/': ['solo', 'fast'],
-  './garden/': ['solo', 'calm'],
-  './bank/': ['solo', 'fast'],
-  './camera/': ['solo', 'calm'],
-  './wire/': ['solo', 'calm'],
-  './wind/': ['solo', 'calm'],
-  './domino/': ['solo', 'calm'],
-  './copy/': ['solo', 'calm'],
-  './alphabet/': ['solo', 'calm'],
-  './nardi/': ['solo', 'calm'],
-  './lavash/': ['solo', 'fast'],
-  './dance/': ['solo', 'fast'],
-  './sasuntsi/': ['solo', 'fast'],
+  './cat-jump/': ['fast'],
+  './city-drive/': ['fast'],
+  './piano/': ['calm', 'two'],
+  './rocket/': ['fast'],
+  './memory/': ['calm', 'think'],
+  './fishing/': ['calm'],
+  './duel/': ['two', 'fast'],
+  './maze/': ['calm', 'think'],
+  './tower/': ['fast'],
+  './moles/': ['fast'],
+  './beat/': ['fast', 'think'],
+  './ninja/': ['fast'],
+  './men/': ['think', 'fast'],
+  './runner/': ['fast'],
+  './pipes/': ['calm', 'think'],
+  './words/': ['calm', 'think'],
+  './blocks/': ['think', 'calm'],
+  './drums/': ['calm', 'two'],
+  './map/': ['calm', 'think'],
+  './story/': ['calm'],
+  './bridge/': ['think', 'calm'],
+  './detective/': ['think', 'calm'],
+  './elevator/': ['fast'],
+  './traffic/': ['fast'],
+  './garden/': ['calm', 'think'],
+  './bank/': ['fast'],
+  './camera/': ['calm'],
+  './wire/': ['think', 'calm'],
+  './wind/': ['think', 'calm'],
+  './domino/': ['think', 'calm'],
+  './copy/': ['think', 'fast'],
+  './alphabet/': ['think', 'calm'],
+  './nardi/': ['think', 'two'],
+  './lavash/': ['fast'],
+  './dance/': ['fast'],
+  './sasuntsi/': ['fast'],
   // time-ն ու museum-ը խաղ չեն — զտելիս թաքնվում են
 };
 let mood = null;

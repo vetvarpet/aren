@@ -55,7 +55,25 @@
     '#ggLoad svg{width:96px;height:96px;animation:ggSpin 1.1s linear infinite}',
     '@keyframes ggSpin{to{transform:rotate(360deg)}}',
     '#ggLoad.out{animation:ggFade 0.32s forwards}',
-    '@keyframes ggFade{to{opacity:0;visibility:hidden}}'
+    '@keyframes ggFade{to{opacity:0;visibility:hidden}}',
+    // 📖 «Ինչպես խաղալ» քարտը — առաջին անգամ մտնողի համար
+    '.gg-how[hidden]{display:none!important}',
+    '.gg-how{position:fixed;inset:0;z-index:135;background:rgba(10,12,28,0.86);display:flex;align-items:center;',
+    'justify-content:center;padding:20px;font-family:"Arial Rounded MT Bold","Noto Sans Armenian",Arial,sans-serif}',
+    '.gg-how-card{background:#1d1d3f;border:2px solid #ffd166;border-radius:18px;padding:20px 18px;max-width:340px;width:100%;color:#f5eede}',
+    '.gg-how-card h3{margin:0 0 12px;color:#ffd166;font-size:1.1rem;text-align:center}',
+    '.gg-how-card ol{margin:0;padding-left:22px;font-size:0.92rem;line-height:1.55}',
+    '.gg-how-card li{margin-bottom:6px}',
+    '.gg-how-diff{margin:14px 0 14px;text-align:center;font-size:0.82rem;color:#9a9ec7;letter-spacing:1px}',
+    '.gg-how-ok{width:100%;padding:12px;border-radius:12px;border:none;background:#ffd166;color:#2e2410;',
+    'font-family:inherit;font-weight:bold;font-size:0.95rem;cursor:pointer}',
+    // ⭐ աստղիկները քարտի անկյունում
+    '.gg-stars{position:absolute;left:8px;bottom:8px;z-index:2;font-size:0.7rem;letter-spacing:1px;',
+    'background:rgba(10,12,28,0.7);border-radius:999px;padding:3px 8px;line-height:1}',
+    // ▶ շարունակել վերջին խաղը
+    '.gg-cont{display:block;margin:0 0 18px;padding:12px 16px;border-radius:14px;text-align:center;text-decoration:none;',
+    'background:linear-gradient(90deg,#ffd166,#ffe9a8);color:#2e2410;font-weight:bold;font-size:0.92rem;',
+    'font-family:"Arial Rounded MT Bold","Noto Sans Armenian",Arial,sans-serif}'
   ].join('');
   document.head.appendChild(css);
 
@@ -271,6 +289,222 @@
   (document.body || document.documentElement).appendChild(bar);
 
   // Դրսից էլ կարելի է կանչել (թեստերի ու ապագա խաղերի համար)
+
+  // ——————————————————————————————————————————————————————
+  //  📖 «ԻՆՉՊԵՍ ԽԱՂԱԼ» · ⭐ ԴԺՎԱՐՈՒԹՅՈՒՆ · ▶ ՇԱՐՈՒՆԱԿԵԼ
+  //  Արենի պատվերն է։ Երեք տողը հավաքվում է ընդհանուր բառակազմից,
+  //  որ 38 խաղ × 11 լեզու չլինի անհնար բան — ամեն խաղ ընտրում է 3 բանալի։
+  // ——————————————————————————————————————————————————————
+  var PH = {
+    hy: { tap:'Հպիր էկրանին', btn:'Հպիր ներքևի կոճակներին', swipe:'Սահեցրու մատով', drag:'Քաշիր մատով',
+          hold:'Պահիր մատդ սեղմած', aim:'Քաշիր ետ ու բաց թող՝ նշան բռնելու համար', steer:'Ձախ ու աջ կոճակներով ուղղիր',
+          two:'Երկուսով, մեկ հեռախոսով՝ ամեն մեկն իր կողմը', collect:'Հավաքիր որքան կարող ես',
+          avoid:'Խուսափիր խոչընդոտներից', survive:'Ապրիր որքան կարող ես երկար', time:'Ժամանակը սահմանափակ է',
+          levels:'Ամեն մակարդակ ավելի դժվար է', match:'Գտիր զույգերը', repeat:'Կրկնիր հերթականությունը',
+          build:'Կառուցիր որքան բարձր', think:'Շտապելու կարիք չկա — մտածիր', lives:'Ունես 3 կյանք',
+          rec:'Ռեկորդդ ինքն է պահվում', faster:'Որքան առաջ գնաս, այնքան արագ է', rhythm:'Պահիր ռիթմը',
+          free:'Ազատ խաղա — հաղթող ու պարտվող չկա' },
+    ru: { tap:'Нажимай на экран', btn:'Нажимай на кнопки внизу', swipe:'Проводи пальцем', drag:'Тяни пальцем',
+          hold:'Держи палец нажатым', aim:'Оттяни назад и отпусти, чтобы прицелиться', steer:'Управляй кнопками влево-вправо',
+          two:'Вдвоём на одном телефоне: каждому своя сторона', collect:'Собери как можно больше',
+          avoid:'Уворачивайся от препятствий', survive:'Продержись как можно дольше', time:'Время ограничено',
+          levels:'Каждый уровень сложнее', match:'Найди пары', repeat:'Повтори последовательность',
+          build:'Строй как можно выше', think:'Спешить некуда — подумай', lives:'У тебя 3 жизни',
+          rec:'Рекорд сохраняется сам', faster:'Чем дальше, тем быстрее', rhythm:'Держи ритм',
+          free:'Играй свободно — тут нет проигравших' },
+    en: { tap:'Tap the screen', btn:'Tap the buttons below', swipe:'Swipe with your finger', drag:'Drag with your finger',
+          hold:'Hold your finger down', aim:'Pull back and let go to aim', steer:'Steer with the left and right buttons',
+          two:'Two players on one phone, one side each', collect:'Collect as much as you can',
+          avoid:'Dodge the obstacles', survive:'Last as long as you can', time:'The clock is running',
+          levels:'Every level is harder', match:'Find the pairs', repeat:'Repeat the sequence',
+          build:'Build as high as you can', think:'No rush — think it through', lives:'You have 3 lives',
+          rec:'Your best score saves itself', faster:'The further you go, the faster it gets', rhythm:'Keep the rhythm',
+          free:'Just play — nobody wins or loses' },
+    es: { tap:'Toca la pantalla', btn:'Toca los botones de abajo', swipe:'Desliza el dedo', drag:'Arrastra con el dedo',
+          hold:'Mantén el dedo pulsado', aim:'Tira hacia atrás y suelta para apuntar', steer:'Dirige con los botones izquierda y derecha',
+          two:'Dos jugadores en un móvil, cada uno su lado', collect:'Consigue todo lo que puedas',
+          avoid:'Esquiva los obstáculos', survive:'Aguanta lo máximo posible', time:'El tiempo corre',
+          levels:'Cada nivel es más difícil', match:'Encuentra las parejas', repeat:'Repite la secuencia',
+          build:'Construye lo más alto posible', think:'Sin prisa: piensa', lives:'Tienes 3 vidas',
+          rec:'Tu récord se guarda solo', faster:'Cuanto más avanzas, más rápido va', rhythm:'Mantén el ritmo',
+          free:'Juega libre: aquí nadie pierde' },
+    fr: { tap:'Touche l’écran', btn:'Touche les boutons en bas', swipe:'Glisse le doigt', drag:'Tire avec le doigt',
+          hold:'Garde le doigt appuyé', aim:'Tire en arrière et lâche pour viser', steer:'Dirige avec les boutons gauche et droite',
+          two:'À deux sur un téléphone, chacun son côté', collect:'Ramasse tout ce que tu peux',
+          avoid:'Évite les obstacles', survive:'Tiens le plus longtemps possible', time:'Le temps est compté',
+          levels:'Chaque niveau est plus dur', match:'Trouve les paires', repeat:'Répète la séquence',
+          build:'Construis le plus haut possible', think:'Rien ne presse — réfléchis', lives:'Tu as 3 vies',
+          rec:'Ton record se sauvegarde tout seul', faster:'Plus tu avances, plus ça accélère', rhythm:'Garde le rythme',
+          free:'Joue librement — pas de perdant ici' },
+    de: { tap:'Tippe auf den Bildschirm', btn:'Tippe auf die Knöpfe unten', swipe:'Wische mit dem Finger', drag:'Zieh mit dem Finger',
+          hold:'Halte den Finger gedrückt', aim:'Zieh zurück und lass los zum Zielen', steer:'Lenke mit den Knöpfen links und rechts',
+          two:'Zu zweit an einem Handy, jeder eine Seite', collect:'Sammle so viel du kannst',
+          avoid:'Weiche den Hindernissen aus', survive:'Halte so lange durch wie möglich', time:'Die Zeit läuft',
+          levels:'Jedes Level ist schwerer', match:'Finde die Paare', repeat:'Wiederhole die Reihenfolge',
+          build:'Bau so hoch wie möglich', think:'Keine Eile — denk nach', lives:'Du hast 3 Leben',
+          rec:'Dein Rekord speichert sich selbst', faster:'Je weiter du kommst, desto schneller wird es', rhythm:'Halte den Rhythmus',
+          free:'Spiel einfach — hier verliert niemand' },
+    ja: { tap:'がめんをタップ', btn:'したのボタンをタップ', swipe:'ゆびですべらせる', drag:'ゆびでひっぱる',
+          hold:'ゆびをおしたままに', aim:'うしろにひっぱってはなすとねらえる', steer:'ひだり・みぎのボタンでうごかす',
+          two:'ふたりで1だいのスマホ、それぞれのがわ', collect:'できるだけたくさんあつめよう',
+          avoid:'じゃまなものをよけよう', survive:'できるだけながくいきのころう', time:'じかんげんていだよ',
+          levels:'レベルごとにむずかしくなる', match:'おなじペアをさがそう', repeat:'じゅんばんをまねしよう',
+          build:'できるだけたかくつもう', think:'いそがなくていい、かんがえよう', lives:'ライフは3つ',
+          rec:'きろくはじどうでほぞんされる', faster:'すすむほどはやくなる', rhythm:'リズムをキープ',
+          free:'じゆうにあそんでね。かちまけはないよ' },
+    zh: { tap:'点一下屏幕', btn:'点下面的按钮', swipe:'用手指滑动', drag:'用手指拖',
+          hold:'按住不放', aim:'往后拉再放开来瞄准', steer:'用左右按钮控制',
+          two:'两个人一部手机，各占一边', collect:'尽量多收集',
+          avoid:'躲开障碍', survive:'坚持得越久越好', time:'时间有限',
+          levels:'每一关都更难', match:'找出成对的', repeat:'照着顺序重复',
+          build:'尽量往高处搭', think:'不用急，慢慢想', lives:'你有 3 条命',
+          rec:'纪录会自动保存', faster:'走得越远越快', rhythm:'跟上节奏',
+          free:'随便玩，没有输赢' },
+    it: { tap:'Tocca lo schermo', btn:'Tocca i pulsanti in basso', swipe:'Scorri col dito', drag:'Trascina col dito',
+          hold:'Tieni il dito premuto', aim:'Tira indietro e lascia per mirare', steer:'Guida coi pulsanti sinistra e destra',
+          two:'In due su un telefono, ognuno il suo lato', collect:'Raccogli più che puoi',
+          avoid:'Schiva gli ostacoli', survive:'Resisti il più a lungo possibile', time:'Il tempo scorre',
+          levels:'Ogni livello è più difficile', match:'Trova le coppie', repeat:'Ripeti la sequenza',
+          build:'Costruisci più in alto che puoi', think:'Nessuna fretta: ragiona', lives:'Hai 3 vite',
+          rec:'Il tuo record si salva da solo', faster:'Più vai avanti, più diventa veloce', rhythm:'Tieni il ritmo',
+          free:'Gioca libero: qui nessuno perde' },
+    ka: { tap:'შეეხე ეკრანს', btn:'შეეხე ქვედა ღილაკებს', swipe:'გადაასრიალე თითი', drag:'გაათრიე თითით',
+          hold:'დააჭირე და გეჭიროს', aim:'გამოქაჩე უკან და გაუშვი დასამიზნებლად', steer:'მართე მარცხენა და მარჯვენა ღილაკებით',
+          two:'ორნი ერთ ტელეფონზე, თითოეულს თავისი მხარე', collect:'შეაგროვე რაც შეიძლება მეტი',
+          avoid:'აარიდე თავი დაბრკოლებებს', survive:'გაძელი რაც შეიძლება დიდხანს', time:'დრო შეზღუდულია',
+          levels:'ყოველი დონე უფრო რთულია', match:'იპოვე წყვილები', repeat:'გაიმეორე თანმიმდევრობა',
+          build:'ააშენე რაც შეიძლება მაღლა', think:'აჩქარება არ სჭირდება — იფიქრე', lives:'გაქვს 3 სიცოცხლე',
+          rec:'რეკორდი თავად ინახება', faster:'რაც უფრო შორს წახვალ, მით უფრო სწრაფია', rhythm:'დაიცავი რიტმი',
+          free:'უბრალოდ ითამაშე — აქ წაგებული არაა' },
+    hi: { tap:'स्क्रीन को छुओ', btn:'नीचे के बटन दबाओ', swipe:'उंगली से स्वाइप करो', drag:'उंगली से खींचो',
+          hold:'उंगली दबाए रखो', aim:'पीछे खींचकर छोड़ो, निशाना लगेगा', steer:'बाएँ-दाएँ बटन से चलाओ',
+          two:'एक फ़ोन पर दो खिलाड़ी, हर एक का अपना हिस्सा', collect:'जितना हो सके इकट्ठा करो',
+          avoid:'रुकावटों से बचो', survive:'जितनी देर हो सके टिके रहो', time:'समय सीमित है',
+          levels:'हर लेवल और मुश्किल है', match:'जोड़े ढूँढो', repeat:'क्रम दोहराओ',
+          build:'जितना ऊँचा हो सके बनाओ', think:'जल्दी नहीं है — सोचो', lives:'तुम्हारे पास 3 जान हैं',
+          rec:'तुम्हारा रिकॉर्ड अपने आप सेव होता है', faster:'जितना आगे जाओगे उतना तेज़ होगा', rhythm:'ताल बनाए रखो',
+          free:'बस खेलो — यहाँ कोई हारता नहीं' }
+  };
+  var P = PH[lang] || PH.hy;
+
+  // Ամեն խաղ՝ 3 բանալի ու դժվարության աստղեր (1–3)
+  var GAMES = {
+    'cat-jump':   { h:['tap','avoid','faster'],        s:1 },
+    'city-drive': { h:['steer','collect','levels'],    s:2 },
+    'piano':      { h:['tap','free','rhythm'],         s:1 },
+    'rocket':     { h:['drag','collect','lives'],      s:2 },
+    'memory':     { h:['tap','match','think'],         s:1 },
+    'fishing':    { h:['tap','collect','time'],        s:1 },
+    'duel':       { h:['two','btn','free'],            s:1 },
+    'maze':       { h:['drag','levels','think'],       s:2 },
+    'tower':      { h:['tap','build','faster'],        s:2 },
+    'moles':      { h:['tap','collect','time'],        s:1 },
+    'beat':       { h:['tap','rhythm','rec'],          s:2 },
+    'ninja':      { h:['tap','avoid','faster'],        s:2 },
+    'men':        { h:['btn','repeat','levels'],       s:2 },
+    'runner':     { h:['tap','avoid','faster'],        s:2 },
+    'pipes':      { h:['tap','think','levels'],        s:2 },
+    'blocks':     { h:['swipe','collect','think'],     s:2 },
+    'words':      { h:['tap','think','levels'],        s:2 },
+    'drums':      { h:['tap','free','rhythm'],         s:1 },
+    'map':        { h:['tap','think','collect'],       s:1 },
+    'story':      { h:['tap','think','free'],          s:1 },
+    'bridge':     { h:['hold','think','levels'],       s:3 },
+    'detective':  { h:['tap','think','time'],          s:2 },
+    'elevator':   { h:['tap','collect','faster'],      s:2 },
+    'traffic':    { h:['tap','avoid','faster'],        s:3 },
+    'garden':     { h:['tap','think','collect'],       s:1 },
+    'bank':       { h:['tap','collect','time'],        s:2 },
+    'camera':     { h:['tap','collect','think'],       s:1 },
+    'wire':       { h:['drag','think','levels'],       s:2 },
+    'wind':       { h:['drag','think','levels'],       s:3 },
+    'domino':     { h:['tap','think','levels'],        s:2 },
+    'copy':       { h:['tap','repeat','levels'],       s:2 },
+    'alphabet':   { h:['btn','think','rec'],           s:1 },
+    'nardi':      { h:['tap','think','free'],          s:2 },
+    'lavash':     { h:['tap','time','faster'],         s:2 },
+    'dance':      { h:['btn','repeat','rhythm'],       s:2 },
+    'sasuntsi':   { h:['aim','avoid','lives'],         s:3 }
+  };
+
+  var HOW_T = {
+    hy: { t:'Ինչպես խաղալ', ok:'Հասկացա', diff:'Դժվարություն', cont:'▶ Շարունակել՝ ' },
+    ru: { t:'Как играть', ok:'Понятно', diff:'Сложность', cont:'▶ Продолжить: ' },
+    en: { t:'How to play', ok:'Got it', diff:'Difficulty', cont:'▶ Continue: ' },
+    es: { t:'Cómo jugar', ok:'Entendido', diff:'Dificultad', cont:'▶ Seguir: ' },
+    fr: { t:'Comment jouer', ok:'Compris', diff:'Difficulté', cont:'▶ Continuer : ' },
+    de: { t:'So wird gespielt', ok:'Verstanden', diff:'Schwierigkeit', cont:'▶ Weiter: ' },
+    ja: { t:'あそびかた', ok:'わかった', diff:'むずかしさ', cont:'▶ つづきから：' },
+    zh: { t:'怎么玩', ok:'知道了', diff:'难度', cont:'▶ 继续：' },
+    it: { t:'Come si gioca', ok:'Capito', diff:'Difficoltà', cont:'▶ Continua: ' },
+    ka: { t:'როგორ ვითამაშოთ', ok:'გასაგებია', diff:'სირთულე', cont:'▶ გაგრძელება: ' },
+    hi: { t:'कैसे खेलें', ok:'समझ गया', diff:'कठिनाई', cont:'▶ जारी रखो: ' }
+  };
+  var H = HOW_T[lang] || HOW_T.hy;
+
+  // Ո՞ր խաղի էջում ենք — թղթապանակի անունով
+  function folderOf(path) {
+    var parts = path.split('/').filter(function (x) { return x && x.indexOf('.html') < 0; });
+    for (var i = parts.length - 1; i >= 0; i--) if (GAMES[parts[i]]) return parts[i];
+    return null;
+  }
+  var stars = function (n) { return '⭐'.repeat(n) + '☆'.repeat(3 - n); };
+
+  if (!isPortal) {
+    // ——— խաղի էջ. հիշում ենք վերջինը ու առաջին անգամ ցույց ենք տալիս կանոնները ———
+    var folder = folderOf(location.pathname);
+    if (folder) {
+      ls.set('aren-last-game', folder);
+      var seenKey = 'aren-how-' + folder;
+      var box = document.createElement('div');
+      box.className = 'gg-how';
+      box.innerHTML = '<div class="gg-how-card"><h3></h3><ol></ol>'
+        + '<div class="gg-how-diff"></div><button class="gg-how-ok"></button></div>';
+      box.querySelector('h3').textContent = H.t;
+      var ol = box.querySelector('ol');
+      GAMES[folder].h.forEach(function (k) {
+        var li = document.createElement('li'); li.textContent = P[k] || k; ol.appendChild(li);
+      });
+      box.querySelector('.gg-how-diff').textContent = H.diff + ' ' + stars(GAMES[folder].s);
+      var okBtn = box.querySelector('.gg-how-ok');
+      okBtn.textContent = H.ok;
+      var closeHow = function () { box.hidden = true; ls.set(seenKey, '1'); };
+      okBtn.addEventListener('pointerdown', function (e) { e.preventDefault(); closeHow(); });
+      box.hidden = ls.get(seenKey, '0') === '1';
+      document.body.appendChild(box);
+
+      // «?» կոճակը — ուզածդ պահին նորից կարդալու համար
+      var qb = document.createElement('button');
+      qb.className = 'gg-how-btn'; qb.textContent = '?'; qb.title = H.t;
+      qb.addEventListener('pointerdown', function (e) { e.preventDefault(); box.hidden = false; });
+      bar.appendChild(qb);
+    }
+  } else {
+    // ——— գլխավոր էջ. աստղիկներ քարտերին ու «շարունակել» կոճակ ———
+    var cards = document.querySelectorAll('a.game');
+    if (cards.length > 5) {
+      Array.prototype.forEach.call(cards, function (a) {
+        var f = folderOf(a.getAttribute('href') || '');
+        if (!f) return;
+        var cov = a.querySelector('.cover');
+        if (!cov || cov.querySelector('.gg-stars')) return;
+        var sp = document.createElement('span');
+        sp.className = 'gg-stars'; sp.textContent = stars(GAMES[f].s);
+        cov.appendChild(sp);
+      });
+      var last = ls.get('aren-last-game', '');
+      if (last && GAMES[last]) {
+        var card = document.querySelector('a.game[href="./' + last + '/"]');
+        var nm = card ? (card.querySelector('h2') ? card.querySelector('h2').textContent.trim() : last) : last;
+        var cb = document.createElement('a');
+        cb.className = 'gg-cont'; cb.href = './' + last + '/';
+        cb.textContent = H.cont + nm;
+        var grid = document.querySelector('.grid');
+        if (grid && grid.parentNode) grid.parentNode.insertBefore(cb, grid);
+      }
+    }
+  }
+
   window.ggKit = {
     pause: setPause,
     isPaused: function () { return paused; },
