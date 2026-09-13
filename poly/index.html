@@ -51,7 +51,7 @@
 
 <div class="ov" id="menu">
   <h1 id="mT">Ոսկե Բազմանկյուն 🔺</h1>
-  <p id="mS">Հպիր պատկերին ու միավոր հավաքիր։ Ամեն 10 միավորը դառնում է 1 ոսկի, իսկ ամեն ոսկին՝ պատկերին նոր անկյուն։</p>
+  <p id="mS">Հպիր պատկերին ու միավոր հավաքիր։ Ամեն 10 միավորը դառնում է պատկերի նոր անկյուն՝ կետից մինչև միլիոնանկյուն։</p>
   <button id="startBtn">▶ Սկսել</button>
 </div>
 
@@ -66,58 +66,58 @@ let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 
 const TRL = {
-  hy: { t:'Ոսկե Բազմանկյուն 🔺', s:'Հպիր պատկերին ու միավոր հավաքիր։ Ամեն 10 միավորը դառնում է 1 ոսկի, իսկ ամեն ոսկին՝ պատկերին նոր անկյուն։',
-        go:'▶ Սկսել', pts:'միավոր', gold:'ոսկի', suffix:'-անկյուն',
+  hy: { t:'Ոսկե Բազմանկյուն 🔺', s:'Հպիր պատկերին ու միավոր հավաքիր։ Ամեն 10 միավորը դառնում է պատկերի նոր անկյուն՝ կետից մինչև միլիոնանկյուն։',
+        go:'▶ Սկսել', pts:'միավոր', gold:'անկյուն', suffix:'-անկյուն',
         N:['կետ','գիծ','եռանկյուն','քառակուսի','հնգանկյուն','վեցանկյուն','յոթանկյուն','ութանկյուն','իննանկյուն','տասնանկյուն'],
         u:{ tap:'💪 Ուժեղ հպում', cat:'🐱 Ոսկե կատու', rain:'✨ Ոսկե պահ' },
         lv:n=>'մակ. '+n, max:'ՄԱՔՍ', reset:'↺ Զրոյից' },
-  ru: { t:'Золотой Многоугольник 🔺', s:'Нажимай на фигуру и набирай очки. Каждые 10 очков — 1 золото, а каждое золото добавляет фигуре угол.',
-        go:'▶ Начать', pts:'очков', gold:'золота', suffix:'-угольник',
+  ru: { t:'Золотой Многоугольник 🔺', s:'Нажимай на фигуру и набирай очки. Каждые 10 очков дают фигуре новый угол — от точки до миллионоугольника.',
+        go:'▶ Начать', pts:'очков', gold:'углов', suffix:'-угольник',
         N:['точка','линия','треугольник','квадрат','пятиугольник','шестиугольник','семиугольник','восьмиугольник','девятиугольник','десятиугольник'],
         u:{ tap:'💪 Сильное нажатие', cat:'🐱 Золотой кот', rain:'✨ Золотой миг' },
         lv:n=>'ур. '+n, max:'МАКС', reset:'↺ С нуля' },
-  en: { t:'Golden Polygon 🔺', s:'Tap the shape to earn points. Every 10 points becomes 1 gold, and every gold adds a corner to the shape.',
-        go:'▶ Start', pts:'points', gold:'gold', suffix:'-gon',
+  en: { t:'Golden Polygon 🔺', s:'Tap the shape to earn points. Every 10 points becomes a new corner on the shape — from a point to a million-gon.',
+        go:'▶ Start', pts:'points', gold:'corners', suffix:'-gon',
         N:['point','line','triangle','square','pentagon','hexagon','heptagon','octagon','nonagon','decagon'],
         u:{ tap:'💪 Stronger tap', cat:'🐱 Golden cat', rain:'✨ Golden moment' },
         lv:n=>'lv '+n, max:'MAX', reset:'↺ From zero' },
-  es: { t:'Polígono Dorado 🔺', s:'Toca la figura y gana puntos. Cada 10 puntos son 1 oro, y cada oro le añade una esquina a la figura.',
-        go:'▶ Empezar', pts:'puntos', gold:'oro', suffix:'-ágono',
+  es: { t:'Polígono Dorado 🔺', s:'Toca la figura y gana puntos. Cada 10 puntos añaden una esquina nueva: del punto al millón de lados.',
+        go:'▶ Empezar', pts:'puntos', gold:'esquinas', suffix:'-ágono',
         N:['punto','línea','triángulo','cuadrado','pentágono','hexágono','heptágono','octágono','eneágono','decágono'],
         u:{ tap:'💪 Toque fuerte', cat:'🐱 Gato dorado', rain:'✨ Momento dorado' },
         lv:n=>'niv. '+n, max:'MÁX', reset:'↺ Desde cero' },
-  fr: { t:'Polygone Doré 🔺', s:'Touche la figure pour gagner des points. Chaque 10 points font 1 or, et chaque or ajoute un coin à la figure.',
-        go:'▶ Démarrer', pts:'points', gold:'or', suffix:'-gone',
+  fr: { t:'Polygone Doré 🔺', s:'Touche la figure pour gagner des points. Chaque 10 points ajoutent un coin à la figure : du point au million de côtés.',
+        go:'▶ Démarrer', pts:'points', gold:'coins', suffix:'-gone',
         N:['point','ligne','triangle','carré','pentagone','hexagone','heptagone','octogone','ennéagone','décagone'],
         u:{ tap:'💪 Touche puissante', cat:'🐱 Chat doré', rain:'✨ Instant doré' },
         lv:n=>'niv. '+n, max:'MAX', reset:'↺ Depuis zéro' },
-  de: { t:'Goldenes Vieleck 🔺', s:'Tippe die Figur an und sammle Punkte. Je 10 Punkte werden zu 1 Gold, und jedes Gold gibt der Figur eine Ecke dazu.',
-        go:'▶ Start', pts:'Punkte', gold:'Gold', suffix:'-eck',
+  de: { t:'Goldenes Vieleck 🔺', s:'Tippe die Figur an und sammle Punkte. Je 10 Punkte geben der Figur eine neue Ecke — vom Punkt bis zum Millioneneck.',
+        go:'▶ Start', pts:'Punkte', gold:'Ecken', suffix:'-eck',
         N:['Punkt','Linie','Dreieck','Quadrat','Fünfeck','Sechseck','Siebeneck','Achteck','Neuneck','Zehneck'],
         u:{ tap:'💪 Starker Tipp', cat:'🐱 Goldene Katze', rain:'✨ Goldener Moment' },
         lv:n=>'St. '+n, max:'MAX', reset:'↺ Von vorn' },
-  ja: { t:'ゴールデン・たかっけい 🔺', s:'かたちをタップしてポイントをためよう。10ポイントで1ゴールド、1ゴールドでかたちのかどが1つふえるよ。',
-        go:'▶ スタート', pts:'ポイント', gold:'ゴールド', suffix:'かっけい',
+  ja: { t:'ゴールデン・たかっけい 🔺', s:'かたちをタップしてポイントをためよう。10ポイントごとにかどが1つふえるよ。てんから100まんかっけいまで。',
+        go:'▶ スタート', pts:'ポイント', gold:'かど', suffix:'かっけい',
         N:['てん','せん','さんかっけい','せいほうけい','ごかっけい','ろっかっけい','ななかっけい','はちかっけい','きゅうかっけい','じゅっかっけい'],
         u:{ tap:'💪 つよいタップ', cat:'🐱 金のねこ', rain:'✨ 金のしゅんかん' },
         lv:n=>'Lv'+n, max:'マックス', reset:'↺ さいしょから' },
-  zh: { t:'黄金多边形 🔺', s:'点图形赚积分。每 10 积分变成 1 金币，每 1 金币给图形加一个角。',
-        go:'▶ 开始', pts:'分', gold:'金币', suffix:'边形',
+  zh: { t:'黄金多边形 🔺', s:'点图形赚积分。每 10 积分给图形加一个角 — 从一个点到一百万边形。',
+        go:'▶ 开始', pts:'分', gold:'个角', suffix:'边形',
         N:['点','线','三角形','正方形','五边形','六边形','七边形','八边形','九边形','十边形'],
         u:{ tap:'💪 更用力点', cat:'🐱 金猫', rain:'✨ 黄金时刻' },
         lv:n=>'等级'+n, max:'满级', reset:'↺ 从头开始' },
-  it: { t:'Poligono Dorato 🔺', s:'Tocca la figura e guadagna punti. Ogni 10 punti diventano 1 oro, e ogni oro aggiunge un angolo alla figura.',
-        go:'▶ Avvia', pts:'punti', gold:'oro', suffix:'-gono',
+  it: { t:'Poligono Dorato 🔺', s:'Tocca la figura e guadagna punti. Ogni 10 punti aggiungono un angolo alla figura: dal punto al milione di lati.',
+        go:'▶ Avvia', pts:'punti', gold:'angoli', suffix:'-gono',
         N:['punto','linea','triangolo','quadrato','pentagono','esagono','ettagono','ottagono','ennagono','decagono'],
         u:{ tap:'💪 Tocco forte', cat:'🐱 Gatto dorato', rain:'✨ Attimo dorato' },
         lv:n=>'liv. '+n, max:'MAX', reset:'↺ Da zero' },
-  ka: { t:'ოქროს მრავალკუთხედი 🔺', s:'შეეხე ფიგურას და დააგროვე ქულები. ყოველი 10 ქულა 1 ოქროა, ყოველი ოქრო კი ფიგურას ერთ კუთხეს ამატებს.',
-        go:'▶ დაწყება', pts:'ქულა', gold:'ოქრო', suffix:'-კუთხედი',
+  ka: { t:'ოქროს მრავალკუთხედი 🔺', s:'შეეხე ფიგურას და დააგროვე ქულები. ყოველი 10 ქულა ფიგურას ერთ კუთხეს ამატებს — წერტილიდან მილიონკუთხედამდე.',
+        go:'▶ დაწყება', pts:'ქულა', gold:'კუთხე', suffix:'-კუთხედი',
         N:['წერტილი','ხაზი','სამკუთხედი','კვადრატი','ხუთკუთხედი','ექვსკუთხედი','შვიდკუთხედი','რვაკუთხედი','ცხრაკუთხედი','ათკუთხედი'],
         u:{ tap:'💪 ძლიერი შეხება', cat:'🐱 ოქროს კატა', rain:'✨ ოქროს წამი' },
         lv:n=>'დონე '+n, max:'მაქს', reset:'↺ თავიდან' },
-  hi: { t:'गोल्डन बहुभुज 🔺', s:'आकृति को छूकर अंक कमाओ। हर 10 अंक 1 सोना बनते हैं, और हर सोना आकृति में एक कोना जोड़ता है।',
-        go:'▶ शुरू', pts:'अंक', gold:'सोना', suffix:'-भुज',
+  hi: { t:'गोल्डन बहुभुज 🔺', s:'आकृति को छूकर अंक कमाओ। हर 10 अंक आकृति में एक नया कोना जोड़ते हैं — बिंदु से दस लाख भुजाओं तक।',
+        go:'▶ शुरू', pts:'अंक', gold:'कोने', suffix:'-भुज',
         N:['बिंदु','रेखा','त्रिभुज','वर्ग','पंचभुज','षट्भुज','सप्तभुज','अष्टभुज','नवभुज','दशभुज'],
         u:{ tap:'💪 ज़ोरदार टैप', cat:'🐱 सुनहरी बिल्ली', rain:'✨ सुनहरा पल' },
         lv:n=>'स्तर '+n, max:'अधिकतम', reset:'↺ शून्य से' },
@@ -197,7 +197,7 @@ function buildShop() {
     if (lvl >= maxLvl) b.classList.add('max'); else if (can) b.classList.add('can');
     b.innerHTML = '<b></b><i></i>';
     b.querySelector('b').textContent = T.u[key];
-    b.querySelector('i').textContent = lvl >= maxLvl ? T.max : (T.lv(lvl + 1) + ' · ' + cost + ' 🪙');
+    b.querySelector('i').textContent = lvl >= maxLvl ? T.max : (T.lv(lvl + 1) + ' · ' + cost + ' 🔺');
     b.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       if (e.pointerType === 'mouse' && ghost()) return;
@@ -245,7 +245,7 @@ function refresh() {
   document.getElementById('nm').textContent = shapeName(n);
   document.getElementById('fill').style.width = (pts * 10) + '%';
   document.getElementById('ptsL').textContent = pts + '/10 ' + T.pts;
-  document.getElementById('goldL').textContent = gold + ' 🪙';
+  document.getElementById('goldL').textContent = gold + ' 🔺';
 }
 
 function tapAt(x, y) {

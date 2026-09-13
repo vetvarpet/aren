@@ -53,7 +53,7 @@ and iterating on the code together with Claude, one change at a time.
 | [`onelife`](./onelife/) | 💛 Golden Onelife (Մեկ Կյանք) | Ten levels, one life for all of them. Slip up and it starts from the first. |
 | [`slow`](./slow/) | 🐌 Golden Slow (Դանդաղ) | The slower you play, the more points. But you must finish within 60 seconds. |
 | [`swap`](./swap/) | 🔀 Golden Swap (Փոխանակ) | Every 10 seconds the game becomes a different game. One shared score. |
-| [`poly`](./poly/) | 🔺 Golden Polygon (Ոսկե Բազմանկյուն) | Tap to earn points. Every 10 points is 1 gold, and every gold adds a corner. From a point to a million-gon. |
+| [`poly`](./poly/) | 🔺 Golden Polygon (Ոսկե Բազմանկյուն) | Tap to earn points. Every 10 points adds a corner to the shape, from a point to a million-gon. |
 | [`quest`](./quest/) | 🗺️ Golden Quest (Ոսկե Արշավ) | One road through twelve games: finish the task at each stop and the road opens until the Golden Crown comes home |
 | [`timer`](./timer/) | ⏱️ Golden Timer (Ոսկե Ժամաչափ) | A homework timer: the cat runs along the track until the time is up |
 | [`dice`](./dice/) | 🎲 Golden Dice (Ոսկե Զառ) | One to three dice and a coin, for board games |
