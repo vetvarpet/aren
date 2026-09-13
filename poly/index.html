@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Բազմանկյուն 🔺 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #f6f4ee; overflow: hidden;
+               font-family: Arial, Helvetica, sans-serif; color: #2b3050; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  #top { position: fixed; top: 50px; left: 0; right: 0; z-index: 10; text-align: center; pointer-events: none; }
+  #num { font-size: 2.9rem; font-weight: bold; color: #2fbf8f; line-height: 1; letter-spacing: -1px; }
+  #nm { font-size: 0.9rem; letter-spacing: 2px; color: #6b7190; margin-top: 2px; }
+  #bar { position: fixed; top: 128px; left: 50%; transform: translateX(-50%); z-index: 10;
+         width: 74%; max-width: 330px; pointer-events: none; }
+  #bar .track { height: 12px; border-radius: 999px; background: rgba(43,48,80,0.1); overflow: hidden; }
+  #bar .fill { height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg,#e0a93c,#ffe08a); transition: width 0.12s; }
+  #bar .lbl { display: flex; justify-content: space-between; font-size: 0.76rem; margin-top: 5px; color: #4a5070; font-weight: bold; }
+  #shop { position: fixed; left: 0; right: 0; bottom: 12px; z-index: 12;
+          display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding: 0 10px; }
+  .up {
+    font-family: inherit; border-radius: 14px; padding: 9px 11px; cursor: pointer; min-width: 96px;
+    background: #fff; border: 2px solid #d8d4c6; color: #2b3050; text-align: center; line-height: 1.25;
+  }
+  .up b { display: block; font-size: 0.78rem; }
+  .up i { display: block; font-style: normal; font-size: 0.72rem; color: #b08327; font-weight: bold; margin-top: 2px; }
+  .up.can { border-color: #e0a93c; background: #fff8e6; }
+  .up.max { opacity: 0.5; }
+  #resetBtn { position: fixed; right: 10px; bottom: 12px; z-index: 13; display: none; }
+  .ov { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 24px; background: rgba(246,244,238,0.96); }
+  .ov[hidden] { display: none !important; }
+  .ov h1 { margin: 0 0 6px; font-size: 1.45rem; color: #2fbf8f; }
+  .ov p { margin: 0 0 18px; font-size: 0.92rem; line-height: 1.5; max-width: 330px; color: #4a5070; }
+  .ov button { font-family: inherit; font-size: 1rem; font-weight: bold; padding: 13px 30px;
+               border-radius: 14px; border: none; background: #2fbf8f; color: #fff; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:30;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="top"><div id="num">0</div><div id="nm"></div></div>
+<div id="bar">
+  <div class="track"><i class="fill" id="fill"></i></div>
+  <div class="lbl"><span id="ptsL">0</span><span id="goldL">0</span></div>
+</div>
+<div id="shop"></div>
+
+<div class="ov" id="menu">
+  <h1 id="mT">Ոսկե Բազմանկյուն 🔺</h1>
+  <p id="mS">Հպիր պատկերին ու միավոր հավաքիր։ Ամեն 10 միավորը դառնում է 1 ոսկի, իսկ ամեն ոսկին՝ պատկերին նոր անկյուն։</p>
+  <button id="startBtn">▶ Սկսել</button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ԲԱԶՄԱՆԿՅՈՒՆ 🔺 — Արենի միտքն է
+//  Հպում ես՝ միավոր ես վաստակում։ Ամեն 10 միավոր՝ 1 ոսկի։
+//  Ամեն ոսկի պատկերին նոր անկյուն է ավելացնում. կետից մինչև
+//  հազարանկյուն ու ավելի։ Ոսկով կարող ես ուժեղացումներ գնել։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'Ոսկե Բազմանկյուն 🔺', s:'Հպիր պատկերին ու միավոր հավաքիր։ Ամեն 10 միավորը դառնում է 1 ոսկի, իսկ ամեն ոսկին՝ պատկերին նոր անկյուն։',
+        go:'▶ Սկսել', pts:'միավոր', gold:'ոսկի', suffix:'-անկյուն',
+        N:['կետ','գիծ','եռանկյուն','քառակուսի','հնգանկյուն','վեցանկյուն','յոթանկյուն','ութանկյուն','իննանկյուն','տասնանկյուն'],
+        u:{ tap:'💪 Ուժեղ հպում', cat:'🐱 Ոսկե կատու', rain:'✨ Ոսկե պահ' },
+        lv:n=>'մակ. '+n, max:'ՄԱՔՍ', reset:'↺ Զրոյից' },
+  ru: { t:'Золотой Многоугольник 🔺', s:'Нажимай на фигуру и набирай очки. Каждые 10 очков — 1 золото, а каждое золото добавляет фигуре угол.',
+        go:'▶ Начать', pts:'очков', gold:'золота', suffix:'-угольник',
+        N:['точка','линия','треугольник','квадрат','пятиугольник','шестиугольник','семиугольник','восьмиугольник','девятиугольник','десятиугольник'],
+        u:{ tap:'💪 Сильное нажатие', cat:'🐱 Золотой кот', rain:'✨ Золотой миг' },
+        lv:n=>'ур. '+n, max:'МАКС', reset:'↺ С нуля' },
+  en: { t:'Golden Polygon 🔺', s:'Tap the shape to earn points. Every 10 points becomes 1 gold, and every gold adds a corner to the shape.',
+        go:'▶ Start', pts:'points', gold:'gold', suffix:'-gon',
+        N:['point','line','triangle','square','pentagon','hexagon','heptagon','octagon','nonagon','decagon'],
+        u:{ tap:'💪 Stronger tap', cat:'🐱 Golden cat', rain:'✨ Golden moment' },
+        lv:n=>'lv '+n, max:'MAX', reset:'↺ From zero' },
+  es: { t:'Polígono Dorado 🔺', s:'Toca la figura y gana puntos. Cada 10 puntos son 1 oro, y cada oro le añade una esquina a la figura.',
+        go:'▶ Empezar', pts:'puntos', gold:'oro', suffix:'-ágono',
+        N:['punto','línea','triángulo','cuadrado','pentágono','hexágono','heptágono','octágono','eneágono','decágono'],
+        u:{ tap:'💪 Toque fuerte', cat:'🐱 Gato dorado', rain:'✨ Momento dorado' },
+        lv:n=>'niv. '+n, max:'MÁX', reset:'↺ Desde cero' },
+  fr: { t:'Polygone Doré 🔺', s:'Touche la figure pour gagner des points. Chaque 10 points font 1 or, et chaque or ajoute un coin à la figure.',
+        go:'▶ Démarrer', pts:'points', gold:'or', suffix:'-gone',
+        N:['point','ligne','triangle','carré','pentagone','hexagone','heptagone','octogone','ennéagone','décagone'],
+        u:{ tap:'💪 Touche puissante', cat:'🐱 Chat doré', rain:'✨ Instant doré' },
+        lv:n=>'niv. '+n, max:'MAX', reset:'↺ Depuis zéro' },
+  de: { t:'Goldenes Vieleck 🔺', s:'Tippe die Figur an und sammle Punkte. Je 10 Punkte werden zu 1 Gold, und jedes Gold gibt der Figur eine Ecke dazu.',
+        go:'▶ Start', pts:'Punkte', gold:'Gold', suffix:'-eck',
+        N:['Punkt','Linie','Dreieck','Quadrat','Fünfeck','Sechseck','Siebeneck','Achteck','Neuneck','Zehneck'],
+        u:{ tap:'💪 Starker Tipp', cat:'🐱 Goldene Katze', rain:'✨ Goldener Moment' },
+        lv:n=>'St. '+n, max:'MAX', reset:'↺ Von vorn' },
+  ja: { t:'ゴールデン・たかっけい 🔺', s:'かたちをタップしてポイントをためよう。10ポイントで1ゴールド、1ゴールドでかたちのかどが1つふえるよ。',
+        go:'▶ スタート', pts:'ポイント', gold:'ゴールド', suffix:'かっけい',
+        N:['てん','せん','さんかっけい','せいほうけい','ごかっけい','ろっかっけい','ななかっけい','はちかっけい','きゅうかっけい','じゅっかっけい'],
+        u:{ tap:'💪 つよいタップ', cat:'🐱 金のねこ', rain:'✨ 金のしゅんかん' },
+        lv:n=>'Lv'+n, max:'マックス', reset:'↺ さいしょから' },
+  zh: { t:'黄金多边形 🔺', s:'点图形赚积分。每 10 积分变成 1 金币，每 1 金币给图形加一个角。',
+        go:'▶ 开始', pts:'分', gold:'金币', suffix:'边形',
+        N:['点','线','三角形','正方形','五边形','六边形','七边形','八边形','九边形','十边形'],
+        u:{ tap:'💪 更用力点', cat:'🐱 金猫', rain:'✨ 黄金时刻' },
+        lv:n=>'等级'+n, max:'满级', reset:'↺ 从头开始' },
+  it: { t:'Poligono Dorato 🔺', s:'Tocca la figura e guadagna punti. Ogni 10 punti diventano 1 oro, e ogni oro aggiunge un angolo alla figura.',
+        go:'▶ Avvia', pts:'punti', gold:'oro', suffix:'-gono',
+        N:['punto','linea','triangolo','quadrato','pentagono','esagono','ettagono','ottagono','ennagono','decagono'],
+        u:{ tap:'💪 Tocco forte', cat:'🐱 Gatto dorato', rain:'✨ Attimo dorato' },
+        lv:n=>'liv. '+n, max:'MAX', reset:'↺ Da zero' },
+  ka: { t:'ოქროს მრავალკუთხედი 🔺', s:'შეეხე ფიგურას და დააგროვე ქულები. ყოველი 10 ქულა 1 ოქროა, ყოველი ოქრო კი ფიგურას ერთ კუთხეს ამატებს.',
+        go:'▶ დაწყება', pts:'ქულა', gold:'ოქრო', suffix:'-კუთხედი',
+        N:['წერტილი','ხაზი','სამკუთხედი','კვადრატი','ხუთკუთხედი','ექვსკუთხედი','შვიდკუთხედი','რვაკუთხედი','ცხრაკუთხედი','ათკუთხედი'],
+        u:{ tap:'💪 ძლიერი შეხება', cat:'🐱 ოქროს კატა', rain:'✨ ოქროს წამი' },
+        lv:n=>'დონე '+n, max:'მაქს', reset:'↺ თავიდან' },
+  hi: { t:'गोल्डन बहुभुज 🔺', s:'आकृति को छूकर अंक कमाओ। हर 10 अंक 1 सोना बनते हैं, और हर सोना आकृति में एक कोना जोड़ता है।',
+        go:'▶ शुरू', pts:'अंक', gold:'सोना', suffix:'-भुज',
+        N:['बिंदु','रेखा','त्रिभुज','वर्ग','पंचभुज','षट्भुज','सप्तभुज','अष्टभुज','नवभुज','दशभुज'],
+        u:{ tap:'💪 ज़ोरदार टैप', cat:'🐱 सुनहरी बिल्ली', rain:'✨ सुनहरा पल' },
+        lv:n=>'स्तर '+n, max:'अधिकतम', reset:'↺ शून्य से' },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.getElementById('mT').textContent = T.t;
+document.getElementById('mS').textContent = T.s;
+document.getElementById('startBtn').textContent = T.go;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+// ——— վիճակը, որ պահվում է ———
+let pts = 0, gold = 0, goldEver = 0, lvTap = 0, lvCat = 0, hasRain = false, taps = 0;
+try {
+  const s = JSON.parse(localStorage.getItem('aren-poly-save') || 'null');
+  if (s) { pts = s.p || 0; gold = s.g || 0; goldEver = s.e || 0; lvTap = s.t || 0; lvCat = s.c || 0; hasRain = !!s.r; }
+} catch (e) {}
+let best = 0;
+try { best = Number(localStorage.getItem('aren-poly-best') || 0) || 0; } catch (e) {}
+function save() {
+  try {
+    localStorage.setItem('aren-poly-save', JSON.stringify({ p: pts, g: gold, e: goldEver, t: lvTap, c: lvCat, r: hasRain }));
+    if (goldEver > best) { best = goldEver; localStorage.setItem('aren-poly-best', String(best)); }
+  } catch (e) {}
+}
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.09, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.1));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.1));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+const cv = document.getElementById('cv'), cx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function fit() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+fit(); addEventListener('resize', fit);
+
+// ——— անկյունների անունը ———
+function sides() { return goldEver; }             // 0 ոսկի՝ դեռ ոչինչ, 1՝ կետ, 2՝ գիծ, 3՝ եռանկյուն…
+function shapeName(n) {
+  if (n <= 0) return '';
+  if (n <= 10) return T.N[n - 1].toUpperCase();
+  return n + T.suffix;
+}
+
+// ——— ուժեղացումները ———
+const UP = {
+  tap:  { max: 8,  cost: l => Math.round(5 * Math.pow(2.1, l)) },
+  cat:  { max: 6,  cost: l => Math.round(15 * Math.pow(2.3, l)) },
+  rain: { max: 1,  cost: () => 60 },
+};
+function tapValue() { return 1 + lvTap; }
+function catRate() { return lvCat; }              // միավոր վայրկյանում
+
+const shop = document.getElementById('shop');
+function buildShop() {
+  shop.textContent = '';
+  const mk = (key, lvl, maxLvl, cost) => {
+    const b = document.createElement('button');
+    b.className = 'up'; b.dataset.k = key;
+    const can = lvl < maxLvl && gold >= cost;
+    if (lvl >= maxLvl) b.classList.add('max'); else if (can) b.classList.add('can');
+    b.innerHTML = '<b></b><i></i>';
+    b.querySelector('b').textContent = T.u[key];
+    b.querySelector('i').textContent = lvl >= maxLvl ? T.max : (T.lv(lvl + 1) + ' · ' + cost + ' 🪙');
+    b.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (e.pointerType === 'mouse' && ghost()) return;
+      buy(key);
+    });
+    shop.appendChild(b);
+  };
+  mk('tap', lvTap, UP.tap.max, UP.tap.cost(lvTap));
+  mk('cat', lvCat, UP.cat.max, UP.cat.cost(lvCat));
+  mk('rain', hasRain ? 1 : 0, UP.rain.max, UP.rain.cost());
+}
+function buy(key) {
+  initAudio();
+  let lvl = key === 'tap' ? lvTap : (key === 'cat' ? lvCat : (hasRain ? 1 : 0));
+  const maxLvl = UP[key].max;
+  if (lvl >= maxLvl) return;
+  const cost = UP[key].cost(lvl);
+  if (gold < cost) { tone(220, 0.1, 'square', 0.06); return; }
+  gold -= cost;
+  if (key === 'tap') lvTap++; else if (key === 'cat') lvCat++; else hasRain = true;
+  tone(880, 0.16, 'triangle', 0.12);
+  try { navigator.vibrate && navigator.vibrate(25); } catch (e) {}
+  save(); buildShop(); refresh();
+}
+
+// ——— միավոր ու ոսկի ———
+let pops = [], coins = [], pulse = 0, shine = 0;
+function addPoints(n, x, y) {
+  pts += n;
+  let earned = 0;
+  while (pts >= 10) { pts -= 10; gold++; goldEver++; earned++; }
+  if (earned > 0) {
+    for (let i = 0; i < earned && i < 6; i++) coins.push({ x: x, y: y, t: 0, dx: (Math.random() - 0.5) * 90 });
+    shine = 0.6;
+    tone(1046, 0.18, 'triangle', 0.13);
+    try { navigator.vibrate && navigator.vibrate(18); } catch (e) {}
+    buildShop();
+  }
+  if (x !== undefined) pops.push({ x: x, y: y, t: 0, n: n });
+  refresh();
+}
+function refresh() {
+  const n = sides();
+  document.getElementById('num').textContent = String(n);
+  document.getElementById('nm').textContent = shapeName(n);
+  document.getElementById('fill').style.width = (pts * 10) + '%';
+  document.getElementById('ptsL').textContent = pts + '/10 ' + T.pts;
+  document.getElementById('goldL').textContent = gold + ' 🪙';
+}
+
+function tapAt(x, y) {
+  taps++;
+  let v = tapValue();
+  if (hasRain && taps % 25 === 0) { v *= 10; shine = 1; tone(1320, 0.2, 'triangle', 0.14); }
+  else tone(520 + (taps % 5) * 60, 0.05, 'sine', 0.07);
+  pulse = 1;
+  addPoints(v, x, y);
+  save();
+}
+
+let started = false;
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio();
+  if (!started) return;
+  const r = cv.getBoundingClientRect();
+  tapAt(e.clientX - r.left, e.clientY - r.top);
+});
+document.getElementById('startBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio(); started = true;
+  document.getElementById('menu').hidden = true;
+  buildShop(); refresh();
+  tone(700, 0.14, 'triangle');
+});
+
+// ——— նկարը ———
+let rot = 0, catT = 0;
+function draw(dt) {
+  cx.clearRect(0, 0, W, H);
+  cx.fillStyle = '#f6f4ee'; cx.fillRect(0, 0, W, H);
+
+  const cxp = W / 2, cyp = H * 0.5, R = Math.min(W, H) * 0.30 * (1 + pulse * 0.035);
+  const n = sides();
+
+  if (shine > 0) {
+    const g = cx.createRadialGradient(cxp, cyp, R * 0.2, cxp, cyp, R * 2);
+    g.addColorStop(0, 'rgba(255,224,138,' + (shine * 0.5) + ')');
+    g.addColorStop(1, 'rgba(255,224,138,0)');
+    cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+  }
+
+  if (n === 0) {
+    cx.strokeStyle = 'rgba(43,48,80,0.18)'; cx.lineWidth = 2; cx.setLineDash([6, 8]);
+    cx.beginPath(); cx.arc(cxp, cyp, R, 0, Math.PI * 2); cx.stroke();
+    cx.setLineDash([]);
+    return;
+  }
+  if (n === 1) {
+    cx.fillStyle = '#2fbf8f';
+    cx.beginPath(); cx.arc(cxp, cyp, 9, 0, Math.PI * 2); cx.fill();
+    return;
+  }
+
+  // գագաթները — շատ անկյուն ունեցողի դեպքում մի քանի հարյուրով ենք սահմանափակում
+  const drawN = Math.min(n, 260);
+  const V = [];
+  for (let i = 0; i < drawN; i++) {
+    const a = rot - Math.PI / 2 + i * Math.PI * 2 / drawN;
+    V.push({ x: cxp + Math.cos(a) * R, y: cyp + Math.sin(a) * R });
+  }
+
+  // ներսի լարերը — PolyPop-ի պես գեղեցիկ նախշ
+  if (drawN >= 5) {
+    const k = 2 + (n % (Math.max(2, Math.floor(drawN / 2) - 1)));
+    cx.strokeStyle = 'rgba(47,191,143,0.30)'; cx.lineWidth = 1;
+    cx.beginPath();
+    const lim = Math.min(drawN, 260);
+    for (let i = 0; i < lim; i++) {
+      const j = (i + k) % drawN;
+      cx.moveTo(V[i].x, V[i].y); cx.lineTo(V[j].x, V[j].y);
+    }
+    cx.stroke();
+    cx.strokeStyle = 'rgba(224,169,60,0.22)';
+    cx.beginPath();
+    for (let i = 0; i < lim; i += 2) {
+      const j = (i + Math.floor(drawN / 3)) % drawN;
+      cx.moveTo(V[i].x, V[i].y); cx.lineTo(V[j].x, V[j].y);
+    }
+    cx.stroke();
+  }
+
+  // եզրագիծը
+  cx.strokeStyle = '#2b3050'; cx.lineWidth = n > 60 ? 1.5 : 3; cx.lineJoin = 'round';
+  cx.beginPath();
+  cx.moveTo(V[0].x, V[0].y);
+  for (let i = 1; i < drawN; i++) cx.lineTo(V[i].x, V[i].y);
+  if (n > 2) cx.closePath();
+  cx.stroke();
+
+  if (n <= 40) {
+    cx.fillStyle = '#e0a93c';
+    for (const v of V) { cx.beginPath(); cx.arc(v.x, v.y, n > 20 ? 2.5 : 4, 0, Math.PI * 2); cx.fill(); }
+  }
+}
+
+function drawFx(dt) {
+  for (const p of pops) {
+    p.t += dt;
+    cx.globalAlpha = Math.max(0, 1 - p.t * 1.4);
+    cx.fillStyle = '#2fbf8f';
+    cx.font = 'bold 22px Arial'; cx.textAlign = 'center';
+    cx.fillText('+' + p.n, p.x, p.y - p.t * 60);
+    cx.globalAlpha = 1;
+  }
+  pops = pops.filter(p => p.t < 0.8);
+  for (const c of coins) {
+    c.t += dt;
+    const k = Math.min(1, c.t / 0.7);
+    const tx = W / 2 + 110, ty = 146;
+    const x = c.x + (tx - c.x) * k + c.dx * (1 - k) * 0.5;
+    const y = c.y + (ty - c.y) * k - Math.sin(k * Math.PI) * 60;
+    cx.fillStyle = '#e0a93c';
+    cx.beginPath(); cx.arc(x, y, 9 * (1 - k * 0.35), 0, Math.PI * 2); cx.fill();
+    cx.strokeStyle = '#b08327'; cx.lineWidth = 2; cx.stroke();
+  }
+  coins = coins.filter(c => c.t < 0.72);
+}
+
+let prev = 0;
+function loop(now) {
+  const dt = Math.min(0.033, (now - prev) / 1000 || 0); prev = now;
+  rot += dt * 0.18;
+  if (pulse > 0) pulse = Math.max(0, pulse - dt * 4);
+  if (shine > 0) shine = Math.max(0, shine - dt * 1.6);
+  // ոսկե կատուն ինքն է հպում
+  if (started && catRate() > 0) {
+    catT += dt * catRate();
+    while (catT >= 1) { catT -= 1; addPoints(1, W / 2, H * 0.5 + 40); save(); }
+  }
+  draw(dt); drawFx(dt);
+  requestAnimationFrame(loop);
+}
+refresh(); buildShop(); draw(0);
+requestAnimationFrame(loop);
+
+window.POLY = {
+  get pts() { return pts; }, get gold() { return gold; }, get goldEver() { return goldEver; },
+  get sides() { return sides(); }, get name() { return shapeName(sides()); },
+  get tapValue() { return tapValue(); }, get lvTap() { return lvTap; }, get lvCat() { return lvCat; },
+  get best() { return best; },
+  tap: (x, y) => tapAt(x === undefined ? W / 2 : x, y === undefined ? H / 2 : y),
+  begin: () => { started = true; document.getElementById('menu').hidden = true; buildShop(); refresh(); },
+  give: g => { gold += g; goldEver += g; buildShop(); refresh(); save(); },
+};
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
+</body>
+</html>

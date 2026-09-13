@@ -432,7 +432,8 @@
     'silence':     { h:['drag','think','levels'], s:3 },
     'onelife':     { h:['tap','think','levels'], s:3 },
     'slow':        { h:['drag','think','time'], s:2 },
-    'swap':        { h:['tap','collect','faster'], s:2 }
+    'swap':        { h:['tap','collect','faster'], s:2 },
+    'poly':        { h:['tap','collect','free'],    s:1 }
   };
 
   var HOW_T = {

@@ -290,6 +290,7 @@
   .c51 { background: linear-gradient(135deg, #1b2140, #3a2a52); }
   .c52 { background: linear-gradient(135deg, #1a3227, #3d6b4a); }
   .c53 { background: linear-gradient(135deg, #231a45, #3b4a2b); }
+  .c54 { background: linear-gradient(135deg, #f6f4ee, #dfe8e2); }
   .info { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
   .info h2 { font-size: 1.05rem; }
   .info .real { flex: 0 0 auto; color: var(--accent); font-size: 0.78rem; margin-top: -3px; }
@@ -1882,6 +1883,28 @@
       </div>
     </a>
 
+    <a class="game" href="./poly/">
+      <div class="cover c54">
+        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="300" height="140" fill="#f6f4ee"/>
+          <g stroke="#2fbf8f" stroke-width="1" opacity="0.45" fill="none">
+            <path d="M150 24 L214 62 L190 132 L110 132 L86 62 Z"/>
+            <path d="M150 24 L190 132 M150 24 L110 132 M214 62 L110 132 M214 62 L86 62 M190 132 L86 62"/>
+          </g>
+          <path d="M150 24 L214 62 L190 132 L110 132 L86 62 Z" stroke="#2b3050" stroke-width="3" fill="none" stroke-linejoin="round"/>
+          <g fill="#e0a93c"><circle cx="150" cy="24" r="5"/><circle cx="214" cy="62" r="5"/><circle cx="190" cy="132" r="5"/><circle cx="110" cy="132" r="5"/><circle cx="86" cy="62" r="5"/></g>
+          <circle cx="46" cy="40" r="13" fill="#e0a93c"/><circle cx="46" cy="40" r="13" fill="none" stroke="#b08327" stroke-width="3"/>
+          <circle cx="256" cy="106" r="10" fill="#e0a93c"/><circle cx="256" cy="106" r="10" fill="none" stroke="#b08327" stroke-width="2.5"/>
+        </svg>
+      <span class="new-tag">ՆՈՐ</span></div>
+      <div class="info">
+        <h2>Golden Polygon</h2>
+        <p class="real">Բազմանկյուն</p>
+        <p class="desc">Հպիր ու միավոր հավաքիր։ Ամեն 10 միավորը 1 ոսկի է, ամեն ոսկին՝ պատկերին նոր անկյուն։ Կետից մինչև միլիոնանկյուն։</p>
+        <div class="play">▶ Հպել</div>
+      </div>
+    </a>
+
     <a class="game" href="./time/">
       <div class="cover c26">
         <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -2099,6 +2122,7 @@ const DICT = {
       './onelife/': ['Одна Жизнь', 'Десять уровней, одна жизнь на всех. Ошибся — всё сначала.', '▶ Играть'],
       './slow/': ['Медленный', 'Чем медленнее играешь, тем больше очков. Но за 60 секунд надо доехать.', '▶ Играть'],
       './swap/': ['Подмена', 'Каждые 10 секунд игра становится другой игрой. Очки общие.', '▶ Играть'],
+      './poly/': ['Многоугольник', 'Нажимай и набирай очки. Каждые 10 очков — 1 золото, каждое золото добавляет фигуре угол. От точки до миллионоугольника.', '▶ Нажимать'],
       './time/': ['Машина времени', 'Вся история сайта — от первого летающего кота до сегодня, день за днём.', '▶ В путь'],
       './museum/': ['Музей', 'Место отдыха удалённых игр: от пирата до золотого котёнка. Соблюдай тишину 🤫', '▶ Войти'],
     },
@@ -2166,6 +2190,7 @@ const DICT = {
       './onelife/': ['One Life', 'Ten levels, one life for all of them. Slip up and it starts from the first.', '▶ Play'],
       './slow/': ['Slow', 'The slower you play, the more points. But you must finish within 60 seconds.', '▶ Play'],
       './swap/': ['Swap', 'Every 10 seconds the game becomes a different game. One shared score.', '▶ Play'],
+      './poly/': ['Polygon', 'Tap to earn points. Every 10 points is 1 gold, and every gold adds a corner. From a point to a million-gon.', '▶ Tap'],
       './time/': ['Time Machine', 'The whole story of the site — from the first flying cat to today, day by day.', '▶ Travel'],
       './museum/': ['Museum', 'The resting place of deleted games: from the pirate to the golden kitten. Keep quiet 🤫', '▶ Enter'],
     },
@@ -2233,6 +2258,7 @@ const DICT = {
       './onelife/': ['Una Vida', 'Diez niveles, una sola vida para todos. Si fallas, vuelves al primero.', '▶ Jugar'],
       './slow/': ['Lento', 'Cuanto más lento juegas, más puntos. Pero hay que llegar en 60 segundos.', '▶ Jugar'],
       './swap/': ['Cambiazo', 'Cada 10 segundos el juego se convierte en otro. Los puntos son comunes.', '▶ Jugar'],
+      './poly/': ['Polígono', 'Toca y gana puntos. Cada 10 puntos son 1 oro, y cada oro añade una esquina. Del punto al millón de lados.', '▶ Tocar'],
       './time/': ['Máquina del tiempo', 'Toda la historia del sitio, del primer gato volador hasta hoy, día a día.', '▶ Viajar'],
       './museum/': ['Museo', 'El descanso de los juegos borrados: del pirata al gatito dorado. Guarda silencio 🤫', '▶ Entrar'],
     },
@@ -2300,6 +2326,7 @@ const DICT = {
       './onelife/': ['Une Vie', 'Dix niveaux, une seule vie pour tous. Tu rates, tu repars du premier.', '▶ Jouer'],
       './slow/': ['Lent', 'Plus tu joues lentement, plus tu marques. Mais il faut finir en 60 secondes.', '▶ Jouer'],
       './swap/': ['Échange', 'Toutes les 10 secondes, le jeu devient un autre jeu. Un seul score.', '▶ Jouer'],
+      './poly/': ['Polygone', 'Touche et gagne des points. 10 points font 1 or, et chaque or ajoute un coin. Du point au million de côtés.', '▶ Toucher'],
       './time/': ['Machine à remonter le temps', 'Toute l’histoire du site, du premier chat volant à aujourd’hui, jour après jour.', '▶ Voyager'],
       './museum/': ['Musée', 'Le repos des jeux supprimés : du pirate au chaton doré. Silence, s’il te plaît 🤫', '▶ Entrer'],
     },
@@ -2367,6 +2394,7 @@ const DICT = {
       './onelife/': ['Ein Leben', 'Zehn Level, ein Leben für alle. Ein Fehler und es geht von vorn los.', '▶ Spielen'],
       './slow/': ['Langsam', 'Je langsamer du spielst, desto mehr Punkte. Aber in 60 Sekunden musst du ankommen.', '▶ Spielen'],
       './swap/': ['Tausch', 'Alle 10 Sekunden wird das Spiel zu einem anderen Spiel. Eine Punktzahl.', '▶ Spielen'],
+      './poly/': ['Vieleck', 'Tippe und sammle Punkte. Je 10 Punkte sind 1 Gold, jedes Gold gibt eine Ecke dazu. Vom Punkt bis zum Millioneneck.', '▶ Tippen'],
       './time/': ['Zeitmaschine', 'Die ganze Geschichte der Seite — von der ersten fliegenden Katze bis heute, Tag für Tag.', '▶ Reisen'],
       './museum/': ['Museum', 'Der Ruheort gelöschter Spiele: vom Piraten bis zum goldenen Kätzchen. Bitte leise 🤫', '▶ Eintreten'],
     },
@@ -2434,6 +2462,7 @@ const DICT = {
       './onelife/': ['いのちひとつ', '10レベル、いのちはぜんぶでひとつ。ミスしたらさいしょから。', '▶ あそぶ'],
       './slow/': ['ゆっくり', 'ゆっくりあそぶほどてんすうがふえる。でも60びょういないにゴールしてね。', '▶ あそぶ'],
       './swap/': ['いれかわり', '10びょうごとにゲームがべつのゲームになる。スコアはひとつ。', '▶ あそぶ'],
+      './poly/': ['たかっけい', 'タップしてポイントをためよう。10ポイントで1ゴールド、1ゴールドでかどが1つふえる。てんから100まんかっけいまで。', '▶ タップ'],
       './time/': ['タイムマシン', 'サイトのぜんぶの歴史：さいしょの飛びネコから今日まで、1日ずつ。', '▶ たびする'],
       './museum/': ['ミュージアム', 'けされたゲームのおやすみの場所：海賊から金のこねこまで。おしずかに 🤫', '▶ はいる'],
     },
@@ -2501,6 +2530,7 @@ const DICT = {
       './onelife/': ['一条命', '十关，一共只有一条命。失手就从第一关重来。', '▶ 玩'],
       './slow/': ['慢慢来', '玩得越慢分越多。但必须在 60 秒内到终点。', '▶ 玩'],
       './swap/': ['调包', '每 10 秒游戏就变成另一个游戏。分数共用。', '▶ 玩'],
+      './poly/': ['多边形', '点击赚积分。每 10 分是 1 金币，每 1 金币加一个角。从一个点到一百万边形。', '▶ 点击'],
       './time/': ['时光机', '网站的全部历史——从第一只飞猫到今天，一天一天看。', '▶ 出发'],
       './museum/': ['博物馆', '被删游戏的安息之地：从海盗到金色小猫。请保持安静 🤫', '▶ 进入'],
     },
@@ -2568,6 +2598,7 @@ const DICT = {
       './onelife/': ['Una Vita', 'Dieci livelli, una sola vita per tutti. Sbagli e si riparte dal primo.', '▶ Gioca'],
       './slow/': ['Lento', 'Più piano giochi, più punti fai. Ma devi arrivare in 60 secondi.', '▶ Gioca'],
       './swap/': ['Scambio', 'Ogni 10 secondi il gioco diventa un altro gioco. Un solo punteggio.', '▶ Gioca'],
+      './poly/': ['Poligono', 'Tocca e guadagna punti. Ogni 10 punti è 1 oro, e ogni oro aggiunge un angolo. Dal punto al milione di lati.', '▶ Tocca'],
       './time/': ['Macchina del tempo', 'Tutta la storia del sito — dal primo gatto volante a oggi, giorno per giorno.', '▶ Parti'],
       './museum/': ['Museo', 'Il luogo di riposo dei giochi cancellati: dal pirata al gattino dorato. Silenzio 🤫', '▶ Entra'],
     },
@@ -2635,6 +2666,7 @@ const DICT = {
       './onelife/': ['ერთი სიცოცხლე', 'ათი დონე, ერთი სიცოცხლე ყველასთვის. შეცდი — თავიდან.', '▶ თამაში'],
       './slow/': ['ნელი', 'რაც უფრო ნელა თამაშობ, მით მეტი ქულა. მაგრამ 60 წამში უნდა მიხვიდე.', '▶ თამაში'],
       './swap/': ['გაცვლა', 'ყოველ 10 წამში თამაში სხვა თამაშად იქცევა. ქულა საერთოა.', '▶ თამაში'],
+      './poly/': ['მრავალკუთხედი', 'შეეხე და დააგროვე ქულები. ყოველი 10 ქულა 1 ოქროა, ყოველი ოქრო კუთხეს ამატებს. წერტილიდან მილიონკუთხედამდე.', '▶ შეხება'],
       './time/': ['დროის მანქანა', 'საიტის მთელი ისტორია — პირველი მფრინავი კატიდან დღემდე, დღითი დღე.', '▶ გაემგზავრე'],
       './museum/': ['მუზეუმი', 'წაშლილი თამაშების დასასვენებელი ადგილი: მეკობრიდან ოქროს კატუნამდე. დაიცავი სიჩუმე 🤫', '▶ შედი'],
     },
@@ -2702,6 +2734,7 @@ const DICT = {
       './onelife/': ['एक जान', 'दस लेवल, सबके लिए एक ही जान। चूके तो पहले से।', '▶ खेलो'],
       './slow/': ['धीरे', 'जितना धीरे खेलोगे उतने ज़्यादा अंक। पर 60 सेकंड में पहुँचना है।', '▶ खेलो'],
       './swap/': ['अदला-बदली', 'हर 10 सेकंड में खेल दूसरा खेल बन जाता है। स्कोर एक ही।', '▶ खेलो'],
+      './poly/': ['बहुभुज', 'छूकर अंक कमाओ। हर 10 अंक 1 सोना, हर सोना एक कोना जोड़ता है। बिंदु से दस लाख भुजाओं तक।', '▶ छुओ'],
       './time/': ['टाइम मशीन', 'साइट की पूरी कहानी — पहली उड़ने वाली बिल्ली से आज तक, दिन-ब-दिन।', '▶ चलो'],
       './museum/': ['संग्रहालय', 'हटाए गए खेलों के आराम की जगह: समुद्री डाकू से सुनहरी बिल्ली तक। शांति रखो 🤫', '▶ अंदर जाओ'],
     },
@@ -2930,6 +2963,7 @@ const MOODS = {
   './onelife/': ['fast', 'think'],
   './slow/': ['calm', 'think'],
   './swap/': ['fast'],
+  './poly/': ['calm', 'fast'],
   // time-ն ու museum-ը խաղ չեն — զտելիս թաքնվում են
 };
 let mood = null;
