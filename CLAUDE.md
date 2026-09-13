@@ -33,3 +33,4 @@ Site owner and director: **Aren Aghbalyan (Արեն)**, age 10, in Armenia — s
 - New game checklist: portal card (+cover CSS class, ՆՈՐ tag, DICT ×10), trophies row + `REAL` names ×11, about.html timeline ×11 + game count words, README row, mood-filter tag in `MOODS`.
 - **`time/index.html` is the site's diary, and Aren decides when it is written.** Do not add entries on your own initiative and do not fold them into unrelated commits — he will tell you when it is time. When he asks, write dated `.ev` entries (`.ev big` + a `.tag` for milestones) and deploy them as their own change.
 - Deleted things go to the museum (`museum/`) as an exhibit — nothing is truly deleted, git remembers.
+- **Never write certificate numbers on the site** (`№ GG-…`) — the owner had them removed and asked that they never come back. Names, roles and dates only.
