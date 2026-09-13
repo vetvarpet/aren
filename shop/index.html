@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<title>Ոսկե Խանութ 🪙 · Golden Games</title>
+<style>
+  :root {
+    --bg: #12122b;
+    --card: #1d1d3f;
+    --ink: #eef0ff;
+    --dim: #9a9ec7;
+    --accent: #ffd166;
+    --accent2: #6ee7b7;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, Helvetica, sans-serif;
+    padding: 56px 14px 30px; min-height: 100vh; touch-action: manipulation;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; }
+  h1 { margin: 0 0 3px; font-size: 1.3rem; color: var(--accent); text-align: center; }
+  .sub { margin: 0 0 16px; font-size: 0.76rem; color: var(--dim); text-align: center; line-height: 1.5; }
+
+  /* 🪙 Դրամապանակը՝ ամենավերևում, որ միշտ երևա */
+  .purse {
+    background: linear-gradient(135deg, var(--card), rgba(255,209,102,0.14));
+    border: 2px solid var(--accent); border-radius: 18px;
+    padding: 14px 16px; text-align: center; margin-bottom: 12px;
+  }
+  .purse .big { font-size: 2.3rem; font-weight: bold; color: var(--accent); line-height: 1.1; }
+  .purse .lab { font-size: 0.72rem; color: var(--dim); letter-spacing: 0.04em; }
+  .purse .tot { font-size: 0.7rem; color: var(--dim); margin-top: 5px; }
+
+  /* 📖 Ինչպես վաստակել */
+  details.how {
+    background: var(--card); border: 2px solid rgba(255,255,255,0.12);
+    border-radius: 14px; padding: 10px 14px; margin-bottom: 20px; font-size: 0.78rem;
+  }
+  details.how summary { cursor: pointer; color: var(--accent2); font-size: 0.8rem; }
+  details.how ul { margin: 9px 0 2px; padding-left: 20px; line-height: 1.7; color: var(--dim); }
+
+  .secthead { display: flex; align-items: center; gap: 9px; margin: 22px 0 11px; }
+  .secthead h2 { margin: 0; font-size: 0.95rem; color: var(--accent); white-space: nowrap; }
+  .secthead .line { flex: 1; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; }
+  .note { font-size: 0.68rem; color: var(--dim); margin: -6px 0 11px; line-height: 1.45; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 11px; }
+  .item {
+    background: var(--card); border: 2px solid rgba(255,255,255,0.12); border-radius: 16px;
+    padding: 11px 10px 10px; display: flex; flex-direction: column; align-items: center; gap: 7px;
+    position: relative; overflow: hidden;
+  }
+  .item.on { border-color: var(--accent2); }
+  .item.goal { border-color: var(--accent); background: linear-gradient(160deg, var(--card), rgba(255,209,102,0.16)); }
+  .item .pv { width: 100%; height: 62px; display: flex; align-items: center; justify-content: center; }
+  .item .pv svg { width: 96px; height: 60px; }
+  .item .nm { font-size: 0.84rem; text-align: center; line-height: 1.25; }
+  .item .pr { font-size: 0.76rem; color: var(--accent); font-weight: bold; }
+  .item .pr.free { color: var(--dim); font-weight: normal; }
+  .item button {
+    width: 100%; padding: 9px 6px; border-radius: 11px; cursor: pointer;
+    font-family: inherit; font-size: 0.76rem; font-weight: bold;
+    border: 2px solid var(--accent); background: var(--accent); color: #2e2410;
+  }
+  .item button.owned { background: transparent; color: var(--accent2); border-color: var(--accent2); }
+  .item button.wearing { background: transparent; color: var(--dim); border-color: rgba(255,255,255,0.18); cursor: default; }
+  .item button.poor { background: transparent; color: var(--dim); border-color: rgba(255,255,255,0.18); }
+  .item button:active { transform: scale(0.95); }
+  .item .tag {
+    position: absolute; top: 0; right: 0; background: var(--accent); color: #2e2410;
+    font-size: 0.58rem; padding: 3px 8px; border-bottom-left-radius: 9px; letter-spacing: 0.05em;
+  }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 40;
+    background: var(--accent); color: #2e2410; font-weight: bold;
+    padding: 11px 20px; border-radius: 999px; font-size: 0.84rem; text-align: center;
+  }
+  #toast[hidden] { display: none !important; }
+  .back {
+    position: fixed; top: 10px; left: 10px; z-index: 30; color: var(--ink); text-decoration: none;
+    background: rgba(20,26,34,0.8); border: 2px solid rgba(255,255,255,0.4);
+    padding: 5px 12px; border-radius: 999px; font-size: 0.78rem;
+  }
+  footer { margin-top: 26px; text-align: center; font-size: 0.66rem; color: var(--dim); line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<a class="back" href="../" id="back">← Golden Games</a>
+
+<div class="wrap">
+  <h1 id="h1">Ոսկե Խանութ 🪙</h1>
+  <p class="sub" id="sub"></p>
+
+  <div class="purse">
+    <div class="lab" id="balL"></div>
+    <div class="big" id="bal">🪙 0</div>
+    <div class="tot" id="tot"></div>
+  </div>
+
+  <details class="how">
+    <summary id="howT"></summary>
+    <ul id="howL"></ul>
+  </details>
+
+  <div id="secs"></div>
+
+  <footer id="foot"></footer>
+</div>
+
+<div id="toast" hidden></div>
+
+<script>
+// ——————————————————————————————————————————————————————
+//  ՈՍԿԵ ԽԱՆՈՒԹ 🪙 — Արենի միտքն է
+//  «Քո 40 խաղը հիմա 40 առանձին կղզի են։ Խաղացողը մեկը խաղում է,
+//   դուրս գալիս, մոռանում։ Լուծումը՝ մեկ ընդհանուր ոսկի,
+//   որ կապում է բոլորը իրար»։
+//  Ոսկին վաստակվում է ԱՄԵՆ խաղում (տես gg-kit.js), ծախսվում՝ այստեղ։
+// ——————————————————————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'Ոսկե Խանութ 🪙', s:'Ամեն խաղում ոսկի ես վաստակում։ Այստեղ ծախսում ես այն։',
+        bal:'Քո ոսկին', tot:n=>'Ընդհանուր վաստակած՝ '+n+' 🪙',
+        howT:'📖 Ինչպե՞ս վաստակել ոսկի',
+        how:['Ամեն 10 միավոր նոր ռեկորդից՝ 1 🪙','Ամեն նոր մակարդակ՝ 3 🪙','Օրվա մարտահրավերը կատարեցիր՝ +20 🪙','Նոր գավաթ վերցրիր՝ +50 🪙'],
+        sHero:'🐱 Կերպարներ', sHeroN:'Կատվիկի վազքի խաղում',
+        sCar:'🏎 Մեքենայի ներկ', sCarN:'Golden Driver-ի երկու խաղում էլ',
+        sTheme:'🎨 Կայքի գույն', sThemeN:'Փոխում է գլխավոր էջերի տեսքը',
+        buy:'Գնել', use:'Հագնել', on:'✓ Հագած է', need:n=>'Պակասում է '+n,
+        ok:'Գնեցի՛ր 🎉', wear:'Հագա՛ր', poor:'Ոսկին դեռ չի հերիքում 😿',
+        goal:'ՆՊԱՏԱԿ', free:'Ձրի',
+        n:{ cat:'Կատվիկ', dog:'Շուն', ninja:'Նինձյա', robot:'Ռոբոտ', gold:'Ոսկե Կատվիկ',
+            cstd:'Սովորական', cblue:'Կապույտ', cpurple:'Մանուշակ', cfire:'Բոցավոր',
+            tstd:'Սովորական', tgold:'Ոսկե', tgreen:'Կանաչ', tspace:'Տիեզերական' },
+        foot:'Ամենամեծ նպատակը՝ Ոսկե Կատվիկը 1000 ոսկով։ Ամիսներ կպահանջվի հավաքելու 🐱' },
+  ru: { t:'Золотой Магазин 🪙', s:'В каждой игре ты зарабатываешь золото. Здесь ты его тратишь.',
+        bal:'Твоё золото', tot:n=>'Всего заработано: '+n+' 🪙',
+        howT:'📖 Как заработать золото',
+        how:['Каждые 10 очков нового рекорда — 1 🪙','Каждый новый уровень — 3 🪙','Выполнил задание дня — +20 🪙','Взял новый кубок — +50 🪙'],
+        sHero:'🐱 Герои', sHeroN:'В беге Золотого Котика',
+        sCar:'🏎 Краска для машины', sCarN:'В обеих играх Golden Driver',
+        sTheme:'🎨 Цвет сайта', sThemeN:'Меняет вид главных страниц',
+        buy:'Купить', use:'Надеть', on:'✓ Надето', need:n=>'Не хватает '+n,
+        ok:'Купил 🎉', wear:'Надел', poor:'Золота пока не хватает 😿',
+        goal:'ЦЕЛЬ', free:'Даром',
+        n:{ cat:'Котик', dog:'Пёс', ninja:'Ниндзя', robot:'Робот', gold:'Золотой Котик',
+            cstd:'Обычная', cblue:'Синяя', cpurple:'Сиреневая', cfire:'Огненная',
+            tstd:'Обычный', tgold:'Золотой', tgreen:'Зелёный', tspace:'Космический' },
+        foot:'Самая большая цель — Золотой Котик за 1000 золота. Копить месяцами 🐱' },
+  en: { t:'Golden Shop 🪙', s:'Every game earns you gold. Here is where you spend it.',
+        bal:'Your gold', tot:n=>'Earned in total: '+n+' 🪙',
+        howT:'📖 How to earn gold',
+        how:['Every 10 points of a new record — 1 🪙','Every new level — 3 🪙','Finish the daily challenge — +20 🪙','Take a new trophy — +50 🪙'],
+        sHero:'🐱 Heroes', sHeroN:'In the Golden Cat runner',
+        sCar:'🏎 Car paint', sCarN:'In both Golden Driver games',
+        sTheme:'🎨 Site colour', sThemeN:'Changes how the main pages look',
+        buy:'Buy', use:'Wear', on:'✓ Worn', need:n=>'Need '+n+' more',
+        ok:'Bought it 🎉', wear:'Worn', poor:'Not enough gold yet 😿',
+        goal:'THE GOAL', free:'Free',
+        n:{ cat:'Golden Cat', dog:'Dog', ninja:'Ninja', robot:'Robot', gold:'Golden Cat 👑',
+            cstd:'Standard', cblue:'Blue', cpurple:'Purple', cfire:'Fiery',
+            tstd:'Standard', tgold:'Golden', tgreen:'Green', tspace:'Cosmic' },
+        foot:'The biggest goal: the Golden Cat for 1000 gold. It takes months to save up 🐱' },
+  es: { t:'Tienda Dorada 🪙', s:'Cada juego te da oro. Aquí lo gastas.',
+        bal:'Tu oro', tot:n=>'Ganado en total: '+n+' 🪙',
+        howT:'📖 Cómo ganar oro',
+        how:['Cada 10 puntos de récord nuevo: 1 🪙','Cada nivel nuevo: 3 🪙','Completa el reto del día: +20 🪙','Consigue un trofeo nuevo: +50 🪙'],
+        sHero:'🐱 Héroes', sHeroN:'En la carrera del Gato Dorado',
+        sCar:'🏎 Pintura del coche', sCarN:'En los dos juegos de Golden Driver',
+        sTheme:'🎨 Color del sitio', sThemeN:'Cambia el aspecto de las páginas principales',
+        buy:'Comprar', use:'Poner', on:'✓ Puesto', need:n=>'Faltan '+n,
+        ok:'¡Comprado! 🎉', wear:'Puesto', poor:'Aún no tienes bastante oro 😿',
+        goal:'LA META', free:'Gratis',
+        n:{ cat:'Gato Dorado', dog:'Perro', ninja:'Ninja', robot:'Robot', gold:'Gato Dorado 👑',
+            cstd:'Normal', cblue:'Azul', cpurple:'Morado', cfire:'De fuego',
+            tstd:'Normal', tgold:'Dorado', tgreen:'Verde', tspace:'Cósmico' },
+        foot:'La meta más grande: el Gato Dorado por 1000 de oro. Cuesta meses ahorrarlo 🐱' },
+  fr: { t:'Boutique Dorée 🪙', s:'Chaque jeu te rapporte de l’or. Ici, tu le dépenses.',
+        bal:'Ton or', tot:n=>'Gagné en tout : '+n+' 🪙',
+        howT:'📖 Comment gagner de l’or',
+        how:['Chaque 10 points de nouveau record : 1 🪙','Chaque nouveau niveau : 3 🪙','Défi du jour réussi : +20 🪙','Nouveau trophée : +50 🪙'],
+        sHero:'🐱 Héros', sHeroN:'Dans la course du Chat Doré',
+        sCar:'🏎 Peinture de voiture', sCarN:'Dans les deux jeux Golden Driver',
+        sTheme:'🎨 Couleur du site', sThemeN:'Change l’allure des pages principales',
+        buy:'Acheter', use:'Mettre', on:'✓ Porté', need:n=>'Il manque '+n,
+        ok:'Acheté ! 🎉', wear:'Mis', poor:'Pas encore assez d’or 😿',
+        goal:'LE BUT', free:'Gratuit',
+        n:{ cat:'Chat Doré', dog:'Chien', ninja:'Ninja', robot:'Robot', gold:'Chat Doré 👑',
+            cstd:'Normale', cblue:'Bleue', cpurple:'Violette', cfire:'De feu',
+            tstd:'Normal', tgold:'Doré', tgreen:'Vert', tspace:'Cosmique' },
+        foot:'Le plus grand but : le Chat Doré à 1000 d’or. Des mois d’économies 🐱' },
+  de: { t:'Goldener Laden 🪙', s:'Jedes Spiel bringt dir Gold. Hier gibst du es aus.',
+        bal:'Dein Gold', tot:n=>'Insgesamt verdient: '+n+' 🪙',
+        howT:'📖 Wie man Gold verdient',
+        how:['Je 10 Punkte neuer Rekord: 1 🪙','Jedes neue Level: 3 🪙','Tages-Challenge geschafft: +20 🪙','Neuer Pokal: +50 🪙'],
+        sHero:'🐱 Helden', sHeroN:'Im Lauf der Goldenen Katze',
+        sCar:'🏎 Autolack', sCarN:'In beiden Golden-Driver-Spielen',
+        sTheme:'🎨 Seitenfarbe', sThemeN:'Ändert das Aussehen der Hauptseiten',
+        buy:'Kaufen', use:'Anziehen', on:'✓ Getragen', need:n=>'Es fehlen '+n,
+        ok:'Gekauft! 🎉', wear:'Angezogen', poor:'Noch nicht genug Gold 😿',
+        goal:'DAS ZIEL', free:'Gratis',
+        n:{ cat:'Goldene Katze', dog:'Hund', ninja:'Ninja', robot:'Roboter', gold:'Goldene Katze 👑',
+            cstd:'Normal', cblue:'Blau', cpurple:'Lila', cfire:'Feurig',
+            tstd:'Normal', tgold:'Golden', tgreen:'Grün', tspace:'Kosmisch' },
+        foot:'Das größte Ziel: die Goldene Katze für 1000 Gold. Das spart man monatelang 🐱' },
+  ja: { t:'ゴールデン・おみせ 🪙', s:'どのゲームでもゴールドがたまるよ。ここでつかおう。',
+        bal:'きみのゴールド', tot:n=>'ぜんぶで '+n+' 🪙 かせいだ',
+        howT:'📖 ゴールドのかせぎかた',
+        how:['しんきろく10てんごとに 1 🪙','あたらしいレベルごとに 3 🪙','まいにちチャレンジせいこう：+20 🪙','あたらしいトロフィー：+50 🪙'],
+        sHero:'🐱 ヒーロー', sHeroN:'ゴールデンキャットのランで',
+        sCar:'🏎 車のペイント', sCarN:'Golden Driver のりょうほうで',
+        sTheme:'🎨 サイトのいろ', sThemeN:'メインページの見ためがかわる',
+        buy:'かう', use:'つける', on:'✓ つけてる', need:n=>'あと '+n,
+        ok:'かったよ 🎉', wear:'つけた', poor:'ゴールドがまだたりない 😿',
+        goal:'もくひょう', free:'むりょう',
+        n:{ cat:'ゴールデンキャット', dog:'いぬ', ninja:'にんじゃ', robot:'ロボット', gold:'金のネコ 👑',
+            cstd:'ふつう', cblue:'あお', cpurple:'むらさき', cfire:'ほのお',
+            tstd:'ふつう', tgold:'ゴールド', tgreen:'グリーン', tspace:'うちゅう' },
+        foot:'いちばんのもくひょうは1000ゴールドの金のネコ。ためるのに何か月もかかるよ 🐱' },
+  zh: { t:'黄金商店 🪙', s:'每个游戏都能赚金币，在这里花掉它。',
+        bal:'你的金币', tot:n=>'总共赚到：'+n+' 🪙',
+        howT:'📖 怎么赚金币',
+        how:['新纪录每 10 分：1 🪙','每个新关卡：3 🪙','完成每日挑战：+20 🪙','拿到新奖杯：+50 🪙'],
+        sHero:'🐱 角色', sHeroN:'在黄金小猫的跑酷里',
+        sCar:'🏎 车漆', sCarN:'在两个 Golden Driver 游戏里',
+        sTheme:'🎨 网站颜色', sThemeN:'改变主要页面的样子',
+        buy:'买', use:'穿上', on:'✓ 已穿', need:n=>'还差 '+n,
+        ok:'买到了 🎉', wear:'穿上了', poor:'金币还不够 😿',
+        goal:'目标', free:'免费',
+        n:{ cat:'黄金小猫', dog:'小狗', ninja:'忍者', robot:'机器人', gold:'金色小猫 👑',
+            cstd:'普通', cblue:'蓝色', cpurple:'紫色', cfire:'火焰',
+            tstd:'普通', tgold:'黄金', tgreen:'绿色', tspace:'宇宙' },
+        foot:'最大的目标：1000 金币的金色小猫。要存好几个月 🐱' },
+  it: { t:'Negozio Dorato 🪙', s:'Ogni gioco ti fa guadagnare oro. Qui lo spendi.',
+        bal:'Il tuo oro', tot:n=>'Guadagnato in tutto: '+n+' 🪙',
+        howT:'📖 Come guadagnare oro',
+        how:['Ogni 10 punti di nuovo record: 1 🪙','Ogni nuovo livello: 3 🪙','Sfida del giorno completata: +20 🪙','Nuovo trofeo: +50 🪙'],
+        sHero:'🐱 Eroi', sHeroN:'Nella corsa del Gatto Dorato',
+        sCar:'🏎 Vernice dell’auto', sCarN:'In entrambi i giochi di Golden Driver',
+        sTheme:'🎨 Colore del sito', sThemeN:'Cambia l’aspetto delle pagine principali',
+        buy:'Compra', use:'Indossa', on:'✓ Indossato', need:n=>'Mancano '+n,
+        ok:'Comprato! 🎉', wear:'Indossato', poor:'Oro non ancora sufficiente 😿',
+        goal:'L’OBIETTIVO', free:'Gratis',
+        n:{ cat:'Gatto Dorato', dog:'Cane', ninja:'Ninja', robot:'Robot', gold:'Gatto Dorato 👑',
+            cstd:'Normale', cblue:'Blu', cpurple:'Viola', cfire:'Di fuoco',
+            tstd:'Normale', tgold:'Dorato', tgreen:'Verde', tspace:'Cosmico' },
+        foot:'L’obiettivo più grande: il Gatto Dorato a 1000 d’oro. Ci vogliono mesi 🐱' },
+  ka: { t:'ოქროს მაღაზია 🪙', s:'ყველა თამაშში ოქროს გამოიმუშავებ. აქ ხარჯავ.',
+        bal:'შენი ოქრო', tot:n=>'სულ გამომუშავებული: '+n+' 🪙',
+        howT:'📖 როგორ გამოვიმუშავოთ ოქრო',
+        how:['ახალი რეკორდის ყოველ 10 ქულაზე — 1 🪙','ყოველ ახალ დონეზე — 3 🪙','დღის გამოწვევა შესრულდა — +20 🪙','ახალი თასი — +50 🪙'],
+        sHero:'🐱 გმირები', sHeroN:'ოქროს კატის სირბილში',
+        sCar:'🏎 მანქანის საღებავი', sCarN:'Golden Driver-ის ორივე თამაშში',
+        sTheme:'🎨 საიტის ფერი', sThemeN:'ცვლის მთავარი გვერდების იერს',
+        buy:'ყიდვა', use:'ჩაცმა', on:'✓ ჩაცმულია', need:n=>'აკლია '+n,
+        ok:'იყიდე 🎉', wear:'ჩაიცვი', poor:'ოქრო ჯერ არ ჰყოფნის 😿',
+        goal:'მიზანი', free:'უფასო',
+        n:{ cat:'ოქროს კატა', dog:'ძაღლი', ninja:'ნინძა', robot:'რობოტი', gold:'ოქროს კატა 👑',
+            cstd:'ჩვეულებრივი', cblue:'ლურჯი', cpurple:'იასამნისფერი', cfire:'ცეცხლოვანი',
+            tstd:'ჩვეულებრივი', tgold:'ოქროსფერი', tgreen:'მწვანე', tspace:'კოსმოსური' },
+        foot:'ყველაზე დიდი მიზანი — ოქროს კატა 1000 ოქროზე. თვეები დასჭირდება 🐱' },
+  hi: { t:'गोल्डन दुकान 🪙', s:'हर खेल में सोना कमाते हो। यहाँ उसे ख़र्च करो।',
+        bal:'तुम्हारा सोना', tot:n=>'कुल कमाया: '+n+' 🪙',
+        howT:'📖 सोना कैसे कमाएँ',
+        how:['नए रिकॉर्ड के हर 10 अंक: 1 🪙','हर नया लेवल: 3 🪙','आज की चुनौती पूरी: +20 🪙','नई ट्रॉफ़ी: +50 🪙'],
+        sHero:'🐱 हीरो', sHeroN:'गोल्डन बिल्ली की दौड़ में',
+        sCar:'🏎 कार का रंग', sCarN:'Golden Driver के दोनों खेलों में',
+        sTheme:'🎨 साइट का रंग', sThemeN:'मुख्य पन्नों का रूप बदलता है',
+        buy:'ख़रीदो', use:'पहनो', on:'✓ पहना है', need:n=>n+' और चाहिए',
+        ok:'ख़रीद लिया 🎉', wear:'पहन लिया', poor:'सोना अभी काफ़ी नहीं 😿',
+        goal:'लक्ष्य', free:'मुफ़्त',
+        n:{ cat:'गोल्डन बिल्ली', dog:'कुत्ता', ninja:'निंजा', robot:'रोबोट', gold:'सुनहरी बिल्ली 👑',
+            cstd:'साधारण', cblue:'नीली', cpurple:'बैंगनी', cfire:'आग वाली',
+            tstd:'साधारण', tgold:'सुनहरा', tgreen:'हरा', tspace:'ब्रह्मांडीय' },
+        foot:'सबसे बड़ा लक्ष्य: 1000 सोने की सुनहरी बिल्ली। जमा करने में महीने लगेंगे 🐱' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+document.documentElement.lang = ggLang;
+document.title = T.t + ' · Golden Games';
+document.getElementById('h1').textContent = T.t;
+document.getElementById('sub').textContent = T.s;
+document.getElementById('balL').textContent = T.bal;
+document.getElementById('howT').textContent = T.howT;
+document.getElementById('howL').innerHTML = T.how.map(x => '<li>' + x + '</li>').join('');
+document.getElementById('foot').textContent = T.foot;
+
+// ——— 🔊 Ձայնը. միանում է առաջին հպումից (բրաուզերի կանոնն է) ———
+let AC = null;
+function tone(f1, f2, type, len, vol, delay) {
+  if (!AC) return;
+  const t0 = AC.currentTime + (delay || 0);
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'triangle';
+  o.frequency.setValueAtTime(f1, t0);
+  if (f2 && f2 !== f1) o.frequency.exponentialRampToValueAtTime(f2, t0 + len);
+  g.gain.setValueAtTime(vol || 0.3, t0);
+  g.gain.exponentialRampToValueAtTime(0.001, t0 + len);
+  o.connect(g); g.connect(AC.destination);
+  o.start(t0); o.stop(t0 + len + 0.05);
+}
+function wakeAudio() {
+  if (AC) return;
+  try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+}
+const sBuy  = () => { tone(523, 523, 'triangle', 0.12, 0.3); tone(784, 784, 'triangle', 0.12, 0.3, 0.1); tone(1047, 1047, 'triangle', 0.3, 0.34, 0.2); };
+const sWear = () => tone(660, 990, 'triangle', 0.14, 0.26);
+const sPoor = () => tone(200, 120, 'sawtooth', 0.22, 0.16);
+
+// ——— Ապրանքները ———
+// sec — բաժինը, id — ինչ է պահվում, price — գինը ոսկով
+const ITEMS = [
+  { sec:'hero',  id:'cat',    price:0,    nm:'cat'    },
+  { sec:'hero',  id:'dog',    price:80,   nm:'dog'    },
+  { sec:'hero',  id:'ninja',  price:150,  nm:'ninja'  },
+  { sec:'hero',  id:'robot',  price:220,  nm:'robot'  },
+  { sec:'hero',  id:'gold',   price:1000, nm:'gold', goal:true },
+  { sec:'car',   id:'',       price:0,    nm:'cstd'    },
+  { sec:'car',   id:'blue',   price:120,  nm:'cblue'   },
+  { sec:'car',   id:'purple', price:180,  nm:'cpurple' },
+  { sec:'car',   id:'fire',   price:260,  nm:'cfire'   },
+  { sec:'theme', id:'',       price:0,    nm:'tstd'   },
+  { sec:'theme', id:'gold',   price:200,  nm:'tgold'  },
+  { sec:'theme', id:'green',  price:200,  nm:'tgreen' },
+  { sec:'theme', id:'space',  price:300,  nm:'tspace' },
+];
+const SECS = [
+  { sec:'hero',  title:'sHero',  note:'sHeroN'  },
+  { sec:'car',   title:'sCar',   note:'sCarN'   },
+  { sec:'theme', title:'sTheme', note:'sThemeN' },
+];
+
+// ——— Նկարները. ամեն ապրանք իր տեսքով, ձևերով նկարած ———
+const HERO_C = {
+  cat:   ['#f28c3b', '#d96f21'],
+  dog:   ['#b98156', '#8f5f3a'],
+  ninja: ['#3b4668', '#2c3550'],
+  robot: ['#9aa5b1', '#6f7b8a'],
+  gold:  ['#ffd166', '#e0a92b'],
+};
+const CAR_C = { '':'#e63946', blue:'#3d8bfd', purple:'#a06cd5', fire:'#ff7a18' };
+
+function heroSvg(id) {
+  const [b, d] = HERO_C[id];
+  let extra = '';
+  if (id === 'dog') extra = '<ellipse cx="52" cy="18" rx="5" ry="10" fill="' + d + '" transform="rotate(20 52 18)"/><ellipse cx="76" cy="18" rx="5" ry="10" fill="' + d + '" transform="rotate(-20 76 18)"/>';
+  else if (id === 'robot') extra = '<rect x="62" y="8" width="3" height="9" fill="' + d + '"/><circle cx="63" cy="6" r="3" fill="#e63946"/><rect x="53" y="17" width="5" height="5" fill="' + d + '"/><rect x="69" y="17" width="5" height="5" fill="' + d + '"/>';
+  else extra = '<path d="M53 21 L51 8 L63 17 Z M69 17 L75 7 L79 21 Z" fill="' + b + '"/>';
+  let face = '<circle cx="70" cy="24" r="2.6" fill="#23405c"/>';
+  if (id === 'ninja') face = '<rect x="51" y="19" width="29" height="7" fill="#e63946"/><ellipse cx="70" cy="22" rx="4.5" ry="2.6" fill="#f5eede"/><circle cx="71" cy="22" r="1.8" fill="#23405c"/>';
+  else if (id === 'robot') face = '<rect x="64" y="20" width="9" height="8" fill="#23405c"/><rect x="66" y="22" width="5" height="4" fill="#6ee7b7"/>';
+  let shine = '';
+  if (id === 'gold') shine = '<circle cx="18" cy="14" r="2.5" fill="#fff6d8" opacity="0.95"/><circle cx="10" cy="30" r="1.8" fill="#fff6d8" opacity="0.8"/><circle cx="24" cy="40" r="2" fill="#fff6d8" opacity="0.7"/><path d="M60 6 l4 -6 l4 6 l6 -2 l-3 7 h-14 l-3 -7 z" fill="#ffe9a8"/>';
+  return '<svg viewBox="0 0 100 60" aria-hidden="true">'
+    + '<path d="M32 34 Q14 30 10 12" stroke="' + b + '" stroke-width="6" fill="none" stroke-linecap="round"/>'
+    + '<line x1="38" y1="44" x2="34" y2="54" stroke="' + b + '" stroke-width="7" stroke-linecap="round"/>'
+    + '<line x1="62" y1="44" x2="66" y2="54" stroke="' + b + '" stroke-width="7" stroke-linecap="round"/>'
+    + '<ellipse cx="48" cy="36" rx="27" ry="15" fill="' + b + '"/>'
+    + '<path d="M40 24 q3 5 0 10 M52 24 q3 5 0 10 M62 25 q3 5 0 10" stroke="' + d + '" stroke-width="3.4" fill="none"/>'
+    + '<circle cx="66" cy="25" r="15" fill="' + b + '"/>' + extra + face + shine + '</svg>';
+}
+function carSvg(id) {
+  const c = CAR_C[id];
+  const body = id === 'fire'
+    ? '<defs><linearGradient id="fg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffd166"/><stop offset="0.5" stop-color="#ff7a18"/><stop offset="1" stop-color="#e63946"/></linearGradient></defs><rect x="12" y="20" width="76" height="22" rx="9" fill="url(#fg)"/>'
+    : '<rect x="12" y="20" width="76" height="22" rx="9" fill="' + c + '"/>';
+  return '<svg viewBox="0 0 100 60" aria-hidden="true">' + body
+    + '<path d="M28 20 q6 -11 22 -11 q16 0 22 11 z" fill="' + (id === 'fire' ? '#ff9d4d' : c) + '"/>'
+    + '<path d="M33 19 q5 -8 17 -8 q12 0 17 8 z" fill="#bfe3ff" opacity="0.9"/>'
+    + (id === 'fire' ? '<path d="M16 31 l14 -4 l-6 4 l12 -2 l-16 6 z" fill="#fff6d8" opacity="0.9"/>' : '')
+    + '<circle cx="30" cy="44" r="8" fill="#23282f"/><circle cx="30" cy="44" r="3.4" fill="#8d98a5"/>'
+    + '<circle cx="70" cy="44" r="8" fill="#23282f"/><circle cx="70" cy="44" r="3.4" fill="#8d98a5"/>'
+    + '<circle cx="88" cy="27" r="3" fill="#fff6d8"/></svg>';
+}
+const THEME_C = {
+  '':      ['#12122b', '#1d1d3f', '#ffd166'],
+  gold:    ['#241b06', '#3d2e0d', '#ffd166'],
+  green:   ['#0b2018', '#123528', '#6ee7b7'],
+  space:   ['#05060f', '#151b36', '#a78bfa'],
+};
+function themeSvg(id) {
+  const [bg, card, acc] = THEME_C[id];
+  return '<svg viewBox="0 0 100 60" aria-hidden="true">'
+    + '<rect x="6" y="6" width="88" height="48" rx="9" fill="' + bg + '" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>'
+    + '<rect x="14" y="15" width="34" height="30" rx="6" fill="' + card + '"/>'
+    + '<rect x="54" y="15" width="30" height="8" rx="4" fill="' + acc + '"/>'
+    + '<rect x="54" y="28" width="22" height="5" rx="2.5" fill="' + card + '"/>'
+    + '<rect x="54" y="37" width="26" height="5" rx="2.5" fill="' + card + '"/>'
+    + '<circle cx="31" cy="30" r="8" fill="' + acc + '"/></svg>';
+}
+function pvOf(it) {
+  return it.sec === 'hero' ? heroSvg(it.id) : it.sec === 'car' ? carSvg(it.id) : themeSvg(it.id);
+}
+
+// ——— Ի՞նչ է հագած հիմա ———
+function ls(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function wearing(sec) {
+  if (sec === 'hero') return ls('aren-hero', 'cat');
+  if (sec === 'car') return ls('gg-car', '');
+  return window.ggCoins ? ggCoins.themeNow() : ls('gg-theme', '');
+}
+function keyOf(it) { return it.sec + ':' + it.id; }
+function isOwned(it) {
+  if (it.price === 0) return true;                     // ձրիները միշտ քոնն են
+  return window.ggCoins ? ggCoins.owned(keyOf(it)) : false;
+}
+
+// ——— Ծանուցում ———
+let toastT = 0;
+function say(txt) {
+  const el = document.getElementById('toast');
+  el.textContent = txt;
+  el.hidden = false;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { el.hidden = true; }, 1900);
+}
+
+// ——— Հպումը. հեռախոսը հպումից հետո կեղծ mouse-ազդանշան է ուղարկում,
+//     դրա համար հիշում ենք վերջին հպման պահը ու անտեսում ուրվականը ———
+let lastTouchAt = 0;
+function onTap(el, fn) {
+  el.addEventListener('touchend', e => {
+    lastTouchAt = Date.now();
+    e.preventDefault();
+    wakeAudio();
+    fn();
+  }, { passive: false });
+  el.addEventListener('click', e => {
+    if (Date.now() - lastTouchAt < 700) return;        // ուրվականն է, անտեսում ենք
+    e.preventDefault();
+    wakeAudio();
+    fn();
+  });
+}
+
+// ——— Նկարում ենք խանութը ———
+function coinsNow() { return window.ggCoins ? ggCoins.get() : 0; }
+
+function render() {
+  document.getElementById('bal').textContent = '🪙 ' + coinsNow();
+  document.getElementById('tot').textContent = T.tot(window.ggCoins ? ggCoins.total() : 0);
+
+  const host = document.getElementById('secs');
+  host.textContent = '';
+
+  for (const s of SECS) {
+    const head = document.createElement('div');
+    head.className = 'secthead';
+    head.innerHTML = '<h2></h2><span class="line"></span>';
+    head.querySelector('h2').textContent = T[s.title];
+    host.appendChild(head);
+
+    const note = document.createElement('p');
+    note.className = 'note';
+    note.textContent = T[s.note];
+    host.appendChild(note);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    const worn = wearing(s.sec);
+
+    for (const it of ITEMS.filter(x => x.sec === s.sec)) {
+      const owned = isOwned(it);
+      const on = owned && it.id === worn;
+      const card = document.createElement('div');
+      card.className = 'item' + (on ? ' on' : '') + (it.goal && !owned ? ' goal' : '');
+
+      const pv = document.createElement('div');
+      pv.className = 'pv';
+      pv.innerHTML = pvOf(it);
+      card.appendChild(pv);
+
+      const nm = document.createElement('b');
+      nm.className = 'nm';
+      nm.textContent = T.n[it.nm];
+      card.appendChild(nm);
+
+      const pr = document.createElement('span');
+      pr.className = 'pr' + (it.price === 0 ? ' free' : '');
+      pr.textContent = it.price === 0 ? T.free : '🪙 ' + it.price;
+      card.appendChild(pr);
+
+      const btn = document.createElement('button');
+      if (on) { btn.textContent = T.on; btn.className = 'wearing'; }
+      else if (owned) { btn.textContent = T.use; btn.className = 'owned'; }
+      else if (coinsNow() >= it.price) { btn.textContent = T.buy; }
+      else { btn.textContent = T.need(it.price - coinsNow()); btn.className = 'poor'; }
+
+      if (!on) onTap(btn, () => act(it, owned));
+      card.appendChild(btn);
+
+      if (it.goal && !owned) {
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = T.goal;
+        card.appendChild(tag);
+      }
+      grid.appendChild(card);
+    }
+    host.appendChild(grid);
+  }
+}
+
+// ——— Գնում ու հագնում ———
+function wear(it) {
+  if (it.sec === 'hero') lsSet('aren-hero', it.id);
+  else if (it.sec === 'car') lsSet('gg-car', it.id);
+  else if (window.ggCoins) ggCoins.theme(it.id);
+  else lsSet('gg-theme', it.id);
+}
+function act(it, owned) {
+  if (owned) {
+    wear(it);
+    sWear();
+    say(T.wear + ' ' + T.n[it.nm]);
+    render();
+    return;
+  }
+  if (!window.ggCoins || !ggCoins.spend(it.price)) { sPoor(); say(T.poor); render(); return; }
+  ggCoins.give(keyOf(it));
+  wear(it);                                            // գնածդ միանգամից հագնում ես
+  sBuy();
+  say(T.ok + ' ' + T.n[it.nm]);
+  render();
+}
+
+// Կրկնակի հպումով խոշորացումը կանգնեցնում ենք
+let lastEnd = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastEnd < 300) e.preventDefault();
+  lastEnd = now;
+}, { passive: false });
+
+// gg-kit.js-ը defer-ով է բեռնվում, դրա համար սպասում ենք, մինչև ոսկին պատրաստ լինի
+if (window.ggCoins) render();
+else window.addEventListener('load', render);
+</script>
+<script src="../gg-kit.js" data-kind="info" defer></script>
+</body>
+</html>

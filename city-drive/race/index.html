@@ -315,6 +315,12 @@ function update() {
 }
 let wonLevel = false;
 
+// ——— 🎨 Խանութից գնված ներկը (Արենի ոսկե խանութը) ———
+// Ներկ չես գնել՝ մեքենան մնում է այնպես, ինչպես միշտ եղել է։
+const PAINTS = { blue: '#3d8bfd', purple: '#a06cd5', fire: '#ff7a18' };
+let MY_PAINT = '';
+try { MY_PAINT = PAINTS[localStorage.getItem('gg-car') || ''] || ''; } catch (e) {}
+
 // ——— Նկարելը ———
 function drawCar(x, y, color, stripes) {
   ctx.save();
@@ -402,7 +408,7 @@ function draw() {
   }
 
   // դու՝ սպիտակ սպորտայինով 🏎
-  if (state !== 'ready') drawCar(player.x, py, '#f7f9fc', true);
+  if (state !== 'ready') drawCar(player.x, py, MY_PAINT || '#f7f9fc', true);
 
   // ——— Եղանակը էկրանին (ամեն ինչ նկարած է, էմոջի չկա) ———
   drawWeather(py);
