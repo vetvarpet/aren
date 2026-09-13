@@ -48,6 +48,12 @@
   }
   #heroPick button.on { border-color: #ffd166; background: rgba(255,209,102,0.3); transform: scale(1.12); }
   /* 🔒 դեռ չգնված կերպար. սեղմում ես՝ գնում ես խանութ */
+  /* 🧱 ընկերոջ մակարդակ խաղալիս՝ «սարքիր քոնը» կոճակը ներքևի անկյունում */
+  #mineBtn { position: fixed; right: 10px; bottom: 10px; z-index: 10; text-decoration: none;
+    font-size: 1.15rem; width: 44px; height: 44px; border-radius: 14px;
+    border: 2px solid rgba(255,209,102,0.75); background: rgba(20,26,34,0.8);
+    display: flex; align-items: center; justify-content: center; }
+  #mineBtn[hidden] { display: none !important; }
   #heroPick button.lock { opacity: 0.42; position: relative; }
   #heroPick button.lock::after {
     content: '🔒'; position: absolute; right: -3px; bottom: -3px; font-size: 0.68rem;
@@ -61,6 +67,7 @@
   <button data-h="robot">🤖</button>
   <button data-h="gold">👑</button>
 </div>
+<a id="mineBtn" href="../../builder/" hidden>🧱</a>
 <canvas id="game"></canvas>
 
 <script>
@@ -74,17 +81,17 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { score: 'Միավոր՝ ', best: 'Ռեկորդ՝ ', title: 'Golden Cat 🐱', sub: 'Դիպչիր՝ թռչելու · Ագռավ տեսար՝ ՄԻ՛ թռչիր', ouch: 'Ա՜խ, բախվեցիր 😿', overSub: n => 'Հավաքեցիր ' + n + ' միավոր · Դիպչիր՝ նորից խաղալու', boss: 'ՀՍԿԱ ԱԳՌԱՎ!', bossTip: 'Երեք հարձակում — ամեն անգամ ՎԵՐ ԹՌԻՐ' },
-  ru: { score: 'Очки: ', best: 'Рекорд: ', title: 'Golden Cat 🐱', sub: 'Нажми — прыжок · Увидел ворону — НЕ прыгай', ouch: 'Ой, столкнулся 😿', overSub: n => 'Набрал ' + n + ' очков · Нажми, чтобы играть снова', boss: 'ГИГАНТСКАЯ ВОРОНА!', bossTip: 'Три атаки — каждый раз ПРЫГАЙ' },
-  en: { score: 'Score: ', best: 'Best: ', title: 'Golden Cat 🐱', sub: 'Tap to jump · See a crow — DON’T jump', ouch: 'Ouch, you crashed 😿', overSub: n => 'You got ' + n + ' points · Tap to play again', boss: 'GIANT CROW!', bossTip: 'Three dives — JUMP over each one' },
-  es: { score: 'Puntos: ', best: 'Récord: ', title: 'Golden Cat 🐱', sub: 'Toca para saltar · ¿Un cuervo? NO saltes', ouch: 'Ay, chocaste 😿', overSub: n => 'Hiciste ' + n + ' puntos · Toca para jugar otra vez', boss: '¡CUERVO GIGANTE!', bossTip: 'Tres ataques — SALTA cada vez' },
-  fr: { score: 'Points : ', best: 'Record : ', title: 'Golden Cat 🐱', sub: 'Touche pour sauter · Un corbeau ? NE saute PAS', ouch: 'Aïe, tu t’es cogné 😿', overSub: n => 'Tu as fait ' + n + ' points · Touche pour rejouer', boss: 'CORBEAU GÉANT !', bossTip: 'Trois attaques — SAUTE à chaque fois' },
-  de: { score: 'Punkte: ', best: 'Rekord: ', title: 'Golden Cat 🐱', sub: 'Tippe zum Springen · Krähe in Sicht? NICHT springen', ouch: 'Autsch, zusammengestoßen 😿', overSub: n => 'Du hast ' + n + ' Punkte · Tippe, um nochmal zu spielen', boss: 'RIESENKRÄHE!', bossTip: 'Drei Angriffe — SPRING jedes Mal' },
-  ja: { score: 'スコア：', best: 'ベスト：', title: 'Golden Cat 🐱', sub: 'タップでジャンプ · カラスが来たらジャンプしない！', ouch: 'いたっ、ぶつかった 😿', overSub: n => n + 'ポイントだったよ · タップでもう一回', boss: 'きょだいガラス！', bossTip: '３かい こうげき — ジャンプで よけろ' },
-  zh: { score: '得分：', best: '纪录：', title: 'Golden Cat 🐱', sub: '点一下就跳 · 看到乌鸦千万别跳', ouch: '哎呀，撞到了 😿', overSub: n => '你得了' + n + '分 · 点一下再玩一次', boss: '巨型乌鸦！', bossTip: '三次俯冲 — 每次都要跳' },
-  it: { score: 'Punti: ', best: 'Record: ', title: 'Golden Cat 🐱', sub: 'Tocca per saltare · Vedi un corvo? NON saltare', ouch: 'Ahi, ti sei scontrato 😿', overSub: n => 'Hai fatto ' + n + ' punti · Tocca per rigiocare', boss: 'CORVO GIGANTE!', bossTip: 'Tre attacchi — SALTA ogni volta' },
-  ka: { score: 'ქულა: ', best: 'რეკორდი: ', title: 'Golden Cat 🐱', sub: 'დააჭირე ასახტომად · ყვავი დაინახე? ნუ ახტები', ouch: 'ვაი, დაეჯახე 😿', overSub: n => 'დააგროვე ' + n + ' ქულა · დააჭირე თავიდან სათამაშოდ', boss: 'გიგანტური ყვავი!', bossTip: 'სამი შეტევა — ყოველ ჯერზე ახტი' },
-  hi: { score: 'स्कोर: ', best: 'रिकॉर्ड: ', title: 'Golden Cat 🐱', sub: 'कूदने के लिए टैप करो · कौवा दिखे तो मत कूदो', ouch: 'आउच, टकरा गए 😿', overSub: n => 'तुमने ' + n + ' अंक बनाए · फिर से खेलने के लिए टैप करो', boss: 'विशाल कौवा!', bossTip: 'तीन हमले — हर बार कूदो' },
+  hy: { score: 'Միավոր՝ ', best: 'Ռեկորդ՝ ', title: 'Golden Cat 🐱', sub: 'Դիպչիր՝ թռչելու · Ագռավ տեսար՝ ՄԻ՛ թռչիր', ouch: 'Ա՜խ, բախվեցիր 😿', overSub: n => 'Հավաքեցիր ' + n + ' միավոր · Դիպչիր՝ նորից խաղալու', boss: 'ՀՍԿԱ ԱԳՌԱՎ!', bossTip: 'Երեք հարձակում — ամեն անգամ ՎԵՐ ԹՌԻՐ', lvlT: '🧱 Ընկերոջդ մակարդակը', lvlS: 'Դիպչիր՝ սկսելու · Անցիր մինչև վերջ', lvlMine: 'Կառուցել իմը' },
+  ru: { score: 'Очки: ', best: 'Рекорд: ', title: 'Golden Cat 🐱', sub: 'Нажми — прыжок · Увидел ворону — НЕ прыгай', ouch: 'Ой, столкнулся 😿', overSub: n => 'Набрал ' + n + ' очков · Нажми, чтобы играть снова', boss: 'ГИГАНТСКАЯ ВОРОНА!', bossTip: 'Три атаки — каждый раз ПРЫГАЙ', lvlT: '🧱 Уровень друга', lvlS: 'Нажми, чтобы начать · Пройди до конца', lvlMine: 'Построить свой' },
+  en: { score: 'Score: ', best: 'Best: ', title: 'Golden Cat 🐱', sub: 'Tap to jump · See a crow — DON’T jump', ouch: 'Ouch, you crashed 😿', overSub: n => 'You got ' + n + ' points · Tap to play again', boss: 'GIANT CROW!', bossTip: 'Three dives — JUMP over each one', lvlT: '🧱 A friend’s level', lvlS: 'Tap to start · Get to the end', lvlMine: 'Build my own' },
+  es: { score: 'Puntos: ', best: 'Récord: ', title: 'Golden Cat 🐱', sub: 'Toca para saltar · ¿Un cuervo? NO saltes', ouch: 'Ay, chocaste 😿', overSub: n => 'Hiciste ' + n + ' puntos · Toca para jugar otra vez', boss: '¡CUERVO GIGANTE!', bossTip: 'Tres ataques — SALTA cada vez', lvlT: '🧱 El nivel de un amigo', lvlS: 'Toca para empezar · Llega al final', lvlMine: 'Construir el mío' },
+  fr: { score: 'Points : ', best: 'Record : ', title: 'Golden Cat 🐱', sub: 'Touche pour sauter · Un corbeau ? NE saute PAS', ouch: 'Aïe, tu t’es cogné 😿', overSub: n => 'Tu as fait ' + n + ' points · Touche pour rejouer', boss: 'CORBEAU GÉANT !', bossTip: 'Trois attaques — SAUTE à chaque fois', lvlT: '🧱 Le niveau d’un ami', lvlS: 'Touche pour commencer · Va jusqu’au bout', lvlMine: 'Construire le mien' },
+  de: { score: 'Punkte: ', best: 'Rekord: ', title: 'Golden Cat 🐱', sub: 'Tippe zum Springen · Krähe in Sicht? NICHT springen', ouch: 'Autsch, zusammengestoßen 😿', overSub: n => 'Du hast ' + n + ' Punkte · Tippe, um nochmal zu spielen', boss: 'RIESENKRÄHE!', bossTip: 'Drei Angriffe — SPRING jedes Mal', lvlT: '🧱 Das Level eines Freundes', lvlS: 'Tippe zum Starten · Komm bis ans Ende', lvlMine: 'Meins bauen' },
+  ja: { score: 'スコア：', best: 'ベスト：', title: 'Golden Cat 🐱', sub: 'タップでジャンプ · カラスが来たらジャンプしない！', ouch: 'いたっ、ぶつかった 😿', overSub: n => n + 'ポイントだったよ · タップでもう一回', boss: 'きょだいガラス！', bossTip: '３かい こうげき — ジャンプで よけろ', lvlT: '🧱 ともだちのステージ', lvlS: 'タップでスタート · ゴールまでいこう', lvlMine: 'じぶんのを作る' },
+  zh: { score: '得分：', best: '纪录：', title: 'Golden Cat 🐱', sub: '点一下就跳 · 看到乌鸦千万别跳', ouch: '哎呀，撞到了 😿', overSub: n => '你得了' + n + '分 · 点一下再玩一次', boss: '巨型乌鸦！', bossTip: '三次俯冲 — 每次都要跳', lvlT: '🧱 朋友的关卡', lvlS: '点一下开始 · 跑到终点', lvlMine: '造我自己的' },
+  it: { score: 'Punti: ', best: 'Record: ', title: 'Golden Cat 🐱', sub: 'Tocca per saltare · Vedi un corvo? NON saltare', ouch: 'Ahi, ti sei scontrato 😿', overSub: n => 'Hai fatto ' + n + ' punti · Tocca per rigiocare', boss: 'CORVO GIGANTE!', bossTip: 'Tre attacchi — SALTA ogni volta', lvlT: '🧱 Il livello di un amico', lvlS: 'Tocca per iniziare · Arriva alla fine', lvlMine: 'Costruisci il mio' },
+  ka: { score: 'ქულა: ', best: 'რეკორდი: ', title: 'Golden Cat 🐱', sub: 'დააჭირე ასახტომად · ყვავი დაინახე? ნუ ახტები', ouch: 'ვაი, დაეჯახე 😿', overSub: n => 'დააგროვე ' + n + ' ქულა · დააჭირე თავიდან სათამაშოდ', boss: 'გიგანტური ყვავი!', bossTip: 'სამი შეტევა — ყოველ ჯერზე ახტი', lvlT: '🧱 მეგობრის დონე', lvlS: 'შეეხე დასაწყებად · მიაღწიე ბოლომდე', lvlMine: 'ავაგოთ ჩემი' },
+  hi: { score: 'स्कोर: ', best: 'रिकॉर्ड: ', title: 'Golden Cat 🐱', sub: 'कूदने के लिए टैप करो · कौवा दिखे तो मत कूदो', ouch: 'आउच, टकरा गए 😿', overSub: n => 'तुमने ' + n + ' अंक बनाए · फिर से खेलने के लिए टैप करो', boss: 'विशाल कौवा!', bossTip: 'तीन हमले — हर बार कूदो', lvlT: '🧱 दोस्त का लेवल', lvlS: 'शुरू करने के लिए टैप करो · अंत तक पहुँचो', lvlMine: 'अपना बनाओ' },
 };
 const T = TRL[ggLang] || TRL.hy;
 const canvas = document.getElementById('game');
@@ -143,6 +150,24 @@ let fishes = [];              // ձկները, որ լողում են օդում
 let popups = [];              // «+3» գրությունները, երբ ձուկ ես բռնում
 let clouds = [];              // ամպերը երկնքում
 let sparks = [];              // ✨ ոսկե փոշին Ոսկե Կատվիկի հետևից
+
+// ——— 🧱 Ընկերոջ կառուցած մակարդակը (Ոսկե Կառուցողից եկած հղումով) ———
+// ?lvl=..b.B..c — մեկ տառ՝ մեկ վանդակ։ Կա՞ նման բան — ուրեմն
+// պատահականություն չկա. ճանապարհը հենց այն է, ինչ ընկերդ է սարքել։
+let LVL = null;
+try {
+  const q = new URLSearchParams(location.search).get('lvl');
+  if (q && /^[.bBcfg]{1,40}$/.test(q)) LVL = q.split('');
+} catch (e) {}
+const LVL_GAP = 170;          // պիքսել՝ մեկ վանդակի համար
+if (LVL) {
+  const mb = document.getElementById('mineBtn');
+  mb.hidden = false;
+  mb.title = T.lvlMine;
+}
+let lvlAt = 0;                // ո՞ր վանդակին ենք հասել
+let travelled = 0;            // որքան ճանապարհ ենք անցել
+let lvlDone = false;          // վերջին վանդակն էլ ուղարկեցինք
 let score = 0;                // միավորներ
 let best = Number(localStorage.getItem('cat-best') || 0);
 let speed = 5;                // ինչ արագ են գալիս արկղերը
@@ -389,6 +414,9 @@ function restart() {
   speed = 5;
   boss = null;                // հսկա ագռավը գնում է հանգստանալու
   boxesPassed = 0;
+  lvlAt = 0;
+  travelled = 0;
+  lvlDone = false;
   cat.y = GROUND;
   cat.vy = 0;
   cat.jumping = false;
@@ -1048,7 +1076,8 @@ function update() {
   night += (nightTarget - night) * 0.02;
 
   // Հասա՞ր 100-ի → ՀԱՂԹԱՆԱԿ 🏆
-  if (!won && score >= WIN_AT) {
+  const lvlWin = LVL && lvlDone && boxes.length === 0 && running;
+  if (!won && (lvlWin || (!LVL && score >= WIN_AT))) {
     won = true;
     running = false;
     sound('win');
@@ -1097,9 +1126,26 @@ function update() {
     // հսկա ագռավի հերթը (երբ բոս կա, նոր արկղ չենք ուղարկում)
     if (boss) updateBoss();
 
-    // նոր խոչընդոտ ենք ավելացնում
+    // ——— 🧱 Ընկերոջ մակարդակը. վանդակ առ վանդակ, ճիշտ իր հերթով ———
+    if (LVL) {
+      travelled += speed;
+      while (!lvlDone && lvlAt < LVL.length && travelled >= lvlAt * LVL_GAP) {
+        const ch = LVL[lvlAt];
+        if (ch === 'c') {
+          boxes.push({ type: 'bird', x: W + 60, y: GROUND - 150, w: 60, h: 45, passed: false });
+        } else if (ch === 'b' || ch === 'B') {
+          boxes.push({ x: W + 40, w: 30, h: ch === 'B' ? 70 : 45, passed: false });
+        } else if (ch === 'f' || ch === 'g') {
+          fishes.push({ x: W + 40, y: GROUND - 110, gold: ch === 'g' });
+        }
+        lvlAt++;
+        if (lvlAt >= LVL.length) lvlDone = true;
+      }
+    }
+
+    // նոր խոչընդոտ ենք ավելացնում (պատահական խաղում)
     const last = boxes[boxes.length - 1];
-    if (!boss && (!last || last.x < W - 260 - Math.random() * 220)) {
+    if (!LVL && !boss && (!last || last.x < W - 260 - Math.random() * 220)) {
       // Ագռավները միայն ԳԻՇԵՐՆ են դուրս գալիս ու ԲԱՐՁՐԻՑ են թռչում.
       // թռար՝ կխփվես նրան, տեղում մնացիր՝ կանցնի գլխիդ վրայով 😉
       if (night > 0.5 && Math.random() < 0.3) {
@@ -1112,7 +1158,7 @@ function update() {
 
     // երբեմն նոր ձուկ է հայտնվում օդում
     // 5-ից 1 դեպքում ձուկը ՈՍԿԵ է՝ +6, բայց ավելի արագ է լողում
-    if (Math.random() < 0.008 && fishes.length < 2) {
+    if (!LVL && Math.random() < 0.008 && fishes.length < 2) {
       fishes.push({
         x: W + 40,
         y: GROUND - 75 - Math.random() * 55,   // այնքան բարձր, որ թռչելով հասնես
@@ -1168,7 +1214,7 @@ function update() {
         score++;
         // ամեն 20 արկղը մեկ՝ հսկա ագռավը դուրս է գալիս 🪶
         boxesPassed++;
-        if (!boss && !won && boxesPassed % BOSS_EVERY === 0) spawnBoss();
+        if (!LVL && !boss && !won && boxesPassed % BOSS_EVERY === 0) spawnBoss();
         // մինչև 40 միավոր՝ հանգիստ տեմպ, 40-ից հետո ամեն 5 միավորը արագացնում է
         if (score >= 40 && score % 5 === 0) speed += 0.5;
         if (score > best) {
@@ -1216,7 +1262,7 @@ function update() {
   if (boss) drawBossHud();
 
   if (!running && !gameOver && !won) {
-    drawCenterText(T.title, T.sub);
+    drawCenterText(LVL ? T.lvlT : T.title, LVL ? T.lvlS : T.sub);
   }
   if (gameOver) {
     drawCenterText(T.ouch, T.overSub(score));

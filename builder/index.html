@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<title>Ոսկե Կառուցող 🧱 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #12122b; color: #eef0ff;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, Helvetica, sans-serif;
+    padding: 52px 12px 26px; min-height: 100vh; touch-action: manipulation;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; }
+  h1 { margin: 0 0 3px; font-size: 1.25rem; color: #ffd166; text-align: center; }
+  .sub { margin: 0 0 15px; font-size: 0.75rem; color: #9a9ec7; text-align: center; line-height: 1.5; }
+
+  /* 🧰 Գործիքները. ընտրում ես մեկը, հետո դնում ես ճանապարհին */
+  .tools { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 14px; }
+  .tools button {
+    background: #1d1d3f; border: 2px solid rgba(255,255,255,0.14); border-radius: 12px;
+    padding: 7px 2px 5px; cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; gap: 3px; font-family: inherit; color: #eef0ff;
+  }
+  .tools button.on { border-color: #ffd166; background: rgba(255,209,102,0.18); }
+  .tools button svg { width: 30px; height: 26px; }
+  .tools button span { font-size: 0.56rem; color: #9a9ec7; line-height: 1.1; text-align: center; }
+  .tools button.on span { color: #ffd166; }
+
+  .hint { font-size: 0.7rem; color: #9a9ec7; text-align: center; margin: 0 0 9px; line-height: 1.5; }
+
+  /* 🛤️ Ճանապարհը. ձախից աջ, վերևից ներքև — ինչպես գիրք ես կարդում */
+  .track { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; margin-bottom: 6px; }
+  .cell {
+    aspect-ratio: 1; background: #1d1d3f; border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 9px; cursor: pointer; padding: 0; display: flex;
+    align-items: flex-end; justify-content: center; position: relative; overflow: hidden;
+  }
+  .cell svg { width: 100%; height: 100%; }
+  .cell:active { transform: scale(0.92); }
+  .cell.filled { border-color: rgba(255,209,102,0.45); }
+  .rowlab { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; margin-bottom: 13px; }
+  .rowlab span { font-size: 0.54rem; color: #52567e; text-align: center; }
+
+  .count { font-size: 0.72rem; color: #9a9ec7; text-align: center; margin: 0 0 14px; }
+  .count b { color: #ffd166; }
+
+  .acts { display: flex; flex-direction: column; gap: 8px; }
+  .acts button {
+    width: 100%; padding: 13px; border-radius: 13px; cursor: pointer;
+    font-family: inherit; font-size: 0.9rem; font-weight: bold;
+    border: 2px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); color: #eef0ff;
+  }
+  .acts button.go { background: #ffd166; border-color: #ffd166; color: #2e2410; }
+  .acts button.share { background: #6ee7b7; border-color: #6ee7b7; color: #102a20; }
+  .acts button:active { transform: scale(0.97); }
+
+  #link {
+    margin-top: 11px; width: 100%; padding: 10px; border-radius: 11px; font-size: 0.68rem;
+    background: #0c0c1e; color: #9a9ec7; border: 2px solid rgba(255,255,255,0.14);
+    font-family: monospace; word-break: break-all; resize: none; height: 76px;
+  }
+  #link[hidden], #toast[hidden] { display: none !important; }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 40;
+    background: #ffd166; color: #2e2410; font-weight: bold; max-width: 92vw; text-align: center;
+    padding: 11px 20px; border-radius: 999px; font-size: 0.82rem;
+  }
+  .back {
+    position: fixed; top: 10px; left: 10px; z-index: 30; color: #eef0ff; text-decoration: none;
+    background: rgba(20,26,34,0.8); border: 2px solid rgba(255,255,255,0.4);
+    padding: 5px 12px; border-radius: 999px; font-size: 0.78rem;
+  }
+  footer { margin-top: 22px; text-align: center; font-size: 0.66rem; color: #52567e; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<a class="back" href="../">← Golden Games</a>
+
+<div class="wrap">
+  <h1 id="h1">Ոսկե Կառուցող 🧱</h1>
+  <p class="sub" id="sub"></p>
+
+  <div class="tools" id="tools"></div>
+  <p class="hint" id="hint"></p>
+
+  <div class="track" id="track"></div>
+  <div class="rowlab" id="rowlab"></div>
+
+  <p class="count" id="count"></p>
+
+  <div class="acts">
+    <button class="go" id="playBtn"></button>
+    <button class="share" id="shareBtn"></button>
+    <button id="clearBtn"></button>
+  </div>
+  <textarea id="link" readonly hidden></textarea>
+
+  <footer id="foot"></footer>
+</div>
+
+<div id="toast" hidden></div>
+
+<script>
+// ——————————————————————————————————————————————————————
+//  ՈՍԿԵ ԿԱՌՈՒՑՈՂ 🧱 — Արենի միտքն է
+//  «Խաղացողն ի՛նքն է կառուցում իր մակարդակը ու ուղարկում ընկերոջը
+//   փորձելու։ Այսինքն կայքը դառնում է ոչ միայն խաղալու,
+//   այլ ստեղծելու տեղ»։
+//  Կայքը սերվեր չունի, դրա համար ամբողջ մակարդակը թաքնվում է
+//  հենց հղման մեջ՝ ?lvl=..b.B..c — մեկ տառ՝ մեկ վանդակ։
+// ——————————————————————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'Ոսկե Կառուցող 🧱', s:'Կառուցիր քո մակարդակը ու ուղարկիր ընկերոջդ՝ թող փորձի անցնել։',
+        hint:'Ընտրիր գործիքը, հետո հպիր վանդակներին։ Ճանապարհը կարդացվում է ձախից աջ, վերևից ներքև՝ ինչպես գիրք։',
+        play:'▶ Փորձել իմ մակարդակը', share:'🔗 Ուղարկել ընկերոջը', clear:'🗑 Մաքրել ամեն ինչ',
+        count:(n)=>'Ճանապարհին՝ <b>'+n+'</b> բան',
+        copied:'Հղումը պատճենվեց 🔗 Ուղարկիր ընկերոջդ', manual:'Պատճենիր այս հղումը ու ուղարկիր ընկերոջդ 🔗',
+        empty:'Դատարկ ճանապարհ է։ Նախ մի բան դիր 🧱', cleared:'Մաքրվեց',
+        start:'ՍԿԻԶԲ', fin:'ՎԵՐՋ',
+        n:{ e:'Ջնջել', b:'Արկղ', B:'Բարձր', c:'Ագռավ', f:'Ձուկ', g:'Ոսկե ձուկ' },
+        foot:'Ընկերդ կխաղա քո մակարդակը իսկական Կատվիկի մեջ՝ նույն սրտիկներով ու ձայներով 🐱' },
+  ru: { t:'Золотой Строитель 🧱', s:'Построй свой уровень и отправь другу — пусть попробует пройти.',
+        hint:'Выбери инструмент, потом нажимай на клетки. Дорога читается слева направо, сверху вниз — как книга.',
+        play:'▶ Проверить мой уровень', share:'🔗 Отправить другу', clear:'🗑 Очистить всё',
+        count:(n)=>'На дороге: <b>'+n+'</b> предметов',
+        copied:'Ссылка скопирована 🔗 Отправь другу', manual:'Скопируй эту ссылку и отправь другу 🔗',
+        empty:'Дорога пустая. Сначала что-нибудь поставь 🧱', cleared:'Очищено',
+        start:'СТАРТ', fin:'ФИНИШ',
+        n:{ e:'Стереть', b:'Ящик', B:'Высокий', c:'Ворона', f:'Рыба', g:'Золотая' },
+        foot:'Друг сыграет твой уровень в настоящем Котике — с теми же жизнями и звуками 🐱' },
+  en: { t:'Golden Builder 🧱', s:'Build your own level and send it to a friend to try.',
+        hint:'Pick a tool, then tap the cells. The track reads left to right, top to bottom — like a book.',
+        play:'▶ Test my level', share:'🔗 Send to a friend', clear:'🗑 Clear everything',
+        count:(n)=>'On the track: <b>'+n+'</b> things',
+        copied:'Link copied 🔗 Send it to your friend', manual:'Copy this link and send it to your friend 🔗',
+        empty:'The track is empty. Put something down first 🧱', cleared:'Cleared',
+        start:'START', fin:'END',
+        n:{ e:'Erase', b:'Box', B:'Tall', c:'Crow', f:'Fish', g:'Gold fish' },
+        foot:'Your friend plays your level inside the real Golden Cat — same lives, same sounds 🐱' },
+  es: { t:'Constructor Dorado 🧱', s:'Construye tu nivel y mándaselo a un amigo para que lo intente.',
+        hint:'Elige una herramienta y toca las casillas. El camino se lee de izquierda a derecha y de arriba abajo, como un libro.',
+        play:'▶ Probar mi nivel', share:'🔗 Enviar a un amigo', clear:'🗑 Borrar todo',
+        count:(n)=>'En el camino: <b>'+n+'</b> cosas',
+        copied:'Enlace copiado 🔗 Mándaselo a tu amigo', manual:'Copia este enlace y mándaselo a tu amigo 🔗',
+        empty:'El camino está vacío. Pon algo primero 🧱', cleared:'Borrado',
+        start:'INICIO', fin:'FIN',
+        n:{ e:'Borrar', b:'Caja', B:'Alta', c:'Cuervo', f:'Pez', g:'Pez dorado' },
+        foot:'Tu amigo juega tu nivel dentro del Gato Dorado de verdad, con las mismas vidas y sonidos 🐱' },
+  fr: { t:'Constructeur Doré 🧱', s:'Construis ton niveau et envoie-le à un ami pour qu’il essaie.',
+        hint:'Choisis un outil, puis touche les cases. La piste se lit de gauche à droite, de haut en bas — comme un livre.',
+        play:'▶ Tester mon niveau', share:'🔗 Envoyer à un ami', clear:'🗑 Tout effacer',
+        count:(n)=>'Sur la piste : <b>'+n+'</b> choses',
+        copied:'Lien copié 🔗 Envoie-le à ton ami', manual:'Copie ce lien et envoie-le à ton ami 🔗',
+        empty:'La piste est vide. Pose d’abord quelque chose 🧱', cleared:'Effacé',
+        start:'DÉPART', fin:'FIN',
+        n:{ e:'Effacer', b:'Caisse', B:'Haute', c:'Corbeau', f:'Poisson', g:'Poisson d’or' },
+        foot:'Ton ami joue ton niveau dans le vrai Chat Doré — mêmes vies, mêmes sons 🐱' },
+  de: { t:'Goldener Baumeister 🧱', s:'Bau dein eigenes Level und schick es einem Freund zum Ausprobieren.',
+        hint:'Wähle ein Werkzeug und tippe auf die Felder. Die Strecke liest sich von links nach rechts, von oben nach unten — wie ein Buch.',
+        play:'▶ Mein Level testen', share:'🔗 An einen Freund schicken', clear:'🗑 Alles löschen',
+        count:(n)=>'Auf der Strecke: <b>'+n+'</b> Dinge',
+        copied:'Link kopiert 🔗 Schick ihn deinem Freund', manual:'Kopiere diesen Link und schick ihn deinem Freund 🔗',
+        empty:'Die Strecke ist leer. Stell erst etwas hin 🧱', cleared:'Gelöscht',
+        start:'START', fin:'ZIEL',
+        n:{ e:'Löschen', b:'Kiste', B:'Hoch', c:'Krähe', f:'Fisch', g:'Goldfisch' },
+        foot:'Dein Freund spielt dein Level in der echten Goldenen Katze — gleiche Leben, gleiche Klänge 🐱' },
+  ja: { t:'ゴールデン・ビルダー 🧱', s:'じぶんのステージを作って、ともだちにおくってみよう。',
+        hint:'どうぐをえらんで、マスをタップしてね。コースは左から右、上から下へ — 本とおなじ。',
+        play:'▶ じぶんのステージをためす', share:'🔗 ともだちにおくる', clear:'🗑 ぜんぶけす',
+        count:(n)=>'コースに <b>'+n+'</b> こ',
+        copied:'リンクをコピーしたよ 🔗 ともだちにおくってね', manual:'このリンクをコピーしてともだちにおくってね 🔗',
+        empty:'コースがからっぽだよ。まず何かおいてね 🧱', cleared:'けしたよ',
+        start:'スタート', fin:'ゴール',
+        n:{ e:'けす', b:'はこ', B:'たかい', c:'カラス', f:'さかな', g:'金のさかな' },
+        foot:'ともだちは本物のゴールデンキャットできみのステージをあそぶよ 🐱' },
+  zh: { t:'黄金建造者 🧱', s:'造一个自己的关卡，发给朋友来挑战。',
+        hint:'先选工具，再点格子。赛道从左到右、从上到下阅读，就像看书一样。',
+        play:'▶ 试玩我的关卡', share:'🔗 发给朋友', clear:'🗑 全部清空',
+        count:(n)=>'赛道上有 <b>'+n+'</b> 个东西',
+        copied:'链接已复制 🔗 发给你的朋友吧', manual:'复制这个链接发给你的朋友 🔗',
+        empty:'赛道是空的，先放点东西 🧱', cleared:'已清空',
+        start:'起点', fin:'终点',
+        n:{ e:'擦除', b:'箱子', B:'高箱', c:'乌鸦', f:'鱼', g:'金鱼' },
+        foot:'朋友会在真正的黄金小猫里玩你的关卡——一样的生命，一样的声音 🐱' },
+  it: { t:'Costruttore Dorato 🧱', s:'Costruisci il tuo livello e mandalo a un amico da provare.',
+        hint:'Scegli uno strumento, poi tocca le caselle. Il percorso si legge da sinistra a destra, dall’alto in basso — come un libro.',
+        play:'▶ Prova il mio livello', share:'🔗 Manda a un amico', clear:'🗑 Cancella tutto',
+        count:(n)=>'Sul percorso: <b>'+n+'</b> cose',
+        copied:'Link copiato 🔗 Mandalo al tuo amico', manual:'Copia questo link e mandalo al tuo amico 🔗',
+        empty:'Il percorso è vuoto. Metti prima qualcosa 🧱', cleared:'Cancellato',
+        start:'VIA', fin:'FINE',
+        n:{ e:'Cancella', b:'Cassa', B:'Alta', c:'Corvo', f:'Pesce', g:'Pesce d’oro' },
+        foot:'Il tuo amico gioca il tuo livello dentro il vero Gatto Dorato — stesse vite, stessi suoni 🐱' },
+  ka: { t:'ოქროს მშენებელი 🧱', s:'ააგე შენი დონე და გაუგზავნე მეგობარს გასავლელად.',
+        hint:'აირჩიე ხელსაწყო, მერე შეეხე უჯრებს. ბილიკი იკითხება მარცხნიდან მარჯვნივ, ზემოდან ქვემოთ — როგორც წიგნი.',
+        play:'▶ ჩემი დონის გამოცდა', share:'🔗 მეგობართან გაგზავნა', clear:'🗑 ყველაფრის წაშლა',
+        count:(n)=>'ბილიკზე: <b>'+n+'</b> ნივთი',
+        copied:'ბმული დაკოპირდა 🔗 გაუგზავნე მეგობარს', manual:'დააკოპირე ეს ბმული და გაუგზავნე მეგობარს 🔗',
+        empty:'ბილიკი ცარიელია. ჯერ რამე დადე 🧱', cleared:'წაიშალა',
+        start:'დასაწყისი', fin:'დასასრული',
+        n:{ e:'წაშლა', b:'ყუთი', B:'მაღალი', c:'ყვავი', f:'თევზი', g:'ოქროს თევზი' },
+        foot:'შენი მეგობარი შენს დონეს ნამდვილ ოქროს კატაში ითამაშებს — იგივე სიცოცხლეებით და ხმებით 🐱' },
+  hi: { t:'गोल्डन बिल्डर 🧱', s:'अपना लेवल बनाओ और दोस्त को भेजो, वो खेलकर देखे।',
+        hint:'पहले औज़ार चुनो, फिर खानों पर टैप करो। रास्ता बाएँ से दाएँ, ऊपर से नीचे पढ़ा जाता है — किताब की तरह।',
+        play:'▶ मेरा लेवल आज़माओ', share:'🔗 दोस्त को भेजो', clear:'🗑 सब मिटाओ',
+        count:(n)=>'रास्ते पर: <b>'+n+'</b> चीज़ें',
+        copied:'लिंक कॉपी हो गया 🔗 दोस्त को भेजो', manual:'यह लिंक कॉपी करके दोस्त को भेजो 🔗',
+        empty:'रास्ता खाली है। पहले कुछ रखो 🧱', cleared:'मिट गया',
+        start:'शुरू', fin:'अंत',
+        n:{ e:'मिटाओ', b:'डिब्बा', B:'ऊँचा', c:'कौआ', f:'मछली', g:'सुनहरी मछली' },
+        foot:'तुम्हारा दोस्त तुम्हारा लेवल असली गोल्डन बिल्ली में खेलेगा — वही जानें, वही आवाज़ें 🐱' },
+};
+const T = TRL[ggLang] || TRL.hy;
+
+document.documentElement.lang = ggLang;
+document.title = T.t + ' · Golden Games';
+document.getElementById('h1').textContent = T.t;
+document.getElementById('sub').textContent = T.s;
+document.getElementById('hint').textContent = T.hint;
+document.getElementById('playBtn').textContent = T.play;
+document.getElementById('shareBtn').textContent = T.share;
+document.getElementById('clearBtn').textContent = T.clear;
+document.getElementById('foot').textContent = T.foot;
+
+// ——— 🔊 Ձայնը. միանում է առաջին հպումից ———
+let AC = null;
+function wakeAudio() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f1, f2, type, len, vol, delay) {
+  if (!AC) return;
+  const t0 = AC.currentTime + (delay || 0);
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'triangle';
+  o.frequency.setValueAtTime(f1, t0);
+  if (f2 && f2 !== f1) o.frequency.exponentialRampToValueAtTime(f2, t0 + len);
+  g.gain.setValueAtTime(vol || 0.25, t0);
+  g.gain.exponentialRampToValueAtTime(0.001, t0 + len);
+  o.connect(g); g.connect(AC.destination);
+  o.start(t0); o.stop(t0 + len + 0.05);
+}
+
+// ——— Ճանապարհը. 32 վանդակ, մեկ տառ՝ մեկ վանդակ ———
+const CELLS = 32;
+const KINDS = ['e', 'b', 'B', 'c', 'f', 'g'];   // e = ջնջել (դատարկ վանդակ)
+let level = new Array(CELLS).fill('.');
+let tool = 'b';
+
+// Նկարները. ձևերով են նկարած, ճիշտ ինչպես խաղի մեջ
+function art(k, small) {
+  const gy = small ? 24 : 74;                    // գետնի գիծը
+  const ground = '<rect x="0" y="' + gy + '" width="100" height="' + (small ? 8 : 26) + '" fill="#e0b070"/>';
+  // արկղը. ցածրն ու բարձրը պիտի ՄԻԱՆԳԱՄԻՑ տարբերվեն, դրա համար
+  // բարձրը ոչ միայն բարձր է, այլև երկու տախտակ ունի
+  const box = (h, w) => {
+    const x = 50 - w / 2, y = gy - h;
+    let r = '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="#c9863f" stroke="#8f5a24" stroke-width="' + (small ? 3 : 5) + '"/>';
+    r += '<rect x="' + (50 - (small ? 2 : 4)) + '" y="' + y + '" width="' + (small ? 4 : 8) + '" height="' + h + '" fill="#8f5a24"/>';
+    if (h > (small ? 16 : 55)) r += '<rect x="' + x + '" y="' + (y + h / 2 - (small ? 1.5 : 3)) + '" width="' + w + '" height="' + (small ? 3 : 6) + '" fill="#8f5a24"/>';
+    return r;
+  };
+  if (k === 'b') return ground + box(small ? 13 : 40, small ? 40 : 52);
+  if (k === 'B') return ground + box(small ? 22 : 68, small ? 40 : 52);
+  // ագռավը ԲԱՐՁՐ է թռչում ու թևերը բացած է — որ ձկան հետ չշփոթվի
+  if (k === 'c') {
+    const y = small ? 9 : 26;
+    const s2 = small ? 0.5 : 1;
+    return ground
+      + '<path d="M' + (50 - 34 * s2) + ' ' + (y - 9 * s2) + ' q' + (16 * s2) + ' ' + (14 * s2) + ' ' + (30 * s2) + ' ' + (3 * s2)
+      +   ' q' + (14 * s2) + ' ' + (11 * s2) + ' ' + (30 * s2) + ' ' + (-3 * s2) + '" stroke="#2b3350" stroke-width="' + (small ? 4 : 7) + '" fill="none" stroke-linecap="round"/>'
+      + '<ellipse cx="50" cy="' + (y + 6 * s2) + '" rx="' + (13 * s2) + '" ry="' + (8 * s2) + '" fill="#2b3350"/>'
+      + '<circle cx="' + (50 + 8 * s2) + '" cy="' + (y + 3 * s2) + '" r="' + (4.5 * s2) + '" fill="#2b3350"/>'
+      + '<path d="M' + (50 + 12 * s2) + ' ' + (y + 3 * s2) + ' l' + (9 * s2) + ' ' + (2.5 * s2) + ' l' + (-9 * s2) + ' ' + (2.5 * s2) + ' z" fill="#e0a92b"/>'
+      + '<circle cx="' + (50 + 8 * s2) + '" cy="' + (y + 2 * s2) + '" r="' + (1.4 * s2) + '" fill="#ffd166"/>';
+  }
+  if (k === 'f' || k === 'g') {
+    const c = k === 'g' ? '#ffd166' : '#4aa3d8', d = k === 'g' ? '#e0a92b' : '#2b6cd4';
+    const y = gy - (small ? 14 : 42), s2 = small ? 0.55 : 1;
+    return ground
+      + '<ellipse cx="48" cy="' + y + '" rx="' + (20 * s2) + '" ry="' + (12 * s2) + '" fill="' + c + '"/>'
+      + '<path d="M' + (48 + 19 * s2) + ' ' + y + ' l' + (13 * s2) + ' ' + (-9 * s2) + ' v' + (18 * s2) + ' z" fill="' + d + '"/>'
+      + '<circle cx="' + (48 - 9 * s2) + '" cy="' + (y - 3 * s2) + '" r="' + (2.6 * s2) + '" fill="#12122b"/>';
+  }
+  return ground;                                  // դատարկ վանդակ՝ ուղղակի գետին
+}
+const svg = (k, small) => '<svg viewBox="0 0 100 ' + (small ? 30 : 100) + '" aria-hidden="true">' + art(k, small) + '</svg>';
+
+// ——— Ուրվականի պաշտպանություն. հեռախոսը հպումից հետո կեղծ mouse է ուղարկում ———
+let lastTouchAt = 0;
+function onTap(el, fn) {
+  el.addEventListener('touchend', e => {
+    lastTouchAt = Date.now();
+    e.preventDefault();
+    wakeAudio();
+    fn();
+  }, { passive: false });
+  el.addEventListener('click', e => {
+    if (Date.now() - lastTouchAt < 700) return;
+    e.preventDefault();
+    wakeAudio();
+    fn();
+  });
+}
+
+// ——— Գործիքների շարքը ———
+const toolsEl = document.getElementById('tools');
+for (const k of KINDS) {
+  const b = document.createElement('button');
+  b.dataset.k = k;
+  b.innerHTML = svg(k === 'e' ? '.' : k, true) + '<span>' + T.n[k] + '</span>';
+  if (k === tool) b.className = 'on';
+  onTap(b, () => {
+    tool = k;
+    tone(560, 700, 'triangle', 0.07, 0.16);
+    toolsEl.querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.k === k));
+  });
+  toolsEl.appendChild(b);
+}
+
+// ——— Ճանապարհի վանդակները ———
+const trackEl = document.getElementById('track');
+const cellEls = [];
+for (let i = 0; i < CELLS; i++) {
+  const c = document.createElement('button');
+  c.className = 'cell';
+  onTap(c, () => {
+    const put = tool === 'e' ? '.' : tool;
+    level[i] = (level[i] === put) ? '.' : put;    // նույնը կրկին հպեցիր՝ վերցնում ես
+    tone(level[i] === '.' ? 300 : 660, level[i] === '.' ? 220 : 880, 'triangle', 0.08, 0.2);
+    paint();
+    save();
+  });
+  cellEls.push(c);
+  trackEl.appendChild(c);
+}
+// ՍԿԻԶԲ ... ՎԵՐՋ ցուցիչները առաջին շարքի տակ
+const rowlab = document.getElementById('rowlab');
+for (let i = 0; i < 8; i++) {
+  const s = document.createElement('span');
+  s.textContent = i === 0 ? T.start : (i === 7 ? '' : '');
+  rowlab.appendChild(s);
+}
+rowlab.lastChild.textContent = T.fin;
+
+function paint() {
+  for (let i = 0; i < CELLS; i++) {
+    cellEls[i].innerHTML = svg(level[i], false);
+    cellEls[i].classList.toggle('filled', level[i] !== '.');
+  }
+  const n = level.filter(x => x !== '.').length;
+  document.getElementById('count').innerHTML = T.count(n);
+}
+
+// ——— Պահում ու կարդում ենք ———
+function code() { return level.join('').replace(/\.+$/, '') || '.'; }
+function save() { try { localStorage.setItem('aren-builder-level', level.join('')); } catch (e) {} }
+function load(str) {
+  if (!str) return false;
+  const arr = String(str).slice(0, CELLS).split('');
+  if (!arr.every(ch => ch === '.' || KINDS.indexOf(ch) >= 0)) return false;
+  level = new Array(CELLS).fill('.');
+  arr.forEach((ch, i) => { if (ch !== 'e') level[i] = ch; });
+  return true;
+}
+// հղումով եկած մակարդակը կարելի է նաև ՈՒՂՂԵԼ այստեղ
+let fromUrl = null;
+try { fromUrl = new URLSearchParams(location.search).get('lvl'); } catch (e) {}
+if (!load(fromUrl)) { try { load(localStorage.getItem('aren-builder-level')); } catch (e) {} }
+paint();
+
+// ——— Ծանուցում ———
+let toastT = 0;
+function say(txt) {
+  const el = document.getElementById('toast');
+  el.textContent = txt;
+  el.hidden = false;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { el.hidden = true; }, 2600);
+}
+
+const playUrl = () => location.href.replace(/builder\/.*$/, 'cat-jump/run/') + '?lvl=' + encodeURIComponent(code());
+
+onTap(document.getElementById('playBtn'), () => {
+  if (code() === '.') { say(T.empty); tone(200, 120, 'sawtooth', 0.2, 0.14); return; }
+  tone(523, 784, 'triangle', 0.16, 0.28);
+  location.href = playUrl();
+});
+
+onTap(document.getElementById('shareBtn'), () => {
+  if (code() === '.') { say(T.empty); tone(200, 120, 'sawtooth', 0.2, 0.14); return; }
+  const url = playUrl();
+  const box = document.getElementById('link');
+  box.value = url;
+  box.hidden = false;
+  tone(660, 990, 'triangle', 0.12, 0.26);
+  tone(880, 1200, 'triangle', 0.2, 0.24, 0.1);
+  // Պատճենելը ամեն հեռախոսում չի ստացվում — այդ դեպքում ցույց ենք տալիս հղումը
+  try {
+    navigator.clipboard.writeText(url).then(() => say(T.copied), () => say(T.manual));
+  } catch (e) { say(T.manual); }
+});
+
+onTap(document.getElementById('clearBtn'), () => {
+  level = new Array(CELLS).fill('.');
+  document.getElementById('link').hidden = true;
+  tone(400, 200, 'triangle', 0.16, 0.2);
+  paint();
+  save();
+  say(T.cleared);
+});
+
+// Կրկնակի հպումով խոշորացումը կանգնեցնում ենք
+let lastEnd = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastEnd < 300) e.preventDefault();
+  lastEnd = now;
+}, { passive: false });
+</script>
+<script src="../gg-kit.js" data-kind="info" defer></script>
+</body>
+</html>
