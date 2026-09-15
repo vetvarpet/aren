@@ -290,6 +290,7 @@
   .c52 { background: linear-gradient(135deg, #1a3227, #3d6b4a); }
   .c53 { background: linear-gradient(135deg, #231a45, #3b4a2b); }
   .c54 { background: linear-gradient(135deg, #f6f4ee, #dfe8e2); }
+  .c55 { background: linear-gradient(135deg, #182043, #3a2f63); }
   .info { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
   .info h2 { font-size: 1.05rem; }
   .info .real { flex: 0 0 auto; color: var(--accent); font-size: 0.78rem; margin-top: -3px; }
@@ -1904,6 +1905,26 @@
       </div>
     </a>
 
+    <a class="game" href="./online/">
+      <div class="cover c55">
+        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="300" height="140" fill="#182043"/>
+          <rect x="34" y="24" width="60" height="98" rx="10" fill="#2b3560"/><rect x="40" y="34" width="48" height="74" rx="4" fill="#7fd1c1"/>
+          <rect x="206" y="24" width="60" height="98" rx="10" fill="#2b3560"/><rect x="212" y="34" width="48" height="74" rx="4" fill="#e8756a"/>
+          <path d="M104 72 h92" stroke="#f0c85a" stroke-width="5" stroke-dasharray="11 9" stroke-linecap="round"/>
+          <circle cx="150" cy="72" r="20" fill="#f0c85a"/>
+          <path d="M143 64 l0 16 M157 64 l0 16 M143 72 h14" stroke="#10162a" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M60 116 l4 -10 l4 10 Z" fill="#ffe9a8"/><path d="M232 116 l4 -10 l4 10 Z" fill="#ffe9a8"/>
+        </svg>
+      <span class="new-tag">ՆՈՐ</span></div>
+      <div class="info">
+        <h2>Golden Online</h2>
+        <p class="real">Օնլայն Մենամարտ</p>
+        <p class="desc">Երկու տարբեր հեռախոս։ Խաղում ես երեք փուլ, ստանում կոդ ու ուղարկում ընկերոջդ — նա նույն փուլերն է խաղում, ու երևում է ով է ուժեղը։</p>
+        <div class="play">▶ Մենամարտ</div>
+      </div>
+    </a>
+
     <a class="game" href="./time/">
       <div class="cover c26">
         <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -2135,6 +2156,7 @@ const DICT = {
       './slow/': ['Медленный', 'Чем медленнее играешь, тем больше очков. Но за 60 секунд надо доехать.', '▶ Играть'],
       './swap/': ['Подмена', 'Каждые 10 секунд игра становится другой игрой. Очки общие.', '▶ Играть'],
       './poly/': ['Многоугольник', 'Нажимай и набирай очки. Каждые 10 очков добавляют фигуре угол — от точки до миллионоугольника.', '▶ Нажимать'],
+      './online/': ['Онлайн-Дуэль', 'Два разных телефона. Пройди три раунда, получи код и отправь другу — он играет те же раунды, и видно, кто сильнее.', '▶ В бой'],
       './time/': ['Машина времени', 'Вся история сайта — от первого летающего кота до сегодня, день за днём.', '▶ В путь'],
       './museum/': ['Музей', 'Место отдыха удалённых игр: от пирата до золотого котёнка. Соблюдай тишину 🤫', '▶ Войти'],
     },
@@ -2206,6 +2228,7 @@ const DICT = {
       './slow/': ['Slow', 'The slower you play, the more points. But you must finish within 60 seconds.', '▶ Play'],
       './swap/': ['Swap', 'Every 10 seconds the game becomes a different game. One shared score.', '▶ Play'],
       './poly/': ['Polygon', 'Tap to earn points. Every 10 points adds a corner to the shape — from a point to a million-gon.', '▶ Tap'],
+      './online/': ['Online Duel', 'Two different phones. Play three rounds, get a code and send it to a friend — they play the same rounds and you see who is stronger.', '▶ Duel'],
       './time/': ['Time Machine', 'The whole story of the site — from the first flying cat to today, day by day.', '▶ Travel'],
       './museum/': ['Museum', 'The resting place of deleted games: from the pirate to the golden kitten. Keep quiet 🤫', '▶ Enter'],
     },
@@ -2277,6 +2300,7 @@ const DICT = {
       './slow/': ['Lento', 'Cuanto más lento juegas, más puntos. Pero hay que llegar en 60 segundos.', '▶ Jugar'],
       './swap/': ['Cambiazo', 'Cada 10 segundos el juego se convierte en otro. Los puntos son comunes.', '▶ Jugar'],
       './poly/': ['Polígono', 'Toca y gana puntos. Cada 10 puntos añaden una esquina — del punto al millón de lados.', '▶ Tocar'],
+      './online/': ['Duelo en Línea', 'Dos móviles distintos. Juega tres rondas, consigue un código y mándaselo a un amigo: juega las mismas rondas y se ve quién gana.', '▶ Duelo'],
       './time/': ['Máquina del tiempo', 'Toda la historia del sitio, del primer gato volador hasta hoy, día a día.', '▶ Viajar'],
       './museum/': ['Museo', 'El descanso de los juegos borrados: del pirata al gatito dorado. Guarda silencio 🤫', '▶ Entrar'],
     },
@@ -2348,6 +2372,7 @@ const DICT = {
       './slow/': ['Lent', 'Plus tu joues lentement, plus tu marques. Mais il faut finir en 60 secondes.', '▶ Jouer'],
       './swap/': ['Échange', 'Toutes les 10 secondes, le jeu devient un autre jeu. Un seul score.', '▶ Jouer'],
       './poly/': ['Polygone', 'Touche et gagne des points. Chaque 10 points ajoutent un coin — du point au million de côtés.', '▶ Toucher'],
+      './online/': ['Duel en Ligne', 'Deux téléphones différents. Joue trois manches, récupère un code et envoie-le à un ami : il joue les mêmes manches et on voit qui gagne.', '▶ Duel'],
       './time/': ['Machine à remonter le temps', 'Toute l’histoire du site, du premier chat volant à aujourd’hui, jour après jour.', '▶ Voyager'],
       './museum/': ['Musée', 'Le repos des jeux supprimés : du pirate au chaton doré. Silence, s’il te plaît 🤫', '▶ Entrer'],
     },
@@ -2419,6 +2444,7 @@ const DICT = {
       './slow/': ['Langsam', 'Je langsamer du spielst, desto mehr Punkte. Aber in 60 Sekunden musst du ankommen.', '▶ Spielen'],
       './swap/': ['Tausch', 'Alle 10 Sekunden wird das Spiel zu einem anderen Spiel. Eine Punktzahl.', '▶ Spielen'],
       './poly/': ['Vieleck', 'Tippe und sammle Punkte. Je 10 Punkte geben eine Ecke dazu — vom Punkt bis zum Millioneneck.', '▶ Tippen'],
+      './online/': ['Online-Duell', 'Zwei verschiedene Handys. Spiel drei Runden, hol den Code und schick ihn einem Freund — er spielt dieselben Runden, und man sieht, wer gewinnt.', '▶ Duell'],
       './time/': ['Zeitmaschine', 'Die ganze Geschichte der Seite — von der ersten fliegenden Katze bis heute, Tag für Tag.', '▶ Reisen'],
       './museum/': ['Museum', 'Der Ruheort gelöschter Spiele: vom Piraten bis zum goldenen Kätzchen. Bitte leise 🤫', '▶ Eintreten'],
     },
@@ -2490,6 +2516,7 @@ const DICT = {
       './slow/': ['ゆっくり', 'ゆっくりあそぶほどてんすうがふえる。でも60びょういないにゴールしてね。', '▶ あそぶ'],
       './swap/': ['いれかわり', '10びょうごとにゲームがべつのゲームになる。スコアはひとつ。', '▶ あそぶ'],
       './poly/': ['たかっけい', 'タップしてポイントをためよう。10ポイントごとにかどが1つふえる。てんから100まんかっけいまで。', '▶ タップ'],
+      './online/': ['オンラインたいけつ', 'べつべつのスマホで。3ラウンドあそんでコードをともだちにおくると、おなじラウンドをあそんでどっちがつよいかわかる。', '▶ たいけつ'],
       './time/': ['タイムマシン', 'サイトのぜんぶの歴史：さいしょの飛びネコから今日まで、1日ずつ。', '▶ たびする'],
       './museum/': ['ミュージアム', 'けされたゲームのおやすみの場所：海賊から金のこねこまで。おしずかに 🤫', '▶ はいる'],
     },
@@ -2561,6 +2588,7 @@ const DICT = {
       './slow/': ['慢慢来', '玩得越慢分越多。但必须在 60 秒内到终点。', '▶ 玩'],
       './swap/': ['调包', '每 10 秒游戏就变成另一个游戏。分数共用。', '▶ 玩'],
       './poly/': ['多边形', '点击赚积分。每 10 分给图形加一个角。从一个点到一百万边形。', '▶ 点击'],
+      './online/': ['在线对决', '两台不同的手机。玩三个回合拿到代码发给朋友，他玩同样的回合，就知道谁更强。', '▶ 对决'],
       './time/': ['时光机', '网站的全部历史——从第一只飞猫到今天，一天一天看。', '▶ 出发'],
       './museum/': ['博物馆', '被删游戏的安息之地：从海盗到金色小猫。请保持安静 🤫', '▶ 进入'],
     },
@@ -2632,6 +2660,7 @@ const DICT = {
       './slow/': ['Lento', 'Più piano giochi, più punti fai. Ma devi arrivare in 60 secondi.', '▶ Gioca'],
       './swap/': ['Scambio', 'Ogni 10 secondi il gioco diventa un altro gioco. Un solo punteggio.', '▶ Gioca'],
       './poly/': ['Poligono', 'Tocca e guadagna punti. Ogni 10 punti aggiungono un angolo — dal punto al milione di lati.', '▶ Tocca'],
+      './online/': ['Duello Online', 'Due telefoni diversi. Gioca tre round, prendi il codice e mandalo a un amico: gioca gli stessi round e si vede chi vince.', '▶ Duello'],
       './time/': ['Macchina del tempo', 'Tutta la storia del sito — dal primo gatto volante a oggi, giorno per giorno.', '▶ Parti'],
       './museum/': ['Museo', 'Il luogo di riposo dei giochi cancellati: dal pirata al gattino dorato. Silenzio 🤫', '▶ Entra'],
     },
@@ -2703,6 +2732,7 @@ const DICT = {
       './slow/': ['ნელი', 'რაც უფრო ნელა თამაშობ, მით მეტი ქულა. მაგრამ 60 წამში უნდა მიხვიდე.', '▶ თამაში'],
       './swap/': ['გაცვლა', 'ყოველ 10 წამში თამაში სხვა თამაშად იქცევა. ქულა საერთოა.', '▶ თამაში'],
       './poly/': ['მრავალკუთხედი', 'შეეხე და დააგროვე ქულები. ყოველი 10 ქულა ერთ კუთხეს ამატებს — წერტილიდან მილიონკუთხედამდე.', '▶ შეხება'],
+      './online/': ['ონლაინ დუელი', 'ორი სხვადასხვა ტელეფონი. ითამაშე სამი რაუნდი, მიიღე კოდი და გაუგზავნე მეგობარს — ის იმავე რაუნდებს თამაშობს და გამოჩნდება ვინ სჯობს.', '▶ დუელი'],
       './time/': ['დროის მანქანა', 'საიტის მთელი ისტორია — პირველი მფრინავი კატიდან დღემდე, დღითი დღე.', '▶ გაემგზავრე'],
       './museum/': ['მუზეუმი', 'წაშლილი თამაშების დასასვენებელი ადგილი: მეკობრიდან ოქროს კატუნამდე. დაიცავი სიჩუმე 🤫', '▶ შედი'],
     },
@@ -2774,6 +2804,7 @@ const DICT = {
       './slow/': ['धीरे', 'जितना धीरे खेलोगे उतने ज़्यादा अंक। पर 60 सेकंड में पहुँचना है।', '▶ खेलो'],
       './swap/': ['अदला-बदली', 'हर 10 सेकंड में खेल दूसरा खेल बन जाता है। स्कोर एक ही।', '▶ खेलो'],
       './poly/': ['बहुभुज', 'छूकर अंक कमाओ। हर 10 अंक एक कोना जोड़ते हैं — बिंदु से दस लाख भुजाओं तक।', '▶ छुओ'],
+      './online/': ['ऑनलाइन मुक़ाबला', 'दो अलग-अलग फ़ोन। तीन राउंड खेलो, कोड लो और दोस्त को भेजो — वह वही राउंड खेलेगा और पता चलेगा कौन बेहतर है।', '▶ मुक़ाबला'],
       './time/': ['टाइम मशीन', 'साइट की पूरी कहानी — पहली उड़ने वाली बिल्ली से आज तक, दिन-ब-दिन।', '▶ चलो'],
       './museum/': ['संग्रहालय', 'हटाए गए खेलों के आराम की जगह: समुद्री डाकू से सुनहरी बिल्ली तक। शांति रखो 🤫', '▶ अंदर जाओ'],
     },
@@ -3004,6 +3035,7 @@ const MOODS = {
   './slow/': ['calm', 'think'],
   './swap/': ['fast'],
   './poly/': ['calm', 'fast'],
+  './online/': ['two', 'fast'],
   // time-ն ու museum-ը խաղ չեն — զտելիս թաքնվում են
 };
 let mood = null;

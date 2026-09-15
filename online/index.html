@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Օնլայն Մենամարտ 📡 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #141a30; overflow: hidden;
+               font-family: Arial, Helvetica, sans-serif; color: #f5eede; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  .ov { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 22px;
+        background: rgba(12,16,34,0.94); overflow-y: auto; }
+  .ov[hidden] { display: none !important; }
+  .ov h1 { margin: 0 0 6px; font-size: 1.35rem; color: #f0c85a; }
+  .ov p { margin: 0 0 14px; font-size: 0.9rem; line-height: 1.5; max-width: 330px; opacity: 0.92; }
+  .ov .big { font-size: 2.5rem; font-weight: bold; color: #ffe9a8; line-height: 1.1; }
+  .ov button, .ov a.btn {
+    font-family: inherit; font-size: 0.98rem; font-weight: bold; padding: 13px 24px; margin: 5px;
+    border-radius: 14px; border: none; background: #f0c85a; color: #10162a; cursor: pointer;
+    text-decoration: none; display: inline-block; min-width: 200px;
+  }
+  .ov button.ghost { background: transparent; color: #f5eede; border: 2px solid rgba(255,255,255,0.32); }
+  input, textarea {
+    font-family: inherit; font-size: 1rem; padding: 11px 13px; border-radius: 12px; width: 100%;
+    max-width: 300px; border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.08);
+    color: #f5eede; text-align: center; margin-bottom: 10px;
+  }
+  textarea { text-align: left; font-size: 0.8rem; height: 96px; resize: none; word-break: break-all; }
+  #codeBox {
+    background: rgba(240,200,90,0.14); border: 2px dashed #f0c85a; border-radius: 12px;
+    padding: 10px; font-size: 0.72rem; word-break: break-all; max-width: 320px; margin-bottom: 12px; color: #ffe9a8;
+  }
+  .vs { display: flex; gap: 14px; align-items: stretch; justify-content: center; margin-bottom: 14px; }
+  .vs > div { background: rgba(255,255,255,0.07); border-radius: 14px; padding: 12px 16px; min-width: 116px; }
+  .vs .nm { font-size: 0.76rem; opacity: 0.8; margin-bottom: 3px; }
+  .vs .sc { font-size: 1.7rem; font-weight: bold; color: #ffe9a8; }
+  .vs .me { border: 2px solid #7fd1c1; }
+  .vs .them { border: 2px solid #e8756a; }
+  #hud { position: fixed; top: 54px; left: 0; right: 0; z-index: 10; text-align: center;
+         pointer-events: none; text-shadow: 0 2px 6px #000; }
+  #hud .r { font-size: 1.05rem; font-weight: bold; color: #ffe9a8; }
+  #hud .tip { font-size: 0.82rem; opacity: 0.88; margin-top: 3px; }
+  .say { font-size: 0.78rem; opacity: 0.75; min-height: 18px; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:30;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="hud"><div class="r"></div><div class="tip"></div></div>
+
+<div class="ov" id="menu">
+  <h1 id="mT">Ոսկե Օնլայն Մենամարտ 📡</h1>
+  <p id="mS"></p>
+  <input id="nameIn" maxlength="10" placeholder="Անունդ">
+  <button id="newBtn"></button>
+  <button class="ghost" id="haveBtn"></button>
+</div>
+
+<div class="ov" id="paste" hidden>
+  <h1 id="pT"></h1>
+  <p id="pS"></p>
+  <textarea id="codeIn" spellcheck="false"></textarea>
+  <button id="openBtn"></button>
+  <button class="ghost" id="backBtn"></button>
+  <div class="say" id="pSay"></div>
+</div>
+
+<div class="ov" id="brief" hidden>
+  <h1 id="bT"></h1>
+  <p id="bS"></p>
+  <button id="startBtn"></button>
+</div>
+
+<div class="ov" id="result" hidden>
+  <h1 id="rT"></h1>
+  <div class="vs" id="vsBox"></div>
+  <p id="rS"></p>
+  <div id="codeBox" hidden></div>
+  <button id="sendBtn"></button>
+  <button class="ghost" id="againBtn"></button>
+  <div class="say" id="rSay"></div>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ՕՆԼԱՅՆ ՄԵՆԱՄԱՐՏ 📡 — Արենի միտքն է
+//  Երկու տարբեր հեռախոս, սերվեր չկա։ Խաղում ես երեք փուլ, կայքը
+//  քո արդյունքը դարձնում է կոդ, ուղարկում ես ընկերոջդ, նա նույն
+//  փուլերն է խաղում (նույն սերմով՝ ուրեմն նույն դժվարությամբ),
+//  ու միանգամից երևում է, թե ով հաղթեց։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'Ոսկե Օնլայն Մենամարտ 📡', s:'Խաղա երեք փուլ, ստացիր կոդ ու ուղարկիր ընկերոջդ։ Նա նույն փուլերն է խաղում, ու պարզվում է՝ ով է ուժեղը։',
+        nm:'Անունդ', neu:'🆕 Նոր մենամարտ', have:'🔑 Կոդ ունեմ', pT:'Կոդը', pS:'Տեղադրիր ընկերոջդ ուղարկած կոդը կամ հղումը։',
+        open:'▶ Բացել', back:'← Ետ', bad:'Այս կոդը չհասկացա 🤔',
+        bT:'Երեք փուլ', bS:'⚡ Ռեակցիա · 🎯 Ճշտություն · 🧠 Հիշողություն', go:'▶ Սկսել',
+        chal:(n,s)=>n+' հավաքել է '+s+' միավոր։ Կկարողանա՞ս ավելին։',
+        r:(i)=>'Փուլ '+i+'/3', r1:'⚡ Ռեակցիա', r2:'🎯 Ճշտություն', r3:'🧠 Հիշողություն',
+        r1tip:'Սպասիր ոսկեգույնին ու հպիր արագ', r2tip:'Հպիր, երբ սլաքը ոսկե գոտում է', r3tip:'Կրկնիր հերթականությունը',
+        soon:'Շուտ էր 😅', you:'Դու', rival:'Ընկերդ',
+        win:'Հաղթեցի՛ր 🏆', lose:'Պարտվեցիր 😿', tie:'Հավասար 🤝', done:'Արդյունքդ պատրաստ է',
+        send:'🔗 Ուղարկել ընկերոջը', copied:'Հղումը պատճենվեց ✅ Ուղարկիր ընկերոջդ',
+        manual:'Պատճենիր վերևի կոդը ու ուղարկիր', again:'↻ Նորից', tot:'Ընդամենը' },
+  ru: { t:'Золотая Онлайн-Дуэль 📡', s:'Пройди три раунда, получи код и отправь другу. Он играет те же раунды — и станет ясно, кто сильнее.',
+        nm:'Твоё имя', neu:'🆕 Новая дуэль', have:'🔑 У меня есть код', pT:'Код', pS:'Вставь код или ссылку, которую прислал друг.',
+        open:'▶ Открыть', back:'← Назад', bad:'Не понял этот код 🤔',
+        bT:'Три раунда', bS:'⚡ Реакция · 🎯 Точность · 🧠 Память', go:'▶ Начать',
+        chal:(n,s)=>n+' набрал '+s+' очков. Сможешь больше?',
+        r:(i)=>'Раунд '+i+'/3', r1:'⚡ Реакция', r2:'🎯 Точность', r3:'🧠 Память',
+        r1tip:'Жди золотого и жми быстро', r2tip:'Жми, когда стрелка в золотой зоне', r3tip:'Повтори последовательность',
+        soon:'Рано 😅', you:'Ты', rival:'Друг',
+        win:'Ты победил 🏆', lose:'Проиграл 😿', tie:'Ничья 🤝', done:'Твой результат готов',
+        send:'🔗 Отправить другу', copied:'Ссылка скопирована ✅ Отправь другу',
+        manual:'Скопируй код сверху и отправь', again:'↻ Ещё раз', tot:'Всего' },
+  en: { t:'Golden Online Duel 📡', s:'Play three rounds, get a code and send it to a friend. They play the same rounds — and you find out who is stronger.',
+        nm:'Your name', neu:'🆕 New duel', have:'🔑 I have a code', pT:'Code', pS:'Paste the code or link your friend sent you.',
+        open:'▶ Open', back:'← Back', bad:'I did not understand that code 🤔',
+        bT:'Three rounds', bS:'⚡ Reaction · 🎯 Precision · 🧠 Memory', go:'▶ Start',
+        chal:(n,s)=>n+' scored '+s+'. Can you beat that?',
+        r:(i)=>'Round '+i+'/3', r1:'⚡ Reaction', r2:'🎯 Precision', r3:'🧠 Memory',
+        r1tip:'Wait for gold, then tap fast', r2tip:'Tap when the arrow is in the golden zone', r3tip:'Repeat the sequence',
+        soon:'Too soon 😅', you:'You', rival:'Friend',
+        win:'You win 🏆', lose:'You lost 😿', tie:'A draw 🤝', done:'Your result is ready',
+        send:'🔗 Send to a friend', copied:'Link copied ✅ Send it to your friend',
+        manual:'Copy the code above and send it', again:'↻ Again', tot:'Total' },
+  es: { t:'Duelo Dorado en Línea 📡', s:'Juega tres rondas, consigue un código y mándaselo a un amigo. Él juega las mismas rondas y se ve quién es mejor.',
+        nm:'Tu nombre', neu:'🆕 Duelo nuevo', have:'🔑 Tengo un código', pT:'Código', pS:'Pega el código o el enlace que te mandó tu amigo.',
+        open:'▶ Abrir', back:'← Atrás', bad:'No entendí ese código 🤔',
+        bT:'Tres rondas', bS:'⚡ Reacción · 🎯 Precisión · 🧠 Memoria', go:'▶ Empezar',
+        chal:(n,s)=>n+' hizo '+s+' puntos. ¿Puedes superarlo?',
+        r:(i)=>'Ronda '+i+'/3', r1:'⚡ Reacción', r2:'🎯 Precisión', r3:'🧠 Memoria',
+        r1tip:'Espera al dorado y toca rápido', r2tip:'Toca cuando la flecha esté en la zona dorada', r3tip:'Repite la secuencia',
+        soon:'Demasiado pronto 😅', you:'Tú', rival:'Amigo',
+        win:'¡Ganaste! 🏆', lose:'Perdiste 😿', tie:'Empate 🤝', done:'Tu resultado está listo',
+        send:'🔗 Enviar a un amigo', copied:'Enlace copiado ✅ Mándaselo a tu amigo',
+        manual:'Copia el código de arriba y mándalo', again:'↻ Otra vez', tot:'Total' },
+  fr: { t:'Duel Doré en Ligne 📡', s:'Joue trois manches, récupère un code et envoie-le à un ami. Il joue les mêmes manches — et on voit qui est le plus fort.',
+        nm:'Ton nom', neu:'🆕 Nouveau duel', have:'🔑 J’ai un code', pT:'Code', pS:'Colle le code ou le lien que ton ami t’a envoyé.',
+        open:'▶ Ouvrir', back:'← Retour', bad:'Je n’ai pas compris ce code 🤔',
+        bT:'Trois manches', bS:'⚡ Réflexe · 🎯 Précision · 🧠 Mémoire', go:'▶ Démarrer',
+        chal:(n,s)=>n+' a fait '+s+' points. Tu peux faire mieux ?',
+        r:(i)=>'Manche '+i+'/3', r1:'⚡ Réflexe', r2:'🎯 Précision', r3:'🧠 Mémoire',
+        r1tip:'Attends l’or puis touche vite', r2tip:'Touche quand la flèche est dans la zone dorée', r3tip:'Répète la séquence',
+        soon:'Trop tôt 😅', you:'Toi', rival:'Ami',
+        win:'Tu as gagné 🏆', lose:'Tu as perdu 😿', tie:'Égalité 🤝', done:'Ton résultat est prêt',
+        send:'🔗 Envoyer à un ami', copied:'Lien copié ✅ Envoie-le à ton ami',
+        manual:'Copie le code ci-dessus et envoie-le', again:'↻ Encore', tot:'Total' },
+  de: { t:'Goldenes Online-Duell 📡', s:'Spiel drei Runden, hol dir den Code und schick ihn einem Freund. Er spielt dieselben Runden — dann sieht man, wer stärker ist.',
+        nm:'Dein Name', neu:'🆕 Neues Duell', have:'🔑 Ich habe einen Code', pT:'Code', pS:'Füge den Code oder Link ein, den dein Freund geschickt hat.',
+        open:'▶ Öffnen', back:'← Zurück', bad:'Diesen Code verstehe ich nicht 🤔',
+        bT:'Drei Runden', bS:'⚡ Reaktion · 🎯 Genauigkeit · 🧠 Gedächtnis', go:'▶ Start',
+        chal:(n,s)=>n+' hat '+s+' Punkte. Schaffst du mehr?',
+        r:(i)=>'Runde '+i+'/3', r1:'⚡ Reaktion', r2:'🎯 Genauigkeit', r3:'🧠 Gedächtnis',
+        r1tip:'Warte auf Gold und tippe schnell', r2tip:'Tippe, wenn der Pfeil im goldenen Feld ist', r3tip:'Wiederhole die Reihenfolge',
+        soon:'Zu früh 😅', you:'Du', rival:'Freund',
+        win:'Du gewinnst 🏆', lose:'Verloren 😿', tie:'Unentschieden 🤝', done:'Dein Ergebnis ist fertig',
+        send:'🔗 An einen Freund schicken', copied:'Link kopiert ✅ Schick ihn deinem Freund',
+        manual:'Kopiere den Code oben und schick ihn', again:'↻ Nochmal', tot:'Gesamt' },
+  ja: { t:'ゴールデン・オンラインたいけつ 📡', s:'3ラウンドあそんでコードをもらい、ともだちにおくろう。おなじラウンドをあそんで、どっちがつよいかわかるよ。',
+        nm:'なまえ', neu:'🆕 あたらしいたいけつ', have:'🔑 コードをもってる', pT:'コード', pS:'ともだちがおくったコードかリンクをはりつけてね。',
+        open:'▶ ひらく', back:'← もどる', bad:'このコードわからなかった 🤔',
+        bT:'3ラウンド', bS:'⚡ はんのう · 🎯 せいかく · 🧠 きおく', go:'▶ スタート',
+        chal:(n,s)=>n+'は'+s+'てん。こえられる？',
+        r:(i)=>'ラウンド '+i+'/3', r1:'⚡ はんのう', r2:'🎯 せいかく', r3:'🧠 きおく',
+        r1tip:'金いろになったらすぐタップ', r2tip:'やじるしが金のゾーンでタップ', r3tip:'じゅんばんをまねしよう',
+        soon:'はやすぎ 😅', you:'きみ', rival:'ともだち',
+        win:'かった 🏆', lose:'まけた 😿', tie:'ひきわけ 🤝', done:'けっかができたよ',
+        send:'🔗 ともだちにおくる', copied:'リンクをコピーしたよ ✅ ともだちにおくってね',
+        manual:'うえのコードをコピーしておくってね', again:'↻ もういちど', tot:'ごうけい' },
+  zh: { t:'黄金在线对决 📡', s:'玩三个回合，拿到代码发给朋友。他玩同样的回合，就知道谁更强。',
+        nm:'你的名字', neu:'🆕 新对决', have:'🔑 我有代码', pT:'代码', pS:'把朋友发来的代码或链接粘贴进来。',
+        open:'▶ 打开', back:'← 返回', bad:'看不懂这个代码 🤔',
+        bT:'三个回合', bS:'⚡ 反应 · 🎯 准头 · 🧠 记忆', go:'▶ 开始',
+        chal:(n,s)=>n+' 得了 '+s+' 分。你能超过吗？',
+        r:(i)=>'第'+i+'回合 / 3', r1:'⚡ 反应', r2:'🎯 准头', r3:'🧠 记忆',
+        r1tip:'等变金色马上点', r2tip:'箭头在金色区域时点', r3tip:'照着顺序重复',
+        soon:'太早了 😅', you:'你', rival:'朋友',
+        win:'你赢了 🏆', lose:'你输了 😿', tie:'平局 🤝', done:'你的成绩好了',
+        send:'🔗 发给朋友', copied:'链接已复制 ✅ 发给朋友吧',
+        manual:'复制上面的代码发出去', again:'↻ 再来', tot:'总分' },
+  it: { t:'Duello Dorato Online 📡', s:'Gioca tre round, prendi il codice e mandalo a un amico. Lui gioca gli stessi round e si vede chi è più forte.',
+        nm:'Il tuo nome', neu:'🆕 Nuovo duello', have:'🔑 Ho un codice', pT:'Codice', pS:'Incolla il codice o il link che ti ha mandato il tuo amico.',
+        open:'▶ Apri', back:'← Indietro', bad:'Non ho capito questo codice 🤔',
+        bT:'Tre round', bS:'⚡ Riflessi · 🎯 Precisione · 🧠 Memoria', go:'▶ Avvia',
+        chal:(n,s)=>n+' ha fatto '+s+' punti. Riesci a superarlo?',
+        r:(i)=>'Round '+i+'/3', r1:'⚡ Riflessi', r2:'🎯 Precisione', r3:'🧠 Memoria',
+        r1tip:'Aspetta l’oro e tocca subito', r2tip:'Tocca quando la freccia è nella zona dorata', r3tip:'Ripeti la sequenza',
+        soon:'Troppo presto 😅', you:'Tu', rival:'Amico',
+        win:'Hai vinto 🏆', lose:'Hai perso 😿', tie:'Pareggio 🤝', done:'Il tuo risultato è pronto',
+        send:'🔗 Manda a un amico', copied:'Link copiato ✅ Mandalo al tuo amico',
+        manual:'Copia il codice qui sopra e mandalo', again:'↻ Ancora', tot:'Totale' },
+  ka: { t:'ოქროს ონლაინ დუელი 📡', s:'ითამაშე სამი რაუნდი, მიიღე კოდი და გაუგზავნე მეგობარს. ის იმავე რაუნდებს თამაშობს და გამოჩნდება ვინ სჯობს.',
+        nm:'შენი სახელი', neu:'🆕 ახალი დუელი', have:'🔑 კოდი მაქვს', pT:'კოდი', pS:'ჩასვი კოდი ან ბმული, რომელიც მეგობარმა გამოგიგზავნა.',
+        open:'▶ გახსნა', back:'← უკან', bad:'ეს კოდი ვერ გავიგე 🤔',
+        bT:'სამი რაუნდი', bS:'⚡ რეაქცია · 🎯 სიზუსტე · 🧠 მეხსიერება', go:'▶ დაწყება',
+        chal:(n,s)=>n+'-მა დააგროვა '+s+' ქულა. შეძლებ მეტს?',
+        r:(i)=>'რაუნდი '+i+'/3', r1:'⚡ რეაქცია', r2:'🎯 სიზუსტე', r3:'🧠 მეხსიერება',
+        r1tip:'დაელოდე ოქროსფერს და სწრაფად შეეხე', r2tip:'შეეხე, როცა ისარი ოქროს ზონაშია', r3tip:'გაიმეორე თანმიმდევრობა',
+        soon:'ნაადრევია 😅', you:'შენ', rival:'მეგობარი',
+        win:'გაიმარჯვე 🏆', lose:'წააგე 😿', tie:'ფრე 🤝', done:'შენი შედეგი მზადაა',
+        send:'🔗 მეგობართან გაგზავნა', copied:'ბმული დაკოპირდა ✅ გაუგზავნე მეგობარს',
+        manual:'დააკოპირე ზემოთ კოდი და გააგზავნე', again:'↻ თავიდან', tot:'სულ' },
+  hi: { t:'गोल्डन ऑनलाइन मुक़ाबला 📡', s:'तीन राउंड खेलो, कोड लो और दोस्त को भेजो। वह वही राउंड खेलेगा और पता चलेगा कौन बेहतर है।',
+        nm:'तुम्हारा नाम', neu:'🆕 नया मुक़ाबला', have:'🔑 मेरे पास कोड है', pT:'कोड', pS:'दोस्त का भेजा कोड या लिंक यहाँ चिपकाओ।',
+        open:'▶ खोलो', back:'← वापस', bad:'यह कोड समझ नहीं आया 🤔',
+        bT:'तीन राउंड', bS:'⚡ प्रतिक्रिया · 🎯 निशाना · 🧠 याददाश्त', go:'▶ शुरू',
+        chal:(n,s)=>n+' ने '+s+' अंक बनाए। तुम ज़्यादा कर सकते हो?',
+        r:(i)=>'राउंड '+i+'/3', r1:'⚡ प्रतिक्रिया', r2:'🎯 निशाना', r3:'🧠 याददाश्त',
+        r1tip:'सुनहरा होते ही तुरंत छुओ', r2tip:'तीर सुनहरे हिस्से में हो तब छुओ', r3tip:'क्रम दोहराओ',
+        soon:'बहुत जल्दी 😅', you:'तुम', rival:'दोस्त',
+        win:'तुम जीते 🏆', lose:'तुम हारे 😿', tie:'बराबर 🤝', done:'तुम्हारा नतीजा तैयार है',
+        send:'🔗 दोस्त को भेजो', copied:'लिंक कॉपी हो गया ✅ दोस्त को भेजो',
+        manual:'ऊपर का कोड कॉपी करके भेजो', again:'↻ फिर से', tot:'कुल' },
+};
+const T = TRL[ggLang] || TRL.hy;
+const $ = id => document.getElementById(id);
+$('mT').textContent = T.t; $('mS').textContent = T.s;
+$('nameIn').placeholder = T.nm;
+$('newBtn').textContent = T.neu; $('haveBtn').textContent = T.have;
+$('pT').textContent = T.pT; $('pS').textContent = T.pS;
+$('openBtn').textContent = T.open; $('backBtn').textContent = T.back;
+$('bT').textContent = T.bT; $('startBtn').textContent = T.go;
+$('sendBtn').textContent = T.send; $('againBtn').textContent = T.again;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let best = 0;
+try { best = Number(localStorage.getItem('aren-online-best') || 0) || 0; } catch (e) {}
+try { $('nameIn').value = localStorage.getItem('aren-online-name') || ''; } catch (e) {}
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.11, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.12));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.12));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+const cv = $('cv'), cx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function fit() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+fit(); addEventListener('resize', fit);
+
+// ——— նույն սերմը՝ նույն փուլերը երկու հեռախոսում ———
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// ——— կոդը. կարճ տեքստ, որ կարելի է ուղարկել ———
+function enc(o) {
+  const raw = ['1', o.seed, o.score, o.r.join('.'), o.name].join('~');
+  return btoa(unescape(encodeURIComponent(raw))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function dec(str) {
+  try {
+    let s = String(str).trim();
+    const m = s.match(/[?&]d=([^&\s]+)/);         // ամբողջ հղումը տեղադրելու դեպքում
+    if (m) s = decodeURIComponent(m[1]);
+    s = s.replace(/-/g, '+').replace(/_/g, '/');
+    const raw = decodeURIComponent(escape(atob(s)));
+    const p = raw.split('~');
+    if (p[0] !== '1' || p.length < 5) return null;
+    const seed = Number(p[1]), score = Number(p[2]);
+    const r = p[3].split('.').map(Number);
+    if (!isFinite(seed) || !isFinite(score) || r.length !== 3 || r.some(x => !isFinite(x))) return null;
+    return { seed: seed, score: score, r: r, name: p[4] || '?' };
+  } catch (e) { return null; }
+}
+
+// ——— վիճակը ———
+let linkRival = null;
+let seed = 0, rng = null, rival = null;
+let round = 0, scores = [0, 0, 0], myName = '';
+let st = 'menu';                       // menu | wait | live | between
+let t = 0, roundT = 0;
+
+// փուլ 1 — ռեակցիա
+let r1 = { i: 0, tries: 5, at: 0, on: false, shown: 0, msg: '' };
+// փուլ 2 — ճշտություն
+let r2 = { i: 0, tries: 5, p: 0, dir: 1, sp: 1, zc: 0.5, zw: 0.3, locked: false, msg: '' };
+// փուլ 3 — հիշողություն
+let r3 = { seq: [], step: 0, len: 2, showing: true, showI: 0, showT: 0, lit: -1, msg: '' };
+
+function show(id) { ['menu','paste','brief','result'].forEach(x => { $(x).hidden = x !== id; }); }
+
+function startDuel(rv) {
+  initAudio();
+  rival = rv || null;
+  seed = rival ? rival.seed : (Date.now() ^ (Math.random() * 1e9)) >>> 0;
+  myName = ($('nameIn').value || '').trim().slice(0, 10) || T.you;
+  try { localStorage.setItem('aren-online-name', myName); } catch (e) {}
+  rng = mulberry32(seed);
+  scores = [0, 0, 0]; round = 0;
+  $('bS').textContent = T.bS;
+  $('bT').textContent = rival ? T.chal(rival.name, rival.score) : T.bT;
+  show('brief');
+}
+
+function beginRounds() {
+  ['menu','paste','brief','result'].forEach(x => { $(x).hidden = true; });
+  round = 1; setupRound();
+}
+
+function setupRound() {
+  st = 'live'; roundT = 0;
+  if (round === 1) {
+    r1 = { i: 0, tries: 5, at: t + 0.6 + rng() * 1.6, on: false, shown: 0, msg: '' };
+  } else if (round === 2) {
+    r2 = { i: 0, tries: 5, p: 0, dir: 1, sp: 0.5 + rng() * 0.5, zc: 0.2 + rng() * 0.6,
+           zw: 0.30, locked: false, msg: '' };
+  } else {
+    const seq = [];
+    for (let i = 0; i < 12; i++) seq.push(Math.floor(rng() * 4));
+    r3 = { seq: seq, step: 0, len: 2, showing: true, showI: 0, showT: 0, lit: -1, msg: '' };
+  }
+}
+
+function nextRound() {
+  tone(880, 0.16, 'triangle', 0.12);
+  if (round >= 3) { finish(); return; }
+  round++; setupRound();
+}
+
+function finish() {
+  st = 'done';
+  const total = scores.reduce((a, b) => a + b, 0);
+  if (total > best) { best = total; try { localStorage.setItem('aren-online-best', String(total)); } catch (e) {} }
+
+  const mine = { seed: seed, score: total, r: scores, name: myName };
+  const box = $('vsBox');
+  box.textContent = '';
+  const card = (cls, nm, sc) => {
+    const d = document.createElement('div'); d.className = cls;
+    const a = document.createElement('div'); a.className = 'nm'; a.textContent = nm;
+    const b = document.createElement('div'); b.className = 'sc'; b.textContent = sc;
+    d.appendChild(a); d.appendChild(b); box.appendChild(d);
+  };
+  card('me', myName, total);
+  if (rival) card('them', rival.name, rival.score);
+
+  if (rival) {
+    const win = total > rival.score, tie = total === rival.score;
+    $('rT').textContent = tie ? T.tie : (win ? T.win : T.lose);
+    if (win) [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.3,'triangle',0.15), i*160));
+    else tone(tie ? 520 : 220, 0.3, 'triangle', 0.13);
+  } else {
+    $('rT').textContent = T.done;
+    tone(760, 0.2, 'triangle', 0.13);
+  }
+  $('rS').textContent = T.r1 + ' ' + scores[0] + ' · ' + T.r2 + ' ' + scores[1] + ' · ' + T.r3 + ' ' + scores[2];
+  $('codeBox').textContent = enc(mine);
+  $('codeBox').hidden = false;
+  $('rSay').textContent = '';
+  show('result');
+}
+
+function shareUrl() {
+  const mine = { seed: seed, score: scores.reduce((a,b)=>a+b,0), r: scores, name: myName };
+  return location.origin + location.pathname + '?d=' + encodeURIComponent(enc(mine));
+}
+
+// ——— կոճակները ———
+$('newBtn').addEventListener('pointerdown', e => { if (e.pointerType === 'mouse' && ghost()) return; startDuel(linkRival); });
+$('haveBtn').addEventListener('pointerdown', e => { if (e.pointerType === 'mouse' && ghost()) return; initAudio(); $('pSay').textContent=''; show('paste'); });
+$('backBtn').addEventListener('pointerdown', e => { if (e.pointerType === 'mouse' && ghost()) return; show('menu'); });
+$('openBtn').addEventListener('pointerdown', e => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  const d = dec($('codeIn').value);
+  if (!d) { $('pSay').textContent = T.bad; tone(200, 0.15, 'square', 0.08); return; }
+  startDuel(d);
+});
+$('startBtn').addEventListener('pointerdown', e => { if (e.pointerType === 'mouse' && ghost()) return; beginRounds(); });
+$('againBtn').addEventListener('pointerdown', e => { if (e.pointerType === 'mouse' && ghost()) return; show('menu'); });
+$('sendBtn').addEventListener('pointerdown', e => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  const url = shareUrl();
+  try {
+    navigator.clipboard.writeText(url).then(
+      () => { $('rSay').textContent = T.copied; },
+      () => { $('rSay').textContent = T.manual; });
+  } catch (er) { $('rSay').textContent = T.manual; }
+  tone(900, 0.14, 'triangle', 0.12);
+});
+
+// ——— հպումը խաղի ընթացքում ———
+function tapped(x, y) {
+  if (st !== 'live') return;
+  initAudio();
+  if (round === 1) {
+    if (!r1.on) { r1.msg = T.soon; r1.at = t + 0.6 + rng() * 1.4; tone(200, 0.12, 'square', 0.08); return; }
+    const ms = Math.round((t - r1.shown) * 1000);
+    const got = Math.max(0, Math.min(400, 500 - ms));
+    scores[0] += got; r1.msg = ms + ' ms  +' + got;
+    tone(700 + got, 0.08, 'triangle', 0.1);
+    r1.on = false; r1.i++;
+    if (r1.i >= r1.tries) { st = 'between'; setTimeout(nextRound, 700); }
+    else r1.at = t + 0.6 + rng() * 1.6;
+  } else if (round === 2) {
+    if (r2.locked) return;
+    const d = Math.abs(r2.p - r2.zc);
+    const got = Math.max(0, Math.round(200 - d * 700));
+    scores[1] += got; r2.msg = '+' + got;
+    tone(got > 100 ? 900 : 420, 0.09, 'triangle', 0.1);
+    r2.locked = true; r2.i++;
+    setTimeout(() => {
+      if (r2.i >= r2.tries) { st = 'between'; nextRound(); }
+      else { r2.zc = 0.15 + rng() * 0.7; r2.sp = 0.5 + rng() * 0.6 + r2.i * 0.12; r2.locked = false; r2.msg = ''; }
+    }, 480);
+  } else {
+    if (r3.showing) return;
+    const pad = padAt(x, y);
+    if (pad < 0) return;
+    r3.lit = pad; setTimeout(() => { r3.lit = -1; }, 160);
+    tone([392, 523, 659, 784][pad], 0.14, 'triangle', 0.11);
+    if (pad === r3.seq[r3.step]) {
+      r3.step++;
+      if (r3.step >= r3.len) {
+        scores[2] += 100; r3.msg = '+100';
+        r3.len++;
+        if (r3.len > 7) { st = 'between'; setTimeout(nextRound, 600); return; }
+        r3.step = 0; r3.showing = true; r3.showI = 0; r3.showT = t + 0.5;
+      }
+    } else {
+      tone(180, 0.25, 'sawtooth', 0.12);
+      st = 'between'; setTimeout(nextRound, 700);
+    }
+  }
+}
+function padAt(x, y) {
+  const s = Math.min(W, H) * 0.34, cxp = W / 2, cyp = H * 0.52;
+  const pads = [[-1,-1],[1,-1],[-1,1],[1,1]];
+  for (let i = 0; i < 4; i++) {
+    const px = cxp + pads[i][0] * s * 0.55, py = cyp + pads[i][1] * s * 0.55;
+    if (Math.abs(x - px) < s * 0.5 && Math.abs(y - py) < s * 0.5) return i;
+  }
+  return -1;
+}
+cv.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if (e.pointerType === 'mouse' && ghost()) return;
+  const r = cv.getBoundingClientRect();
+  tapped(e.clientX - r.left, e.clientY - r.top);
+});
+
+// ——— նկարը ———
+function draw() {
+  cx.clearRect(0, 0, W, H);
+  const g = cx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#182043'); g.addColorStop(1, '#26305c');
+  cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+
+  const rEl = document.querySelector('#hud .r'), tEl = document.querySelector('#hud .tip');
+  if (st !== 'live' && st !== 'between') { rEl.textContent = ''; tEl.textContent = ''; return; }
+  rEl.textContent = T.r(round) + '   ' + (T.tot + ': ' + scores.reduce((a,b)=>a+b,0));
+  tEl.textContent = [T.r1tip, T.r2tip, T.r3tip][round - 1];
+
+  const cxp = W / 2, cyp = H * 0.52;
+  if (round === 1) {
+    cx.fillStyle = r1.on ? '#f0c85a' : '#3d4670';
+    cx.beginPath(); cx.arc(cxp, cyp, Math.min(W, H) * 0.24, 0, Math.PI * 2); cx.fill();
+    cx.fillStyle = r1.on ? '#10162a' : 'rgba(255,255,255,0.5)';
+    cx.font = 'bold ' + Math.round(W * 0.055) + 'px Arial'; cx.textAlign = 'center';
+    cx.fillText(r1.i + '/' + r1.tries, cxp, cyp + 8);
+    if (r1.msg) {
+      cx.fillStyle = '#ffe9a8'; cx.font = 'bold ' + Math.round(W * 0.05) + 'px Arial';
+      cx.fillText(r1.msg, cxp, cyp + Math.min(W, H) * 0.34);
+    }
+  } else if (round === 2) {
+    const bw = W * 0.78, bx = (W - bw) / 2, by = cyp - 30;
+    cx.fillStyle = 'rgba(255,255,255,0.1)';
+    cx.beginPath(); cx.roundRect(bx, by, bw, 60, 14); cx.fill();
+    cx.fillStyle = '#f0c85a';
+    cx.beginPath(); cx.roundRect(bx + (r2.zc - r2.zw / 2) * bw, by, r2.zw * bw, 60, 10); cx.fill();
+    cx.fillStyle = '#7fd1c1';
+    cx.fillRect(bx + r2.p * bw - 3, by - 16, 6, 92);
+    cx.fillStyle = 'rgba(255,255,255,0.6)';
+    cx.font = 'bold ' + Math.round(W * 0.045) + 'px Arial'; cx.textAlign = 'center';
+    cx.fillText(r2.i + '/' + r2.tries, cxp, by - 34);
+    if (r2.msg) {
+      cx.fillStyle = '#ffe9a8'; cx.font = 'bold ' + Math.round(W * 0.05) + 'px Arial';
+      cx.fillText(r2.msg, cxp, by + 118);
+    }
+  } else {
+    const s = Math.min(W, H) * 0.34;
+    const pads = [[-1,-1],[1,-1],[-1,1],[1,1]];
+    const cols = ['#7fd1c1', '#f0c85a', '#e8756a', '#a76fd6'];
+    for (let i = 0; i < 4; i++) {
+      const px = cxp + pads[i][0] * s * 0.55, py = cyp + pads[i][1] * s * 0.55;
+      const lit = r3.lit === i;
+      cx.fillStyle = lit ? '#fff' : cols[i];
+      cx.globalAlpha = lit ? 1 : 0.78;
+      cx.beginPath(); cx.roundRect(px - s * 0.48, py - s * 0.48, s * 0.96, s * 0.96, 18); cx.fill();
+      cx.globalAlpha = 1;
+    }
+    cx.fillStyle = 'rgba(255,255,255,0.65)';
+    cx.font = 'bold ' + Math.round(W * 0.045) + 'px Arial'; cx.textAlign = 'center';
+    cx.fillText(r3.len + '', cxp, cyp - s * 1.15);
+  }
+}
+
+let prev = 0;
+function loop(now) {
+  const dt = Math.min(0.033, (now - prev) / 1000 || 0); prev = now;
+  t += dt;
+  if (st === 'live') {
+    if (round === 1) {
+      if (!r1.on && t >= r1.at) { r1.on = true; r1.shown = t; r1.msg = ''; tone(660, 0.07, 'sine', 0.08); }
+    } else if (round === 2) {
+      if (!r2.locked) {
+        r2.p += r2.dir * r2.sp * dt;
+        if (r2.p > 1) { r2.p = 1; r2.dir = -1; }
+        if (r2.p < 0) { r2.p = 0; r2.dir = 1; }
+      }
+    } else if (round === 3) {
+      if (r3.showing) {
+        if (t >= r3.showT) {
+          if (r3.showI < r3.len) {
+            r3.lit = r3.seq[r3.showI];
+            tone([392, 523, 659, 784][r3.lit], 0.16, 'triangle', 0.1);
+            setTimeout(() => { r3.lit = -1; }, 220);
+            r3.showI++; r3.showT = t + 0.48;
+          } else { r3.showing = false; r3.lit = -1; }
+        }
+      }
+    }
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// ——— հղումով եկած մենամարտ ———
+// Ընկերդ հղումն ուղարկեց. միանգամից ցույց ենք տալիս մարտահրավերը,
+// ու «Նոր մենամարտ» կոճակը դառնում է «Սկսել»՝ իր սերմով։
+(function () {
+  const m = location.search.match(/[?&]d=([^&]+)/);
+  if (m) linkRival = dec(decodeURIComponent(m[1]));
+  if (!linkRival) { show('menu'); return; }
+  $('mS').textContent = T.chal(linkRival.name, linkRival.score);
+  $('newBtn').textContent = T.go;
+  $('haveBtn').hidden = true;
+  show('menu');
+})();
+
+window.ONLINE = {
+  get st() { return st; }, get round() { return round; }, get scores() { return scores; },
+  get seed() { return seed; }, get rival() { return rival; }, get best() { return best; },
+  enc: enc, dec: dec, url: shareUrl,
+  begin: rv => startDuel(rv), rounds: () => beginRounds(),
+  tap: (x, y) => tapped(x === undefined ? W / 2 : x, y === undefined ? H * 0.52 : y),
+  r1: () => r1, r2: () => r2, r3: () => r3, skipTo: r => { round = r; setupRound(); },
+};
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
+</body>
+</html>
