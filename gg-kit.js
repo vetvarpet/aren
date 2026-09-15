@@ -22,17 +22,17 @@
   };
   var lang = ls.get('gg-lang', 'hy');
   var TR = {
-    hy: { paused: 'ԴԱԴԱՐ', resume: 'Շարունակելու համար հպիր', sound: 'Ձայն', shot: 'Ռեկորդի նկարը', saved: 'Նկարը պահվեց 📸', rec: 'Ռեկորդ', shop: 'Խանութ', wDaily: 'օրվա մարտահրավեր', wTroph: 'նոր գավաթ', wRec: 'նոր ռեկորդ', gift: 'Բացման նվեր' },
-    ru: { paused: 'ПАУЗА', resume: 'Коснись, чтобы продолжить', sound: 'Звук', shot: 'Картинка рекорда', saved: 'Картинка сохранена 📸', rec: 'Рекорд', shop: 'Магазин', wDaily: 'задание дня', wTroph: 'новый кубок', wRec: 'новый рекорд', gift: 'Подарок на старт' },
-    en: { paused: 'PAUSED', resume: 'Tap to continue', sound: 'Sound', shot: 'Record picture', saved: 'Picture saved 📸', rec: 'Best', shop: 'Shop', wDaily: 'daily challenge', wTroph: 'new trophy', wRec: 'new record', gift: 'Welcome gift' },
-    es: { paused: 'PAUSA', resume: 'Toca para continuar', sound: 'Sonido', shot: 'Imagen del récord', saved: 'Imagen guardada 📸', rec: 'Récord', shop: 'Tienda', wDaily: 'reto del día', wTroph: 'nuevo trofeo', wRec: 'nuevo récord', gift: 'Regalo de bienvenida' },
-    fr: { paused: 'PAUSE', resume: 'Touche pour continuer', sound: 'Son', shot: 'Image du record', saved: 'Image enregistrée 📸', rec: 'Record', shop: 'Boutique', wDaily: 'défi du jour', wTroph: 'nouveau trophée', wRec: 'nouveau record', gift: 'Cadeau de bienvenue' },
-    de: { paused: 'PAUSE', resume: 'Tippe zum Weitermachen', sound: 'Ton', shot: 'Rekordbild', saved: 'Bild gespeichert 📸', rec: 'Rekord', shop: 'Laden', wDaily: 'Tages-Challenge', wTroph: 'neuer Pokal', wRec: 'neuer Rekord', gift: 'Willkommensgeschenk' },
-    ja: { paused: 'ポーズ', resume: 'タップでつづける', sound: '音', shot: 'きろくの画ぞう', saved: '画ぞうをほぞんしたよ 📸', rec: 'ベスト', shop: 'おみせ', wDaily: 'まいにちチャレンジ', wTroph: 'あたらしいトロフィー', wRec: 'しんきろく', gift: 'はじめのプレゼント' },
-    zh: { paused: '暂停', resume: '点一下继续', sound: '声音', shot: '纪录图片', saved: '图片已保存 📸', rec: '纪录', shop: '商店', wDaily: '每日挑战', wTroph: '新奖杯', wRec: '新纪录', gift: '开局礼物' },
-    it: { paused: 'PAUSA', resume: 'Tocca per continuare', sound: 'Suono', shot: 'Immagine del record', saved: 'Immagine salvata 📸', rec: 'Record', shop: 'Negozio', wDaily: 'sfida del giorno', wTroph: 'nuovo trofeo', wRec: 'nuovo record', gift: 'Regalo di benvenuto' },
-    ka: { paused: 'პაუზა', resume: 'შეეხე გასაგრძელებლად', sound: 'ხმა', shot: 'რეკორდის სურათი', saved: 'სურათი შენახულია 📸', rec: 'რეკორდი', shop: 'მაღაზია', wDaily: 'დღის გამოწვევა', wTroph: 'ახალი თასი', wRec: 'ახალი რეკორდი', gift: 'მისალმების საჩუქარი' },
-    hi: { paused: 'रुका हुआ', resume: 'जारी रखने के लिए टैप करो', sound: 'आवाज़', shot: 'रिकॉर्ड की तस्वीर', saved: 'तस्वीर सेव हो गई 📸', rec: 'रिकॉर्ड', shop: 'दुकान', wDaily: 'आज की चुनौती', wTroph: 'नई ट्रॉफ़ी', wRec: 'नया रिकॉर्ड', gift: 'स्वागत तोहफ़ा' }
+    hy: { paused: 'ԴԱԴԱՐ', resume: 'Շարունակելու համար հպիր', sound: 'Ձայն', shot: 'Ռեկորդի նկարը', saved: 'Նկարը պահվեց 📸', rec: 'Ռեկորդ', shop: 'Խանութ', wDaily: 'օրվա մարտահրավեր', wTroph: 'նոր գավաթ', wRec: 'նոր ռեկորդ', gift: 'Բացման նվեր', next: 'Հաջորդ խաղը' },
+    ru: { paused: 'ПАУЗА', resume: 'Коснись, чтобы продолжить', sound: 'Звук', shot: 'Картинка рекорда', saved: 'Картинка сохранена 📸', rec: 'Рекорд', shop: 'Магазин', wDaily: 'задание дня', wTroph: 'новый кубок', wRec: 'новый рекорд', gift: 'Подарок на старт', next: 'Следующая игра' },
+    en: { paused: 'PAUSED', resume: 'Tap to continue', sound: 'Sound', shot: 'Record picture', saved: 'Picture saved 📸', rec: 'Best', shop: 'Shop', wDaily: 'daily challenge', wTroph: 'new trophy', wRec: 'new record', gift: 'Welcome gift', next: 'Next game' },
+    es: { paused: 'PAUSA', resume: 'Toca para continuar', sound: 'Sonido', shot: 'Imagen del récord', saved: 'Imagen guardada 📸', rec: 'Récord', shop: 'Tienda', wDaily: 'reto del día', wTroph: 'nuevo trofeo', wRec: 'nuevo récord', gift: 'Regalo de bienvenida', next: 'Siguiente juego' },
+    fr: { paused: 'PAUSE', resume: 'Touche pour continuer', sound: 'Son', shot: 'Image du record', saved: 'Image enregistrée 📸', rec: 'Record', shop: 'Boutique', wDaily: 'défi du jour', wTroph: 'nouveau trophée', wRec: 'nouveau record', gift: 'Cadeau de bienvenue', next: 'Jeu suivant' },
+    de: { paused: 'PAUSE', resume: 'Tippe zum Weitermachen', sound: 'Ton', shot: 'Rekordbild', saved: 'Bild gespeichert 📸', rec: 'Rekord', shop: 'Laden', wDaily: 'Tages-Challenge', wTroph: 'neuer Pokal', wRec: 'neuer Rekord', gift: 'Willkommensgeschenk', next: 'Nächstes Spiel' },
+    ja: { paused: 'ポーズ', resume: 'タップでつづける', sound: '音', shot: 'きろくの画ぞう', saved: '画ぞうをほぞんしたよ 📸', rec: 'ベスト', shop: 'おみせ', wDaily: 'まいにちチャレンジ', wTroph: 'あたらしいトロフィー', wRec: 'しんきろく', gift: 'はじめのプレゼント', next: 'つぎのゲーム' },
+    zh: { paused: '暂停', resume: '点一下继续', sound: '声音', shot: '纪录图片', saved: '图片已保存 📸', rec: '纪录', shop: '商店', wDaily: '每日挑战', wTroph: '新奖杯', wRec: '新纪录', gift: '开局礼物', next: '下一个游戏' },
+    it: { paused: 'PAUSA', resume: 'Tocca per continuare', sound: 'Suono', shot: 'Immagine del record', saved: 'Immagine salvata 📸', rec: 'Record', shop: 'Negozio', wDaily: 'sfida del giorno', wTroph: 'nuovo trofeo', wRec: 'nuovo record', gift: 'Regalo di benvenuto', next: 'Gioco successivo' },
+    ka: { paused: 'პაუზა', resume: 'შეეხე გასაგრძელებლად', sound: 'ხმა', shot: 'რეკორდის სურათი', saved: 'სურათი შენახულია 📸', rec: 'რეკორდი', shop: 'მაღაზია', wDaily: 'დღის გამოწვევა', wTroph: 'ახალი თასი', wRec: 'ახალი რეკორდი', gift: 'მისალმების საჩუქარი', next: 'შემდეგი თამაში' },
+    hi: { paused: 'रुका हुआ', resume: 'जारी रखने के लिए टैप करो', sound: 'आवाज़', shot: 'रिकॉर्ड की तस्वीर', saved: 'तस्वीर सेव हो गई 📸', rec: 'रिकॉर्ड', shop: 'दुकान', wDaily: 'आज की चुनौती', wTroph: 'नई ट्रॉफ़ी', wRec: 'नया रिकॉर्ड', gift: 'स्वागत तोहफ़ा', next: 'अगला खेल' }
   };
   var T = TR[lang] || TR.hy;
 
@@ -49,6 +49,12 @@
     'border:2px solid rgba(255,209,102,0.75);background:rgba(20,26,34,0.78);color:#ffd166;text-decoration:none;',
     'font-family:"Arial Rounded MT Bold","Noto Sans Armenian",Arial,sans-serif;font-weight:bold;font-size:0.9rem;line-height:1;white-space:nowrap}',
     '#ggBar a#ggCoin:active{transform:scale(0.94)}',
+    // ⏭ հաջորդ խաղին անցնելու կոճակը — ներքևի ձախ անկյունում, որ
+    // ոչ մի խաղի կոճակների վրա չընկնի (ոչ մեկը ձախ-ներքևը չի գործածում)
+    '#ggNext{position:fixed;left:10px;bottom:10px;z-index:120;width:42px;height:42px;border-radius:14px;',
+    'border:2px solid rgba(255,255,255,0.32);background:rgba(20,26,34,0.72);color:#f5eede;',
+    'display:flex;align-items:center;justify-content:center;font-size:1.05rem;text-decoration:none;opacity:0.82}',
+    '#ggNext:active{transform:scale(0.92);opacity:1}',
     '#ggBar a#ggCoin.up{animation:ggCoinPop 0.5s}',
     '@keyframes ggCoinPop{0%{transform:scale(1)}40%{transform:scale(1.25);border-color:#fff}100%{transform:scale(1)}}',
     '#ggPause[hidden],#ggBar[hidden],#ggLoad[hidden],#ggToast[hidden]{display:none!important}',
@@ -595,6 +601,22 @@
     var folder = folderOf(location.pathname);
     if (folder) {
       ls.set('aren-last-game', folder);
+
+      // 🔥 Քանի՞ անգամ ես բացել այս խաղը. գլխավոր էջը ցույց է տալիս ամենաշատերը։
+      // Հաշիվը ԱՅՍ սարքինն է — կայքը սերվեր չունի։
+      rawSet('gg-plays-' + folder, num(rawGet('gg-plays-' + folder)) + 1);
+
+      // ⏭ Հաջորդ խաղը. Արենի միտքն է — «որ հետ չգնաս գլխավոր էջ»
+      var keys = Object.keys(GAMES);
+      var at = keys.indexOf(folder);
+      if (at >= 0) {
+        var nx = document.createElement('a');
+        nx.id = 'ggNext';
+        nx.href = up + keys[(at + 1) % keys.length] + '/';
+        nx.title = T.next;
+        nx.textContent = '⏭';
+        (document.body || document.documentElement).appendChild(nx);
+      }
       var seenKey = 'aren-how-' + folder;
       var box = document.createElement('div');
       box.className = 'gg-how';

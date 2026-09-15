@@ -81,6 +81,50 @@
     transform: scale(1.05);
   }
   .game.moodhide { display: none; }
+  .game.findhide, .tool.findhide { display: none; }
+
+  /* ——— 🔎 Որոնումը — Արենի միտքն է. «45 խաղից մեկը գտնելը արդեն դժվար է» ——— */
+  .find { position: relative; max-width: 420px; margin: 10px auto 6px; }
+  .find input {
+    width: 100%; padding: 11px 38px 11px 16px; border-radius: 999px;
+    border: 2px solid rgba(255,255,255,0.18); background: var(--card); color: var(--ink);
+    font-family: inherit; font-size: 0.92rem; -webkit-appearance: none;
+  }
+  .find input:focus { outline: none; border-color: var(--accent); }
+  .find input::-webkit-search-cancel-button { display: none; }
+  .find .x {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
+    background: transparent; color: var(--dim); font-size: 1rem; font-family: inherit;
+  }
+  .nofind { text-align: center; color: var(--dim); font-size: 0.9rem; margin: 22px 0; }
+
+  /* ——— 📚 Կատեգորիաների կոճակները. մեկ հպում՝ ու մնում է միայն մի բաժինը ——— */
+  .cats { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 8px auto 2px; max-width: 640px; }
+  .cats button {
+    font-family: inherit; font-size: 0.76rem; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    color: var(--ink); background: var(--card); border: 2px solid rgba(255,255,255,0.16);
+  }
+  .cats button.on { border-color: var(--accent); background: rgba(255,209,102,0.16); color: var(--accent); }
+  .cats button:active { transform: scale(0.95); }
+  .game.cathide { display: none; }
+  .secthead[data-catoff="1"], .tools[data-catoff="1"] { display: none !important; }
+
+  /* ——— 🔥 Ամենաշատ խաղացածներդ — հաշվվում է միայն այս սարքում ——— */
+  .top {
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+    gap: 7px; margin: 6px auto 2px; max-width: 640px;
+  }
+  .top .tq { color: var(--dim); font-size: 0.8rem; }
+  .top a {
+    display: inline-flex; align-items: center; gap: 5px; text-decoration: none;
+    background: var(--card); border: 2px solid rgba(255,209,102,0.4); color: var(--ink);
+    padding: 5px 12px; border-radius: 999px; font-size: 0.8rem;
+  }
+  .top a b { color: var(--accent); font-size: 0.72rem; }
+
+  /* ——— Կատեգորիաները. մեկ երկար ցուցակի փոխարեն՝ բաժիններ ——— */
+  .grid.gone, .secthead.gone, .top[hidden], .nofind[hidden], .find .x[hidden] { display: none !important; }
 
   /* ——— Օրվա մարտահրավերը 🌍 — ամեն օր բոլորի համար նույնը (Արենի միտքն է) ——— */
   .daily {
@@ -479,6 +523,15 @@
     </nav>
   </header>
 
+  <!-- 🔎 Որոնումը. 46 քարտից մեկը գտնելը պիտի մեկ վայրկյան տևի -->
+  <div class="find">
+    <input id="find" type="search" placeholder="🔎 Որոնիր խաղ…" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <button class="x" id="findX" hidden>✕</button>
+  </div>
+
+  <!-- 📚 Բաժինները. «խաղերի քանակը շատ է, ուրեմն կատեգորիաներով բաժանում» -->
+  <div class="cats" id="cats"></div>
+
   <!-- «Ի՞նչ խաղանք» զտիչը. սեղմիր ու կմնան միայն տրամադրությանդ հարմար խաղերը -->
   <div class="mood" id="mood">
     <span class="mq" id="moodQ">Ի՞նչ խաղանք՝</span>
@@ -495,6 +548,13 @@
     <a class="dgo" id="dailyGo" href="#">▶ Փորձել</a>
     <span class="dbadge" id="dailyB" hidden>🏅</span>
   </div>
+
+  <!-- 🔥 Ամենաշատ խաղացածներդ. հաշիվը այս սարքինն է, ոչ թե ամբողջ աշխարհի -->
+  <div class="top" id="top" hidden>
+    <span class="tq" id="topQ">🔥 Ամենաշատ խաղացածդ՝</span>
+  </div>
+
+  <p class="nofind" id="nofind" hidden>Ոչինչ չգտնվեց 😿 Փորձիր ուրիշ բառ</p>
 
   <div class="grid">
 
@@ -2106,6 +2166,9 @@ const DICT = {
       'shop': 'Покупай героев, краску и цвета за золото',
       'builder': 'Построй свой уровень и отправь другу',
     },
+    allT: '📚 Все',
+    findPH: '🔎 Найди игру…', nofind: 'Ничего не нашлось 😿 Попробуй другое слово', topQ: '🔥 Чаще всего играешь:',
+    cats: ['⚡ Быстрые и аркады', '🧩 Головоломки и подумать', '🇦🇲 Армянские', '🎵 Музыка и ритм', '🌿 Спокойные', '🕰️ История сайта'],
     rand: '🎲 Случайная',
     moodQ: 'Во что сыграем?', moodFast: '⚡ Быстрое', moodCalm: '🌿 Спокойное', moodTwo: '👥 Вдвоём', moodThink: '🧠 Подумать',
     dailyT: '🌍 Задание дня', dailyScore: (n, g) => 'Сегодня набери ' + n + ' в игре «' + g + '»', dailyLevel: (n, g) => 'Сегодня дойди до уровня ' + n + ' в игре «' + g + '»', dailyDone: '🏅 Сделано!', dailyGo: '▶ Попробовать',
@@ -2178,6 +2241,9 @@ const DICT = {
       'shop': 'Spend your gold on heroes, paint and colours',
       'builder': 'Build your own level and send it to a friend',
     },
+    allT: '📚 All',
+    findPH: '🔎 Find a game…', nofind: 'Nothing found 😿 Try another word', topQ: '🔥 You play these most:',
+    cats: ['⚡ Fast and arcade', '🧩 Puzzles and thinking', '🇦🇲 Armenian', '🎵 Music and rhythm', '🌿 Calm', '🕰️ The site’s history'],
     rand: '🎲 Random',
     moodQ: 'What shall we play?', moodFast: '⚡ Fast', moodCalm: '🌿 Calm', moodTwo: '👥 Two players', moodThink: '🧠 Thinking',
     dailyT: '🌍 Daily challenge', dailyScore: (n, g) => 'Score ' + n + ' today in “' + g + '”', dailyLevel: (n, g) => 'Reach level ' + n + ' today in “' + g + '”', dailyDone: '🏅 Done!', dailyGo: '▶ Try it',
@@ -2250,6 +2316,9 @@ const DICT = {
       'shop': 'Gasta tu oro en héroes, pintura y colores',
       'builder': 'Construye tu nivel y mándaselo a un amigo',
     },
+    allT: '📚 Todos',
+    findPH: '🔎 Busca un juego…', nofind: 'No hay nada 😿 Prueba otra palabra', topQ: '🔥 A lo que más juegas:',
+    cats: ['⚡ Rápidos y arcade', '🧩 Puzles y pensar', '🇦🇲 Armenios', '🎵 Música y ritmo', '🌿 Tranquilos', '🕰️ La historia del sitio'],
     rand: '🎲 Al azar',
     moodQ: '¿A qué jugamos?', moodFast: '⚡ Rápido', moodCalm: '🌿 Tranquilo', moodTwo: '👥 Entre dos', moodThink: '🧠 Para pensar',
     dailyT: '🌍 Reto del día', dailyScore: (n, g) => 'Consigue hoy ' + n + ' en «' + g + '»', dailyLevel: (n, g) => 'Llega hoy al nivel ' + n + ' en «' + g + '»', dailyDone: '🏅 ¡Hecho!', dailyGo: '▶ Intentar',
@@ -2322,6 +2391,9 @@ const DICT = {
       'shop': 'Dépense ton or en héros, peinture et couleurs',
       'builder': 'Construis ton niveau et envoie-le à un ami',
     },
+    allT: '📚 Tout',
+    findPH: '🔎 Cherche un jeu…', nofind: 'Rien trouvé 😿 Essaie un autre mot', topQ: '🔥 Tu y joues le plus :',
+    cats: ['⚡ Rapides et arcade', '🧩 Casse-tête et réflexion', '🇦🇲 Arméniens', '🎵 Musique et rythme', '🌿 Calmes', '🕰️ L’histoire du site'],
     rand: '🎲 Au hasard',
     moodQ: 'On joue à quoi ?', moodFast: '⚡ Rapide', moodCalm: '🌿 Calme', moodTwo: '👥 À deux', moodThink: '🧠 Réfléchir',
     dailyT: '🌍 Défi du jour', dailyScore: (n, g) => 'Fais ' + n + ' aujourd’hui dans « ' + g + ' »', dailyLevel: (n, g) => 'Atteins le niveau ' + n + ' aujourd’hui dans « ' + g + ' »', dailyDone: '🏅 Fait !', dailyGo: '▶ Essayer',
@@ -2394,6 +2466,9 @@ const DICT = {
       'shop': 'Gib dein Gold für Helden, Lack und Farben aus',
       'builder': 'Bau dein Level und schick es einem Freund',
     },
+    allT: '📚 Alle',
+    findPH: '🔎 Spiel suchen…', nofind: 'Nichts gefunden 😿 Probier ein anderes Wort', topQ: '🔥 Das spielst du am meisten:',
+    cats: ['⚡ Schnell und Arcade', '🧩 Rätsel und Nachdenken', '🇦🇲 Armenisch', '🎵 Musik und Rhythmus', '🌿 Ruhig', '🕰️ Die Geschichte der Seite'],
     rand: '🎲 Zufall',
     moodQ: 'Was spielen wir?', moodFast: '⚡ Schnell', moodCalm: '🌿 Ruhig', moodTwo: '👥 Zu zweit', moodThink: '🧠 Nachdenken',
     dailyT: '🌍 Tages-Challenge', dailyScore: (n, g) => 'Hol heute ' + n + ' in „' + g + '“', dailyLevel: (n, g) => 'Erreiche heute Level ' + n + ' in „' + g + '“', dailyDone: '🏅 Geschafft!', dailyGo: '▶ Versuchen',
@@ -2466,6 +2541,9 @@ const DICT = {
       'shop': 'ゴールドでヒーロー・ペイント・いろをかおう',
       'builder': 'じぶんのステージを作ってともだちにおくろう',
     },
+    allT: '📚 ぜんぶ',
+    findPH: '🔎 ゲームをさがす…', nofind: 'なにも見つからないよ 😿 べつのことばでためしてね', topQ: '🔥 いちばんあそんでるの：',
+    cats: ['⚡ はやい・アクション', '🧩 パズル・かんがえる', '🇦🇲 アルメニア', '🎵 おんがく・リズム', '🌿 のんびり', '🕰️ サイトのれきし'],
     rand: '🎲 ランダム',
     moodQ: 'なにであそぶ？', moodFast: '⚡ はやい', moodCalm: '🌿 のんびり', moodTwo: '👥 ふたりで', moodThink: '🧠 かんがえる',
     dailyT: '🌍 今日のチャレンジ', dailyScore: (n, g) => '今日「' + g + '」で' + n + 'をとろう', dailyLevel: (n, g) => '今日「' + g + '」でレベル' + n + 'までいこう', dailyDone: '🏅 クリア！', dailyGo: '▶ やってみる',
@@ -2538,6 +2616,9 @@ const DICT = {
       'shop': '用金币买角色、车漆和颜色',
       'builder': '造一个自己的关卡发给朋友',
     },
+    allT: '📚 全部',
+    findPH: '🔎 找游戏…', nofind: '什么也没找到 😿 换个词试试', topQ: '🔥 你玩得最多：',
+    cats: ['⚡ 快节奏和街机', '🧩 解谜和动脑', '🇦🇲 亚美尼亚', '🎵 音乐和节奏', '🌿 安静', '🕰️ 网站的历史'],
     rand: '🎲 随机',
     moodQ: '玩什么好呢？', moodFast: '⚡ 快节奏', moodCalm: '🌿 安静', moodTwo: '👥 两个人', moodThink: '🧠 动脑',
     dailyT: '🌍 每日挑战', dailyScore: (n, g) => '今天在《' + g + '》拿到' + n, dailyLevel: (n, g) => '今天在《' + g + '》达到第' + n + '关', dailyDone: '🏅 完成！', dailyGo: '▶ 去试试',
@@ -2610,6 +2691,9 @@ const DICT = {
       'shop': 'Spendi il tuo oro in eroi, vernici e colori',
       'builder': 'Costruisci il tuo livello e mandalo a un amico',
     },
+    allT: '📚 Tutti',
+    findPH: '🔎 Cerca un gioco…', nofind: 'Non ho trovato niente 😿 Prova un’altra parola', topQ: '🔥 Ci giochi di più:',
+    cats: ['⚡ Veloci e arcade', '🧩 Rompicapi e ragionare', '🇦🇲 Armeni', '🎵 Musica e ritmo', '🌿 Tranquilli', '🕰️ La storia del sito'],
     rand: '🎲 A caso',
     moodQ: 'A cosa giochiamo?', moodFast: '⚡ Veloce', moodCalm: '🌿 Tranquillo', moodTwo: '👥 In due', moodThink: '🧠 Da pensare',
     dailyT: '🌍 Sfida del giorno', dailyScore: (n, g) => 'Fai oggi ' + n + ' in «' + g + '»', dailyLevel: (n, g) => 'Arriva oggi al livello ' + n + ' in «' + g + '»', dailyDone: '🏅 Fatto!', dailyGo: '▶ Provaci',
@@ -2682,6 +2766,9 @@ const DICT = {
       'shop': 'დახარჯე ოქრო გმირებზე, საღებავზე და ფერებზე',
       'builder': 'ააგე შენი დონე და გაუგზავნე მეგობარს',
     },
+    allT: '📚 ყველა',
+    findPH: '🔎 იპოვე თამაში…', nofind: 'ვერაფერი მოიძებნა 😿 სხვა სიტყვა სცადე', topQ: '🔥 ყველაზე მეტად თამაშობ:',
+    cats: ['⚡ სწრაფი და არკადა', '🧩 თავსატეხი და ფიქრი', '🇦🇲 სომხური', '🎵 მუსიკა და რიტმი', '🌿 მშვიდი', '🕰️ საიტის ისტორია'],
     rand: '🎲 შემთხვევითი',
     moodQ: 'რა ვითამაშოთ?', moodFast: '⚡ სწრაფი', moodCalm: '🌿 მშვიდი', moodTwo: '👥 ორნი', moodThink: '🧠 დასაფიქრებელი',
     dailyT: '🌍 დღის გამოწვევა', dailyScore: (n, g) => 'დღეს დააგროვე ' + n + ' თამაშში «' + g + '»', dailyLevel: (n, g) => 'დღეს მიაღწიე ' + n + ' დონეს თამაშში «' + g + '»', dailyDone: '🏅 შესრულებულია!', dailyGo: '▶ სცადე',
@@ -2754,6 +2841,9 @@ const DICT = {
       'shop': 'सोने से हीरो, रंग और थीम ख़रीदो',
       'builder': 'अपना लेवल बनाओ और दोस्त को भेजो',
     },
+    allT: '📚 सब',
+    findPH: '🔎 खेल ढूँढो…', nofind: 'कुछ नहीं मिला 😿 दूसरा शब्द आज़माओ', topQ: '🔥 सबसे ज़्यादा यही खेलते हो:',
+    cats: ['⚡ तेज़ और आर्केड', '🧩 पहेली और सोचना', '🇦🇲 आर्मेनियाई', '🎵 संगीत और ताल', '🌿 शांत', '🕰️ साइट का इतिहास'],
     rand: '🎲 कोई भी',
     moodQ: 'क्या खेलें?', moodFast: '⚡ तेज़', moodCalm: '🌿 शांत', moodTwo: '👥 दो लोग', moodThink: '🧠 सोचने वाला',
     dailyT: '🌍 आज की चुनौती', dailyScore: (n, g) => 'आज «' + g + '» में ' + n + ' बनाओ', dailyLevel: (n, g) => 'आज «' + g + '» में स्तर ' + n + ' तक पहुँचो', dailyDone: '🏅 हो गया!', dailyGo: '▶ आज़माओ',
@@ -2827,6 +2917,15 @@ function applyLang(lang) {
     const k = a.getAttribute('href').replace(/[.\/]/g, '');
     if (d.tools[k]) a.querySelector('span:last-child').textContent = d.tools[k];
   });
+  document.getElementById('find').placeholder = d.findPH;
+  document.getElementById('nofind').textContent = d.nofind;
+  document.getElementById('topQ').textContent = d.topQ;
+  CATS.forEach((c, i) => {
+    const sec = secEls[c.k];
+    if (sec && d.cats && d.cats[i]) sec.head.querySelector('h2').textContent = d.cats[i];
+  });
+  ALL_T = d.allT;
+  buildCats();     // կոճակների անունները նոր լեզվով
   document.getElementById('navRand').textContent = d.rand;
   document.getElementById('moodQ').textContent = d.moodQ;
   document.getElementById('moodFast').textContent = d.moodFast;
@@ -2844,6 +2943,8 @@ function applyLang(lang) {
   document.querySelectorAll('.new-tag').forEach(t => { t.textContent = d.newTag; });
   document.querySelector('footer').innerHTML = d.footer;
   renderDaily();   // մարտահրավերի տեքստը նոր լեզվով
+  renderTop();     // ամենաշատ խաղացածների անունները նոր լեզվով
+  applyFind();
 }
 
 function chooseLang(lang) {
@@ -2987,6 +3088,204 @@ function renderDaily() {
 }
 renderDaily();
 
+// ——————————————————————————————————————————————————————
+//  🔎 ՈՐՈՆՈՒՄ · 📚 ԿԱՏԵԳՈՐԻԱՆԵՐ · 🔥 ԱՄԵՆԱՇԱՏ ԽԱՂԱՑԱԾԴ
+//  Արենի միտքն է. «45 խաղից մեկը գտնելը արդեն դժվար է։
+//   Խաղերի քանակը շատ է, ուրեմն կատեգորիաներով բաժանում,
+//   ոչ թե մեկ երկար ցուցակ»։
+// ——————————————————————————————————————————————————————
+
+// Ամեն խաղ պատկանում է ՄԵԿ բաժնի։ Հերթականությունը պահպանում է
+// գլխավոր էջի հին շարքը, որ ոչինչ չկորչի։
+const CATS = [
+  { k: 'fast',  t: '⚡ Արագ ու արկադ',
+    g: ['cat-jump','city-drive','rocket','tower','moles','ninja','men','runner',
+        'elevator','traffic','bank','two','onelife','swap','duel'] },
+  { k: 'think', t: '🧩 Գլուխկոտրուկ ու մտածելու',
+    g: ['maze','pipes','blocks','words','bridge','wire','wind','domino','copy',
+        'rewind','mirror','grow','silence','slow','memory','detective'] },
+  { k: 'hy',    t: '🇦🇲 Հայկական',
+    g: ['map','alphabet','nardi','lavash','dance','sasuntsi'] },
+  { k: 'music', t: '🎵 Երաժշտություն ու ռիթմ',
+    g: ['piano','drums','beat'] },
+  { k: 'calm',  t: '🌿 Հանգիստ',
+    g: ['fishing','garden','camera','story','poly'] },
+  { k: 'hist',  t: '🕰️ Կայքի պատմությունը',
+    g: ['time','museum'] },
+];
+
+let ALL_T = '📚 Բոլորը';
+const grid0 = document.querySelector('.grid');
+const secEls = {};          // բաժնի բանալի → {head, grid}
+
+// Քարտերը տեղափոխում ենք իրենց բաժինները։ Հին ցանցը դատարկվում ու
+// թաքնվում է, բայց տեղում է մնում — gg-kit-ը «շարունակել» կոճակը
+// հենց նրանից առաջ է դնում։
+(function buildSections() {
+  const cards = {};
+  document.querySelectorAll('a.game').forEach(a => {
+    const f = (a.getAttribute('href') || '').replace(/[.\/]/g, '');
+    cards[f] = a;
+  });
+  let after = grid0;
+  for (const c of CATS) {
+    const head = document.createElement('div');
+    head.className = 'secthead';
+    head.innerHTML = '<h2></h2><span class="line"></span>';
+    head.querySelector('h2').textContent = c.t;
+    head.dataset.cat = c.k;
+
+    const g = document.createElement('div');
+    g.className = 'grid';
+    g.dataset.cat = c.k;
+
+    let n = 0;
+    for (const f of c.g) { if (cards[f]) { g.appendChild(cards[f]); n++; } }
+    if (!n) continue;
+
+    after.parentNode.insertBefore(head, after.nextSibling);
+    head.parentNode.insertBefore(g, head.nextSibling);
+    after = g;
+    secEls[c.k] = { head: head, grid: g };
+  }
+  // Բաժին չգտած քարտ մնացե՞լ է — ետ ենք դնում հին ցանցը, որ չկորչի
+  const left = Object.keys(cards).filter(f => !cards[f].parentNode || cards[f].parentNode === grid0);
+  if (!left.length) grid0.classList.add('gone');
+})();
+
+// ——— 📚 Բաժնի ընտրությունը ———
+let cat = null;                 // null = բոլորը
+const catsEl = document.getElementById('cats');
+function buildCats() {
+  catsEl.textContent = '';
+  const all = document.createElement('button');
+  all.dataset.cat = '';
+  all.textContent = ALL_T;
+  catsEl.appendChild(all);
+  for (const c of CATS) {
+    if (!secEls[c.k]) continue;
+    const b = document.createElement('button');
+    b.dataset.cat = c.k;
+    b.textContent = secEls[c.k].head.querySelector('h2').textContent;
+    catsEl.appendChild(b);
+  }
+  catsEl.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => {
+      cat = (b.dataset.cat && cat !== b.dataset.cat) ? b.dataset.cat : null;
+      applyCat();
+      applyFind();
+      if (cat) catsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
+  applyCat();
+}
+function applyCat() {
+  catsEl.querySelectorAll('button').forEach(b =>
+    b.classList.toggle('on', (b.dataset.cat || null) === cat));
+  for (const c of CATS) {
+    if (!secEls[c.k]) continue;
+    const off = cat !== null && cat !== c.k;
+    secEls[c.k].grid.querySelectorAll('a.game').forEach(a => a.classList.toggle('cathide', off));
+  }
+  // գործիքները ցույց ենք տալիս միայն այն ժամանակ, երբ բաժին ընտրված չէ
+  const th = document.querySelector('.secthead:not([data-cat])'), tb = document.querySelector('.tools');
+  if (th) th.dataset.catoff = cat !== null ? '1' : '';
+  if (tb) tb.dataset.catoff = cat !== null ? '1' : '';
+}
+
+// ——— 🔎 Որոնումը ———
+const findEl = document.getElementById('find');
+const findX = document.getElementById('findX');
+const nofind = document.getElementById('nofind');
+let query = '';
+
+// Հայերենի «և»-ը ու շեշտերը չպիտի խանգարեն գտնելուն
+function norm(t) {
+  return (t || '').toLowerCase().replace(/և/g, 'եւ').replace(/[՝`՛՞։,.\-–—!?]/g, ' ').trim();
+}
+function cardText(a) {
+  const h2 = a.querySelector('h2'), real = a.querySelector('.real'), desc = a.querySelector('.desc');
+  const b = a.querySelector('b'), sp = a.querySelectorAll('span');
+  let t = (a.getAttribute('href') || '') + ' ';
+  if (h2) t += h2.textContent + ' ';
+  if (real) t += real.textContent + ' ';
+  if (desc) t += desc.textContent + ' ';
+  if (b) t += b.textContent + ' ';                    // գործիքների քարտերը
+  sp.forEach(x => { t += x.textContent + ' '; });
+  return norm(t);
+}
+
+function applyFind() {
+  const q = norm(query);
+  // Հայերենում բառը վերջավորություն է ստանում՝ «ոսկի» գրում ես, իսկ
+  // քարտին գրված է «ոսկով»։ Դրա համար մի-երկու տառ էլ կտրում ենք։
+  const needles = [q];
+  if (q.length >= 4) needles.push(q.slice(0, -1));
+  if (q.length >= 5) needles.push(q.slice(0, -2));
+
+  let shown = 0;
+  document.querySelectorAll('a.game, a.tool').forEach(a => {
+    const t = cardText(a);
+    const hit = !q || needles.some(x => t.indexOf(x) >= 0);
+    a.classList.toggle('findhide', !hit);
+    if (hit && !a.classList.contains('moodhide') && !a.classList.contains('cathide')) shown++;
+  });
+  // Դատարկ բաժինը թաքնվում է ինքն իրեն
+  for (const k in secEls) {
+    const vis = secEls[k].grid.querySelectorAll('a.game:not(.findhide):not(.moodhide):not(.cathide)').length;
+    secEls[k].head.classList.toggle('gone', vis === 0);
+    secEls[k].grid.classList.toggle('gone', vis === 0);
+  }
+  const toolsHead = document.querySelector('.secthead:not([data-cat])');
+  const toolsVis = (cat !== null) ? 0 : document.querySelectorAll('a.tool:not(.findhide)').length;
+  if (toolsHead) toolsHead.classList.toggle('gone', toolsVis === 0);
+  const toolsBox = document.querySelector('.tools');
+  if (toolsBox) toolsBox.classList.toggle('gone', toolsVis === 0);
+
+  nofind.hidden = shown > 0 || toolsVis > 0;
+  findX.hidden = !query;
+  const topBox = document.getElementById('top');
+  if (topBox && !topBox.dataset.empty) topBox.hidden = !!query;
+}
+findEl.addEventListener('input', () => { query = findEl.value; applyFind(); });
+findX.addEventListener('click', () => { findEl.value = ''; query = ''; applyFind(); findEl.blur(); });
+
+// ——— 🔥 Ամենաշատ խաղացածներդ ———
+// gg-kit.js-ը հաշվում է, թե որ խաղը քանի անգամ ես բացել։
+// Հաշիվը ԱՅՍ սարքինն է — կայքը սերվեր չունի, ուրիշների խաղերը չգիտենք։
+function renderTop() {
+  const box = document.getElementById('top');
+  if (!box) return;
+  let plays = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.indexOf('gg-plays-') === 0) {
+        plays.push({ f: k.slice(9), n: Number(localStorage.getItem(k)) || 0 });
+      }
+    }
+  } catch (e) {}
+  plays = plays.filter(x => x.n > 1).sort((a, b) => b.n - a.n).slice(0, 3);
+  box.querySelectorAll('a').forEach(a => a.remove());
+  if (!plays.length) { box.hidden = true; box.dataset.empty = '1'; return; }
+  delete box.dataset.empty;
+  for (const p of plays) {
+    const card = document.querySelector('a.game[href="./' + p.f + '/"]');
+    const nm = card ? (card.querySelector('.real') || card.querySelector('h2')).textContent.trim() : p.f;
+    const a = document.createElement('a');
+    a.href = './' + p.f + '/';
+    a.innerHTML = '<span></span><b>×' + p.n + '</b>';
+    a.querySelector('span').textContent = nm;
+    box.appendChild(a);
+  }
+  box.hidden = !!query;
+}
+
+// Հիմա, երբ ամեն ինչ պատրաստ է, նկարում ենք
+buildCats();
+renderTop();
+applyFind();
+
 // ——— «Ի՞նչ խաղանք» զտիչը 💡 — Արենի միտքն է ———
 // Ամեն խաղ ունի պիտակներ. մենակ / ընկերոջ հետ / հանգիստ / ադրենալին
 const MOODS = {
@@ -3045,6 +3344,7 @@ function applyMood() {
     const tags = MOODS[card.getAttribute('href')] || [];
     card.classList.toggle('moodhide', mood !== null && !tags.includes(mood));
   });
+  applyFind();          // դատարկ մնացած բաժինը թաքնվում է
 }
 document.querySelectorAll('#mood button').forEach(b => {
   b.addEventListener('click', () => {
@@ -3056,7 +3356,7 @@ document.querySelectorAll('#mood button').forEach(b => {
 // ——— 🎲 Պատահական խաղ. զառը որոշում է, թե ինչ ես խաղալու այսօր ———
 document.getElementById('navRand').addEventListener('click', (e) => {
   e.preventDefault();
-  const cards = [...document.querySelectorAll('.game:not(.moodhide)')];
+  const cards = [...document.querySelectorAll('.game:not(.moodhide):not(.findhide):not(.cathide)')];
   const pick = cards[Math.floor(Math.random() * cards.length)];
   // մի պահ առանձնացնում ենք ընտրվածը, հետո գնում ենք
   pick.scrollIntoView({ behavior: 'smooth', block: 'center' });
