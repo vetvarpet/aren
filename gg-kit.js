@@ -667,6 +667,10 @@
   };
 
   window.ggKit = {
+    // Խաղերի թիվը մեկ տեղից — GAMES-ը ամեն խաղի ցուցակն է, ուրիշ էջեր
+    // սրանից են վերցնում, որ ձեռքով գրված թիվը երբեք չհնանա։
+    gameCount: Object.keys(GAMES).length,
+    games: Object.keys(GAMES),
     pause: setPause,
     isPaused: function () { return paused; },
     mute: function (v) { muted = !!v; ls.set('gg-muted', muted ? '1' : '0'); applyMute(); bSound.textContent = muted ? '🔇' : '🔊'; },
