@@ -116,6 +116,41 @@ function ghost() { return Date.now() - lastTouchAt < 700; }
 let lastTap = 0;
 document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
 
+
+// ——— Հյութ 🧃 — էկրանի թրթռում ու մասնիկներ ———
+// Բախվելիս էկրանը ցնցվում է, ցատկելիս ու միավոր վերցնելիս փոշի է ցայտում։
+let ggShake = 0, ggBits = [];
+function ggKick(power) { ggShake = Math.max(ggShake, power || 10); }
+function ggPuff(x, y, n, col, up) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, sp = 0.6 + Math.random() * 2.4;
+    ggBits.push({ x: x, y: y, vx: Math.cos(a) * sp,
+      vy: up ? -Math.abs(Math.sin(a)) * sp - 1 : Math.sin(a) * sp,
+      life: 1, r: 1.5 + Math.random() * 2.5, c: col || '#ffe9a8' });
+  }
+  if (ggBits.length > 140) ggBits.splice(0, ggBits.length - 140);
+}
+function ggBitsStep() {
+  for (const b of ggBits) { b.x += b.vx; b.y += b.vy; b.vy += 0.09; b.life -= 0.035; }
+  ggBits = ggBits.filter(b => b.life > 0);
+  if (ggShake > 0) ggShake = Math.max(0, ggShake - 0.9);
+}
+function ggBitsDraw(c) {
+  for (const b of ggBits) {
+    c.globalAlpha = Math.max(0, b.life);
+    c.fillStyle = b.c;
+    c.beginPath(); c.arc(b.x, b.y, b.r, 0, Math.PI * 2); c.fill();
+  }
+  c.globalAlpha = 1;
+}
+function ggShakeOn(c) {
+  if (ggShake <= 0) return false;
+  c.save();
+  c.translate((Math.random() - 0.5) * ggShake, (Math.random() - 0.5) * ggShake);
+  return true;
+}
+function ggShakeOff(c, on) { if (on) c.restore(); }
+
 // ——— կտավը ———
 const cv = document.getElementById('cv'), cx = cv.getContext('2d');
 let W = 0, H = 0, DPR = 1;
@@ -155,10 +190,11 @@ function jump() {
   if (state !== 'play') return;
   // երկուսն էլ միասին — ուրիշ ձև չկա
   let any = false;
-  P.forEach(p => { if (p.y === 0) { p.vy = JUMP; any = true; } });
+  P.forEach((p, i) => { if (p.y === 0) { p.vy = JUMP; any = true; ggPuff(PX() + 8, GROUND(i), 6, '#cfe8b0'); } });
   if (any) tone(520, 0.09, 'triangle', 0.1);
 }
 function gameOver(side) {
+  ggKick(16); ggPuff(PX() + 8, GROUND(side) + P[side].y - 16, 22, '#ff9d8a');
   state = 'over'; endedAt = Date.now(); whoDied = side === 0 ? 'L' : 'R';
   const isRec = score > best;
   if (isRec) { best = score; try { localStorage.setItem('aren-two-best', String(best)); } catch (e) {} }
@@ -218,7 +254,8 @@ function step(dt) {
       gameOver(o.side);
       return;
     }
-    if (!o.passed && o.x + o.w < px) { o.passed = true; score++; tone(880, 0.05, 'square', 0.05); }
+    if (!o.passed && o.x + o.w < px) { o.passed = true; score++; tone(880, 0.05, 'square', 0.05);
+      ggPuff(px + 10, GROUND(o.side) - 26, 5, '#ffe9a8', true); }
   }
   obs = obs.filter(o => o.x + o.w > -40);
 }
@@ -243,7 +280,8 @@ function runner(x, y, col, phase, jumping) {
 }
 
 function draw() {
-  cx.clearRect(0, 0, W, H);
+  const shaking = ggShakeOn(cx);
+  cx.clearRect(-40, -40, W + 80, H + 80);
   const mid = H / 2;
   const g1 = cx.createLinearGradient(0, 0, 0, mid);
   g1.addColorStop(0, '#222b52'); g1.addColorStop(1, '#2f3a6b');
@@ -273,6 +311,8 @@ function draw() {
   runner(px, GROUND(0) + P[0].y, '#7fd1c1', ph, P[0].y < -2);
   runner(px, GROUND(1) + P[1].y, '#f0c85a', ph, P[1].y < -2);
 
+  ggBitsDraw(cx);
+  ggShakeOff(cx, shaking);
   document.getElementById('hud').textContent = state === 'play' ? String(score) : '';
 }
 
@@ -280,6 +320,7 @@ let prev = 0;
 function loop(now) {
   const dt = Math.min(0.033, (now - prev) / 1000 || 0); prev = now;
   if (state === 'play') step(dt);
+  ggBitsStep();
   draw();
   requestAnimationFrame(loop);
 }

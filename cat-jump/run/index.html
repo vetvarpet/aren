@@ -397,6 +397,7 @@ function jump() {
   if (!cat.jumping) {
     cat.vy = JUMP_POWER;
     cat.jumping = true;
+    ggPuff(cat.x + 18, cat.y + 46, 7, '#cfe8b0');
     sound('jump');
   }
 }
@@ -756,10 +757,12 @@ function updateBoss() {
       lives--;
       if (lives <= 0) {
         sound('crash');
+        ggKick(16); ggPuff(cat.x + 20, cat.y + 22, 22, '#ff9d8a');
         gameOver = true;
         running = false;
       } else {
         sound('hurt');
+        ggKick(9); ggPuff(cat.x + 20, cat.y + 22, 12, '#ffd166');
         invincible = 90;
       }
     }
@@ -1068,6 +1071,8 @@ function drawCenterText(big, small) {
 
 // ——— Խաղի քայլը՝ ամեն կադր ———
 function update() {
+  ggBitsStep();
+  const ggSh = ggShakeOn(ctx);
   frame++;
   scheduleMusic();
 
@@ -1238,10 +1243,12 @@ function update() {
         lives--;
         if (lives <= 0) {
           sound('crash');
+          ggKick(16); ggPuff(cat.x + 20, cat.y + 22, 22, '#ff9d8a');
           gameOver = true;
           running = false;
         } else {
           sound('hurt');
+          ggKick(9); ggPuff(cat.x + 20, cat.y + 22, 12, '#ffd166');
           invincible = 90;   // ~1.5 վայրկյան կատուն թարթում է ու անխոցելի է
         }
       }
@@ -1282,10 +1289,62 @@ function update() {
     drawTrophy(W / 2, H / 2 + Math.sin(frame * 0.1) * 8);
   }
 
-  requestAnimationFrame(update);
+  ggBitsDraw(ctx);
+  ggShakeOff(ctx, ggSh);
+
 }
 
-update();
+
+// ——— Հյութ 🧃 — էկրանի թրթռում ու մասնիկներ ———
+// Բախվելիս էկրանը ցնցվում է, ցատկելիս ու միավոր վերցնելիս փոշի է ցայտում։
+let ggShake = 0, ggBits = [];
+function ggKick(power) { ggShake = Math.max(ggShake, power || 10); }
+function ggPuff(x, y, n, col, up) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, sp = 0.6 + Math.random() * 2.4;
+    ggBits.push({ x: x, y: y, vx: Math.cos(a) * sp,
+      vy: up ? -Math.abs(Math.sin(a)) * sp - 1 : Math.sin(a) * sp,
+      life: 1, r: 1.5 + Math.random() * 2.5, c: col || '#ffe9a8' });
+  }
+  if (ggBits.length > 140) ggBits.splice(0, ggBits.length - 140);
+}
+function ggBitsStep() {
+  for (const b of ggBits) { b.x += b.vx; b.y += b.vy; b.vy += 0.09; b.life -= 0.035; }
+  ggBits = ggBits.filter(b => b.life > 0);
+  if (ggShake > 0) ggShake = Math.max(0, ggShake - 0.9);
+}
+function ggBitsDraw(c) {
+  for (const b of ggBits) {
+    c.globalAlpha = Math.max(0, b.life);
+    c.fillStyle = b.c;
+    c.beginPath(); c.arc(b.x, b.y, b.r, 0, Math.PI * 2); c.fill();
+  }
+  c.globalAlpha = 1;
+}
+function ggShakeOn(c) {
+  if (ggShake <= 0) return false;
+  c.save();
+  c.translate((Math.random() - 0.5) * ggShake, (Math.random() - 0.5) * ggShake);
+  return true;
+}
+function ggShakeOff(c, on) { if (on) c.restore(); }
+
+// ——— Կայուն քայլ ⏱️ ———
+// Հեռախոսի էկրանը կարող է վայրկյանում 120 կադր տալ, ու այն ժամանակ
+// ամեն ինչ կրկնակի արագ էր աշխատում։ Հիմա ֆիզիկան միշտ 60 քայլ է
+// անում վայրկյանում՝ անկախ էկրանից։
+const GG_FIXED = 1000 / 60;
+let ggAcc = 0, ggPrev = 0;
+function ggLoop(now) {
+  if (!ggPrev) ggPrev = now;
+  let el = now - ggPrev; ggPrev = now;
+  if (el > 250) el = GG_FIXED;      // ներդիրը ետ բացելուց հետո չթռչի առաջ
+  ggAcc += el;
+  let guard = 0;
+  while (ggAcc >= GG_FIXED && guard++ < 4) { ggAcc -= GG_FIXED; update(); }
+  requestAnimationFrame(ggLoop);
+}
+requestAnimationFrame(ggLoop);
 </script>
 
 <!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, թրթռոց, նկար, բեռնում -->

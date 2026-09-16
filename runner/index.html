@@ -100,10 +100,14 @@ function addBuild() {
   const sp = speedNow();
   const gap = 55 + Math.random() * (60 + sp * 9);
   const w = 190 + Math.random() * 260;
-  let top = last.top + (Math.random() * 2 - 1) * H * 0.16;
+  // Որքա՞ն բարձր կարող ես ցատկել — հաշվում ենք հենց ֆիզիկայից, ոչ թե
+  // էկրանի բարձրությունից։ Առաջ մեծ հեռախոսում տանիքները չափազանց բարձր
+  // էին դառնում ու ցատկն անհնար էր։
+  const MAX_RISE = (JUMP * JUMP) / (2 * GRAV) * 0.62;
+  const spread = Math.min(H * 0.16, MAX_RISE);
+  let top = last.top + (Math.random() * 2 - 1) * spread;
   top = Math.max(H * 0.4, Math.min(H * 0.8, top));
-  // եթե հաջորդ տանիքը շատ բարձր է՝ իջեցնում ենք, որ ցատկը հնարավոր լինի
-  if (last.top - top > H * 0.16) top = last.top - H * 0.16;
+  if (last.top - top > spread) top = last.top - spread;
   const obs = [];
   if (w > 250 && Math.random() < Math.min(0.75, 0.3 + dist / 900)) {
     obs.push({ dx: 90 + Math.random() * (w - 160), w: 16 + Math.random() * 12, h: 26 + Math.random() * 22 });
@@ -147,6 +151,7 @@ document.addEventListener('touchend', (e) => {
 
 function die() {
   state = 'dying';
+  ggKick(16); ggPuff(player.x, player.y, 22, '#ff9d8a');
   sFall();
 }
 function finishOver() {
@@ -162,6 +167,7 @@ function finishOver() {
 
 function step() {
   frame++;
+  ggBitsStep();
   if (state === 'play') {
     const sp = speedNow();
     dist += sp;
@@ -306,6 +312,7 @@ function drawText(txt, x, y, size, color, align, bold) {
 }
 
 function draw() {
+  const ggSh = ggShakeOn(ctx);
   drawBg();
 
   if (state === 'menu') {
@@ -342,14 +349,66 @@ function draw() {
       drawText(T.again, W / 2, H * 0.66, Math.min(17, W * 0.045), '#6ee7b7');
     }
   }
+  ggBitsDraw(ctx);
+  ggShakeOff(ctx, ggSh);
 }
 
-function loop() {
-  step();
-  draw();
-  requestAnimationFrame(loop);
+
+
+// ——— Հյութ 🧃 — էկրանի թրթռում ու մասնիկներ ———
+// Բախվելիս էկրանը ցնցվում է, ցատկելիս ու միավոր վերցնելիս փոշի է ցայտում։
+let ggShake = 0, ggBits = [];
+function ggKick(power) { ggShake = Math.max(ggShake, power || 10); }
+function ggPuff(x, y, n, col, up) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, sp = 0.6 + Math.random() * 2.4;
+    ggBits.push({ x: x, y: y, vx: Math.cos(a) * sp,
+      vy: up ? -Math.abs(Math.sin(a)) * sp - 1 : Math.sin(a) * sp,
+      life: 1, r: 1.5 + Math.random() * 2.5, c: col || '#ffe9a8' });
+  }
+  if (ggBits.length > 140) ggBits.splice(0, ggBits.length - 140);
 }
-loop();
+function ggBitsStep() {
+  for (const b of ggBits) { b.x += b.vx; b.y += b.vy; b.vy += 0.09; b.life -= 0.035; }
+  ggBits = ggBits.filter(b => b.life > 0);
+  if (ggShake > 0) ggShake = Math.max(0, ggShake - 0.9);
+}
+function ggBitsDraw(c) {
+  for (const b of ggBits) {
+    c.globalAlpha = Math.max(0, b.life);
+    c.fillStyle = b.c;
+    c.beginPath(); c.arc(b.x, b.y, b.r, 0, Math.PI * 2); c.fill();
+  }
+  c.globalAlpha = 1;
+}
+function ggShakeOn(c) {
+  if (ggShake <= 0) return false;
+  c.save();
+  c.translate((Math.random() - 0.5) * ggShake, (Math.random() - 0.5) * ggShake);
+  return true;
+}
+function ggShakeOff(c, on) { if (on) c.restore(); }
+
+// ——— Կայուն քայլ ⏱️ ———
+// Հեռախոսի էկրանը կարող է վայրկյանում 120 կադր տալ, ու այն ժամանակ
+// ամեն ինչ կրկնակի արագ էր աշխատում։ Հիմա ֆիզիկան միշտ 60 քայլ է
+// անում վայրկյանում՝ անկախ էկրանից։
+const GG_FIXED = 1000 / 60;
+let ggAcc = 0, ggPrev = 0;
+function ggLoop(now) {
+  if (!ggPrev) ggPrev = now;
+  let el = now - ggPrev; ggPrev = now;
+  if (el > 250) el = GG_FIXED;      // ներդիրը ետ բացելուց հետո չթռչի առաջ
+  ggAcc += el;
+  let guard = 0;
+  while (ggAcc >= GG_FIXED && guard++ < 4) { ggAcc -= GG_FIXED; step(); }
+  requestAnimationFrame(ggLoop);
+}
+requestAnimationFrame(ggLoop);
+
+// նկարում ենք ամեն կադր, հաշվում՝ ամեն 1/60 վայրկյան
+function drawLoop() { draw(); requestAnimationFrame(drawLoop); }
+requestAnimationFrame(drawLoop);
 </script>
 
 <!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, թրթռոց, նկար, բեռնում -->
