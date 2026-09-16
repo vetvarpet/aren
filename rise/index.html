@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ոսկե Վերելք 🏐 · Golden Games</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #0f1226; overflow: hidden;
+               font-family: Arial, Helvetica, sans-serif; color: #f5eede; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  .ov { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 24px;
+        background: rgba(10,13,32,0.9); }
+  .ov[hidden] { display: none !important; }
+  .ov h1 { margin: 0 0 6px; font-size: 1.4rem; color: #f0c85a; }
+  .ov p { margin: 0 0 18px; font-size: 0.9rem; line-height: 1.5; max-width: 340px; opacity: 0.92; }
+  .ov .big { font-size: 2.6rem; font-weight: bold; color: #ffe9a8; margin-bottom: 2px; }
+  .ov button { font-family: inherit; font-size: 1rem; font-weight: bold; padding: 13px 30px;
+               border-radius: 14px; border: none; background: #f0c85a; color: #10162a; cursor: pointer; }
+  #hud { position: fixed; top: 54px; left: 0; right: 0; z-index: 10; text-align: center;
+         pointer-events: none; text-shadow: 0 2px 6px #000; }
+  #hud .h { font-size: 1.5rem; font-weight: bold; color: #ffe9a8; }
+  #hud .l { font-size: 1rem; margin-top: 2px; letter-spacing: 2px; }
+  #tip { position: fixed; left: 0; right: 0; bottom: 18px; z-index: 10; text-align: center;
+         font-size: 0.8rem; opacity: 0.8; pointer-events: none; text-shadow: 0 2px 6px #000; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:30;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="hud"><div class="h"></div><div class="l"></div></div>
+<div id="tip"></div>
+
+<div class="ov" id="menu">
+  <h1 id="mT">Ոսկե Վերելք 🏐</h1>
+  <p id="mS"></p>
+  <button id="startBtn"></button>
+</div>
+
+<div class="ov" id="over" hidden>
+  <div class="big" id="oScore">0</div>
+  <h1 id="oT"></h1>
+  <p id="oS"></p>
+  <button id="againBtn"></button>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  ՈՍԿԵ ՎԵՐԵԼՔ 🏐 — Կամոյի միտքն է
+//  Գնդակը գետնից է մեկնարկում. քաշում ես ետ, սլաքը ցույց է տալիս
+//  ուղղությունը, բաց ես թողնում։ Առաջին հարվածից հետո ձգողությունը
+//  անջատվում է ու գնդակը ուղիղ գծերով է թռչում։
+//  Էկրանի ձախ ու աջ եզրերը բաց են — քո երկու թիակներն են պատերը։
+//  Երկու բութ մատով վեր-վար ես տանում դրանք։ Վրիպեցիր՝ կյանք կորավ։
+//  Ներքև ընկավ՝ նույնպես։ Դանդաղեցնող բոնուսը հենց դրա համար է
+//  երկսայրի. շատ դանդաղ գնդակը այլևս վեր չի բարձրանում։
+// ——————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'Ոսկե Վերելք 🏐', s:'Քաշիր ետ ու բաց թող։ Հետո երկու բութ մատով թիակները վեր-վար տար, որ գնդակը դուրս չթռչի։ Որքան բարձր՝ այնքան լավ։',
+        go:'▶ Սկսել', again:'↻ Նորից', over:'Վե՛րջ', rec:'Նոր ռեկորդ 🎉', best:n=>'Ռեկորդ՝ '+n+' մ', m:'մ',
+        pull:'Քաշիր ետ ու բաց թող', tip:'Ձախ ու աջ բութ մատերով տար թիակները',
+        miss:'Վրիպեցիր', sank:'Գնդակն ընկավ' },
+  ru: { t:'Золотой Подъём 🏐', s:'Оттяни назад и отпусти. Потом двумя большими пальцами води ракетки вверх-вниз, чтобы мяч не улетел. Чем выше — тем лучше.',
+        go:'▶ Начать', again:'↻ Ещё раз', over:'Конец', rec:'Новый рекорд 🎉', best:n=>'Рекорд: '+n+' м', m:'м',
+        pull:'Оттяни назад и отпусти', tip:'Води ракетки большими пальцами',
+        miss:'Промах', sank:'Мяч упал' },
+  en: { t:'Golden Rise 🏐', s:'Pull back and let go. Then slide the paddles up and down with both thumbs so the ball never escapes. The higher you climb, the better.',
+        go:'▶ Start', again:'↻ Again', over:'Game over', rec:'New best 🎉', best:n=>'Best: '+n+' m', m:'m',
+        pull:'Pull back and let go', tip:'Slide the paddles with both thumbs',
+        miss:'You missed', sank:'The ball sank' },
+  es: { t:'Ascenso Dorado 🏐', s:'Tira hacia atrás y suelta. Luego mueve las palas arriba y abajo con los dos pulgares para que la bola no se escape. Cuanto más alto, mejor.',
+        go:'▶ Empezar', again:'↻ Otra vez', over:'Se acabó', rec:'¡Nuevo récord! 🎉', best:n=>'Récord: '+n+' m', m:'m',
+        pull:'Tira hacia atrás y suelta', tip:'Mueve las palas con los dos pulgares',
+        miss:'Fallaste', sank:'La bola cayó' },
+  fr: { t:'Ascension Dorée 🏐', s:'Tire en arrière et lâche. Ensuite fais glisser les raquettes de haut en bas avec les deux pouces pour que la balle ne s’échappe pas. Plus haut, c’est mieux.',
+        go:'▶ Démarrer', again:'↻ Encore', over:'Perdu', rec:'Nouveau record 🎉', best:n=>'Record : '+n+' m', m:'m',
+        pull:'Tire en arrière et lâche', tip:'Fais glisser les raquettes avec les deux pouces',
+        miss:'Raté', sank:'La balle est tombée' },
+  de: { t:'Goldener Aufstieg 🏐', s:'Zieh zurück und lass los. Dann schiebst du die Schläger mit beiden Daumen hoch und runter, damit der Ball nicht entwischt. Je höher, desto besser.',
+        go:'▶ Start', again:'↻ Nochmal', over:'Vorbei', rec:'Neuer Rekord 🎉', best:n=>'Rekord: '+n+' m', m:'m',
+        pull:'Zieh zurück und lass los', tip:'Schieb die Schläger mit beiden Daumen',
+        miss:'Daneben', sank:'Der Ball ist gefallen' },
+  ja: { t:'ゴールデン・のぼり 🏐', s:'うしろにひっぱってはなそう。そのあとは、りょうほうのおやゆびでパドルをうえしたにうごかして、ボールをにがさないでね。たかいほどいいよ。',
+        go:'▶ スタート', again:'↻ もういちど', over:'おわり', rec:'しんきろく 🎉', best:n=>'ベスト：'+n+' m', m:'m',
+        pull:'うしろにひっぱってはなす', tip:'りょうてのおやゆびでパドルをうごかそう',
+        miss:'そらした', sank:'ボールがおちた' },
+  zh: { t:'黄金上升 🏐', s:'往后拉再放开。之后用两个大拇指上下滑动挡板，别让球跑掉。爬得越高越好。',
+        go:'▶ 开始', again:'↻ 再来', over:'结束', rec:'新纪录 🎉', best:n=>'纪录：'+n+' 米', m:'米',
+        pull:'往后拉再放开', tip:'用两个大拇指滑动挡板',
+        miss:'没接到', sank:'球掉下去了' },
+  it: { t:'Ascesa Dorata 🏐', s:'Tira indietro e lascia. Poi muovi le racchette su e giù con i due pollici perché la palla non scappi. Più in alto, meglio è.',
+        go:'▶ Avvia', again:'↻ Ancora', over:'Finita', rec:'Nuovo record 🎉', best:n=>'Record: '+n+' m', m:'m',
+        pull:'Tira indietro e lascia', tip:'Muovi le racchette con i due pollici',
+        miss:'Mancata', sank:'La palla è caduta' },
+  ka: { t:'ოქროს ასვლა 🏐', s:'გამოქაჩე უკან და გაუშვი. მერე ორივე ცერით ასწი-ჩამოწიე ნიჩბები, რომ ბურთი არ გაექცეს. რაც უფრო მაღლა, მით უკეთესი.',
+        go:'▶ დაწყება', again:'↻ თავიდან', over:'დასასრული', rec:'ახალი რეკორდი 🎉', best:n=>'რეკორდი: '+n+' მ', m:'მ',
+        pull:'გამოქაჩე უკან და გაუშვი', tip:'ორივე ცერით ამოძრავე ნიჩბები',
+        miss:'აცდი', sank:'ბურთი ჩავარდა' },
+  hi: { t:'गोल्डन चढ़ाई 🏐', s:'पीछे खींचकर छोड़ो। फिर दोनों अंगूठों से पैडल ऊपर-नीचे करो ताकि गेंद बाहर न जाए। जितना ऊँचा उतना अच्छा।',
+        go:'▶ शुरू', again:'↻ फिर से', over:'खेल ख़त्म', rec:'नया रिकॉर्ड 🎉', best:n=>'रिकॉर्ड: '+n+' मी', m:'मी',
+        pull:'पीछे खींचकर छोड़ो', tip:'दोनों अंगूठों से पैडल चलाओ',
+        miss:'चूक गए', sank:'गेंद गिर गई' },
+};
+const T = TRL[ggLang] || TRL.hy;
+const $ = id => document.getElementById(id);
+$('mT').textContent = T.t; $('mS').textContent = T.s;
+$('startBtn').textContent = T.go; $('againBtn').textContent = T.again;
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+let best = 0;
+try { best = Number(localStorage.getItem('aren-rise-best') || 0) || 0; } catch (e) {}
+
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.1, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.1));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.1));
+}
+let lastTouchAt = 0;
+document.addEventListener('touchstart', () => { lastTouchAt = Date.now(); initAudio(); }, { passive: true });
+function ghost() { return Date.now() - lastTouchAt < 700; }
+let lastTapT = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTapT < 350) e.preventDefault(); lastTapT = n; }, { passive: false });
+
+const cv = $('cv'), cx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+function fit() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+fit(); addEventListener('resize', fit);
+
+// ——— չափեր ———
+const R = 11;                 // գնդակի շառավիղ
+const PADX = 26;              // թիակի կենտրոնը եզրից
+const PW = 15;                // թիակի հաստություն
+const PH0 = 104;              // թիակի սովորական երկարություն
+const GRAV = 1500;            // ձգողություն՝ միայն առաջին հարվածին
+const BASE = 330;             // ելակետային արագություն
+const CHUNK = 430;            // ամեն այսքան բարձրության վրա նոր խոչընդոտներ
+const MINVX = 0.30;           // գնդակը միշտ կողք է գնում, թե չէ կկախվի ուղղահայաց
+
+// ——— վիճակ ———
+let state = 'menu';           // menu | aim | fly | over
+let ball = { x: 0, y: 0, vx: 0, vy: 0 };
+let camY = 0;                 // աշխարհի y-ը էկրանի ներքևում
+let maxY = 0, lives = 3, stars = 0, endedAt = 0, inv = 0, grav = false;
+let spdMul = 1, padMul = 1, padBig = 0;
+let padL = 0, padR = 0;       // թիակների էկրանային y
+let obs = [], perks = [], bits = [], shake = 0;
+let aimFrom = null, aimTo = null;
+let lastLoss = '';
+let builtTo = 0;
+
+const sy = y => H - (y - camY);           // աշխարհ → էկրան
+const wy = s => camY + (H - s);           // էկրան → աշխարհ
+const padH = () => PH0 * padMul;
+const speed = () => Math.max(150, Math.min(720, (BASE + Math.min(300, maxY / 14)) * spdMul));
+
+function reset() {
+  camY = 0; maxY = 0; lives = 3; stars = 0; spdMul = 1; padMul = 1; padBig = 0;
+  obs = []; perks = []; bits = []; shake = 0; builtTo = 0; inv = 0; lastLoss = '';
+  padL = H * 0.62; padR = H * 0.62;
+  ball = { x: W / 2, y: 40, vx: 0, vy: 0 };
+  grav = true; state = 'aim'; aimFrom = null; aimTo = null;
+  buildUpTo(camY + H * 2);
+}
+function start() {
+  initAudio(); reset();
+  $('menu').hidden = true; $('over').hidden = true;
+  tone(680, 0.13, 'triangle');
+}
+function gameOver() {
+  state = 'over'; endedAt = Date.now();
+  const sc = score();
+  const isRec = sc > best;
+  if (isRec) { best = sc; try { localStorage.setItem('aren-rise-best', String(best)); } catch (e) {} }
+  $('oScore').textContent = sc + ' ' + T.m;
+  $('oT').textContent = isRec ? T.rec : T.over;
+  $('oS').textContent = (lastLoss ? lastLoss + ' · ' : '') + T.best(best);
+  $('over').hidden = false;
+  tone(190, 0.36, 'sawtooth', 0.14);
+}
+function score() { return Math.max(0, Math.floor(maxY / 12)) + stars * 50; }
+
+// ——— խոչընդոտներ ու բոնուսներ ———
+// Կողքի պատեր չկան — թեքված գերաններն ու բամպերներն են ճանապարհը ծռում։
+function buildUpTo(topY) {
+  while (builtTo < topY) {
+    const base = builtTo + CHUNK;
+    const n = 1 + (Math.random() < 0.55 ? 1 : 0);
+    for (let i = 0; i < n; i++) {
+      const y = base + Math.random() * CHUNK * 0.7 - CHUNK * 0.35;
+      if (Math.random() < 0.45) {
+        obs.push({ k: 'bump', x: W * (0.22 + Math.random() * 0.56), y: y, r: 17 + Math.random() * 9 });
+      } else {
+        const len = W * (0.22 + Math.random() * 0.2);
+        const a = (Math.random() < 0.5 ? 1 : -1) * (0.35 + Math.random() * 0.5);
+        obs.push({ k: 'bar', x: W * (0.2 + Math.random() * 0.6), y: y, len: len, a: a });
+      }
+    }
+    if (Math.random() < 0.72) {
+      const r = Math.random();
+      const kind = r < 0.3 ? 'fast' : (r < 0.62 ? 'slow' : (r < 0.84 ? 'big' : 'star'));
+      perks.push({ k: kind, x: W * (0.18 + Math.random() * 0.64), y: base + Math.random() * CHUNK * 0.6, got: false });
+    }
+    builtTo = base;
+  }
+  const cut = camY - H * 0.8;
+  obs = obs.filter(o => o.y > cut);
+  perks = perks.filter(p => p.y > cut && !p.got);
+}
+
+function puff(x, y, n, col, big) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, sp = 0.7 + Math.random() * (big ? 3.4 : 2);
+    bits.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1,
+                r: 1.4 + Math.random() * 2.4, c: col || '#ffe9a8' });
+  }
+  if (bits.length > 160) bits.splice(0, bits.length - 160);
+}
+
+// ——— մուտք ———
+function padAt(clientX, clientY) {
+  const r = cv.getBoundingClientRect();
+  const x = clientX - r.left, y = clientY - r.top;
+  if (x < W / 2) padL = Math.max(padH() / 2, Math.min(H - padH() / 2, y));
+  else padR = Math.max(padH() / 2, Math.min(H - padH() / 2, y));
+}
+function aimAt(clientX, clientY) {
+  const r = cv.getBoundingClientRect();
+  aimTo = { x: clientX - r.left, y: clientY - r.top };
+}
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (e.pointerType === 'mouse' && ghost()) return;
+  initAudio();
+  if (state === 'over') { if (Date.now() - endedAt > 1100) start(); return; }
+  if (state === 'aim') { aimFrom = { x: ball.x, y: sy(ball.y) }; aimAt(e.clientX, e.clientY); return; }
+  if (state === 'fly') padAt(e.clientX, e.clientY);
+});
+cv.addEventListener('pointermove', (e) => {
+  if (!e.buttons) return;
+  e.preventDefault();
+  if (state === 'aim') aimAt(e.clientX, e.clientY);
+  else if (state === 'fly') padAt(e.clientX, e.clientY);
+});
+cv.addEventListener('pointerup', (e) => { if (state === 'aim') launch(); });
+// երկու բութ մատը միաժամանակ
+cv.addEventListener('touchstart', (e) => {
+  if (state !== 'fly') return;
+  e.preventDefault();
+  for (const t of e.changedTouches) padAt(t.clientX, t.clientY);
+}, { passive: false });
+cv.addEventListener('touchmove', (e) => {
+  if (state !== 'fly') return;
+  e.preventDefault();
+  for (const t of e.touches) padAt(t.clientX, t.clientY);
+}, { passive: false });
+$('startBtn').addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && ghost()) return; start(); });
+$('againBtn').addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' && ghost()) return;
+  if (Date.now() - endedAt > 1100) start();
+});
+
+function launch() {
+  if (state !== 'aim' || !aimTo || !aimFrom) { aimTo = null; return; }
+  // Angry Birds — քաշում ես ետ, թռչում է հակառակ կողմ
+  let dx = aimFrom.x - aimTo.x, dy = aimFrom.y - aimTo.y;
+  const d = Math.hypot(dx, dy);
+  if (d < 14) { aimTo = null; return; }
+  const power = Math.min(1, d / (H * 0.28));
+  const ang = Math.atan2(dy, dx);
+  const v = 280 + power * 420;
+  ball.vx = Math.cos(ang) * v;
+  ball.vy = -Math.sin(ang) * v;          // էկրանի y-ը ներքև է, աշխարհինը՝ վեր
+  if (ball.vy < 60) ball.vy = 60;        // միշտ մի քիչ վեր
+  state = 'fly'; grav = true;
+  aimFrom = aimTo = null;
+  tone(420, 0.12, 'triangle', 0.12);
+  puff(ball.x, ball.y, 10, '#cfe8b0');
+}
+
+function normSpeed() {
+  const s = speed();
+  let m = Math.hypot(ball.vx, ball.vy) || 1;
+  ball.vx = ball.vx / m * s; ball.vy = ball.vy / m * s;
+  // երբեք զուտ ուղղահայաց չմնա
+  if (Math.abs(ball.vx) < s * MINVX) {
+    const sign = ball.vx >= 0 ? 1 : -1;
+    ball.vx = sign * s * MINVX;
+    const rest = Math.max(0, s * s - ball.vx * ball.vx);
+    ball.vy = (ball.vy >= 0 ? 1 : -1) * Math.sqrt(rest);
+  }
+}
+
+function loseLife(why) {
+  lastLoss = why;
+  lives--;
+  shake = 16; puff(ball.x, sy(ball.y), 24, '#ff9d8a', true);
+  tone(170, 0.3, 'sawtooth', 0.14);
+  try { navigator.vibrate && navigator.vibrate(70); } catch (e) {}
+  if (lives <= 0) { gameOver(); return; }
+  // նորից մեկնարկ՝ էկրանի մեջտեղից, վեր
+  ball.x = W / 2; ball.y = wy(H * 0.62);
+  spdMul = 1;
+  const a = (-0.35 + Math.random() * 0.7);
+  ball.vx = Math.sin(a) * 1; ball.vy = 1;
+  normSpeed();
+  grav = false; inv = 1.1;
+}
+
+function step(dt) {
+  if (inv > 0) inv -= dt;
+  if (shake > 0) shake = Math.max(0, shake - dt * 45);
+  if (padBig > 0) { padBig -= dt; if (padBig <= 0) padMul = 1; }
+
+  for (const b of bits) { b.x += b.vx; b.y += b.vy; b.vy += 0.09; b.life -= 0.035; }
+  bits = bits.filter(b => b.life > 0);
+
+  if (state !== 'fly') return;
+
+  if (grav) ball.vy -= GRAV * dt;
+  else normSpeed();
+
+  const nx = ball.x + ball.vx * dt;
+  const ny = ball.y + ball.vy * dt;
+  ball.x = nx; ball.y = ny;
+
+  if (ball.y > maxY) maxY = ball.y;
+  // տեսախցիկը միայն վեր է գնում
+  const want = ball.y - H * 0.45;
+  if (want > camY) camY += Math.min((want - camY) * Math.min(1, dt * 6), 600 * dt);
+  buildUpTo(camY + H * 2);
+
+  const bsy = sy(ball.y);
+
+  // ——— թիակները ———
+  const hitPad = (px, py, fromLeft) => {
+    if (Math.abs(ball.x - px) > PW / 2 + R) return false;
+    if (bsy < py - padH() / 2 - R || bsy > py + padH() / 2 + R) return false;
+    if (fromLeft ? ball.vx > 0 : ball.vx < 0) return false;    // արդեն հեռանում է
+    return true;
+  };
+  if (state === 'fly' && inv <= 0) {
+    for (const side of [0, 1]) {
+      const px = side === 0 ? PADX : W - PADX;
+      const py = side === 0 ? padL : padR;
+      if (!hitPad(px, py, side === 0)) continue;
+      grav = false;                                  // առաջին հարվածից հետո ուղիղ գծեր
+      ball.x = side === 0 ? px + PW / 2 + R : px - PW / 2 - R;
+      ball.vx = -ball.vx;
+      const off = (py - bsy) / (padH() / 2);          // վերևից խփեցիր՝ վեր է թռչում
+      ball.vy += Math.max(-1, Math.min(1, off)) * speed() * 0.75;
+      normSpeed();
+      shake = Math.max(shake, 5);
+      puff(ball.x, bsy, 7, '#7fd1c1');
+      tone(520 + Math.abs(off) * 240, 0.07, 'square', 0.09);
+    }
+  }
+
+  // ——— խոչընդոտներ ———
+  for (const o of obs) {
+    if (Math.abs(o.y - ball.y) > 90) continue;
+    if (o.k === 'bump') {
+      const dx = ball.x - o.x, dy = ball.y - o.y, d = Math.hypot(dx, dy);
+      if (d < o.r + R && d > 0.01) {
+        grav = false;
+        const nxu = dx / d, nyu = dy / d;
+        const dot = ball.vx * nxu + ball.vy * nyu;
+        if (dot < 0) {
+          ball.vx -= 2 * dot * nxu; ball.vy -= 2 * dot * nyu;
+          ball.x = o.x + nxu * (o.r + R + 0.5); ball.y = o.y + nyu * (o.r + R + 0.5);
+          normSpeed();
+          shake = Math.max(shake, 6);
+          puff(ball.x, sy(ball.y), 8, '#f0c85a');
+          tone(700, 0.07, 'triangle', 0.09);
+        }
+      }
+    } else {
+      // թեքված գերան՝ հատված, որի շուրջ անդրադառնում ենք
+      const ca = Math.cos(o.a), sa = Math.sin(o.a);
+      const rx = ball.x - o.x, ry = ball.y - o.y;
+      const u = rx * ca + ry * sa;              // երկարությամբ
+      const v = -rx * sa + ry * ca;             // հաստությամբ
+      if (Math.abs(u) < o.len / 2 && Math.abs(v) < 7 + R) {
+        grav = false;
+        const nxu = -sa * Math.sign(v || 1), nyu = ca * Math.sign(v || 1);
+        const dot = ball.vx * nxu + ball.vy * nyu;
+        if (dot < 0) {
+          ball.vx -= 2 * dot * nxu; ball.vy -= 2 * dot * nyu;
+          ball.x += nxu * 2; ball.y += nyu * 2;
+          normSpeed();
+          shake = Math.max(shake, 6);
+          puff(ball.x, sy(ball.y), 8, '#a8b4e8');
+          tone(600, 0.07, 'triangle', 0.09);
+        }
+      }
+    }
+  }
+
+  // ——— բոնուսներ ———
+  for (const p of perks) {
+    if (p.got) continue;
+    if (Math.hypot(p.x - ball.x, p.y - ball.y) > R + 16) continue;
+    p.got = true;
+    if (p.k === 'fast') { spdMul = Math.min(1.9, spdMul * 1.22); tone(950, 0.14, 'square', 0.1); puff(p.x, sy(p.y), 12, '#ff9d8a'); }
+    else if (p.k === 'slow') { spdMul = Math.max(0.5, spdMul * 0.8); tone(300, 0.18, 'sine', 0.1); puff(p.x, sy(p.y), 12, '#7fb8f0'); }
+    else if (p.k === 'big') { padMul = 1.55; padBig = 9; tone(760, 0.16, 'triangle', 0.1); puff(p.x, sy(p.y), 12, '#a8c98a'); }
+    else { stars++; tone(1100, 0.14, 'triangle', 0.11); puff(p.x, sy(p.y), 14, '#ffe9a8'); }
+    try { navigator.vibrate && navigator.vibrate(18); } catch (e) {}
+  }
+
+  // ——— կորուստ ———
+  if (inv <= 0) {
+    if (ball.x < -R * 2 || ball.x > W + R * 2) { loseLife(T.miss); return; }
+    if (sy(ball.y) > H + R * 3) { loseLife(T.sank); return; }
+  } else {
+    // անխոցելի պահին դուրս չթողնենք
+    ball.x = Math.max(R, Math.min(W - R, ball.x));
+  }
+}
+
+// ——— նկար ———
+function star(x, y, r) {
+  cx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r;
+    cx[i ? 'lineTo' : 'moveTo'](x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+  }
+  cx.closePath(); cx.fill();
+}
+function drawPerk(p) {
+  const x = p.x, y = sy(p.y);
+  if (y < -40 || y > H + 40) return;
+  if (p.k === 'star') { cx.fillStyle = '#ffe9a8'; star(x, y, 15); return; }
+  const col = p.k === 'fast' ? '#ff9d8a' : (p.k === 'slow' ? '#7fb8f0' : '#a8c98a');
+  cx.fillStyle = 'rgba(255,255,255,0.08)';
+  cx.beginPath(); cx.arc(x, y, 16, 0, Math.PI * 2); cx.fill();
+  cx.strokeStyle = col; cx.lineWidth = 2.5; cx.stroke();
+  cx.fillStyle = col;
+  if (p.k === 'fast') {                       // կայծակ
+    cx.beginPath(); cx.moveTo(x + 3, y - 10); cx.lineTo(x - 5, y + 1); cx.lineTo(x, y + 1);
+    cx.lineTo(x - 3, y + 10); cx.lineTo(x + 6, y - 2); cx.lineTo(x + 1, y - 2); cx.closePath(); cx.fill();
+  } else if (p.k === 'slow') {                // խխունջի պես օղակ
+    cx.lineWidth = 3; cx.strokeStyle = col;
+    cx.beginPath(); cx.arc(x, y, 7, 0, Math.PI * 1.7); cx.stroke();
+    cx.beginPath(); cx.arc(x + 1, y + 1, 3, 0, Math.PI * 1.9); cx.stroke();
+  } else {                                     // վեր-վար սլաքներ
+    cx.beginPath(); cx.moveTo(x, y - 11); cx.lineTo(x - 5, y - 4); cx.lineTo(x + 5, y - 4); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(x, y + 11); cx.lineTo(x - 5, y + 4); cx.lineTo(x + 5, y + 4); cx.closePath(); cx.fill();
+  }
+}
+function draw() {
+  const sh = shake > 0;
+  if (sh) { cx.save(); cx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake); }
+  const g = cx.createLinearGradient(0, 0, 0, H);
+  const t = Math.min(1, maxY / 9000);
+  g.addColorStop(0, '#0c1030'); g.addColorStop(1, t > 0.5 ? '#2a1f4a' : '#1b2450');
+  cx.fillStyle = g; cx.fillRect(-40, -40, W + 80, H + 80);
+
+  // բարձրության գծեր, որ երևա՝ բարձրանում ես
+  cx.strokeStyle = 'rgba(255,255,255,0.05)'; cx.lineWidth = 1;
+  const stepY = 120, first = Math.floor(camY / stepY) * stepY;
+  for (let y = first; y < camY + H + stepY; y += stepY) {
+    const s = sy(y);
+    cx.beginPath(); cx.moveTo(0, s); cx.lineTo(W, s); cx.stroke();
+  }
+
+  // մեկնարկի գետինը
+  if (sy(0) < H + 40) {
+    cx.fillStyle = '#3f6b45'; cx.fillRect(-40, sy(0), W + 80, H + 80);
+    cx.fillStyle = '#4e7d47'; cx.fillRect(-40, sy(0), W + 80, 8);
+  }
+
+  for (const o of obs) {
+    const s = sy(o.y);
+    if (s < -80 || s > H + 80) continue;
+    if (o.k === 'bump') {
+      const gg = cx.createRadialGradient(o.x - o.r * 0.3, s - o.r * 0.3, o.r * 0.2, o.x, s, o.r);
+      gg.addColorStop(0, '#ffe9a8'); gg.addColorStop(1, '#e0a93c');
+      cx.fillStyle = gg;
+      cx.beginPath(); cx.arc(o.x, s, o.r, 0, Math.PI * 2); cx.fill();
+      cx.strokeStyle = '#a8761c'; cx.lineWidth = 2.5; cx.stroke();
+    } else {
+      cx.save(); cx.translate(o.x, s); cx.rotate(-o.a);
+      cx.fillStyle = '#5a6088';
+      cx.beginPath(); cx.roundRect(-o.len / 2, -7, o.len, 14, 7); cx.fill();
+      cx.fillStyle = '#7a80ab';
+      cx.beginPath(); cx.roundRect(-o.len / 2 + 3, -5, o.len - 6, 4, 2); cx.fill();
+      cx.restore();
+    }
+  }
+
+  for (const p of perks) drawPerk(p);
+
+  // թիակները
+  for (const side of [0, 1]) {
+    const px = side === 0 ? PADX : W - PADX;
+    const py = side === 0 ? padL : padR;
+    cx.fillStyle = padBig > 0 ? '#a8c98a' : '#7fd1c1';
+    cx.beginPath(); cx.roundRect(px - PW / 2, py - padH() / 2, PW, padH(), PW / 2); cx.fill();
+    cx.fillStyle = 'rgba(255,255,255,0.35)';
+    cx.beginPath(); cx.roundRect(px - PW / 2 + 3, py - padH() / 2 + 6, 3, padH() - 12, 2); cx.fill();
+  }
+
+  // գնդակը
+  if (state !== 'menu') {
+    const s = sy(ball.y);
+    if (!(inv > 0 && Math.floor(inv * 12) % 2 === 0)) {
+      const gg = cx.createRadialGradient(ball.x - R * 0.35, s - R * 0.35, R * 0.2, ball.x, s, R);
+      gg.addColorStop(0, '#fff6d8'); gg.addColorStop(1, '#e0a93c');
+      cx.fillStyle = gg;
+      cx.beginPath(); cx.arc(ball.x, s, R, 0, Math.PI * 2); cx.fill();
+      cx.strokeStyle = '#a8761c'; cx.lineWidth = 2; cx.stroke();
+    }
+  }
+
+  // նշան բռնելու սլաքը
+  if (state === 'aim' && aimFrom && aimTo) {
+    const dx = aimFrom.x - aimTo.x, dy = aimFrom.y - aimTo.y;
+    const d = Math.hypot(dx, dy);
+    if (d > 6) {
+      const ang = Math.atan2(dy, dx), len = Math.min(d, H * 0.28);
+      const ex = aimFrom.x + Math.cos(ang) * len, ey = aimFrom.y + Math.sin(ang) * len;
+      cx.strokeStyle = 'rgba(255,233,168,0.55)'; cx.lineWidth = 4;
+      cx.setLineDash([9, 8]);
+      cx.beginPath(); cx.moveTo(aimFrom.x, aimFrom.y); cx.lineTo(ex, ey); cx.stroke();
+      cx.setLineDash([]);
+      cx.fillStyle = '#ffe9a8';
+      cx.save(); cx.translate(ex, ey); cx.rotate(ang);
+      cx.beginPath(); cx.moveTo(16, 0); cx.lineTo(-6, -9); cx.lineTo(-6, 9); cx.closePath(); cx.fill();
+      cx.restore();
+      cx.strokeStyle = 'rgba(255,255,255,0.25)'; cx.lineWidth = 2;
+      cx.beginPath(); cx.moveTo(aimFrom.x, aimFrom.y); cx.lineTo(aimTo.x, aimTo.y); cx.stroke();
+    }
+  }
+
+  for (const b of bits) {
+    cx.globalAlpha = Math.max(0, b.life);
+    cx.fillStyle = b.c;
+    cx.beginPath(); cx.arc(b.x, b.y, b.r, 0, Math.PI * 2); cx.fill();
+  }
+  cx.globalAlpha = 1;
+  if (sh) cx.restore();
+
+  document.querySelector('#hud .h').textContent = state === 'menu' ? '' : (score() + ' ' + T.m);
+  document.querySelector('#hud .l').textContent = state === 'menu' ? '' : '♥'.repeat(Math.max(0, lives));
+  $('tip').textContent = state === 'aim' ? T.pull : (state === 'fly' ? T.tip : '');
+}
+
+let prev = 0;
+function loop(now) {
+  const dt = Math.min(0.033, (now - prev) / 1000 || 0); prev = now;
+  step(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+padL = padR = H * 0.62;
+draw(); requestAnimationFrame(loop);
+
+window.RISE = {
+  get state() { return state; }, get ball() { return ball; }, get lives() { return lives; },
+  get score() { return score(); }, get best() { return best; }, get maxY() { return maxY; },
+  get spdMul() { return spdMul; }, get speed() { return speed(); }, get perks() { return perks; },
+  get obs() { return obs; }, get camY() { return camY; }, get grav() { return grav; },
+  sy: sy, padH: padH,
+  setPads: (l, r) => { padL = l; padR = r; },
+  get pads() { return { l: padL, r: padR, x: [PADX, W - PADX] }; },
+  start: start, fire: (vx, vy) => { ball.vx = vx; ball.vy = vy; state = 'fly'; grav = true; },
+  put: (x, y) => { ball.x = x; ball.y = y; },
+};
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
+</body>
+</html>
