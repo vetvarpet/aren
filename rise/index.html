@@ -148,7 +148,7 @@ const R = 11;                 // գնդակի շառավիղ
 const PADX = 26;              // թիակի կենտրոնը եզրից
 const PW = 15;                // թիակի հաստություն
 const PH0 = 104;              // թիակի սովորական երկարություն
-const GRAV = 1500;            // ձգողություն՝ միայն առաջին հարվածին
+const GRAV = 620;             // ձգողություն՝ միայն առաջին հարվածին, մեղմ՝ որ թիակին հասնես
 const BASE = 330;             // ելակետային արագություն
 const CHUNK = 430;            // ամեն այսքան բարձրության վրա նոր խոչընդոտներ
 const MINVX = 0.30;           // գնդակը միշտ կողք է գնում, թե չէ կկախվի ուղղահայաց
@@ -346,6 +346,17 @@ function step(dt) {
   if (want > camY) camY += Math.min((want - camY) * Math.min(1, dt * 6), 600 * dt);
   buildUpTo(camY + H * 2);
 
+  // ——— մեկնարկի գետինը ———
+  // Առաջ գնդակը ուղղակի ընկնում էր հատակի միջով ու մեռնում՝ առանց
+  // թիակին հասնելու։ Հիմա գետինը իսկական է. ցատկում է վրայից։
+  if (grav && ball.y < R && ball.vy < 0) {
+    ball.y = R; ball.vy = Math.abs(ball.vy) * 0.9;
+    grav = false; normSpeed();
+    shake = Math.max(shake, 5);
+    puff(ball.x, sy(ball.y), 9, '#cfe8b0');
+    tone(300, 0.08, 'sine', 0.09);
+  }
+
   const bsy = sy(ball.y);
 
   // ——— թիակները ———
@@ -364,7 +375,7 @@ function step(dt) {
       ball.x = side === 0 ? px + PW / 2 + R : px - PW / 2 - R;
       ball.vx = -ball.vx;
       const off = (py - bsy) / (padH() / 2);          // վերևից խփեցիր՝ վեր է թռչում
-      ball.vy += Math.max(-1, Math.min(1, off)) * speed() * 0.75;
+      ball.vy += Math.max(-1, Math.min(1, off)) * speed() * 1.6;
       normSpeed();
       shake = Math.max(shake, 5);
       puff(ball.x, bsy, 7, '#7fd1c1');
@@ -427,7 +438,8 @@ function step(dt) {
   // ——— կորուստ ———
   if (inv <= 0) {
     if (ball.x < -R * 2 || ball.x > W + R * 2) { loseLife(T.miss); return; }
-    if (sy(ball.y) > H + R * 3) { loseLife(T.sank); return; }
+    // քանի դեռ առաջին հարվածը չի եղել, ներքևը չի պատժում
+    if (!grav && sy(ball.y) > H + R * 3) { loseLife(T.sank); return; }
   } else {
     // անխոցելի պահին դուրս չթողնենք
     ball.x = Math.max(R, Math.min(W - R, ball.x));
@@ -576,6 +588,7 @@ window.RISE = {
   get state() { return state; }, get ball() { return ball; }, get lives() { return lives; },
   get score() { return score(); }, get best() { return best; }, get maxY() { return maxY; },
   get spdMul() { return spdMul; }, get speed() { return speed(); }, get perks() { return perks; },
+  get inv() { return inv; },
   get obs() { return obs; }, get camY() { return camY; }, get grav() { return grav; },
   sy: sy, padH: padH,
   setPads: (l, r) => { padL = l; padR = r; },
