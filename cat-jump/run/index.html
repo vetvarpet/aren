@@ -130,6 +130,11 @@ let hero = 'cat';
 try { hero = localStorage.getItem('aren-hero') || 'cat'; } catch (e) {}
 if (!HEROES[hero] || !ownsHero(hero)) hero = 'cat';    // չգնածը չի հագնվում
 
+// 🎩 Գլխարկը՝ խանութից։ Չգնածը չի հագնվում, ճիշտ ինչպես կերպարները
+let HAT = '';
+try { HAT = localStorage.getItem('gg-hat') || ''; } catch (e) {}
+if (HAT && OWN.indexOf('hat:' + HAT) < 0) HAT = '';
+
 document.querySelectorAll('#heroPick button').forEach(b => {
   const h = b.dataset.h;
   const mine = ownsHero(h);
@@ -596,6 +601,32 @@ function drawCat() {
     ctx.fill();
     ctx.fillStyle = '#e63946';
     ctx.beginPath(); ctx.arc(27, -58, 2, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // 🎩 գլխարկը գլխի վրա։ Գլուխը մոտ (27,-42) է, ականջները՝ -50-ից -64
+  // Թագից հետո է դիտմամբ. Ոսկե Կատվիկը գլխարկն էլ հագնում է թագի վրայից
+  if (HAT === 'cap') {
+    ctx.fillStyle = '#e63946';
+    ctx.beginPath(); ctx.arc(27, -54, 15, Math.PI, 0); ctx.fill();
+    ctx.fillRect(12, -56, 30, 4);
+    ctx.beginPath(); ctx.ellipse(45, -54, 11, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffd166';
+    ctx.beginPath(); ctx.arc(27, -68, 2.5, 0, Math.PI * 2); ctx.fill();
+  } else if (HAT === 'top') {
+    ctx.fillStyle = '#23283a';
+    ctx.beginPath(); ctx.ellipse(27, -56, 24, 5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillRect(15, -80, 24, 25);
+    ctx.fillStyle = '#e63946';
+    ctx.fillRect(15, -64, 24, 6);
+  } else if (HAT === 'wiz') {
+    ctx.fillStyle = '#5b4bc4';
+    ctx.beginPath();
+    ctx.moveTo(8, -54); ctx.lineTo(46, -54); ctx.lineTo(24, -92);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#ffd166';
+    ctx.beginPath(); ctx.arc(24, -74, 2.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(30, -62, 1.8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(17, -63, 2, 0, Math.PI * 2); ctx.fill();
   }
 
   // ↓↓↓ ԱՐԵՆԻ ԴԱՍ 3 ՏՈՂԸ ԳԱԼՈՒ Է ԱՅՍՏԵՂ ↓↓↓
