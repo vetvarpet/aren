@@ -163,7 +163,18 @@ function endGame() {
 }
 
 // ——— Հպումը՝ խաղի սիրտը ———
-function tap() {
+// Ուշադի՛ր. նկարը թարմանում է վայրկյանում 60 անգամ, ուրեմն `bake`-ը
+// կարող է մինչև 17 միլիվայրկյան հին լինել։ Ռեկորդային միավորներին
+// ճիշտ պահի պատուհանը ընդամենը ~113 մվ է — 17-ը այնտեղ շատ է։
+// Դրա համար թխվածությունը հաշվում ենք ՀՊՄԱՆ ՃԻՇՏ ՊԱՀԻՆ։
+function bakeAt(evTs) {
+  if (dough !== 'wall') return bake;
+  const t = (typeof evTs === 'number' && evTs > 0) ? evTs : performance.now();
+  const ahead = Math.max(0, Math.min(50, t - lastTs)) / 1000;   // առավելագույնը մեկ կադր
+  return bake + bakeSpeed() * ahead;
+}
+
+function tap(evTs) {
   if (state !== 'play') return;
   if (dough === 'hand') {
     dough = 'wall';
@@ -171,7 +182,7 @@ function tap() {
     sSlap();
     return;
   }
-  pullOut(bake);
+  pullOut(bakeAt(evTs));
 }
 
 function pullOut(b) {
@@ -217,7 +228,7 @@ cv.addEventListener('pointerdown', (e) => {
   if (isGhost(e)) return;
   e.preventDefault();
   initAudio();
-  tap();
+  tap(e.timeStamp);          // իրադարձության պահը՝ ոչ թե կոդի հասնելու պահը
 });
 cv.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
 cv.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
