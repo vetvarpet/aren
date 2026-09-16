@@ -55,6 +55,14 @@
     'border:2px solid rgba(255,255,255,0.32);background:rgba(20,26,34,0.72);color:#f5eede;',
     'display:flex;align-items:center;justify-content:center;font-size:1.05rem;text-decoration:none;opacity:0.82}',
     '#ggNext:active{transform:scale(0.92);opacity:1}',
+    // ← Ետ-կոճակը. մեծ պիտակը խաղի դաշտին է նստում (Ninja-ում ուղիղ
+    // ձախ պատին, որտեղ մագլցում ես), դրա համար մի քանի վայրկյան հետո
+    // փոքրանում ու թափանցիկանում է։ Տեղը չենք փոխում — ամեն խաղ իրենն է դրել։
+    '.gg-back{transition:width .3s,height .3s,padding .3s,opacity .3s,font-size .3s,border-radius .3s}',
+    '.gg-back.gg-min{width:38px!important;height:38px!important;padding:0!important;',
+    'border-radius:50%!important;font-size:1.1rem!important;opacity:0.42!important;',
+    'display:flex!important;align-items:center!important;justify-content:center!important;line-height:1!important}',
+    '.gg-back.gg-min:active{opacity:1!important;transform:scale(0.92)}',
     '#ggBar a#ggCoin.up{animation:ggCoinPop 0.5s}',
     '@keyframes ggCoinPop{0%{transform:scale(1)}40%{transform:scale(1.25);border-color:#fff}100%{transform:scale(1)}}',
     '#ggPause[hidden],#ggBar[hidden],#ggLoad[hidden],#ggToast[hidden]{display:none!important}',
@@ -605,6 +613,17 @@
       // 🔥 Քանի՞ անգամ ես բացել այս խաղը. գլխավոր էջը ցույց է տալիս ամենաշատերը։
       // Հաշիվը ԱՅՍ սարքինն է — կայքը սերվեր չունի։
       rawSet('gg-plays-' + folder, num(rawGet('gg-plays-' + folder)) + 1);
+
+      // ← Ետ-կոճակը սկզբում ամբողջական է, որ նորեկը կարդա, հետո՝ փոքրանում է
+      var links = document.getElementsByTagName('a');
+      for (var bi = 0; bi < links.length; bi++) {
+        if ((links[bi].textContent || '').indexOf('Golden Games') < 0) continue;
+        (function (bk) {
+          bk.className = (bk.className ? bk.className + ' ' : '') + 'gg-back';
+          setTimeout(function () { bk.classList.add('gg-min'); bk.textContent = '←'; }, 2600);
+        })(links[bi]);
+        break;
+      }
 
       // ⏭ Հաջորդ խաղը. Արենի միտքն է — «որ հետ չգնաս գլխավոր էջ»
       var keys = Object.keys(GAMES);

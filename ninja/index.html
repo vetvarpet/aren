@@ -211,6 +211,48 @@ function drawSpike(sp) {
   }
 }
 
+// ——— 🎩 Գլխարկը խանութից — նույն ճանապարհը, ինչ Կատվիկում ———
+// Չգնածը չի հագնվում։ Նկարվում է «միավոր» չափով՝ գլխի շառավիղը 1 է,
+// ուրեմն նույն գլխարկը հարմարվում է ամեն հերոսի չափին։
+let OWN = [];
+try { OWN = (localStorage.getItem('gg-own') || '').split(','); } catch (e) {}
+let HAT = '';
+try { HAT = localStorage.getItem('gg-hat') || ''; } catch (e) {}
+if (HAT && OWN.indexOf('hat:' + HAT) < 0) HAT = '';
+
+function drawHat(cx, cy, r) {
+  if (!HAT) return;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(r, r);
+  if (HAT === 'cap') {
+    ctx.fillStyle = '#e63946';
+    ctx.beginPath(); ctx.arc(0, -0.35, 0.95, Math.PI, 0); ctx.fill();
+    ctx.fillRect(-0.95, -0.42, 1.9, 0.22);
+    ctx.beginPath(); ctx.ellipse(0.75, -0.34, 0.7, 0.2, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffd166';
+    ctx.beginPath(); ctx.arc(0, -1.24, 0.16, 0, Math.PI * 2); ctx.fill();
+  } else if (HAT === 'top') {
+    ctx.fillStyle = '#23283a';
+    ctx.beginPath(); ctx.ellipse(0, -0.55, 1.5, 0.3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillRect(-0.75, -2.15, 1.5, 1.62);
+    ctx.fillStyle = '#e63946';
+    ctx.fillRect(-0.75, -1.15, 1.5, 0.36);
+  } else if (HAT === 'wiz') {
+    ctx.fillStyle = '#5b4bc4';
+    ctx.beginPath();
+    ctx.moveTo(-1.25, -0.5); ctx.lineTo(1.25, -0.5); ctx.lineTo(-0.05, -2.95);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#4335a3';
+    ctx.fillRect(-1.25, -0.62, 2.5, 0.26);
+    ctx.fillStyle = '#ffd166';
+    ctx.beginPath(); ctx.arc(-0.1, -1.75, 0.14, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0.28, -1.05, 0.12, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-0.5, -0.95, 0.13, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawNinja(x, y, facing) {
   ctx.save();
   ctx.translate(x, y);
@@ -241,6 +283,8 @@ function drawNinja(x, y, facing) {
   ctx.moveTo(-NINJA / 2, -12);
   ctx.quadraticCurveTo(-NINJA / 2 - 12, -12 + Math.sin(frame * 0.3) * 5, -NINJA / 2 - 20, -8 + Math.sin(frame * 0.3 + 1) * 5);
   ctx.stroke();
+  // 🎩 գլխարկը գլխին. նինձյայի գլուխը մարմնի վերևն է
+  drawHat(4, -11, 9);
   ctx.restore();
 }
 
