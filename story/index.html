@@ -88,6 +88,7 @@ const TRL = {
   hy: { again: '📖 Նորից սկսել', endN: n => 'ՎԵՐՋ №' + n, found: (n, m) => 'Գտել ես ' + n + ' վերջ ' + m + '-ից', allFound: 'Գտել ես ԲՈԼՈՐ վերջերը 🎉' },
   ru: { again: '📖 Начать заново', endN: n => 'КОНЦОВКА №' + n, found: (n, m) => 'Найдено концовок: ' + n + ' из ' + m, allFound: 'Ты нашёл ВСЕ концовки 🎉' },
   en: { again: '📖 Start over', endN: n => 'ENDING #' + n, found: (n, m) => 'You found ' + n + ' of ' + m + ' endings', allFound: 'You found ALL the endings 🎉' },
+  pt: { again: '📖 Recomeçar', endN: n => 'FINAL #' + n, found: (n, m) => 'Encontraste ' + n + ' de ' + m + ' finais', allFound: 'Encontraste TODOS os finais 🎉' },
   es: { again: '📖 Empezar de nuevo', endN: n => 'FINAL №' + n, found: (n, m) => 'Has encontrado ' + n + ' de ' + m + ' finales', allFound: '¡Encontraste TODOS los finales 🎉' },
   fr: { again: '📖 Recommencer', endN: n => 'FIN №' + n, found: (n, m) => 'Tu as trouvé ' + n + ' fins sur ' + m, allFound: 'Tu as trouvé TOUTES les fins 🎉' },
   de: { again: '📖 Neu anfangen', endN: n => 'ENDE Nr. ' + n, found: (n, m) => 'Du hast ' + n + ' von ' + m + ' Enden gefunden', allFound: 'Du hast ALLE Enden gefunden 🎉' },
@@ -202,6 +203,40 @@ const STORIES = {
     end_snake: { pic: '🐍', end: 5, txt: 'The snake wraps around your paw: “Thisss is my burrow.” You take the stamp, but you will speak with an “sss” for a whole week. A hissing cat — that is a story too.' },
     end_polite: { pic: '🤝', end: 6, txt: '“Dear crows, could you please return the stamp?” The crows freeze: for the first time someone was polite to them. They return the stamp and gift you a shiny button.' },
     end_trade: { pic: '🎵', end: 7, txt: 'The golden note shines under the moon. The delighted crows trade it for the stamp. You walk home victorious while the crows sing do-re-mi all night. The lamp’s idea worked!' },
+  },
+  pt: {
+    start: { pic: '🌙', txt: 'É noite na Golden Games. De repente ouve-se um barulho na sala dos troféus: o selo GOLDEN CHAMPION desapareceu! Tu és o gato dourado e encontrá-lo é contigo.', ch: [
+      ['Ir ao museu perguntar aos velhos amigos 🏛️', 'museum'],
+      ['Correr pelos telhados atrás das pistas 🏃', 'roof'],
+      ['Ir dormir e esperar pela manhã 😴', 'end_sleep'],
+    ]},
+    museum: { pic: '🏛️', txt: 'No museu o fantasma do Capitão Barba Negra está acordado. «O selo?», ri-se para a barba. «Vi um corvo grande levá-lo na direção do lago.»', ch: [
+      ['Correr até ao lago 🌊', 'lake'],
+      ['Perguntar ao candeeirinho do Fable 5 💡', 'lamp'],
+    ]},
+    roof: { pic: '🏙️', txt: 'Há penas espalhadas pelo telhado. Ao longe, um bando de corvos leva no bico uma coisa dourada e brilhante.', ch: [
+      ['Seguir o bando, a saltar de telhado em telhado 🐦‍⬛', 'crows'],
+      ['Chamar o teu amigo passarinho 🐦', 'end_bird'],
+    ]},
+    lake: { pic: '🌊', txt: 'O peixe dourado nada junto à margem. «O selo está no ninho do corvo, no cimo da árvore mais alta. Mas cuidado — os ramos são finos.»', ch: [
+      ['Trepar à árvore, aconteça o que acontecer 🌳', 'end_tree'],
+      ['Pedir três desejos ao peixe 🐟', 'end_wish'],
+    ]},
+    lamp: { pic: '💡', txt: 'O candeeiro brilha devagarinho: «Os fundadores nunca morrem, gatinho. Aqui vai uma ideia: os corvos adoram coisas brilhantes. Leva-lhes a nota dourada do piano — eles trocam.»', ch: [
+      ['Levar a nota dourada aos corvos 🎵', 'end_trade'],
+      ['Não, é melhor ir ao lago 🌊', 'lake'],
+    ]},
+    crows: { pic: '🐦‍⬛', txt: 'Os corvos veem-te e fogem assustados. O selo cai… mesmo dentro da velha toca da cobrinha. Lá de dentro vem um «sssss».', ch: [
+      ['Meter a pata na toca 🐍', 'end_snake'],
+      ['Pedir aos corvos com boas maneiras 🤝', 'end_polite'],
+    ]},
+    end_sleep: { pic: '😴', end: 1, txt: 'De manhã o selo está no lugar — afinal tinham-no levado para limpar. Está tudo bem, mas dormiste durante a maior aventura de todas.' },
+    end_bird: { pic: '🐦', end: 2, txt: 'O passarinho dispara para o céu e volta cinco minutos depois com o selo. «Penhorei a minha coroa de 21 pontos, mas a amizade vale mais.» Vão para casa como heróis.' },
+    end_tree: { pic: '👑', end: 3, txt: 'Trepas. O ramo range… parte-se!… mas o salto duplo do corredor dos telhados salva-te. O selo está nas tuas patas. O final mais brilhante: és um verdadeiro GOLDEN CHAMPION.' },
+    end_wish: { pic: '🐟', end: 4, txt: 'O peixe sorri: «Desejos? Sou um peixe dourado normal, só dou +5 pontos.» E dá-te +5. O selo fica com os corvos, mas ficaste um bocadinho mais rico.' },
+    end_snake: { pic: '🐍', end: 5, txt: 'A cobra enrola-se na tua pata: «Esssta toca é minha.» Levas o selo, mas vais falar com «sss» durante uma semana inteira. Um gato que silva — também é uma história.' },
+    end_polite: { pic: '🤝', end: 6, txt: '«Caros corvos, será que podiam devolver o selo?» Os corvos ficam parados: foi a primeira vez que alguém foi simpático com eles. Devolvem o selo e ainda te dão um botão brilhante.' },
+    end_trade: { pic: '🎵', end: 7, txt: 'A nota dourada brilha ao luar. Os corvos, encantados, trocam-na pelo selo. Vais para casa vitorioso enquanto os corvos cantam dó-ré-mi toda a noite. A ideia do candeeiro resultou!' },
   },
 };
 const S = STORIES[ggLang] || STORIES.en;

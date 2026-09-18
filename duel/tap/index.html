@@ -106,6 +106,16 @@ const TR = {
     tieNote: 'it was even, but they tapped first',
     win: (n, sc, note) => '🏆 ' + n + ' WINS ' + sc + (note ? ' (' + note + ')' : '') + '! Tap for a rematch',
   },
+  pt: {
+    menu: 'Depois do sinal têm ' + RACE_SECONDS + ' segundos: quem toca MAIS? Quem tocar antes do sinal perde 😈 Toca para começar',
+    wait: 'Espera pelo sinal… 🤫',
+    tap: n => 'TOCA, TOCA ⚡ ' + n + ' s',
+    red: 'Vermelho', blue: 'Azul', RED: 'VERMELHO', BLUE: 'AZUL',
+    foul: n => n + ' tocou antes do sinal e PERDEU 😅 Toca para um duelo novo',
+    draw: sc => 'Empate! ' + sc + ' 😄 Toca para a desforra',
+    tieNote: 'ficaram iguais, mas tocaram primeiro',
+    win: (n, sc, note) => '🏆 ' + n + ' GANHA ' + sc + (note ? ' (' + note + ')' : '') + '! Toca para a desforra',
+  },
   es: {
     menu: 'Tras la señal tienes ' + RACE_SECONDS + ' segundos: ¿quién toca MÁS? Si tocas antes, pierdes 😈 Toca para empezar',
     wait: 'Esperad la señal… 🤫',
