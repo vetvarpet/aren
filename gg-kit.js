@@ -701,3 +701,226 @@
     shot: shoot
   };
 })();
+
+// ——————————————————————————————————————————————————————————
+//  GOLDEN SECRETS 🔒 — գաղտնիքների շերտը
+//  Աշխատում է ԱՄԵՆ էջում, որովհետև gg-kit.js-ն ամենուր բեռնվում է։
+//  Ոչ մի հին տող չի փոխվում — սա առանձին բլոկ է ֆայլի վերջում։
+//
+//    🐱  Գլխավոր էջում փիսոյին սեղմած պահիր 0.6 վրկ — գնում է քեզ հետ
+//    🔒  Հեռախոսում 3 մատով սեղմած պահիր 0.7 վրկ — բացվում է ցուցակը
+//        (համակարգչում՝ Ctrl + Alt + 7)
+// ——————————————————————————————————————————————————————————
+(function () {
+  'use strict';
+  if (window.__ggSecret) return;
+  window.__ggSecret = true;
+
+  var ls = {
+    get: function (k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+
+  // ——— Ցուցակը ———
+  // hint — միշտ երևում է, բայց ոչինչ չի մատնում
+  // name — երևում է միայն գտնելուց հետո
+  var SECRETS = [
+    { id: 'follow', hint: 'Ինչ-որ մեկը կարող է քեզ հետևել',   name: '🐱 Փիսոն հետևում է քեզ' },
+    { id: 'list',   hint: 'Դուռը, որ արդեն բացեցիր',           name: '🔒 Գաղտնիքների ցուցակը' },
+    { id: 'word',   hint: 'Մի բառ, առանց որևէ դաշտի',          name: '✨ Ոսկե բառը' },
+    { id: 'seven',  hint: 'Յոթ անգամ նույն տեղում',            name: '7️⃣ Յոթ հպում' },
+    { id: 'night',  hint: 'Գիշերվա ժամը երեքին',               name: '🌙 Քնած փիսո' },
+    { id: 'fish',   hint: 'Հարյուրերորդն ուրիշ գույնի է',      name: '🐟 Ոսկե ձուկը' }
+  ];
+
+  function foundList() { var s = ls.get('gg-found', ''); return s ? s.split(',') : []; }
+  function isFound(id) { return foundList().indexOf(id) >= 0; }
+  function find(id) {
+    var l = foundList();
+    if (l.indexOf(id) < 0) { l.push(id); ls.set('gg-found', l.join(',')); }
+  }
+
+  // ——— Ոճերը ———
+  var css = document.createElement('style');
+  css.textContent = [
+    '#ggFollow{position:fixed;left:0;top:0;width:54px;height:54px;z-index:110;pointer-events:none;',
+    'will-change:transform;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.35))}',
+    '#ggFollow svg{width:100%;height:100%;display:block}',
+    '#ggSec{position:fixed;inset:0;z-index:145;background:rgba(8,9,22,0.88);display:flex;align-items:center;',
+    'justify-content:center;padding:18px;font-family:"Arial Rounded MT Bold","Noto Sans Armenian",Arial,sans-serif}',
+    '#ggSec .box{background:#15152f;border:2px solid #ffd166;border-radius:20px;padding:20px 18px;',
+    'max-width:360px;width:100%;color:#f5eede;max-height:80vh;overflow:auto}',
+    '#ggSec h3{margin:0 0 4px;color:#ffd166;font-size:1.05rem;text-align:center}',
+    '#ggSec .sub{margin:0 0 14px;text-align:center;color:#9a9ec7;font-size:0.78rem}',
+    '#ggSec ul{list-style:none;margin:0 0 14px;padding:0}',
+    '#ggSec li{display:flex;gap:9px;align-items:center;padding:9px 10px;border-radius:12px;',
+    'background:#1d1d3f;margin-bottom:7px;font-size:0.86rem;line-height:1.3}',
+    '#ggSec li.lock{color:#7b7fa8;font-style:italic}',
+    '#ggSec li.got{border:1px solid rgba(255,209,102,0.5)}',
+    '#ggSec .k{font-size:1rem;flex-shrink:0}',
+    '#ggSec .cnt{text-align:center;color:#ffd166;font-size:0.8rem;margin:0 0 12px}',
+    '#ggSec button{width:100%;padding:11px;border-radius:12px;border:none;background:#ffd166;color:#2e2410;',
+    'font-family:inherit;font-weight:bold;font-size:0.92rem;cursor:pointer}',
+    '#ggSecT{position:fixed;left:50%;bottom:74px;transform:translateX(-50%);z-index:146;background:#ffd166;',
+    'color:#2e2410;font-weight:bold;padding:9px 16px;border-radius:999px;font-size:0.84rem;',
+    'font-family:"Arial Rounded MT Bold","Noto Sans Armenian",Arial,sans-serif;pointer-events:none}'
+  ].join('');
+  document.head.appendChild(css);
+
+  function toast(txt) {
+    var old = document.getElementById('ggSecT');
+    if (old) old.remove();
+    var el = document.createElement('div');
+    el.id = 'ggSecT';
+    el.textContent = txt;
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.remove(); }, 2200);
+  }
+
+  // ——— 🐱 Փիսոն, որ հետևում է ———
+  function catSvg() {
+    return '<svg viewBox="0 0 60 60" aria-hidden="true">' +
+      '<path id="ggfT" d="M14 40 q-9 -2 -9 -13" stroke="#f28c3b" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+      '<g stroke="#f28c3b" stroke-width="5" stroke-linecap="round">' +
+      '<path id="ggfL1" d="M22 42 v9"/><path id="ggfL2" d="M38 42 v9"/></g>' +
+      '<ellipse cx="30" cy="36" rx="17" ry="11" fill="#f28c3b"/>' +
+      '<g stroke="#d96f21" stroke-width="2.6" fill="none" stroke-linecap="round">' +
+      '<path d="M24 28 q2 4 0 8"/><path d="M32 27 q2 4 0 8"/></g>' +
+      '<circle cx="43" cy="24" r="10" fill="#f28c3b"/>' +
+      '<path d="M36 17 L35 8 L42 13 Z" fill="#f28c3b"/>' +
+      '<path d="M48 13 L53 7 L53 17 Z" fill="#f28c3b"/>' +
+      '<circle cx="41" cy="23" r="1.9" fill="#23405c"/><circle cx="48" cy="23" r="1.9" fill="#23405c"/>' +
+      '<circle cx="45" cy="28" r="1.7" fill="#ff8fa3"/>' +
+      '<g stroke="rgba(35,64,92,0.5)" stroke-width="1.1" stroke-linecap="round">' +
+      '<path d="M49 27 l7 -1"/><path d="M49 29 l7 2"/></g></svg>';
+  }
+
+  var fEl = null, fx = 0, fy = 0, tx = 0, ty = 0, fdir = 1, fstep = 0, fraf = 0;
+
+  function onMove(e) { tx = e.clientX; ty = e.clientY; }
+  function onTouch(e) {
+    if (!e.touches || !e.touches.length) return;
+    tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+  }
+
+  function loop() {
+    // փիսոն չի կպնում մատիդ — մի քիչ ետ ու ցած է կանգնում
+    var wx = tx - 34 * fdir, wy = ty + 26;
+    var dx = wx - fx, dy = wy - fy;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    var moving = dist > 3;
+    if (moving) {
+      fx += dx * 0.09;
+      fy += dy * 0.09;
+      fstep += 0.22;
+      if (Math.abs(dx) > 14) fdir = dx > 0 ? 1 : -1;
+    }
+    var swing = moving ? Math.sin(fstep) * 22 : 0;
+    fEl.style.transform = 'translate(' + (fx - 27) + 'px,' + (fy - 27) + 'px) scaleX(' + fdir + ')';
+    var l1 = fEl.querySelector('#ggfL1'), l2 = fEl.querySelector('#ggfL2'), t = fEl.querySelector('#ggfT');
+    if (l1) l1.setAttribute('transform', 'rotate(' + swing + ' 22 42)');
+    if (l2) l2.setAttribute('transform', 'rotate(' + (-swing) + ' 38 42)');
+    if (t) t.setAttribute('transform', 'rotate(' + (Math.sin(fstep * 0.5) * 9) + ' 14 40)');
+    fraf = requestAnimationFrame(loop);
+  }
+
+  function startFollow() {
+    if (fEl) return;
+    fEl = document.createElement('div');
+    fEl.id = 'ggFollow';
+    fEl.innerHTML = catSvg();
+    document.body.appendChild(fEl);
+    var g = document.getElementById('guide');
+    if (g) g.style.visibility = 'hidden';        // տեղից գնաց, ուրեմն այնտեղ չկա
+    tx = window.innerWidth / 2; ty = window.innerHeight / 2;
+    fx = tx; fy = ty + 70;
+    document.addEventListener('pointermove', onMove, { passive: true });
+    document.addEventListener('touchmove', onTouch, { passive: true });
+    document.addEventListener('touchstart', onTouch, { passive: true });
+    loop();
+  }
+
+  function stopFollow() {
+    if (!fEl) return;
+    cancelAnimationFrame(fraf);
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('touchmove', onTouch);
+    document.removeEventListener('touchstart', onTouch);
+    fEl.remove();
+    fEl = null;
+    var g = document.getElementById('guide');
+    if (g) g.style.visibility = '';
+  }
+
+  window.ggFollow = {
+    isOn: function () { return ls.get('gg-follow', '0') === '1'; },
+    toggle: function () {
+      var on = window.ggFollow.isOn();
+      ls.set('gg-follow', on ? '0' : '1');
+      if (on) stopFollow(); else { find('follow'); startFollow(); }
+      return !on;
+    }
+  };
+
+  // ——— 🔒 Ցուցակը ———
+  function openList() {
+    if (document.getElementById('ggSec')) return;
+    find('list');
+    var got = 0;
+    var lis = SECRETS.map(function (s) {
+      var f = isFound(s.id);
+      if (f) got++;
+      return '<li class="' + (f ? 'got' : 'lock') + '"><span class="k">' + (f ? '🔓' : '🔒') + '</span>' +
+        '<span>' + (f ? s.name : s.hint) + '</span></li>';
+    }).join('');
+    var box = document.createElement('div');
+    box.id = 'ggSec';
+    box.innerHTML = '<div class="box"><h3>🔒 Գաղտնիքներ</h3>' +
+      '<p class="sub">Ինչ կա այս կայքում, բայց ոչ մի տեղ գրված չէ</p>' +
+      '<p class="cnt">' + got + ' / ' + SECRETS.length + '</p>' +
+      '<ul>' + lis + '</ul><button>Լավ</button></div>';
+    box.querySelector('button').addEventListener('click', function () { box.remove(); });
+    box.addEventListener('click', function (e) { if (e.target === box) box.remove(); });
+    document.body.appendChild(box);
+  }
+
+  window.ggSecret = { found: find, isFound: isFound, open: openList, list: SECRETS };
+
+  // ——— Երեք մատը ———
+  var t3 = 0;
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches.length === 3) { clearTimeout(t3); t3 = setTimeout(openList, 700); }
+    else clearTimeout(t3);
+  }, { passive: true });
+  ['touchend', 'touchcancel'].forEach(function (ev) {
+    document.addEventListener(ev, function () { clearTimeout(t3); }, { passive: true });
+  });
+  // համակարգչում երեք մատ չկա — այնտեղ Ctrl + Alt + 7
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey && e.altKey && e.key === '7') openList();
+  });
+
+  // ——— Երկար սեղմումը գլխավոր էջի փիսոյի վրա ———
+  function armGuide() {
+    var g = document.getElementById('guide');
+    if (!g) return;
+    var hold = 0;
+    g.addEventListener('pointerdown', function () {
+      clearTimeout(hold);
+      hold = setTimeout(function () {
+        var on = window.ggFollow.toggle();
+        toast(on ? 'Փիսոն գնում է քեզ հետ 🐱' : 'Փիսոն վերադարձավ իր տեղը');
+      }, 600);
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) {
+      g.addEventListener(ev, function () { clearTimeout(hold); });
+    });
+  }
+
+  function boot() {
+    armGuide();
+    if (window.ggFollow.isOn()) startFollow();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
