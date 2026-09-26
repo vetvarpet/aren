@@ -25,6 +25,7 @@
     hy: { paused: 'ԴԱԴԱՐ', resume: 'Շարունակելու համար հպիր', sound: 'Ձայն', shot: 'Ռեկորդի նկարը', saved: 'Նկարը պահվեց 📸', rec: 'Ռեկորդ', shop: 'Խանութ', wDaily: 'օրվա մարտահրավեր', wTroph: 'նոր գավաթ', wRec: 'նոր ռեկորդ', gift: 'Բացման նվեր', next: 'Հաջորդ խաղը' },
     ru: { paused: 'ПАУЗА', resume: 'Коснись, чтобы продолжить', sound: 'Звук', shot: 'Картинка рекорда', saved: 'Картинка сохранена 📸', rec: 'Рекорд', shop: 'Магазин', wDaily: 'задание дня', wTroph: 'новый кубок', wRec: 'новый рекорд', gift: 'Подарок на старт', next: 'Следующая игра' },
     en: { paused: 'PAUSED', resume: 'Tap to continue', sound: 'Sound', shot: 'Record picture', saved: 'Picture saved 📸', rec: 'Best', shop: 'Shop', wDaily: 'daily challenge', wTroph: 'new trophy', wRec: 'new record', gift: 'Welcome gift', next: 'Next game' },
+    pt: { paused: 'PAUSA', resume: 'Toca para continuar', sound: 'Som', shot: 'Imagem do recorde', saved: 'Imagem guardada 📸', rec: 'Recorde', shop: 'Loja', wDaily: 'desafio do dia', wTroph: 'troféu novo', wRec: 'recorde novo', gift: 'Prenda de boas-vindas', next: 'Jogo seguinte' },
     es: { paused: 'PAUSA', resume: 'Toca para continuar', sound: 'Sonido', shot: 'Imagen del récord', saved: 'Imagen guardada 📸', rec: 'Récord', shop: 'Tienda', wDaily: 'reto del día', wTroph: 'nuevo trofeo', wRec: 'nuevo récord', gift: 'Regalo de bienvenida', next: 'Siguiente juego' },
     fr: { paused: 'PAUSE', resume: 'Touche pour continuer', sound: 'Son', shot: 'Image du record', saved: 'Image enregistrée 📸', rec: 'Record', shop: 'Boutique', wDaily: 'défi du jour', wTroph: 'nouveau trophée', wRec: 'nouveau record', gift: 'Cadeau de bienvenue', next: 'Jeu suivant' },
     de: { paused: 'PAUSE', resume: 'Tippe zum Weitermachen', sound: 'Ton', shot: 'Rekordbild', saved: 'Bild gespeichert 📸', rec: 'Rekord', shop: 'Laden', wDaily: 'Tages-Challenge', wTroph: 'neuer Pokal', wRec: 'neuer Rekord', gift: 'Willkommensgeschenk', next: 'Nächstes Spiel' },
@@ -55,6 +56,14 @@
     'border:2px solid rgba(255,255,255,0.32);background:rgba(20,26,34,0.72);color:#f5eede;',
     'display:flex;align-items:center;justify-content:center;font-size:1.05rem;text-decoration:none;opacity:0.82}',
     '#ggNext:active{transform:scale(0.92);opacity:1}',
+    // ← Ետ-կոճակը. մեծ պիտակը խաղի դաշտին է նստում (Ninja-ում ուղիղ
+    // ձախ պատին, որտեղ մագլցում ես), դրա համար մի քանի վայրկյան հետո
+    // փոքրանում ու թափանցիկանում է։ Տեղը չենք փոխում — ամեն խաղ իրենն է դրել։
+    '.gg-back{transition:width .3s,height .3s,padding .3s,opacity .3s,font-size .3s,border-radius .3s}',
+    '.gg-back.gg-min{width:38px!important;height:38px!important;padding:0!important;',
+    'border-radius:50%!important;font-size:1.1rem!important;opacity:0.42!important;',
+    'display:flex!important;align-items:center!important;justify-content:center!important;line-height:1!important}',
+    '.gg-back.gg-min:active{opacity:1!important;transform:scale(0.92)}',
     '#ggBar a#ggCoin.up{animation:ggCoinPop 0.5s}',
     '@keyframes ggCoinPop{0%{transform:scale(1)}40%{transform:scale(1.25);border-color:#fff}100%{transform:scale(1)}}',
     '#ggPause[hidden],#ggBar[hidden],#ggLoad[hidden],#ggToast[hidden]{display:none!important}',
@@ -456,6 +465,14 @@
           build:'Build as high as you can', think:'No rush — think it through', lives:'You have 3 lives',
           rec:'Your best score saves itself', faster:'The further you go, the faster it gets', rhythm:'Keep the rhythm',
           free:'Just play — nobody wins or loses' },
+    pt: { tap:'Toca no ecrã', btn:'Toca nos botões de baixo', swipe:'Desliza o dedo', drag:'Arrasta com o dedo',
+          hold:'Mantém o dedo carregado', aim:'Puxa para trás e larga para apontar', steer:'Guia com os botões da esquerda e da direita',
+          two:'Dois jogadores num telemóvel, cada um do seu lado', collect:'Apanha tudo o que conseguires',
+          avoid:'Desvia-te dos obstáculos', survive:'Aguenta o máximo que puderes', time:'O tempo está a contar',
+          levels:'Cada nível é mais difícil', match:'Encontra os pares', repeat:'Repete a sequência',
+          build:'Constrói o mais alto que conseguires', think:'Sem pressa — pensa bem', lives:'Tens 3 vidas',
+          rec:'O teu recorde guarda-se sozinho', faster:'Quanto mais longe fores, mais depressa fica', rhythm:'Mantém o ritmo',
+          free:'Joga à vontade — aqui ninguém perde' },
     es: { tap:'Toca la pantalla', btn:'Toca los botones de abajo', swipe:'Desliza el dedo', drag:'Arrastra con el dedo',
           hold:'Mantén el dedo pulsado', aim:'Tira hacia atrás y suelta para apuntar', steer:'Dirige con los botones izquierda y derecha',
           two:'Dos jugadores en un móvil, cada uno su lado', collect:'Consigue todo lo que puedas',
@@ -577,6 +594,7 @@
     hy: { t:'Ինչպես խաղալ', ok:'Հասկացա', diff:'Դժվարություն', cont:'▶ Շարունակել՝ ' },
     ru: { t:'Как играть', ok:'Понятно', diff:'Сложность', cont:'▶ Продолжить: ' },
     en: { t:'How to play', ok:'Got it', diff:'Difficulty', cont:'▶ Continue: ' },
+    pt: { t:'Como jogar', ok:'Percebi', diff:'Dificuldade', cont:'▶ Continuar: ' },
     es: { t:'Cómo jugar', ok:'Entendido', diff:'Dificultad', cont:'▶ Seguir: ' },
     fr: { t:'Comment jouer', ok:'Compris', diff:'Difficulté', cont:'▶ Continuer : ' },
     de: { t:'So wird gespielt', ok:'Verstanden', diff:'Schwierigkeit', cont:'▶ Weiter: ' },
@@ -605,6 +623,17 @@
       // 🔥 Քանի՞ անգամ ես բացել այս խաղը. գլխավոր էջը ցույց է տալիս ամենաշատերը։
       // Հաշիվը ԱՅՍ սարքինն է — կայքը սերվեր չունի։
       rawSet('gg-plays-' + folder, num(rawGet('gg-plays-' + folder)) + 1);
+
+      // ← Ետ-կոճակը սկզբում ամբողջական է, որ նորեկը կարդա, հետո՝ փոքրանում է
+      var links = document.getElementsByTagName('a');
+      for (var bi = 0; bi < links.length; bi++) {
+        if ((links[bi].textContent || '').indexOf('Golden Games') < 0) continue;
+        (function (bk) {
+          bk.className = (bk.className ? bk.className + ' ' : '') + 'gg-back';
+          setTimeout(function () { bk.classList.add('gg-min'); bk.textContent = '←'; }, 2600);
+        })(links[bi]);
+        break;
+      }
 
       // ⏭ Հաջորդ խաղը. Արենի միտքն է — «որ հետ չգնաս գլխավոր էջ»
       var keys = Object.keys(GAMES);

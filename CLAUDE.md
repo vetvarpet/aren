@@ -27,10 +27,10 @@ Site owner and director: **Aren Aghbalyan (Արեն)**, age 10, in Armenia — s
 ## Site conventions
 
 - Static site, one self-contained `index.html` per game, comments in kid-readable Armenian.
-- i18n: 11 languages (hy ru en es fr de ja zh it ka hi). Games: `const TRL = {...}; const T = TRL[ggLang] || TRL.hy;` with `ggLang` from `localStorage['gg-lang']`. Portal uses `DICT` keyed by card href; Armenian is hardcoded in the HTML.
+- i18n: 12 languages (hy ru en es fr de ja zh it ka hi pt). Games: `const TRL = {...}; const T = TRL[ggLang] || TRL.hy;` with `ggLang` from `localStorage['gg-lang']`. Portal uses `DICT` keyed by card href; Armenian is hardcoded in the HTML.
 - Emoji are fine in DOM text, **never drawn on canvas** — draw shapes instead.
 - Every game: fixed back pill `← Golden Games`, Web Audio `tone()` synth (init on first gesture), state machine with a ~1100ms game-over tap cooldown, double-tap-zoom guard, records in `localStorage` (`aren-*-best` style).
-- New game checklist: portal card (+cover CSS class, ՆՈՐ tag, DICT ×10), trophies row + `REAL` names ×11, about.html timeline ×11 + game count words, README row, mood-filter tag in `MOODS`.
+- New game checklist: portal card (+cover CSS class, ՆՈՐ tag, DICT ×11), trophies row + `REAL` names ×12, about.html timeline ×12 + game count words, README row, mood-filter tag in `MOODS`.
 - **`time/index.html` is the site's diary, and Aren decides when it is written.** Do not add entries on your own initiative and do not fold them into unrelated commits — he will tell you when it is time. When he asks, write dated `.ev` entries (`.ev big` + a `.tag` for milestones) and deploy them as their own change.
 - Deleted things go to the museum (`museum/`) as an exhibit — nothing is truly deleted, git remembers.
 - **Never write certificate numbers on the site** (`№ GG-…`) — the owner had them removed and asked that they never come back. Names, roles and dates only.

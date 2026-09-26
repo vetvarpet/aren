@@ -27,6 +27,7 @@ const TRL = {
   hy: { how1: 'Հպիր՝ առաջ գնալու', how2: 'Սվայպ՝ ձախ, աջ, ներքև', tap: 'Հպիր՝ սկսելու', steps: n => n + ' քայլ', best: 'Ռեկորդ՝ ', over: 'Ուշ եղավ…', wet: 'Ընկար ջուրը…', rec: 'ՆՈՐ ՌԵԿՈՐԴ', again: 'Հպիր՝ նորից փորձելու' },
   ru: { how1: 'Коснись, чтобы шагнуть вперёд', how2: 'Свайп: влево, вправо, назад', tap: 'Коснись, чтобы начать', steps: n => n + ' шагов', best: 'Рекорд: ', over: 'Не успел…', wet: 'Упал в воду…', rec: 'НОВЫЙ РЕКОРД', again: 'Коснись, чтобы попробовать ещё' },
   en: { how1: 'Tap to step forward', how2: 'Swipe left, right or back', tap: 'Tap to start', steps: n => n + ' steps', best: 'Best: ', over: 'Ouch…', wet: 'You fell in the water…', rec: 'NEW RECORD', again: 'Tap to try again' },
+  pt: { how1: 'Toca para dar um passo em frente', how2: 'Desliza para a esquerda, direita ou para trás', tap: 'Toca para começar', steps: n => n + ' passos', best: 'Recorde: ', over: 'Ai…', wet: 'Caíste na água…', rec: 'NOVO RECORDE', again: 'Toca para tentar outra vez' },
   es: { how1: 'Toca para avanzar', how2: 'Desliza a izquierda, derecha o atrás', tap: 'Toca para empezar', steps: n => n + ' pasos', best: 'Récord: ', over: 'Ay…', wet: 'Caíste al agua…', rec: 'NUEVO RÉCORD', again: 'Toca para intentarlo otra vez' },
   fr: { how1: 'Touche pour avancer', how2: 'Glisse à gauche, à droite ou en arrière', tap: 'Touche pour commencer', steps: n => n + ' pas', best: 'Record : ', over: 'Aïe…', wet: 'Tu es tombé à l’eau…', rec: 'NOUVEAU RECORD', again: 'Touche pour réessayer' },
   de: { how1: 'Tippe für einen Schritt vor', how2: 'Wische nach links, rechts oder zurück', tap: 'Tippe zum Starten', steps: n => n + ' Schritte', best: 'Rekord: ', over: 'Autsch…', wet: 'Ins Wasser gefallen…', rec: 'NEUER REKORD', again: 'Tippe zum nochmal Versuchen' },
@@ -338,6 +339,48 @@ function drawLog(x, y, len) {
   ctx.beginPath(); ctx.ellipse(x + len * ts - h * 0.28, y, h * 0.24, h * 0.42, 0, 0, Math.PI * 2); ctx.fill();
 }
 
+// ——— 🎩 Գլխարկը խանութից — նույն ճանապարհը, ինչ Կատվիկում ———
+// Չգնածը չի հագնվում։ Նկարվում է «միավոր» չափով՝ գլխի շառավիղը 1 է,
+// ուրեմն նույն գլխարկը հարմարվում է ամեն հերոսի չափին։
+let OWN = [];
+try { OWN = (localStorage.getItem('gg-own') || '').split(','); } catch (e) {}
+let HAT = '';
+try { HAT = localStorage.getItem('gg-hat') || ''; } catch (e) {}
+if (HAT && OWN.indexOf('hat:' + HAT) < 0) HAT = '';
+
+function drawHat(cx, cy, r) {
+  if (!HAT) return;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(r, r);
+  if (HAT === 'cap') {
+    ctx.fillStyle = '#e63946';
+    ctx.beginPath(); ctx.arc(0, -0.35, 0.95, Math.PI, 0); ctx.fill();
+    ctx.fillRect(-0.95, -0.42, 1.9, 0.22);
+    ctx.beginPath(); ctx.ellipse(0.75, -0.34, 0.7, 0.2, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffd166';
+    ctx.beginPath(); ctx.arc(0, -1.24, 0.16, 0, Math.PI * 2); ctx.fill();
+  } else if (HAT === 'top') {
+    ctx.fillStyle = '#23283a';
+    ctx.beginPath(); ctx.ellipse(0, -0.55, 1.5, 0.3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillRect(-0.75, -2.15, 1.5, 1.62);
+    ctx.fillStyle = '#e63946';
+    ctx.fillRect(-0.75, -1.15, 1.5, 0.36);
+  } else if (HAT === 'wiz') {
+    ctx.fillStyle = '#5b4bc4';
+    ctx.beginPath();
+    ctx.moveTo(-1.25, -0.5); ctx.lineTo(1.25, -0.5); ctx.lineTo(-0.05, -2.95);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#4335a3';
+    ctx.fillRect(-1.25, -0.62, 2.5, 0.26);
+    ctx.fillStyle = '#ffd166';
+    ctx.beginPath(); ctx.arc(-0.1, -1.75, 0.14, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0.28, -1.05, 0.12, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-0.5, -0.95, 0.13, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawMan(x, y, hopT) {
   const s = ts * 0.5;
   const lift = hopT != null ? -Math.sin(hopT * Math.PI) * ts * 0.5 : 0;
@@ -380,6 +423,9 @@ function drawMan(x, y, hopT) {
   ctx.lineTo(x + s * 0.26, yy - s * 1.02);
   ctx.closePath();
   ctx.fill();
+
+  // 🎩 գլխարկը՝ թագից հետո, ուրեմն թագի վրայից է նստում
+  drawHat(x, yy - s * 0.78, s * 0.34);
 }
 
 function drawText(txt, x, y, size, color, align, bold) {

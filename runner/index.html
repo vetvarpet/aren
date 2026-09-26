@@ -27,6 +27,7 @@ const TRL = {
   hy: { how: 'Հպիր՝ ցատկելու · Օդում կրկնակի ցատկ', tap: 'Հպիր՝ սկսելու', best: 'Ռեկորդ՝ ', over: 'Ընկա՜ր…', rec: 'ՆՈՐ ՌԵԿՈՐԴ', again: 'Հպիր՝ նորից վազելու', m: ' մ' },
   ru: { how: 'Нажми — прыжок · В воздухе можно ещё раз', tap: 'Коснись, чтобы начать', best: 'Рекорд: ', over: 'Упал…', rec: 'НОВЫЙ РЕКОРД', again: 'Коснись, чтобы бежать снова', m: ' м' },
   en: { how: 'Tap to jump · Double jump in the air', tap: 'Tap to start', best: 'Best: ', over: 'You fell…', rec: 'NEW RECORD', again: 'Tap to run again', m: ' m' },
+  pt: { how: 'Toca para saltar · Salta duas vezes no ar', tap: 'Toca para começar', best: 'Recorde: ', over: 'Caíste…', rec: 'NOVO RECORDE', again: 'Toca para correr outra vez', m: ' m' },
   es: { how: 'Toca para saltar · Doble salto en el aire', tap: 'Toca para empezar', best: 'Récord: ', over: 'Te caíste…', rec: 'NUEVO RÉCORD', again: 'Toca para correr otra vez', m: ' m' },
   fr: { how: 'Touche pour sauter · Double saut en l’air', tap: 'Touche pour commencer', best: 'Record : ', over: 'Tombé…', rec: 'NOUVEAU RECORD', again: 'Touche pour recourir', m: ' m' },
   de: { how: 'Tippe zum Springen · Doppelsprung in der Luft', tap: 'Tippe zum Starten', best: 'Rekord: ', over: 'Runtergefallen…', rec: 'NEUER REKORD', again: 'Tippe, um wieder zu laufen', m: ' m' },
@@ -263,6 +264,48 @@ function drawBuilds() {
   }
 }
 
+// ——— 🎩 Գլխարկը խանութից — նույն ճանապարհը, ինչ Կատվիկում ———
+// Չգնածը չի հագնվում։ Նկարվում է «միավոր» չափով՝ գլխի շառավիղը 1 է,
+// ուրեմն նույն գլխարկը հարմարվում է ամեն հերոսի չափին։
+let OWN = [];
+try { OWN = (localStorage.getItem('gg-own') || '').split(','); } catch (e) {}
+let HAT = '';
+try { HAT = localStorage.getItem('gg-hat') || ''; } catch (e) {}
+if (HAT && OWN.indexOf('hat:' + HAT) < 0) HAT = '';
+
+function drawHat(cx, cy, r) {
+  if (!HAT) return;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(r, r);
+  if (HAT === 'cap') {
+    ctx.fillStyle = '#e63946';
+    ctx.beginPath(); ctx.arc(0, -0.35, 0.95, Math.PI, 0); ctx.fill();
+    ctx.fillRect(-0.95, -0.42, 1.9, 0.22);
+    ctx.beginPath(); ctx.ellipse(0.75, -0.34, 0.7, 0.2, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffd166';
+    ctx.beginPath(); ctx.arc(0, -1.24, 0.16, 0, Math.PI * 2); ctx.fill();
+  } else if (HAT === 'top') {
+    ctx.fillStyle = '#23283a';
+    ctx.beginPath(); ctx.ellipse(0, -0.55, 1.5, 0.3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillRect(-0.75, -2.15, 1.5, 1.62);
+    ctx.fillStyle = '#e63946';
+    ctx.fillRect(-0.75, -1.15, 1.5, 0.36);
+  } else if (HAT === 'wiz') {
+    ctx.fillStyle = '#5b4bc4';
+    ctx.beginPath();
+    ctx.moveTo(-1.25, -0.5); ctx.lineTo(1.25, -0.5); ctx.lineTo(-0.05, -2.95);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#4335a3';
+    ctx.fillRect(-1.25, -0.62, 2.5, 0.26);
+    ctx.fillStyle = '#ffd166';
+    ctx.beginPath(); ctx.arc(-0.1, -1.75, 0.14, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0.28, -1.05, 0.12, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-0.5, -0.95, 0.13, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawMan() {
   const x = player.x, y = player.y;
   const s = Math.max(15, Math.min(20, H * 0.026));
@@ -301,6 +344,8 @@ function drawMan() {
   ctx.moveTo(-s * 0.1, -s * 1.9);
   ctx.quadraticCurveTo(-s * 0.9, -s * 1.8 + Math.sin(frame * 0.3) * s * 0.25, -s * 1.4, -s * 1.6 + Math.sin(frame * 0.3 + 1) * s * 0.3);
   ctx.stroke();
+  // 🎩 գլխարկը գլխին
+  drawHat(s * 0.1, -s * 2.25, s * 0.42);
   ctx.restore();
 }
 
