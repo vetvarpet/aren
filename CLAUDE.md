@@ -16,7 +16,7 @@ Site owner and director: **Aren Aghbalyan (Արեն)**, age 10, in Armenia — s
 1. Commit on branch `claude/arens-playground-handoff-ox2rv5` (create from `main` if missing).
 2. `git push -u origin <branch>`
 3. `git checkout main && git merge --ff-only <branch> && git push origin main && git checkout <branch>`
-4. Vercel auto-deploys `main` → **https://aren-alpha.vercel.app** — always send Aren that link. **Never** link `aren10.vercel.app`.
+4. Vercel auto-deploys `main` → **https://aren-alpha.vercel.app** — always send Aren that link.
 
 ## Testing (non-negotiable)
 
