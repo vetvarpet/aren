@@ -57,6 +57,7 @@
     width: min(54vw, 280px);
     margin: -6px auto 0;
   }
+  .slogan { color: #9a9ec7; font-size: 0.92rem; margin-top: 6px; }
 
   .badge {
     display: inline-block;
@@ -108,6 +109,7 @@
     .star { display: none; }
     .poster { background: #fff; color: #12122b; box-shadow: none; border-color: #b8860b; }
     .logoimg { border-radius: 18px; }   /* սև քառակուսին սպիտակ թղթին սիրուն նստի */
+    .slogan { color: #555; }
     .scanme { color: #12122b; }
     .back { display: none; }
   }
@@ -117,6 +119,7 @@
 
 <div class="poster">
   <img class="logoimg" src="./logo.png" alt="Golden Games">
+  <p class="slogan">Աշխարհը խաղում է միասին։</p>
 
   <div class="badge">🎮 Զանազան խաղեր՝ միայն մեկ տեղում</div>
 
@@ -153,20 +156,21 @@ for (let i = 0; i < 26; i++) {
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  ru: { badge: '🎮 Разные игры — в одном месте', scan: '📸 Сканируй и играй!' },
-  en: { badge: '🎮 All kinds of games in one place', scan: '📸 Scan and play!' },
-  pt: { badge: '🎮 Jogos de todos os tipos num só sítio', scan: '📸 Aponta a câmara e joga!' },
-  es: { badge: '🎮 Todos los juegos en un solo lugar', scan: '📸 ¡Escanea y juega!' },
-  fr: { badge: '🎮 Plein de jeux au même endroit', scan: '📸 Scanne et joue !' },
-  de: { badge: '🎮 Viele Spiele an einem Ort', scan: '📸 Scannen und spielen!' },
-  ja: { badge: '🎮 いろんなゲームがここに大集合', scan: '📸 スキャンしてあそぼう！' },
-  zh: { badge: '🎮 各种游戏，一站全有', scan: '📸 扫一扫就能玩！' },
-  it: { badge: '🎮 Tanti giochi in un posto solo', scan: '📸 Scansiona e gioca!' },
-  ka: { badge: '🎮 ყველანაირი თამაში ერთ ადგილას', scan: '📸 დაასკანერე და ითამაშე!' },
-  hi: { badge: '🎮 ढेर सारे खेल एक ही जगह', scan: '📸 स्कैन करो और खेलो!' },
+  ru: { tag: 'Мир играет вместе', badge: '🎮 Разные игры — в одном месте', scan: '📸 Сканируй и играй!' },
+  en: { tag: 'The world plays together', badge: '🎮 All kinds of games in one place', scan: '📸 Scan and play!' },
+  pt: { tag: 'O mundo joga em conjunto', badge: '🎮 Jogos de todos os tipos num só sítio', scan: '📸 Aponta a câmara e joga!' },
+  es: { tag: 'El mundo juega junto', badge: '🎮 Todos los juegos en un solo lugar', scan: '📸 ¡Escanea y juega!' },
+  fr: { tag: 'Le monde joue ensemble', badge: '🎮 Plein de jeux au même endroit', scan: '📸 Scanne et joue !' },
+  de: { tag: 'Die Welt spielt zusammen', badge: '🎮 Viele Spiele an einem Ort', scan: '📸 Scannen und spielen!' },
+  ja: { tag: '世界がいっしょにあそぶ', badge: '🎮 いろんなゲームがここに大集合', scan: '📸 スキャンしてあそぼう！' },
+  zh: { tag: '全世界一起玩', badge: '🎮 各种游戏，一站全有', scan: '📸 扫一扫就能玩！' },
+  it: { tag: 'Il mondo gioca insieme', badge: '🎮 Tanti giochi in un posto solo', scan: '📸 Scansiona e gioca!' },
+  ka: { tag: 'მსოფლიო ერთად თამაშობს', badge: '🎮 ყველანაირი თამაში ერთ ადგილას', scan: '📸 დაასკანერე და ითამაშე!' },
+  hi: { tag: 'दुनिया साथ मिलकर खेलती है', badge: '🎮 ढेर सारे खेल एक ही जगह', scan: '📸 स्कैन करो और खेलो!' },
 };
 const TQ = TRL[ggLang];
 if (TQ) {
+  document.querySelector('.slogan').textContent = TQ.tag;
   document.querySelector('.badge').textContent = TQ.badge;
   document.querySelector('.scanme').textContent = TQ.scan;
 }

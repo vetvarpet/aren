@@ -39,6 +39,7 @@
   .logo { display: flex; align-items: center; gap: 12px; }
   .logo .joy { display: block; flex-shrink: 0; border-radius: 12px; }
   .logo h1 { font-size: clamp(1.3rem, 4vw, 1.9rem); color: var(--accent); letter-spacing: 0.01em; }
+  .logo .tag { font-size: clamp(0.72rem, 2.6vw, 0.92rem); color: #9aa0c8; margin-top: 2px; }
   nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
   nav a {
     color: var(--ink);
@@ -499,6 +500,7 @@
       <img class="joy" src="./logo-icon.png" alt="Golden Games" width="52" height="52">
       <div>
         <h1>Golden Games</h1>
+        <p class="tag" id="tagline">Աշխարհը խաղում է միասին։</p>
       </div>
     </div>
     <nav>
@@ -2158,7 +2160,7 @@ const DICT = {
     },
     newT: '🆕 Новые игры',
     allT: '📚 Все',
-    findPH: '🔎 Найди игру…', nofind: 'Ничего не нашлось 😿 Попробуй другое слово', topQ: '🔥 Чаще всего играешь:',
+    findPH: '🔎 Найди игру…', nofind: 'Ничего не нашлось 😿 Попробуй другое слово', topQ: '🔥 Чаще всего играешь:', tag: 'Мир играет вместе',
     cats: ['⚡ Быстрые и аркады', '🧩 Головоломки и подумать', '🇦🇲 Армянские', '🎵 Музыка и ритм', '🌿 Спокойные', '🕰️ История сайта'],
     rand: '🎲 Случайная',
     moodQ: 'Во что сыграем?', moodFast: '⚡ Быстрое', moodCalm: '🌿 Спокойное', moodTwo: '👥 Вдвоём', moodThink: '🧠 Подумать',
@@ -2233,7 +2235,7 @@ const DICT = {
     },
     newT: '🆕 New games',
     allT: '📚 All',
-    findPH: '🔎 Find a game…', nofind: 'Nothing found 😿 Try another word', topQ: '🔥 You play these most:',
+    findPH: '🔎 Find a game…', nofind: 'Nothing found 😿 Try another word', topQ: '🔥 You play these most:', tag: 'The world plays together',
     cats: ['⚡ Fast and arcade', '🧩 Puzzles and thinking', '🇦🇲 Armenian', '🎵 Music and rhythm', '🌿 Calm', '🕰️ The site’s history'],
     rand: '🎲 Random',
     moodQ: 'What shall we play?', moodFast: '⚡ Fast', moodCalm: '🌿 Calm', moodTwo: '👥 Two players', moodThink: '🧠 Thinking',
@@ -2308,7 +2310,7 @@ const DICT = {
     },
     newT: '🆕 Jogos novos',
     allT: '📚 Todos',
-    findPH: '🔎 Procura um jogo…', nofind: 'Não encontrei nada 😿 Tenta outra palavra', topQ: '🔥 É a isto que jogas mais:',
+    findPH: '🔎 Procura um jogo…', nofind: 'Não encontrei nada 😿 Tenta outra palavra', topQ: '🔥 É a isto que jogas mais:', tag: 'O mundo joga em conjunto',
     cats: ['⚡ Rápidos e arcade', '🧩 Puzzles e pensar', '🇦🇲 Arménios', '🎵 Música e ritmo', '🌿 Calmos', '🕰️ A história do site'],
     rand: '🎲 À sorte',
     moodQ: 'A que vamos jogar?', moodFast: '⚡ Rápido', moodCalm: '🌿 Calmo', moodTwo: '👥 A dois', moodThink: '🧠 Para pensar',
@@ -2383,7 +2385,7 @@ const DICT = {
     },
     newT: '🆕 Juegos nuevos',
     allT: '📚 Todos',
-    findPH: '🔎 Busca un juego…', nofind: 'No hay nada 😿 Prueba otra palabra', topQ: '🔥 A lo que más juegas:',
+    findPH: '🔎 Busca un juego…', nofind: 'No hay nada 😿 Prueba otra palabra', topQ: '🔥 A lo que más juegas:', tag: 'El mundo juega junto',
     cats: ['⚡ Rápidos y arcade', '🧩 Puzles y pensar', '🇦🇲 Armenios', '🎵 Música y ritmo', '🌿 Tranquilos', '🕰️ La historia del sitio'],
     rand: '🎲 Al azar',
     moodQ: '¿A qué jugamos?', moodFast: '⚡ Rápido', moodCalm: '🌿 Tranquilo', moodTwo: '👥 Entre dos', moodThink: '🧠 Para pensar',
@@ -2458,7 +2460,7 @@ const DICT = {
     },
     newT: '🆕 Nouveaux jeux',
     allT: '📚 Tout',
-    findPH: '🔎 Cherche un jeu…', nofind: 'Rien trouvé 😿 Essaie un autre mot', topQ: '🔥 Tu y joues le plus :',
+    findPH: '🔎 Cherche un jeu…', nofind: 'Rien trouvé 😿 Essaie un autre mot', topQ: '🔥 Tu y joues le plus :', tag: 'Le monde joue ensemble',
     cats: ['⚡ Rapides et arcade', '🧩 Casse-tête et réflexion', '🇦🇲 Arméniens', '🎵 Musique et rythme', '🌿 Calmes', '🕰️ L’histoire du site'],
     rand: '🎲 Au hasard',
     moodQ: 'On joue à quoi ?', moodFast: '⚡ Rapide', moodCalm: '🌿 Calme', moodTwo: '👥 À deux', moodThink: '🧠 Réfléchir',
@@ -2533,7 +2535,7 @@ const DICT = {
     },
     newT: '🆕 Neue Spiele',
     allT: '📚 Alle',
-    findPH: '🔎 Spiel suchen…', nofind: 'Nichts gefunden 😿 Probier ein anderes Wort', topQ: '🔥 Das spielst du am meisten:',
+    findPH: '🔎 Spiel suchen…', nofind: 'Nichts gefunden 😿 Probier ein anderes Wort', topQ: '🔥 Das spielst du am meisten:', tag: 'Die Welt spielt zusammen',
     cats: ['⚡ Schnell und Arcade', '🧩 Rätsel und Nachdenken', '🇦🇲 Armenisch', '🎵 Musik und Rhythmus', '🌿 Ruhig', '🕰️ Die Geschichte der Seite'],
     rand: '🎲 Zufall',
     moodQ: 'Was spielen wir?', moodFast: '⚡ Schnell', moodCalm: '🌿 Ruhig', moodTwo: '👥 Zu zweit', moodThink: '🧠 Nachdenken',
@@ -2608,7 +2610,7 @@ const DICT = {
     },
     newT: '🆕 あたらしいゲーム',
     allT: '📚 ぜんぶ',
-    findPH: '🔎 ゲームをさがす…', nofind: 'なにも見つからないよ 😿 べつのことばでためしてね', topQ: '🔥 いちばんあそんでるの：',
+    findPH: '🔎 ゲームをさがす…', nofind: 'なにも見つからないよ 😿 べつのことばでためしてね', topQ: '🔥 いちばんあそんでるの：', tag: '世界がいっしょにあそぶ',
     cats: ['⚡ はやい・アクション', '🧩 パズル・かんがえる', '🇦🇲 アルメニア', '🎵 おんがく・リズム', '🌿 のんびり', '🕰️ サイトのれきし'],
     rand: '🎲 ランダム',
     moodQ: 'なにであそぶ？', moodFast: '⚡ はやい', moodCalm: '🌿 のんびり', moodTwo: '👥 ふたりで', moodThink: '🧠 かんがえる',
@@ -2683,7 +2685,7 @@ const DICT = {
     },
     newT: '🆕 新游戏',
     allT: '📚 全部',
-    findPH: '🔎 找游戏…', nofind: '什么也没找到 😿 换个词试试', topQ: '🔥 你玩得最多：',
+    findPH: '🔎 找游戏…', nofind: '什么也没找到 😿 换个词试试', topQ: '🔥 你玩得最多：', tag: '全世界一起玩',
     cats: ['⚡ 快节奏和街机', '🧩 解谜和动脑', '🇦🇲 亚美尼亚', '🎵 音乐和节奏', '🌿 安静', '🕰️ 网站的历史'],
     rand: '🎲 随机',
     moodQ: '玩什么好呢？', moodFast: '⚡ 快节奏', moodCalm: '🌿 安静', moodTwo: '👥 两个人', moodThink: '🧠 动脑',
@@ -2758,7 +2760,7 @@ const DICT = {
     },
     newT: '🆕 Giochi nuovi',
     allT: '📚 Tutti',
-    findPH: '🔎 Cerca un gioco…', nofind: 'Non ho trovato niente 😿 Prova un’altra parola', topQ: '🔥 Ci giochi di più:',
+    findPH: '🔎 Cerca un gioco…', nofind: 'Non ho trovato niente 😿 Prova un’altra parola', topQ: '🔥 Ci giochi di più:', tag: 'Il mondo gioca insieme',
     cats: ['⚡ Veloci e arcade', '🧩 Rompicapi e ragionare', '🇦🇲 Armeni', '🎵 Musica e ritmo', '🌿 Tranquilli', '🕰️ La storia del sito'],
     rand: '🎲 A caso',
     moodQ: 'A cosa giochiamo?', moodFast: '⚡ Veloce', moodCalm: '🌿 Tranquillo', moodTwo: '👥 In due', moodThink: '🧠 Da pensare',
@@ -2833,7 +2835,7 @@ const DICT = {
     },
     newT: '🆕 ახალი თამაშები',
     allT: '📚 ყველა',
-    findPH: '🔎 იპოვე თამაში…', nofind: 'ვერაფერი მოიძებნა 😿 სხვა სიტყვა სცადე', topQ: '🔥 ყველაზე მეტად თამაშობ:',
+    findPH: '🔎 იპოვე თამაში…', nofind: 'ვერაფერი მოიძებნა 😿 სხვა სიტყვა სცადე', topQ: '🔥 ყველაზე მეტად თამაშობ:', tag: 'მსოფლიო ერთად თამაშობს',
     cats: ['⚡ სწრაფი და არკადა', '🧩 თავსატეხი და ფიქრი', '🇦🇲 სომხური', '🎵 მუსიკა და რიტმი', '🌿 მშვიდი', '🕰️ საიტის ისტორია'],
     rand: '🎲 შემთხვევითი',
     moodQ: 'რა ვითამაშოთ?', moodFast: '⚡ სწრაფი', moodCalm: '🌿 მშვიდი', moodTwo: '👥 ორნი', moodThink: '🧠 დასაფიქრებელი',
@@ -2908,7 +2910,7 @@ const DICT = {
     },
     newT: '🆕 नए खेल',
     allT: '📚 सब',
-    findPH: '🔎 खेल ढूँढो…', nofind: 'कुछ नहीं मिला 😿 दूसरा शब्द आज़माओ', topQ: '🔥 सबसे ज़्यादा यही खेलते हो:',
+    findPH: '🔎 खेल ढूँढो…', nofind: 'कुछ नहीं मिला 😿 दूसरा शब्द आज़माओ', topQ: '🔥 सबसे ज़्यादा यही खेलते हो:', tag: 'दुनिया साथ मिलकर खेलती है',
     cats: ['⚡ तेज़ और आर्केड', '🧩 पहेली और सोचना', '🇦🇲 आर्मेनियाई', '🎵 संगीत और ताल', '🌿 शांत', '🕰️ साइट का इतिहास'],
     rand: '🎲 कोई भी',
     moodQ: 'क्या खेलें?', moodFast: '⚡ तेज़', moodCalm: '🌿 शांत', moodTwo: '👥 दो लोग', moodThink: '🧠 सोचने वाला',
@@ -2985,6 +2987,7 @@ function applyLang(lang) {
   document.getElementById('find').placeholder = d.findPH;
   document.getElementById('nofind').textContent = d.nofind;
   document.getElementById('topQ').textContent = d.topQ;
+  document.getElementById('tagline').textContent = d.tag;
   NEW_T = d.newT;
   CATS.forEach((c, i) => {
     const sec = secEls[c.k];
