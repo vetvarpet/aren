@@ -437,11 +437,14 @@
   }
 
   /* ——— 👑 Ոսկե ռեժիմ (գաղտնի) ——— */
-  html.golden body {
+  /* Ուշադրություն՝ filter-ը պիտի լինի html-ի վրա, ոչ թե body-ի։
+     body-ի filter-ը «position: fixed» պատուհանները կպցնում է էջին, ոչ թե էկրանին,
+     ու ներքև իջած ժամանակ լեզվի ընտրությունը հայտնվում էր էկրանից հազար պիքսել այն կողմ։
+     Արմատի (html) filter-ը այդ սխալը չունի։ */
+  html.golden {
     filter: sepia(0.34) saturate(1.75) hue-rotate(-12deg) brightness(1.06);
   }
   html.golden .game { border-color: var(--accent); }
-  html.golden #guide, html.golden #dust, html.golden #bubble { filter: none; }
   #goldMsg {
     position: fixed;
     inset: 0;
