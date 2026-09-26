@@ -158,7 +158,7 @@ const SHAPES = [
 ];
 
 let state = 'menu', endedAt = 0;
-let field, cur, next, score, lines, level, dropMs, dropTimer = 0, flash = [], flashT = 0;
+let field, cur, next, score = 0, lines = 0, level = 1, dropMs, dropTimer = 0, flash = [], flashT = 0;
 let best = 0;
 try { best = Number(localStorage.getItem('aren-blocks-best') || 0); } catch (e) {}
 

@@ -167,10 +167,16 @@
   function num(v) { var n = Number(v); return isNaN(n) ? 0 : n; }
 
   // Ռեկորդի բանալի՞ է. ամեն խաղ իր ռեկորդը պահում է այս ձևով
-  function isRec(k) { return typeof k === 'string' && /^(aren-|cat-best)/.test(k) && /(best|level|ends|max)$/.test(k); }
+  // ⏭ Սրանք ռեկորդ չեն, այլ «որտեղ էի մնացել» — ոսկի չեն տալիս։
+  // Լաբիրինթոսը և՛ level է գրում, և՛ max. առանց սրա մեկ մակարդակը երկու անգամ կվճարվեր։
+  var SKIP = { 'aren-maze-level': 1, 'aren-builder-level': 1 };
+  // 🔽 Այս խաղերում փո՛քր թիվն է լավը (Golden Memory՝ որքան քիչ քայլ, այնքան լավ)
+  var LOW = { 'aren-memory-best': 30 };
+  function isRec(k) { return typeof k === 'string' && !SKIP[k] && /^(aren-|cat-best)/.test(k) && /(best|level|ends|max)$/.test(k); }
   // Որքա՞ն ոսկի է արժե այս ռեկորդը. մակարդակն ավելի թանկ է, քան մեկ միավորը
   function worth(k, v) {
     if (!(v > 0)) return 0;
+    if (LOW[k]) return Math.max(0, LOW[k] - Math.ceil(v));   // լավանում ես՝ թիվը փոքրանում է, ոսկին մեծանում
     return /(level|ends|max)$/.test(k) ? Math.floor(v) * 3 : Math.floor(v / 10);
   }
 
