@@ -411,6 +411,20 @@
   }
   #guide:active { transform: scale(0.9); }
   #guide svg { width: 100%; height: 100%; display: block; }
+  /* 😴 քնած փիսոն — վրան «zzz» է լողում */
+  #guide.sleep::after {
+    content: '💤';
+    position: absolute;
+    top: -12px;
+    right: -2px;
+    font-size: 1.05rem;
+    animation: zzzUp 2.4s ease-in-out infinite;
+  }
+  @keyframes zzzUp {
+    0%   { opacity: 0; transform: translateY(6px) scale(0.7); }
+    30%  { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-14px) scale(1.1); }
+  }
   #bubble {
     position: fixed;
     bottom: 74px;
@@ -3332,7 +3346,19 @@ function applyFind() {
   const topBox = document.getElementById('top');
   if (topBox && !topBox.dataset.empty) topBox.hidden = !!query;
 }
-findEl.addEventListener('input', () => { query = findEl.value; applyFind(); });
+findEl.addEventListener('input', () => { query = findEl.value; applyFind(); magicWord(); });
+
+// ——— ✨ Ոսկե բառը (գաղտնիք) ———
+// Որոնման դաշտում գրում ես «գաղտնիք» (կամ secret / секрет) — ու փիսոն քեզ շնորհավորում է։
+// Խաղի անուն չէ, ուրեմն որոնումը ոչինչ չի գտնում — հենց դա է հուշումը։
+const MAGIC = ['գաղտնիք', 'secret', 'секрет'];
+const MAGIC_TXT = {"hy": "Ոսկե բառը գտար ✨", "ru": "Ты нашёл золотое слово ✨", "en": "You found the golden word ✨", "es": "¡Encontraste la palabra dorada! ✨", "fr": "Tu as trouvé le mot doré ✨", "de": "Du hast das goldene Wort gefunden ✨", "ja": "金のことばを見つけたね ✨", "zh": "你找到了金色的词 ✨", "it": "Hai trovato la parola d\u2019oro ✨", "ka": "ოქროს სიტყვა იპოვე ✨", "hi": "तुमने सुनहरा शब्द ढूँढ लिया ✨"};
+function magicWord() {
+  if (MAGIC.indexOf(norm(findEl.value)) < 0) return;
+  if (window.ggSecret && window.ggSecret.isFound('word')) return;   // մեկ անգամ բավ է
+  if (window.ggSecret) window.ggSecret.found('word');
+  catSay(MAGIC_TXT[catLang()] || MAGIC_TXT.hy);
+}
 findX.addEventListener('click', () => { findEl.value = ''; query = ''; applyFind(); findEl.blur(); });
 
 // ——— 🔥 Ամենաշատ խաղացածներդ ———
@@ -3470,7 +3496,27 @@ function ggLangNow() { try { return localStorage.getItem('gg-lang') || 'hy'; } c
 const guide = document.getElementById('guide');
 const bubble = document.getElementById('bubble');
 let gx = 30, gdir = 1, gstep = 0, gpaused = 0;
+// ——— 😴 Փիսոն հոգնում է (գաղտնիք) ———
+// Երկու րոպե ոչինչ չես անում — պառկում է քնելու։ Հպիր՝ կարթնանա։
+const CAT_IDLE = 120000;
+let lastAct = Date.now(), gsleep = false;
+['pointerdown', 'touchstart', 'keydown', 'scroll', 'wheel'].forEach(ev =>
+  addEventListener(ev, () => { lastAct = Date.now(); }, { passive: true }));
+function catWake() {
+  if (!gsleep) return false;
+  gsleep = false; guide.classList.remove('sleep'); lastAct = Date.now();
+  return true;
+}
+const WAKE_TXT = {"hy": "Հը՞… արթնացրիր ինձ 😴", "ru": "А?.. ты меня разбудил 😴", "en": "Huh?.. you woke me up 😴", "es": "¿Eh?.. me despertaste 😴", "fr": "Hein ?.. tu m\u2019as réveillé 😴", "de": "Hm?.. du hast mich geweckt 😴", "ja": "ん？…おこしたね 😴", "zh": "嗯？…你把我吵醒了 😴", "it": "Eh?.. mi hai svegliato 😴", "ka": "ჰმ?.. გამაღვიძე 😴", "hi": "हँ?.. तुमने मुझे जगा दिया 😴"};
+
 function walkCat() {
+  const tired = Date.now() - lastAct > CAT_IDLE;
+  if (tired !== gsleep) { gsleep = tired; guide.classList.toggle('sleep', gsleep); }
+  if (gsleep) {          // քնած է՝ չի քայլում, մի քիչ կողքի է ընկած
+    guide.style.transform = 'translateX(' + gx + 'px) scaleX(' + gdir + ') rotate(16deg)';
+    requestAnimationFrame(walkCat);
+    return;
+  }
   if (gpaused > 0) { gpaused--; } else {
     gx += gdir * 0.55;
     if (gx > innerWidth - 76) { gdir = -1; gpaused = 40; }
@@ -3497,12 +3543,20 @@ function catSay(txt) {
   bubTimer = setTimeout(() => { bubble.hidden = true; }, 3800);
 }
 guide.addEventListener('pointerdown', () => {
+  if (catWake()) {                       // քնած էր՝ արթնացրիր, ուրեմն գաղտնիքը գտար
+    if (window.ggSecret) window.ggSecret.found('night');
+    catSay(WAKE_TXT[catLang()] || WAKE_TXT.hy);
+    gpaused = 90;
+    return;
+  }
   gpaused = 90;
   const now = Date.now();
   catTaps = (now - lastCatTap < 1200) ? catTaps + 1 : 1;
   lastCatTap = now;
   // Փիսոն գաղտնիքի պահապանն է. 7 անգամ իրար ետևից հպիր ու ոսկե ռեժիմը կբացվի
-  if (catTaps >= 7) { catTaps = 0; catSay(SECRET_TXT[catLang()]); toggleGolden(); return; }
+  if (catTaps >= 7) { catTaps = 0; catSay(SECRET_TXT[catLang()]);
+    if (window.ggSecret) window.ggSecret.found('seven');   // ցուցակն էլ իմանա, որ գտար
+    toggleGolden(); return; }
   const list = CAT_SAY[catLang()];
   catSay(list[Math.floor(Math.random() * list.length)]);
 });
