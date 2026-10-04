@@ -593,7 +593,8 @@
     'slow':        { h:['drag','think','time'], s:2 },
     'swap':        { h:['tap','collect','faster'], s:2 },
     'poly':        { h:['tap','collect','free'],    s:1 },
-    'online':      { h:['tap','two','rec'],         s:2 }
+    'online':      { h:['tap','two','rec'],         s:2 },
+    'rise':        { h:['aim','drag','lives'],      s:3 }
   };
 
   var HOW_T = {
