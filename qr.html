@@ -105,12 +105,24 @@
 
   /* Տպելիս՝ մաքուր սպիտակ պաստառ */
   @media print {
-    body { background: #fff; }
+    /* Գույները թղթին էլ թող մնան, ոչ թե բրաուզերը ջնջի */
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    @page { margin: 10mm; }
+    body { background: #fff; padding: 0; display: block; min-height: 0; }
     .star { display: none; }
-    .poster { background: #fff; color: #12122b; box-shadow: none; border-color: #b8860b; }
-    .logoimg { border-radius: 18px; }   /* սև քառակուսին սպիտակ թղթին սիրուն նստի */
+    /* Գործիքակազմի կոճակները թղթին պետք չեն */
+    #ggBar, #ggToast, #ggLoad, #ggSecT, #ggFollow, #ggSec, .gg-how { display: none !important; }
+    .poster {
+      background: #fff; color: #12122b; box-shadow: none; border-color: #b8860b;
+      width: 100%; max-width: none;   /* պաստառը թող ամբողջ թուղթը բռնի */
+      padding: 24px 24px 22px;
+      break-inside: avoid;
+    }
+    .logoimg { border-radius: 18px; width: 46%; max-width: none; }   /* սև քառակուսին սպիտակ թղթին սիրուն նստի */
     .slogan { color: #555; }
     .scanme { color: #12122b; }
+    .url { color: #7a5c00; }   /* ոսկեգույնը թղթին գունատ է — հասցեն պիտի լավ կարդացվի */
+    .qr { width: 56%; }   /* ամբողջ պաստառը մեկ A4 թղթի վրա տեղավորվի */
     .back { display: none; }
   }
 </style>
