@@ -523,6 +523,7 @@
       <a href="./trophies/" id="navTroph">🏆 Գավաթներ</a>
       <a href="./quest/" id="navQuest">🗺️ Արշավ</a>
       <a href="./shop/" id="navShop">🪙 Խանութ</a>
+      <a href="./me/" id="navMe">🪪 Անձնագիր</a>
       <a href="#" id="navRand" title="Պատահական խաղ">🎲 Պատահական</a>
       <a href="./qr.html">📱 QR</a>
       <a href="https://github.com/vetvarpet/aren">⭐ GitHub</a>
@@ -2183,6 +2184,7 @@ const DICT = {
     troph: '🏆 Кубки',
     quest: '🗺️ Поход',
     shop: '🪙 Магазин',
+    me: '🪪 Паспорт',
     toolsT: '🧰 Инструменты', toolsN: 'не игры, но полезные',
     tools: {
       'timer': 'Для уроков: кот бежит до самого конца',
@@ -2259,6 +2261,7 @@ const DICT = {
     troph: '🏆 Trophies',
     quest: '🗺️ Quest',
     shop: '🪙 Shop',
+    me: '🪪 Card',
     toolsT: '🧰 Tools', toolsN: 'not games, but handy',
     tools: {
       'timer': 'For homework: the cat runs all the way',
@@ -2335,6 +2338,7 @@ const DICT = {
     troph: '🏆 Troféus',
     quest: '🗺️ Aventura',
     shop: '🪙 Loja',
+    me: '🪪 Cartão',
     toolsT: '🧰 Ferramentas', toolsN: 'não são jogos, mas dão jeito',
     tools: {
       'timer': 'Para os trabalhos de casa: o gato corre até ao fim',
@@ -2411,6 +2415,7 @@ const DICT = {
     troph: '🏆 Trofeos',
     quest: '🗺️ Búsqueda',
     shop: '🪙 Tienda',
+    me: '🪪 Carné',
     toolsT: '🧰 Herramientas', toolsN: 'no son juegos, pero sirven',
     tools: {
       'timer': 'Para los deberes: el gato corre hasta el final',
@@ -2487,6 +2492,7 @@ const DICT = {
     troph: '🏆 Trophées',
     quest: '🗺️ Quête',
     shop: '🪙 Boutique',
+    me: '🪪 Carte',
     toolsT: '🧰 Outils', toolsN: 'pas des jeux, mais utiles',
     tools: {
       'timer': 'Pour les devoirs : le chat court jusqu’au bout',
@@ -2563,6 +2569,7 @@ const DICT = {
     troph: '🏆 Pokale',
     quest: '🗺️ Reise',
     shop: '🪙 Laden',
+    me: '🪪 Karte',
     toolsT: '🧰 Werkzeuge', toolsN: 'keine Spiele, aber nützlich',
     tools: {
       'timer': 'Für Hausaufgaben: die Katze läuft bis zum Ende',
@@ -2639,6 +2646,7 @@ const DICT = {
     troph: '🏆 トロフィー',
     quest: '🗺️ クエスト',
     shop: '🪙 おみせ',
+    me: '🪪 カード',
     toolsT: '🧰 どうぐ', toolsN: 'ゲームじゃないけどべんり',
     tools: {
       'timer': 'しゅくだいよう。ねこがさいごまではしるよ',
@@ -2715,6 +2723,7 @@ const DICT = {
     troph: '🏆 奖杯',
     quest: '🗺️ 远征',
     shop: '🪙 商店',
+    me: '🪪 玩家卡',
     toolsT: '🧰 工具', toolsN: '不是游戏，但很好用',
     tools: {
       'timer': '写作业用：猫一直跑到终点',
@@ -2791,6 +2800,7 @@ const DICT = {
     troph: '🏆 Trofei',
     quest: '🗺️ Avventura',
     shop: '🪙 Negozio',
+    me: '🪪 Tessera',
     toolsT: '🧰 Strumenti', toolsN: 'non sono giochi, ma servono',
     tools: {
       'timer': 'Per i compiti: il gatto corre fino in fondo',
@@ -2867,6 +2877,7 @@ const DICT = {
     troph: '🏆 თასები',
     quest: '🗺️ ლაშქრობა',
     shop: '🪙 მაღაზია',
+    me: '🪪 ბარათი',
     toolsT: '🧰 ხელსაწყოები', toolsN: 'თამაშები არაა, მაგრამ გამოსადეგია',
     tools: {
       'timer': 'გაკვეთილებისთვის: კატა ბოლომდე დარბის',
@@ -2943,6 +2954,7 @@ const DICT = {
     troph: '🏆 ट्रॉफ़ियाँ',
     quest: '🗺️ खोज',
     shop: '🪙 दुकान',
+    me: '🪪 कार्ड',
     toolsT: '🧰 औज़ार', toolsN: 'खेल नहीं, पर काम के',
     tools: {
       'timer': 'होमवर्क के लिए: बिल्ली आख़िर तक दौड़ती है',
@@ -3025,6 +3037,7 @@ function applyLang(lang) {
   document.getElementById('navTroph').textContent = d.troph;
   document.getElementById('navQuest').textContent = d.quest;
   document.getElementById('navShop').textContent = d.shop;
+  document.getElementById('navMe').textContent = d.me;
   document.getElementById('toolsT').textContent = d.toolsT;
   document.getElementById('toolsN').textContent = d.toolsN;
   document.querySelectorAll('.tool').forEach(a => {

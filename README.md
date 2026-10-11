@@ -66,6 +66,7 @@ and iterating on the code together with Claude, one change at a time.
 | [`time`](./time/) | 🕰️ Golden Time (Ժամանակի մեքենա) | The site's whole story as a timeline, from the first flying cat to today |
 | [`builder`](./builder/) | 🧱 Golden Builder (Ոսկե Կառուցող) | Place boxes, crows and fish on a 32-cell track, then send the level to a friend — the whole level travels inside the link, and the friend plays it in the real Golden Cat |
 | [`shop`](./shop/) | 🪙 Golden Shop (Ոսկե Խանութ) | One gold purse shared by every game: 10 points of a record earn a coin, a daily challenge +20, a new trophy +50. Spend it on heroes, car paint and site colours |
+| [`me`](./me/) | 🪪 Golden Card (Անձնագիր) | Every number the site knows about you on one card: gold earned, trophies, secrets found, games played, days in a row and your most played game, with a level and a rank on top. Share it as a link and a friend sees your card next to theirs — the whole card travels inside the link, no server. |
 | [`museum`](./museum/) | 🏛️ Golden Museum (Թանգարան) | Memorial hall of deleted projects, pedestals, epitaphs and all |
 
 Every project is a single self-contained `index.html` — no frameworks, no

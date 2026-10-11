@@ -548,53 +548,53 @@
 
   // Ամեն խաղ՝ 3 բանալի ու դժվարության աստղեր (1–3)
   var GAMES = {
-    'cat-jump':   { h:['tap','avoid','faster'],        s:1 },
-    'city-drive': { h:['steer','collect','levels'],    s:2 },
-    'piano':      { h:['tap','free','rhythm'],         s:1 },
-    'rocket':     { h:['drag','collect','lives'],      s:2 },
-    'memory':     { h:['tap','match','think'],         s:1 },
-    'fishing':    { h:['tap','collect','time'],        s:1 },
-    'duel':       { h:['two','btn','free'],            s:1 },
-    'maze':       { h:['drag','levels','think'],       s:2 },
-    'tower':      { h:['tap','build','faster'],        s:2 },
-    'moles':      { h:['tap','collect','time'],        s:1 },
-    'beat':       { h:['tap','rhythm','rec'],          s:2 },
-    'ninja':      { h:['tap','avoid','faster'],        s:2 },
-    'men':        { h:['btn','repeat','levels'],       s:2 },
-    'runner':     { h:['tap','avoid','faster'],        s:2 },
-    'pipes':      { h:['tap','think','levels'],        s:2 },
-    'blocks':     { h:['swipe','collect','think'],     s:2 },
-    'words':      { h:['tap','think','levels'],        s:2 },
-    'drums':      { h:['tap','free','rhythm'],         s:1 },
-    'map':        { h:['tap','think','collect'],       s:1 },
-    'story':      { h:['tap','think','free'],          s:1 },
-    'bridge':     { h:['hold','think','levels'],       s:3 },
-    'detective':  { h:['tap','think','time'],          s:2 },
-    'elevator':   { h:['tap','collect','faster'],      s:2 },
-    'traffic':    { h:['tap','avoid','faster'],        s:3 },
-    'garden':     { h:['tap','think','collect'],       s:1 },
-    'bank':       { h:['tap','collect','time'],        s:2 },
-    'camera':     { h:['tap','collect','think'],       s:1 },
-    'wire':       { h:['drag','think','levels'],       s:2 },
-    'wind':       { h:['drag','think','levels'],       s:3 },
-    'domino':     { h:['tap','think','levels'],        s:2 },
-    'copy':       { h:['tap','repeat','levels'],       s:2 },
-    'alphabet':   { h:['btn','think','rec'],           s:1 },
-    'nardi':      { h:['tap','think','free'],          s:2 },
-    'lavash':     { h:['tap','time','faster'],         s:2 },
-    'dance':      { h:['btn','repeat','rhythm'],       s:2 },
-    'sasuntsi':   { h:['aim','avoid','lives'],         s:3 },
-    'rewind':      { h:['btn','think','levels'], s:3 },
-    'two':         { h:['tap','avoid','faster'], s:2 },
-    'mirror':      { h:['drag','collect','avoid'], s:3 },
-    'grow':        { h:['drag','collect','think'], s:2 },
-    'silence':     { h:['drag','think','levels'], s:3 },
-    'onelife':     { h:['tap','think','levels'], s:3 },
-    'slow':        { h:['drag','think','time'], s:2 },
-    'swap':        { h:['tap','collect','faster'], s:2 },
-    'poly':        { h:['tap','collect','free'],    s:1 },
-    'online':      { h:['tap','two','rec'],         s:2 },
-    'rise':        { h:['aim','drag','lives'],      s:3 }
+    'cat-jump':   { n:'Golden Cat', h:['tap','avoid','faster'],        s:1 },
+    'city-drive': { n:'Golden Driver', h:['steer','collect','levels'],    s:2 },
+    'piano':      { n:'Golden Piano', h:['tap','free','rhythm'],         s:1 },
+    'rocket':     { n:'Golden Rocket', h:['drag','collect','lives'],      s:2 },
+    'memory':     { n:'Golden Memory', h:['tap','match','think'],         s:1 },
+    'fishing':    { n:'Golden Fishing', h:['tap','collect','time'],        s:1 },
+    'duel':       { n:'Golden Duel', h:['two','btn','free'],            s:1 },
+    'maze':       { n:'Golden Maze', h:['drag','levels','think'],       s:2 },
+    'tower':      { n:'Golden Tower', h:['tap','build','faster'],        s:2 },
+    'moles':      { n:'Golden Moles', h:['tap','collect','time'],        s:1 },
+    'beat':       { n:'Golden Beat', h:['tap','rhythm','rec'],          s:2 },
+    'ninja':      { n:'Golden Ninja', h:['tap','avoid','faster'],        s:2 },
+    'men':        { n:'Golden Men', h:['btn','repeat','levels'],       s:2 },
+    'runner':     { n:'Golden Runner', h:['tap','avoid','faster'],        s:2 },
+    'pipes':      { n:'Golden Pipes', h:['tap','think','levels'],        s:2 },
+    'blocks':     { n:'Golden Blocks', h:['swipe','collect','think'],     s:2 },
+    'words':      { n:'Golden Words', h:['tap','think','levels'],        s:2 },
+    'drums':      { n:'Golden Drums', h:['tap','free','rhythm'],         s:1 },
+    'map':        { n:'Golden Map', h:['tap','think','collect'],       s:1 },
+    'story':      { n:'Golden Story', h:['tap','think','free'],          s:1 },
+    'bridge':     { n:'Golden Bridge', h:['hold','think','levels'],       s:3 },
+    'detective':  { n:'Golden Detective', h:['tap','think','time'],          s:2 },
+    'elevator':   { n:'Golden Elevator', h:['tap','collect','faster'],      s:2 },
+    'traffic':    { n:'Golden Traffic', h:['tap','avoid','faster'],        s:3 },
+    'garden':     { n:'Golden Garden', h:['tap','think','collect'],       s:1 },
+    'bank':       { n:'Golden Bank', h:['tap','collect','time'],        s:2 },
+    'camera':     { n:'Golden Camera', h:['tap','collect','think'],       s:1 },
+    'wire':       { n:'Golden Wire', h:['drag','think','levels'],       s:2 },
+    'wind':       { n:'Golden Wind', h:['drag','think','levels'],       s:3 },
+    'domino':     { n:'Golden Domino', h:['tap','think','levels'],        s:2 },
+    'copy':       { n:'Golden Copy', h:['tap','repeat','levels'],       s:2 },
+    'alphabet':   { n:'Golden Alphabet', h:['btn','think','rec'],           s:1 },
+    'nardi':      { n:'Golden Nardi', h:['tap','think','free'],          s:2 },
+    'lavash':     { n:'Golden Lavash', h:['tap','time','faster'],         s:2 },
+    'dance':      { n:'Golden Dance', h:['btn','repeat','rhythm'],       s:2 },
+    'sasuntsi':   { n:'Golden Sasuntsi', h:['aim','avoid','lives'],         s:3 },
+    'rewind':      { n:'Golden Rewind', h:['btn','think','levels'], s:3 },
+    'two':         { n:'Golden Two', h:['tap','avoid','faster'], s:2 },
+    'mirror':      { n:'Golden Mirror', h:['drag','collect','avoid'], s:3 },
+    'grow':        { n:'Golden Grow', h:['drag','collect','think'], s:2 },
+    'silence':     { n:'Golden Silence', h:['drag','think','levels'], s:3 },
+    'onelife':     { n:'Golden Onelife', h:['tap','think','levels'], s:3 },
+    'slow':        { n:'Golden Slow', h:['drag','think','time'], s:2 },
+    'swap':        { n:'Golden Swap', h:['tap','collect','faster'], s:2 },
+    'poly':        { n:'Golden Polygon', h:['tap','collect','free'],    s:1 },
+    'online':      { n:'Golden Online', h:['tap','two','rec'],         s:2 },
+    'rise':        { n:'Golden Rise', h:['aim','drag','lives'],      s:3 }
   };
 
   var HOW_T = {
@@ -725,11 +725,54 @@
     themes: THEMES
   };
 
+  // ——— 📅 Քանի՞ օր անընդմեջ ես եկել ———
+  // Ամեն էջ բացելիս նայում ենք օրը. երեկ էիր՝ շարքը աճում է,
+  // բաց թողեցիր՝ նորից մեկից։ Ամեն ինչ այս հեռախոսում է։
+  var streak = num(rawGet('gg-streak')) || 0;
+  (function () {
+    var today = new Date();
+    var day = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+    var last = rawGet('gg-day');
+    if (last === day) return;                 // այսօր արդեն հաշվել ենք
+    var y = new Date(today.getTime() - 86400000);
+    var yest = y.getFullYear() + '-' + (y.getMonth() + 1) + '-' + y.getDate();
+    streak = (last === yest) ? streak + 1 : 1;
+    rawSet('gg-day', day);
+    rawSet('gg-streak', streak);
+    var bestStreak = num(rawGet('gg-streak-best'));
+    if (streak > bestStreak) rawSet('gg-streak-best', streak);
+  })();
+
   window.ggKit = {
     // Խաղերի թիվը մեկ տեղից — GAMES-ը ամեն խաղի ցուցակն է, ուրիշ էջեր
     // սրանից են վերցնում, որ ձեռքով գրված թիվը երբեք չհնանա։
     gameCount: Object.keys(GAMES).length,
     games: Object.keys(GAMES),
+    // 🪪 Անձնագիրը սրանցից է կառուցվում
+    gameName: function (id) { return GAMES[id] ? GAMES[id].n : id; },
+    isRecordKey: isRec,
+    streak: function () { return streak; },
+    streakBest: function () { return num(rawGet('gg-streak-best')); },
+    plays: function () {
+      var out = {};
+      try {
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && k.indexOf('gg-plays-') === 0) out[k.slice(9)] = num(rawGet(k));
+        }
+      } catch (e) {}
+      return out;
+    },
+    trophies: function () {
+      var got = 0;
+      try {
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && isRec(k) && num(rawGet(k)) > 0) got++;
+        }
+      } catch (e) {}
+      return got;
+    },
     pause: setPause,
     isPaused: function () { return paused; },
     mute: function (v) { muted = !!v; ls.set('gg-muted', muted ? '1' : '0'); applyMute(); bSound.textContent = muted ? '🔇' : '🔊'; },

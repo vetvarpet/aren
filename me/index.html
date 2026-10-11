@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<title>Անձնագիր 🪪 · Golden Games</title>
+<style>
+  :root {
+    --bg: #12122b;
+    --card: #1d1d3f;
+    --ink: #eef0ff;
+    --dim: #9a9ec7;
+    --accent: #ffd166;
+    --accent2: #6ee7b7;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, Helvetica, sans-serif;
+    padding: 56px 14px 34px; min-height: 100vh; touch-action: manipulation;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; }
+  h1 { margin: 0 0 3px; font-size: 1.3rem; color: var(--accent); text-align: center; }
+  .sub { margin: 0 0 16px; font-size: 0.76rem; color: var(--dim); text-align: center; line-height: 1.5; }
+
+  /* 🪪 Քարտը — սա է ամբողջ էջի սիրտը, նկարելու համար էլ սիրուն լինի */
+  .card {
+    background: linear-gradient(150deg, #22224a, #15152f 55%, #1a1436);
+    border: 3px solid var(--accent);
+    border-radius: 22px;
+    padding: 18px 16px 16px;
+    box-shadow: 0 0 0 4px rgba(255,209,102,0.16), 0 18px 40px rgba(0,0,0,0.45);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::after {   /* թեթև ոսկե փայլ անկյունում */
+    content: ''; position: absolute; right: -60px; top: -60px;
+    width: 180px; height: 180px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,209,102,0.18), transparent 70%);
+    pointer-events: none;
+  }
+  .top { display: flex; align-items: center; gap: 13px; }
+  .face {
+    width: 74px; height: 74px; flex-shrink: 0;
+    background: #10102a; border: 2px solid rgba(255,209,102,0.5); border-radius: 18px;
+  }
+  .face svg { width: 100%; height: 100%; display: block; }
+  .who { min-width: 0; flex: 1; }
+  .nm {
+    font-size: 1.32rem; font-weight: bold; color: var(--accent);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .rk { font-size: 0.88rem; color: var(--accent2); margin-top: 2px; }
+  .lvbar { margin-top: 7px; height: 8px; border-radius: 99px; background: #0d0d22; overflow: hidden; }
+  .lvbar i { display: block; height: 100%; background: linear-gradient(90deg, #ffd166, #ffe9a8); }
+  .lvtx { font-size: 0.68rem; color: var(--dim); margin-top: 4px; }
+
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
+  .st {
+    background: rgba(13,13,34,0.6); border: 1px solid #33356b; border-radius: 13px;
+    padding: 9px 10px;
+  }
+  .st .k { font-size: 0.66rem; color: var(--dim); }
+  .st .v { font-size: 1.05rem; font-weight: bold; margin-top: 1px; }
+  .st.wide { grid-column: 1 / -1; }
+  .st.wide .v { font-size: 0.95rem; }
+
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  button {
+    flex: 1 1 auto; min-width: 46%;
+    padding: 12px 10px; border-radius: 14px; border: none;
+    background: var(--accent); color: #2e2410;
+    font-family: inherit; font-weight: bold; font-size: 0.92rem; cursor: pointer;
+  }
+  button.ghost { background: var(--card); color: var(--ink); border: 2px solid #33356b; }
+  button:active { transform: scale(0.97); }
+
+  /* Ընկերոջ քարտը՝ կողք կողքի համեմատություն */
+  .vs { margin-top: 20px; }
+  .vs h2 { font-size: 1rem; color: var(--accent2); margin: 0 0 10px; text-align: center; }
+  .row {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px;
+    background: var(--card); border-radius: 12px; padding: 9px 11px; margin-bottom: 7px;
+    font-size: 0.86rem;
+  }
+  .row .lbl { grid-column: 1 / -1; font-size: 0.66rem; color: var(--dim); margin-bottom: 2px; }
+  .row .a, .row .b { font-weight: bold; }
+  .row .b { text-align: right; }
+  .row .win { color: var(--accent); }
+  .row .mid { font-size: 0.7rem; color: var(--dim); }
+
+  .note { font-size: 0.72rem; color: var(--dim); text-align: center; margin-top: 14px; line-height: 1.6; }
+  .codebox {
+    margin-top: 12px; background: #0d0d22; border: 1px solid #33356b; border-radius: 12px;
+    padding: 10px; font-size: 0.68rem; color: var(--dim); word-break: break-all; line-height: 1.5;
+  }
+  #nameIn {
+    width: 100%; padding: 11px 12px; border-radius: 12px; border: 2px solid #33356b;
+    background: #0d0d22; color: var(--ink); font-family: inherit; font-size: 1rem; margin-top: 10px;
+  }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1 id="h1">🪪 Անձնագիր</h1>
+  <p class="sub" id="sub">Ամբողջ կայքը մեկ քարտի վրա</p>
+
+  <div class="card" id="card">
+    <div class="top">
+      <div class="face">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <g id="hat"></g>
+          <path d="M46 44 q10 -2 10 -14" stroke="#f28c3b" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <ellipse cx="30" cy="40" rx="17" ry="11" fill="#f28c3b"/>
+          <circle cx="30" cy="27" r="11" fill="#f28c3b"/>
+          <path d="M22 20 L21 10 L29 16 Z" fill="#f28c3b"/>
+          <path d="M38 16 L44 9 L44 20 Z" fill="#f28c3b"/>
+          <circle cx="26" cy="26" r="2.1" fill="#23405c"/><circle cx="34" cy="26" r="2.1" fill="#23405c"/>
+          <circle cx="30" cy="31" r="1.9" fill="#ff8fa3"/>
+          <g stroke="rgba(35,64,92,0.45)" stroke-width="1.2" stroke-linecap="round">
+            <path d="M35 30 l8 -1"/><path d="M35 32 l8 2"/><path d="M25 30 l-8 -1"/><path d="M25 32 l-8 2"/>
+          </g>
+        </svg>
+      </div>
+      <div class="who">
+        <div class="nm" id="nm">—</div>
+        <div class="rk" id="rk">—</div>
+        <div class="lvbar"><i id="lvbar" style="width:0%"></i></div>
+        <div class="lvtx" id="lvtx">—</div>
+      </div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <div class="btns">
+    <button class="ghost" id="bName">✏️</button>
+    <button id="bShare">📤</button>
+    <button class="ghost" id="bShot">📸</button>
+  </div>
+
+  <input id="nameIn" hidden maxlength="16" autocomplete="off" spellcheck="false">
+
+  <div class="codebox" id="codebox" hidden></div>
+
+  <div class="vs" id="vs" hidden>
+    <h2 id="vsT">—</h2>
+    <div id="vsRows"></div>
+  </div>
+
+  <p class="note" id="note">—</p>
+</div>
+
+<script>
+// ——————————————————————————————————————————————————————
+//  🪪 ԱՆՁՆԱԳԻՐ — ամբողջ կայքը մեկ քարտի վրա
+//  Ամեն թիվը այս հեռախոսի հիշողությունից է. կայքը սերվեր չունի։
+//  Ընկերոջդ ուղարկում ես հղում, որի մեջ թաքնված է քարտդ։
+// ——————————————————————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'🪪 Անձնագիր', s:'Ամբողջ կայքը մեկ քարտի վրա', ask:'Ի՞նչ է քո անունը', dflt:'Խաղացող',
+        gold:'Վաստակած ոսկի', tro:'Գավաթներ', sec:'Գաղտնիքներ', pl:'Խաղացած խաղեր', str:'Օր անընդմեջ', fav:'Ամենաշատը',
+        lv:n=>'Մակարդակ '+n, next:n=>'Հաջորդ մակարդակին՝ '+n+' 🪙', none:'դեռ ոչ մեկը',
+        ranks:['Նորեկ','Խաղացող','Վարպետ','Ոսկե Վարպետ','Չեմպիոն','Լեգենդ'],
+        bN:'✏️ Անուն', bS:'📤 Ուղարկել', bP:'📸 Նկար', save:'✓ Պահել',
+        copied:'Հղումը պատճենվեց ✓ Ուղարկիր ընկերոջդ', manual:'Պատճենիր այս հղումը ու ուղարկիր՝',
+        vsT:'Դու ու ընկերդ', you:'Դու', me:'Նա',
+        note:'Ամեն թիվ այս հեռախոսինն է։ Անունդ ոչ մի տեղ չի գնում, քանի դեռ ինքդ հղումը չես ուղարկել։',
+        noteF:'Սա ընկերոջդ քարտն է։ Քոնը տեսնելու համար սեղմիր ներքևի կոճակը։', mine:'🪪 Իմ քարտը' },
+  ru: { t:'🪪 Паспорт', s:'Весь сайт на одной карточке', ask:'Как тебя зовут?', dflt:'Игрок',
+        gold:'Заработано золота', tro:'Кубки', sec:'Секреты', pl:'Сыграно игр', str:'Дней подряд', fav:'Любимая',
+        lv:n=>'Уровень '+n, next:n=>'До следующего уровня: '+n+' 🪙', none:'пока ни одной',
+        ranks:['Новичок','Игрок','Мастер','Золотой Мастер','Чемпион','Легенда'],
+        bN:'✏️ Имя', bS:'📤 Отправить', bP:'📸 Снимок', save:'✓ Сохранить',
+        copied:'Ссылка скопирована ✓ Отправь другу', manual:'Скопируй эту ссылку и отправь:',
+        vsT:'Ты и твой друг', you:'Ты', me:'Он',
+        note:'Все числа хранятся в этом телефоне. Имя никуда не уходит, пока ты сам не отправишь ссылку.',
+        noteF:'Это карточка твоего друга. Чтобы увидеть свою, нажми кнопку ниже.', mine:'🪪 Моя карточка' },
+  en: { t:'🪪 Player Card', s:'The whole site on one card', ask:'What is your name?', dflt:'Player',
+        gold:'Gold earned', tro:'Trophies', sec:'Secrets', pl:'Games played', str:'Days in a row', fav:'Most played',
+        lv:n=>'Level '+n, next:n=>'Next level in '+n+' 🪙', none:'none yet',
+        ranks:['Newcomer','Player','Master','Golden Master','Champion','Legend'],
+        bN:'✏️ Name', bS:'📤 Share', bP:'📸 Photo', save:'✓ Save',
+        copied:'Link copied ✓ Send it to a friend', manual:'Copy this link and send it:',
+        vsT:'You and your friend', you:'You', me:'Them',
+        note:'Every number lives in this phone. Your name goes nowhere until you send the link yourself.',
+        noteF:'This is your friend’s card. Tap below to see your own.', mine:'🪪 My card' },
+  pt: { t:'🪪 Cartão', s:'O site inteiro num cartão', ask:'Como te chamas?', dflt:'Jogador',
+        gold:'Ouro ganho', tro:'Troféus', sec:'Segredos', pl:'Jogos jogados', str:'Dias seguidos', fav:'Mais jogado',
+        lv:n=>'Nível '+n, next:n=>'Faltam '+n+' 🪙 para o próximo nível', none:'ainda nenhum',
+        ranks:['Novato','Jogador','Mestre','Mestre Dourado','Campeão','Lenda'],
+        bN:'✏️ Nome', bS:'📤 Enviar', bP:'📸 Foto', save:'✓ Guardar',
+        copied:'Link copiado ✓ Envia a um amigo', manual:'Copia este link e envia:',
+        vsT:'Tu e o teu amigo', you:'Tu', me:'Ele',
+        note:'Todos os números ficam neste telemóvel. O teu nome não vai a lado nenhum até tu enviares o link.',
+        noteF:'Este é o cartão do teu amigo. Carrega abaixo para veres o teu.', mine:'🪪 O meu cartão' },
+  es: { t:'🪪 Carné', s:'Todo el sitio en una tarjeta', ask:'¿Cómo te llamas?', dflt:'Jugador',
+        gold:'Oro ganado', tro:'Trofeos', sec:'Secretos', pl:'Juegos jugados', str:'Días seguidos', fav:'El más jugado',
+        lv:n=>'Nivel '+n, next:n=>'Faltan '+n+' 🪙 para el siguiente nivel', none:'ninguno todavía',
+        ranks:['Novato','Jugador','Maestro','Maestro Dorado','Campeón','Leyenda'],
+        bN:'✏️ Nombre', bS:'📤 Enviar', bP:'📸 Foto', save:'✓ Guardar',
+        copied:'Enlace copiado ✓ Mándaselo a un amigo', manual:'Copia este enlace y mándalo:',
+        vsT:'Tú y tu amigo', you:'Tú', me:'Él',
+        note:'Todos los números están en este teléfono. Tu nombre no va a ninguna parte hasta que tú mandes el enlace.',
+        noteF:'Esta es la tarjeta de tu amigo. Pulsa abajo para ver la tuya.', mine:'🪪 Mi tarjeta' },
+  fr: { t:'🪪 Carte de joueur', s:'Tout le site sur une carte', ask:'Comment tu t’appelles ?', dflt:'Joueur',
+        gold:'Or gagné', tro:'Trophées', sec:'Secrets', pl:'Jeux joués', str:'Jours d’affilée', fav:'Le plus joué',
+        lv:n=>'Niveau '+n, next:n=>'Encore '+n+' 🪙 pour le niveau suivant', none:'aucun pour l’instant',
+        ranks:['Débutant','Joueur','Maître','Maître Doré','Champion','Légende'],
+        bN:'✏️ Nom', bS:'📤 Envoyer', bP:'📸 Photo', save:'✓ Garder',
+        copied:'Lien copié ✓ Envoie-le à un ami', manual:'Copie ce lien et envoie-le :',
+        vsT:'Toi et ton ami', you:'Toi', me:'Lui',
+        note:'Tous les nombres restent dans ce téléphone. Ton nom ne part nulle part tant que tu n’envoies pas le lien.',
+        noteF:'C’est la carte de ton ami. Appuie en bas pour voir la tienne.', mine:'🪪 Ma carte' },
+  de: { t:'🪪 Spielerkarte', s:'Die ganze Seite auf einer Karte', ask:'Wie heißt du?', dflt:'Spieler',
+        gold:'Verdientes Gold', tro:'Pokale', sec:'Geheimnisse', pl:'Gespielte Spiele', str:'Tage am Stück', fav:'Am meisten gespielt',
+        lv:n=>'Level '+n, next:n=>'Noch '+n+' 🪙 bis zum nächsten Level', none:'noch keiner',
+        ranks:['Neuling','Spieler','Meister','Goldener Meister','Champion','Legende'],
+        bN:'✏️ Name', bS:'📤 Senden', bP:'📸 Foto', save:'✓ Speichern',
+        copied:'Link kopiert ✓ Schick ihn einem Freund', manual:'Kopiere diesen Link und schick ihn:',
+        vsT:'Du und dein Freund', you:'Du', me:'Er',
+        note:'Alle Zahlen bleiben auf diesem Handy. Dein Name geht nirgendwohin, bis du den Link selbst schickst.',
+        noteF:'Das ist die Karte deines Freundes. Tippe unten, um deine zu sehen.', mine:'🪪 Meine Karte' },
+  ja: { t:'🪪 プレイヤーカード', s:'サイトぜんぶが 1まいのカードに', ask:'なまえは？', dflt:'プレイヤー',
+        gold:'かせいだ ゴールド', tro:'トロフィー', sec:'ひみつ', pl:'あそんだゲーム', str:'れんぞく日すう', fav:'いちばん あそんだ',
+        lv:n=>'レベル '+n, next:n=>'つぎのレベルまで '+n+' 🪙', none:'まだ ない',
+        ranks:['しんじん','プレイヤー','マスター','ゴールドマスター','チャンピオン','レジェンド'],
+        bN:'✏️ なまえ', bS:'📤 おくる', bP:'📸 しゃしん', save:'✓ ほぞん',
+        copied:'リンクを コピーしたよ ✓ ともだちに おくろう', manual:'このリンクを コピーして おくってね：',
+        vsT:'きみと ともだち', you:'きみ', me:'ともだち',
+        note:'すうじは ぜんぶ このスマホの なか。きみが リンクを おくるまで なまえは どこにも いかないよ。',
+        noteF:'これは ともだちの カード。じぶんのを みるには したを おしてね。', mine:'🪪 じぶんのカード' },
+  zh: { t:'🪪 玩家卡', s:'整个网站浓缩成一张卡', ask:'你叫什么名字？', dflt:'玩家',
+        gold:'赚到的金币', tro:'奖杯', sec:'秘密', pl:'玩过的游戏', str:'连续天数', fav:'玩得最多',
+        lv:n=>'等级 '+n, next:n=>'距离下一级还差 '+n+' 🪙', none:'还没有',
+        ranks:['新手','玩家','大师','黄金大师','冠军','传奇'],
+        bN:'✏️ 名字', bS:'📤 发送', bP:'📸 照片', save:'✓ 保存',
+        copied:'链接已复制 ✓ 发给朋友吧', manual:'复制这个链接发出去：',
+        vsT:'你和你的朋友', you:'你', me:'他',
+        note:'所有数字都存在这台手机里。在你自己发出链接之前，名字哪里都不会去。',
+        noteF:'这是你朋友的卡片。点下面看你自己的。', mine:'🪪 我的卡片' },
+  it: { t:'🪪 Tessera', s:'Tutto il sito su una tessera', ask:'Come ti chiami?', dflt:'Giocatore',
+        gold:'Oro guadagnato', tro:'Trofei', sec:'Segreti', pl:'Giochi giocati', str:'Giorni di fila', fav:'Il più giocato',
+        lv:n=>'Livello '+n, next:n=>'Mancano '+n+' 🪙 al prossimo livello', none:'ancora nessuno',
+        ranks:['Novellino','Giocatore','Maestro','Maestro d’Oro','Campione','Leggenda'],
+        bN:'✏️ Nome', bS:'📤 Invia', bP:'📸 Foto', save:'✓ Salva',
+        copied:'Link copiato ✓ Mandalo a un amico', manual:'Copia questo link e mandalo:',
+        vsT:'Tu e il tuo amico', you:'Tu', me:'Lui',
+        note:'Tutti i numeri stanno in questo telefono. Il tuo nome non va da nessuna parte finché non mandi tu il link.',
+        noteF:'Questa è la tessera del tuo amico. Tocca sotto per vedere la tua.', mine:'🪪 La mia tessera' },
+  ka: { t:'🪪 მოთამაშის ბარათი', s:'მთელი საიტი ერთ ბარათზე', ask:'რა გქვია?', dflt:'მოთამაშე',
+        gold:'ნაშოვნი ოქრო', tro:'თასები', sec:'საიდუმლოები', pl:'ნათამაშები თამაშები', str:'დღე ზედიზედ', fav:'ყველაზე ხშირი',
+        lv:n=>'დონე '+n, next:n=>'შემდეგ დონემდე '+n+' 🪙', none:'ჯერ არცერთი',
+        ranks:['ახალბედა','მოთამაშე','ოსტატი','ოქროს ოსტატი','ჩემპიონი','ლეგენდა'],
+        bN:'✏️ სახელი', bS:'📤 გაგზავნა', bP:'📸 ფოტო', save:'✓ შენახვა',
+        copied:'ბმული დაკოპირდა ✓ გაუგზავნე მეგობარს', manual:'დააკოპირე ეს ბმული და გაგზავნე:',
+        vsT:'შენ და შენი მეგობარი', you:'შენ', me:'ის',
+        note:'ყველა რიცხვი ამ ტელეფონშია. სახელი არსად მიდის, სანამ თავად არ გააგზავნი ბმულს.',
+        noteF:'ეს შენი მეგობრის ბარათია. ქვემოთ დააჭირე შენის სანახავად.', mine:'🪪 ჩემი ბარათი' },
+  hi: { t:'🪪 खिलाड़ी कार्ड', s:'पूरी साइट एक कार्ड पर', ask:'तुम्हारा नाम क्या है?', dflt:'खिलाड़ी',
+        gold:'कमाया सोना', tro:'ट्रॉफ़ियाँ', sec:'राज़', pl:'खेले गए खेल', str:'लगातार दिन', fav:'सबसे ज़्यादा खेला',
+        lv:n=>'लेवल '+n, next:n=>'अगले लेवल तक '+n+' 🪙', none:'अभी कोई नहीं',
+        ranks:['नया','खिलाड़ी','माहिर','सुनहरा माहिर','चैंपियन','दिग्गज'],
+        bN:'✏️ नाम', bS:'📤 भेजो', bP:'📸 फ़ोटो', save:'✓ सेव',
+        copied:'लिंक कॉपी हो गया ✓ दोस्त को भेजो', manual:'यह लिंक कॉपी करके भेजो:',
+        vsT:'तुम और तुम्हारा दोस्त', you:'तुम', me:'वह',
+        note:'सारे नंबर इसी फ़ोन में रहते हैं। जब तक तुम खुद लिंक न भेजो, नाम कहीं नहीं जाता।',
+        noteF:'यह तुम्हारे दोस्त का कार्ड है। अपना देखने के लिए नीचे दबाओ।', mine:'🪪 मेरा कार्ड' }
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const $ = id => document.getElementById(id);
+const ls = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+};
+
+// ——— Մակարդակը ոսկուց է. ամեն 100 ոսկի՝ մեկ մակարդակ ———
+const PER_LEVEL = 100;
+function levelOf(total) { return 1 + Math.floor(total / PER_LEVEL); }
+function rankOf(lv) {
+  const i = lv >= 50 ? 5 : lv >= 35 ? 4 : lv >= 20 ? 3 : lv >= 10 ? 2 : lv >= 5 ? 1 : 0;
+  return T.ranks[i];
+}
+
+// ——— Ո՞րն եմ ես ———
+function myCard() {
+  const kit = window.ggKit || {};
+  const coins = window.ggCoins || {};
+  const total = coins.total ? coins.total() : 0;
+  const plays = kit.plays ? kit.plays() : {};
+  let fav = '', favN = 0, played = 0;
+  for (const g in plays) { played++; if (plays[g] > favN) { favN = plays[g]; fav = g; } }
+  let secrets = 0, secretsAll = 0;
+  if (window.ggSecret) {
+    secretsAll = ggSecret.list.length;
+    secrets = ggSecret.list.filter(s => ggSecret.isFound(s.id)).length;
+  }
+  return {
+    n: ls.get('gg-name', '') || T.dflt,
+    g: total,
+    t: kit.trophies ? kit.trophies() : 0,
+    tAll: kit.gameCount || 0,
+    s: secrets, sAll: secretsAll,
+    p: played, pAll: kit.gameCount || 0,
+    d: kit.streak ? kit.streak() : 0,
+    f: fav,
+    h: ls.get('gg-hat', '')
+  };
+}
+
+// ——— Գլխարկը դնենք փիսոյի գլխին, եթե գնված է ———
+function paintHat(id) {
+  const g = $('hat');
+  g.innerHTML = '';
+  const own = (window.ggCoins && ggCoins.list) ? ggCoins.list() : [];
+  if (!id || own.indexOf('hat:' + id) < 0) return;
+  const shapes = {
+    cap:  '<path d="M18 17 h24 v-4 a12 9 0 0 0 -24 0 Z" fill="#e8563f"/><path d="M40 17 h12 v4 h-12 Z" fill="#c43f2c"/>',
+    top:  '<path d="M20 18 h20 v2 h-20 Z" fill="#2b2b45"/><path d="M24 18 v-12 h12 v12 Z" fill="#2b2b45"/><path d="M24 9 h12 v3 h-12 Z" fill="#ffd166"/>',
+    wiz:  '<path d="M30 0 L42 18 H18 Z" fill="#6d4ec7"/><path d="M18 18 h24 v3 h-24 Z" fill="#4e3796"/><circle cx="33" cy="9" r="1.7" fill="#ffe9a8"/><circle cx="27" cy="13" r="1.4" fill="#ffe9a8"/>'
+  };
+  g.innerHTML = shapes[id] || '';
+}
+
+// ——— Կոդը հղման մեջ ———
+function enc(o) {
+  const s = JSON.stringify(o);
+  return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function dec(c) {
+  try {
+    const s = decodeURIComponent(escape(atob(c.replace(/-/g, '+').replace(/_/g, '/'))));
+    const o = JSON.parse(s);
+    return (o && typeof o === 'object') ? o : null;
+  } catch (e) { return null; }
+}
+// Ընկերոջ կոդը ուրիշի գրածն է — ոչ մի թվի չենք հավատում առանց ստուգելու
+function clean(o) {
+  const n = v => { v = Number(v); return (isFinite(v) && v >= 0) ? Math.floor(Math.min(v, 9999999)) : 0; };
+  return {
+    n: String(o.n == null ? '' : o.n).slice(0, 16) || T.dflt,
+    g: n(o.g), t: n(o.t), s: n(o.s), p: n(o.p), d: n(o.d),
+    f: String(o.f == null ? '' : o.f).slice(0, 24),
+    h: String(o.h == null ? '' : o.h).slice(0, 8)
+  };
+}
+
+function favName(id) {
+  if (!id) return T.none;
+  return (window.ggKit && ggKit.gameName) ? ggKit.gameName(id) : id;
+}
+
+function statCell(k, v) {
+  return '<div class="st"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>';
+}
+
+function paint(c, friend) {
+  const lv = levelOf(c.g);
+  $('nm').textContent = c.n;
+  $('rk').textContent = rankOf(lv);
+  $('lvtx').textContent = T.lv(lv) + ' · ' + T.next(PER_LEVEL - (c.g % PER_LEVEL));
+  $('lvbar').style.width = ((c.g % PER_LEVEL) / PER_LEVEL * 100) + '%';
+  paintHat(friend ? '' : c.h);
+
+  $('stats').innerHTML =
+    statCell('🪙 ' + T.gold, c.g) +
+    statCell('🏆 ' + T.tro, c.t + (c.tAll ? ' / ' + c.tAll : '')) +
+    statCell('🔒 ' + T.sec, c.s + (c.sAll ? ' / ' + c.sAll : '')) +
+    statCell('📅 ' + T.str, c.d) +
+    '<div class="st wide"><div class="k">🎮 ' + T.fav + '</div><div class="v">' + favName(c.f) + '</div></div>';
+}
+
+function compare(mine, his) {
+  const rows = [
+    ['🪙 ' + T.gold, mine.g, his.g],
+    ['🏆 ' + T.tro, mine.t, his.t],
+    ['🔒 ' + T.sec, mine.s, his.s],
+    ['🎮 ' + T.pl, mine.p, his.p],
+    ['📅 ' + T.str, mine.d, his.d]
+  ];
+  $('vsRows').innerHTML = rows.map(([lbl, a, b]) =>
+    '<div class="row"><div class="lbl">' + lbl + '</div>' +
+    '<div class="a' + (a > b ? ' win' : '') + '">' + a + (a > b ? ' 👑' : '') + '</div>' +
+    '<div class="mid">' + T.you + ' · ' + T.me + '</div>' +
+    '<div class="b' + (b > a ? ' win' : '') + '">' + (b > a ? '👑 ' : '') + b + '</div></div>').join('');
+  $('vsT').textContent = T.vsT;
+  $('vs').hidden = false;
+}
+
+// ——— Էջը ———
+const params = new URLSearchParams(location.search);
+const friendCode = params.get('p');
+let showingFriend = false;
+
+function showMine() {
+  showingFriend = false;
+  paint(myCard(), false);
+  $('note').textContent = T.note;
+  $('vs').hidden = true;
+  $('bName').hidden = false;
+  $('bShare').hidden = false;
+}
+
+function showFriend(raw) {
+  const his = clean(raw);
+  showingFriend = true;
+  const mine = myCard();
+  paint(Object.assign({ tAll: mine.tAll, sAll: mine.sAll }, his), true);
+  compare(mine, his);
+  $('note').textContent = T.noteF;
+  $('bName').hidden = true;
+  $('bShare').hidden = true;
+  $('bShot').textContent = T.mine;
+  $('bShot').onclick = () => { location.href = location.pathname; };
+}
+
+$('h1').textContent = T.t;
+$('sub').textContent = T.s;
+$('bName').textContent = T.bN;
+$('bShare').textContent = T.bS;
+$('bShot').textContent = T.bP;
+
+// ——— Անունը ———
+$('bName').addEventListener('click', () => {
+  const inp = $('nameIn');
+  if (inp.hidden) {
+    inp.hidden = false;
+    inp.value = ls.get('gg-name', '');
+    inp.placeholder = T.ask;
+    inp.focus();
+    $('bName').textContent = T.save;
+  } else {
+    const v = inp.value.trim().slice(0, 16);
+    ls.set('gg-name', v);
+    inp.hidden = true;
+    $('bName').textContent = T.bN;
+    showMine();
+  }
+});
+$('nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('bName').click(); });
+
+// ——— Ուղարկելը ———
+$('bShare').addEventListener('click', async () => {
+  const c = myCard();
+  const link = location.origin + location.pathname + '?p=' +
+    enc({ n: c.n, g: c.g, t: c.t, s: c.s, p: c.p, d: c.d, f: c.f, h: c.h });
+  let ok = false;
+  try { await navigator.clipboard.writeText(link); ok = true; } catch (e) {}
+  const box = $('codebox');
+  box.hidden = false;
+  box.textContent = (ok ? T.copied : T.manual) + '\n' + link;
+});
+
+// ——— Նկարը ———
+$('bShot').addEventListener('click', () => {
+  if (showingFriend) return;
+  if (window.ggKit && ggKit.shot) ggKit.shot();
+});
+
+// Գործիքակազմը defer-ով է գալիս, ուրեմն սպասում ենք նրան — այլապես
+// քարտը մի ակնթարթ զրոներով կերևար։
+function boot() {
+  if (friendCode) {
+    const o = dec(friendCode);
+    if (o) { showFriend(o); return; }
+  }
+  showMine();
+}
+if (document.readyState === 'loading') addEventListener('DOMContentLoaded', boot);
+else boot();
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, թրթռոց, նկար, բեռնում -->
+<script src="../gg-kit.js" data-kind="info" defer></script>
+</body>
+</html>
