@@ -21,6 +21,12 @@
     font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, Helvetica, sans-serif;
     padding: 56px 14px 34px; min-height: 100vh; touch-action: manipulation;
   }
+  /* ← Ետ գլխավոր էջ — ամեն էջում նույն տեղում է */
+  .back {
+    position: fixed; top: 10px; left: 10px; z-index: 30; color: var(--ink); text-decoration: none;
+    background: rgba(20,26,34,0.8); border: 2px solid rgba(255,255,255,0.4);
+    padding: 5px 12px; border-radius: 999px; font-size: 0.78rem;
+  }
   .wrap { max-width: 560px; margin: 0 auto; }
   h1 { margin: 0 0 3px; font-size: 1.3rem; color: var(--accent); text-align: center; }
   .sub { margin: 0 0 16px; font-size: 0.76rem; color: var(--dim); text-align: center; line-height: 1.5; }
@@ -104,6 +110,8 @@
 </style>
 </head>
 <body>
+
+<a class="back" href="../">← Golden Games</a>
 
 <div class="wrap">
   <h1 id="h1">🪪 Անձնագիր</h1>
