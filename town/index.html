@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<title>Ոսկե Քաղաք 🏰 · Golden Games</title>
+<style>
+  :root {
+    --bg: #12122b;
+    --card: #1d1d3f;
+    --ink: #eef0ff;
+    --dim: #9a9ec7;
+    --accent: #ffd166;
+    --accent2: #6ee7b7;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, Helvetica, sans-serif;
+    padding: 56px 14px 34px; min-height: 100vh; touch-action: manipulation;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; }
+  h1 { margin: 0 0 3px; font-size: 1.3rem; color: var(--accent); text-align: center; }
+  .sub { margin: 0 0 14px; font-size: 0.76rem; color: var(--dim); text-align: center; line-height: 1.5; }
+
+  /* 🏙️ Քաղաքը — ամեն գնած շենք իր տեղում հայտնվում է */
+  .scene {
+    background: linear-gradient(#1b2450 0%, #2d3a6e 55%, #3c5a46 55%, #2c4433 100%);
+    border: 2px solid #33356b; border-radius: 18px; overflow: hidden;
+  }
+  .scene svg { display: block; width: 100%; height: auto; }
+  .empty { text-align: center; font-size: 0.78rem; color: var(--dim); padding: 10px 12px 0; line-height: 1.6; }
+
+  .purse {
+    margin-top: 12px;
+    background: linear-gradient(135deg, var(--card), rgba(255,209,102,0.14));
+    border: 2px solid var(--accent); border-radius: 16px;
+    padding: 11px 14px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .purse .l { font-size: 0.74rem; color: var(--dim); }
+  .purse .r { font-size: 1.25rem; font-weight: bold; color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 13px; }
+  .it {
+    background: var(--card); border: 2px solid #33356b; border-radius: 15px;
+    padding: 10px; text-align: center;
+  }
+  .it.have { border-color: var(--accent2); }
+  .it.lock { opacity: 0.62; }
+  .it .pic { height: 52px; display: flex; align-items: flex-end; justify-content: center; }
+  .it .pic svg { height: 100%; width: auto; }
+  .it .nm { font-size: 0.82rem; font-weight: bold; margin-top: 6px; }
+  .it .pr { font-size: 0.74rem; color: var(--accent); margin-top: 2px; }
+  .it .need { font-size: 0.66rem; color: var(--dim); margin-top: 2px; line-height: 1.4; }
+  .it button {
+    width: 100%; margin-top: 7px; padding: 8px; border-radius: 10px; border: none;
+    background: var(--accent); color: #2e2410; font-family: inherit; font-weight: bold;
+    font-size: 0.8rem; cursor: pointer;
+  }
+  .it button:disabled { background: #33356b; color: #7b7fa8; cursor: default; }
+  .it button:active:not(:disabled) { transform: scale(0.96); }
+  .it .done { margin-top: 7px; font-size: 0.8rem; font-weight: bold; color: var(--accent2); }
+
+  .note { font-size: 0.72rem; color: var(--dim); text-align: center; margin-top: 16px; line-height: 1.6; }
+  #toast {
+    position: fixed; left: 50%; bottom: 78px; transform: translateX(-50%); z-index: 120;
+    background: var(--accent); color: #2e2410; font-weight: bold;
+    padding: 10px 18px; border-radius: 999px; font-size: 0.86rem; pointer-events: none;
+  }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1 id="h1">🏰 Ոսկե Քաղաք</h1>
+  <p class="sub" id="sub">Ոսկիդ ծախսիր ու քաղաք կառուցիր</p>
+
+  <div class="scene">
+    <svg id="scene" viewBox="0 0 320 180" aria-hidden="true"></svg>
+  </div>
+  <p class="empty" id="empty" hidden>—</p>
+
+  <div class="purse">
+    <span class="l" id="purseL">Քո ոսկին</span>
+    <span class="r" id="purseR">🪙 0</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <p class="note" id="note">—</p>
+</div>
+
+<div id="toast" hidden></div>
+
+<script>
+// ——————————————————————————————————————————————————————
+//  🏰 ՈՍԿԵ ՔԱՂԱՔ
+//  Նույն ոսկով, որ խաղերից ես վաստակում։ Մի մասը փողով է գնվում,
+//  մյուսները՝ բացվում են միայն երբ կայքում մի բան արել ես։
+//  Գնածը պահվում է ggCoins-ի նույն ցուցակում՝ «town:…» անունով։
+// ——————————————————————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const TRL = {
+  hy: { t:'🏰 Ոսկե Քաղաք', s:'Ոսկիդ ծախսիր ու քաղաք կառուցիր', purse:'Քո ոսկին', buy:'Կառուցել', have:'✓ Կանգնած է',
+        poor:'Ոսկին չի հերիքում', lock:'🔒 Փակ է', bought:n=>n+' կանգնեց քաղաքում 🎉',
+        empty:'Քաղաքդ դեռ դատարկ է։ Խաղա, ոսկի վաստակիր ու սկսիր կառուցել 🌳',
+        note:'Ոսկին նույնն է, ինչ Խանութում։ Ամեն 10 միավոր ռեկորդից՝ 1 🪙',
+        nd:{ tro:n=>'🏆 '+n+' գավաթ', str:n=>'📅 '+n+' օր անընդմեջ', sec:n=>'🔒 '+n+' գաղտնիք', game:g=>'🎮 Խաղա '+g },
+        n:['Ծառ','Տուն','Շատրվան','Կամուրջ','Աշտարակ','Անվասայլակ','Մարզադաշտ','Ամրոց','Ոսկե Թագ'] },
+  ru: { t:'🏰 Золотой Город', s:'Трать золото и строй город', purse:'Твоё золото', buy:'Построить', have:'✓ Стоит',
+        poor:'Золота не хватает', lock:'🔒 Закрыто', bought:n=>n+' теперь в городе 🎉',
+        empty:'Город пока пустой. Играй, зарабатывай золото и начинай строить 🌳',
+        note:'Золото то же, что в Магазине. Каждые 10 очков рекорда — 1 🪙',
+        nd:{ tro:n=>'🏆 '+n+' кубков', str:n=>'📅 '+n+' дней подряд', sec:n=>'🔒 '+n+' секретов', game:g=>'🎮 Сыграй в '+g },
+        n:['Дерево','Дом','Фонтан','Мост','Башня','Колесо обозрения','Стадион','Замок','Золотая Корона'] },
+  en: { t:'🏰 Golden Town', s:'Spend your gold and build a town', purse:'Your gold', buy:'Build', have:'✓ Standing',
+        poor:'Not enough gold', lock:'🔒 Locked', bought:n=>n+' is standing in your town 🎉',
+        empty:'Your town is still empty. Play, earn gold and start building 🌳',
+        note:'The same gold as in the Shop. Every 10 points of a record earn 1 🪙',
+        nd:{ tro:n=>'🏆 '+n+' trophies', str:n=>'📅 '+n+' days in a row', sec:n=>'🔒 '+n+' secrets', game:g=>'🎮 Play '+g },
+        n:['Tree','House','Fountain','Bridge','Tower','Ferris wheel','Stadium','Castle','Golden Crown'] },
+  pt: { t:'🏰 Cidade Dourada', s:'Gasta o teu ouro e constrói uma cidade', purse:'O teu ouro', buy:'Construir', have:'✓ De pé',
+        poor:'Não tens ouro que chegue', lock:'🔒 Fechado', bought:n=>n+' já está na tua cidade 🎉',
+        empty:'A tua cidade ainda está vazia. Joga, ganha ouro e começa a construir 🌳',
+        note:'O mesmo ouro da Loja. Cada 10 pontos de um recorde valem 1 🪙',
+        nd:{ tro:n=>'🏆 '+n+' troféus', str:n=>'📅 '+n+' dias seguidos', sec:n=>'🔒 '+n+' segredos', game:g=>'🎮 Joga '+g },
+        n:['Árvore','Casa','Fonte','Ponte','Torre','Roda gigante','Estádio','Castelo','Coroa Dourada'] },
+  es: { t:'🏰 Ciudad Dorada', s:'Gasta tu oro y construye una ciudad', purse:'Tu oro', buy:'Construir', have:'✓ En pie',
+        poor:'No te llega el oro', lock:'🔒 Cerrado', bought:n=>n+' ya está en tu ciudad 🎉',
+        empty:'Tu ciudad todavía está vacía. Juega, gana oro y empieza a construir 🌳',
+        note:'El mismo oro que en la Tienda. Cada 10 puntos de un récord dan 1 🪙',
+        nd:{ tro:n=>'🏆 '+n+' trofeos', str:n=>'📅 '+n+' días seguidos', sec:n=>'🔒 '+n+' secretos', game:g=>'🎮 Juega a '+g },
+        n:['Árbol','Casa','Fuente','Puente','Torre','Noria','Estadio','Castillo','Corona Dorada'] },
+  fr: { t:'🏰 Ville Dorée', s:'Dépense ton or et construis une ville', purse:'Ton or', buy:'Construire', have:'✓ Debout',
+        poor:'Pas assez d’or', lock:'🔒 Fermé', bought:n=>n+' est dans ta ville 🎉',
+        empty:'Ta ville est encore vide. Joue, gagne de l’or et commence à construire 🌳',
+        note:'Le même or que dans la Boutique. 10 points de record = 1 🪙',
+        nd:{ tro:n=>'🏆 '+n+' trophées', str:n=>'📅 '+n+' jours d’affilée', sec:n=>'🔒 '+n+' secrets', game:g=>'🎮 Joue à '+g },
+        n:['Arbre','Maison','Fontaine','Pont','Tour','Grande roue','Stade','Château','Couronne Dorée'] },
+  de: { t:'🏰 Goldene Stadt', s:'Gib dein Gold aus und bau eine Stadt', purse:'Dein Gold', buy:'Bauen', have:'✓ Steht',
+        poor:'Nicht genug Gold', lock:'🔒 Zu', bought:n=>n+' steht jetzt in deiner Stadt 🎉',
+        empty:'Deine Stadt ist noch leer. Spiel, verdien Gold und fang an zu bauen 🌳',
+        note:'Das gleiche Gold wie im Laden. Je 10 Punkte eines Rekords = 1 🪙',
+        nd:{ tro:n=>'🏆 '+n+' Pokale', str:n=>'📅 '+n+' Tage am Stück', sec:n=>'🔒 '+n+' Geheimnisse', game:g=>'🎮 Spiel '+g },
+        n:['Baum','Haus','Brunnen','Brücke','Turm','Riesenrad','Stadion','Burg','Goldene Krone'] },
+  ja: { t:'🏰 ゴールデンタウン', s:'ゴールドを つかって まちを つくろう', purse:'きみのゴールド', buy:'たてる', have:'✓ たった',
+        poor:'ゴールドが たりない', lock:'🔒 まだ だめ', bought:n=>n+'が まちに たったよ 🎉',
+        empty:'まちは まだ からっぽ。あそんで ゴールドを あつめて たてはじめよう 🌳',
+        note:'おみせと おなじ ゴールド。きろく 10てんで 1 🪙',
+        nd:{ tro:n=>'🏆 トロフィー '+n+'こ', str:n=>'📅 '+n+'日 れんぞく', sec:n=>'🔒 ひみつ '+n+'こ', game:g=>'🎮 '+g+'を あそぶ' },
+        n:['き','いえ','ふんすい','はし','タワー','かんらんしゃ','スタジアム','おしろ','ゴールデンクラウン'] },
+  zh: { t:'🏰 黄金城', s:'花掉金币，建一座城', purse:'你的金币', buy:'建造', have:'✓ 已建好',
+        poor:'金币不够', lock:'🔒 未解锁', bought:n=>n+'已经立在你的城里了 🎉',
+        empty:'你的城还是空的。去玩，赚金币，然后开始建造 🌳',
+        note:'和商店同一份金币。纪录每 10 分换 1 🪙',
+        nd:{ tro:n=>'🏆 '+n+' 个奖杯', str:n=>'📅 连续 '+n+' 天', sec:n=>'🔒 '+n+' 个秘密', game:g=>'🎮 玩一次 '+g },
+        n:['树','房子','喷泉','桥','塔','摩天轮','体育场','城堡','黄金王冠'] },
+  it: { t:'🏰 Città Dorata', s:'Spendi il tuo oro e costruisci una città', purse:'Il tuo oro', buy:'Costruire', have:'✓ In piedi',
+        poor:'Oro non sufficiente', lock:'🔒 Chiuso', bought:n=>n+' ora è nella tua città 🎉',
+        empty:'La tua città è ancora vuota. Gioca, guadagna oro e comincia a costruire 🌳',
+        note:'Lo stesso oro del Negozio. Ogni 10 punti di un record valgono 1 🪙',
+        nd:{ tro:n=>'🏆 '+n+' trofei', str:n=>'📅 '+n+' giorni di fila', sec:n=>'🔒 '+n+' segreti', game:g=>'🎮 Gioca a '+g },
+        n:['Albero','Casa','Fontana','Ponte','Torre','Ruota panoramica','Stadio','Castello','Corona d’Oro'] },
+  ka: { t:'🏰 ოქროს ქალაქი', s:'დახარჯე ოქრო და ააშენე ქალაქი', purse:'შენი ოქრო', buy:'აშენება', have:'✓ დგას',
+        poor:'ოქრო არ გყოფნის', lock:'🔒 დაკეტილია', bought:n=>n+' შენს ქალაქშია 🎉',
+        empty:'შენი ქალაქი ჯერ ცარიელია. ითამაშე, იშოვე ოქრო და დაიწყე შენება 🌳',
+        note:'იგივე ოქრო, რაც მაღაზიაში. რეკორდის ყოველი 10 ქულა — 1 🪙',
+        nd:{ tro:n=>'🏆 '+n+' თასი', str:n=>'📅 '+n+' დღე ზედიზედ', sec:n=>'🔒 '+n+' საიდუმლო', game:g=>'🎮 ითამაშე '+g },
+        n:['ხე','სახლი','შადრევანი','ხიდი','კოშკი','ეშმაკის ბორბალი','სტადიონი','ციხე','ოქროს გვირგვინი'] },
+  hi: { t:'🏰 सुनहरा शहर', s:'सोना खर्च करो और शहर बनाओ', purse:'तुम्हारा सोना', buy:'बनाओ', have:'✓ खड़ा है',
+        poor:'सोना कम है', lock:'🔒 बंद है', bought:n=>n+' तुम्हारे शहर में खड़ा हो गया 🎉',
+        empty:'तुम्हारा शहर अभी खाली है। खेलो, सोना कमाओ और बनाना शुरू करो 🌳',
+        note:'वही सोना जो दुकान में है। रिकॉर्ड के हर 10 अंक = 1 🪙',
+        nd:{ tro:n=>'🏆 '+n+' ट्रॉफ़ियाँ', str:n=>'📅 लगातार '+n+' दिन', sec:n=>'🔒 '+n+' राज़', game:g=>'🎮 '+g+' खेलो' },
+        n:['पेड़','घर','फ़व्वारा','पुल','मीनार','झूला','स्टेडियम','क़िला','सुनहरा ताज'] }
+};
+const T = TRL[ggLang] || TRL.hy;
+
+const $ = id => document.getElementById(id);
+function num(v) { const n = Number(v); return isFinite(n) ? n : 0; }
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+// ——— Շենքերը. նկարը, գինը ու պայմանը ———
+// x/y — որտեղ է կանգնում քաղաքում. մեծ շենքերը ետևում, փոքրերը՝ առջևում
+const PIC = {
+  tree:   '<g><rect x="13" y="26" width="6" height="12" fill="#6b4a2a"/><circle cx="16" cy="19" r="13" fill="#3f9d57"/><circle cx="9" cy="24" r="8" fill="#4bb265"/><circle cx="23" cy="24" r="8" fill="#4bb265"/></g>',
+  house:  '<g><rect x="5" y="20" width="34" height="20" fill="#d9a05b"/><path d="M2 20 L22 5 L42 20 Z" fill="#b3452f"/><rect x="17" y="28" width="10" height="12" fill="#6b4a2a"/><rect x="8" y="24" width="7" height="6" fill="#ffe9a8"/><rect x="29" y="24" width="7" height="6" fill="#ffe9a8"/></g>',
+  fount:  '<g><ellipse cx="22" cy="36" rx="20" ry="6" fill="#5bc0de"/><ellipse cx="22" cy="34" rx="20" ry="6" fill="#9ad9ee"/><rect x="19" y="18" width="6" height="16" fill="#cfd6e6"/><circle cx="22" cy="15" r="6" fill="#cfd6e6"/><path d="M22 9 q-7 6 -9 14" stroke="#9ad9ee" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M22 9 q7 6 9 14" stroke="#9ad9ee" stroke-width="2.5" fill="none" stroke-linecap="round"/></g>',
+  bridge: '<g><path d="M2 36 Q26 8 50 36" stroke="#c0744a" stroke-width="5" fill="none"/><path d="M2 40 h48" stroke="#8b5a36" stroke-width="4"/><path d="M12 33 v7 M26 27 v13 M40 33 v7" stroke="#8b5a36" stroke-width="2.5"/></g>',
+  tower:  '<g><rect x="12" y="12" width="16" height="28" fill="#aab3d0"/><path d="M10 12 L20 2 L30 12 Z" fill="#6d4ec7"/><rect x="17" y="20" width="6" height="8" fill="#ffe9a8"/><circle cx="20" cy="7" r="2" fill="#ffd166"/></g>',
+  wheel:  '<g><circle cx="22" cy="20" r="17" fill="none" stroke="#e8756a" stroke-width="3"/><circle cx="22" cy="20" r="3.5" fill="#ffd166"/><path d="M22 3 v34 M5 20 h34 M10 8 l24 24 M34 8 l-24 24" stroke="#e8756a" stroke-width="1.6"/><path d="M14 36 h16" stroke="#8b5a36" stroke-width="3"/></g>',
+  stad:   '<g><ellipse cx="25" cy="30" rx="23" ry="11" fill="#4bb265"/><ellipse cx="25" cy="28" rx="23" ry="11" fill="none" stroke="#cfd6e6" stroke-width="3.5"/><ellipse cx="25" cy="28" rx="11" ry="5" fill="none" stroke="#eef0ff" stroke-width="1.6"/><rect x="6" y="14" width="3" height="8" fill="#cfd6e6"/><rect x="41" y="14" width="3" height="8" fill="#cfd6e6"/></g>',
+  castle: '<g><rect x="6" y="16" width="38" height="24" fill="#9aa3c0"/><rect x="2" y="10" width="10" height="30" fill="#aab3d0"/><rect x="38" y="10" width="10" height="30" fill="#aab3d0"/><path d="M2 10 h2v-4h2v4h2v-4h2v4h2 M38 10 h2v-4h2v4h2v-4h2v4h2" fill="#aab3d0"/><rect x="20" y="26" width="10" height="14" fill="#6b4a2a"/><path d="M7 10 v-7 l6 3 Z" fill="#ffd166"/><path d="M43 10 v-7 l-6 3 Z" fill="#ffd166"/></g>',
+  crown:  '<g><path d="M5 34 L10 12 L18 24 L25 8 L32 24 L40 12 L45 34 Z" fill="#ffd166" stroke="#b08327" stroke-width="2" stroke-linejoin="round"/><rect x="5" y="34" width="40" height="6" rx="2" fill="#ffd166" stroke="#b08327" stroke-width="2"/><circle cx="25" cy="20" r="3" fill="#e8756a"/><circle cx="13" cy="26" r="2.2" fill="#6ee7b7"/><circle cx="37" cy="26" r="2.2" fill="#6ee7b7"/></g>'
+};
+
+const BUILDINGS = [
+  { id:'tree',   pic:'tree',   cost:15,  x:28,  y:150, sc:0.9 },
+  { id:'house',  pic:'house',  cost:30,  x:92,  y:150, sc:1.0 },
+  { id:'fount',  pic:'fount',  cost:60,  x:168, y:152, sc:0.85 },
+  { id:'bridge', pic:'bridge', cost:90,  x:238, y:150, sc:0.9,  need:{ k:'game', key:'aren-bridge-best', g:'Golden Bridge' } },
+  { id:'tower',  pic:'tower',  cost:140, x:52,  y:112, sc:0.95, need:{ k:'tro', n:15 } },
+  { id:'wheel',  pic:'wheel',  cost:200, x:268, y:112, sc:0.9,  need:{ k:'str', n:7 } },
+  { id:'stad',   pic:'stad',   cost:280, x:200, y:116, sc:0.85, need:{ k:'tro', n:25 } },
+  { id:'castle', pic:'castle', cost:400, x:124, y:108, sc:1.0,  need:{ k:'tro', n:35 } },
+  { id:'crown',  pic:'crown',  cost:600, x:160, y:52,  sc:1.1,  need:{ k:'sec', n:6 } }
+];
+
+function owned(id) { return !!(window.ggCoins && ggCoins.owned('town:' + id)); }
+
+// ——— Պայմանը կատարվա՞ծ է ———
+function locked(b) {
+  if (!b.need) return null;
+  const kit = window.ggKit || {};
+  const n = b.need;
+  if (n.k === 'tro') return (kit.trophies ? kit.trophies() : 0) >= n.n ? null : T.nd.tro(n.n);
+  if (n.k === 'str') return (kit.streakBest ? kit.streakBest() : 0) >= n.n ? null : T.nd.str(n.n);
+  if (n.k === 'sec') {
+    const got = window.ggSecret ? ggSecret.list.filter(s => ggSecret.isFound(s.id)).length : 0;
+    return got >= n.n ? null : T.nd.sec(n.n);
+  }
+  if (n.k === 'game') return num(lsGet(n.key)) > 0 ? null : T.nd.game(n.g);
+  return null;
+}
+
+// ——— Քաղաքը նկարելը ———
+function drawTown() {
+  const parts = [];
+  // արև ու ամպեր՝ միշտ
+  parts.push('<circle cx="282" cy="30" r="15" fill="#ffd166" opacity="0.9"/>');
+  parts.push('<g fill="#ffffff" opacity="0.22"><ellipse cx="60" cy="34" rx="22" ry="9"/><ellipse cx="78" cy="30" rx="15" ry="8"/>' +
+             '<ellipse cx="200" cy="22" rx="18" ry="7"/></g>');
+  // ճանապարհը
+  parts.push('<rect x="0" y="152" width="320" height="6" fill="#4b4b55" opacity="0.5"/>');
+  let any = false;
+  // հեռվի շենքերը առաջ նկարենք, որ մոտիկները վրան գան
+  BUILDINGS.slice().sort((a, b) => a.y - b.y).forEach(b => {
+    if (!owned(b.id)) return;
+    any = true;
+    parts.push('<g transform="translate(' + b.x + ',' + b.y + ') scale(' + b.sc + ') translate(-22,-40)">' + PIC[b.pic] + '</g>');
+  });
+  $('scene').innerHTML = parts.join('');
+  $('empty').hidden = any;
+  $('empty').textContent = T.empty;
+}
+
+function toast(txt) {
+  const el = $('toast');
+  el.textContent = txt;
+  el.hidden = false;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.hidden = true; }, 2400);
+}
+
+function paint() {
+  const coins = window.ggCoins ? ggCoins.get() : 0;
+  $('purseR').textContent = '🪙 ' + coins;
+  $('grid').innerHTML = BUILDINGS.map((b, i) => {
+    const have = owned(b.id);
+    const need = have ? null : locked(b);
+    const cls = 'it' + (have ? ' have' : need ? ' lock' : '');
+    const btn = have
+      ? '<div class="done">' + T.have + '</div>'
+      : '<button data-id="' + b.id + '"' + ((need || coins < b.cost) ? ' disabled' : '') + '>' +
+        (need ? T.lock : T.buy) + '</button>';
+    return '<div class="' + cls + '">' +
+      '<div class="pic"><svg viewBox="0 0 50 42">' + PIC[b.pic] + '</svg></div>' +
+      '<div class="nm">' + T.n[i] + '</div>' +
+      '<div class="pr">🪙 ' + b.cost + '</div>' +
+      (need ? '<div class="need">' + need + '</div>' : '') +
+      btn + '</div>';
+  }).join('');
+  $('grid').querySelectorAll('button[data-id]').forEach(btn => {
+    btn.addEventListener('click', () => build(btn.getAttribute('data-id')));
+  });
+  drawTown();
+}
+
+function build(id) {
+  const b = BUILDINGS.find(x => x.id === id);
+  if (!b || owned(id) || locked(b)) return;
+  if (!window.ggCoins) return;
+  if (ggCoins.get() < b.cost) { toast(T.poor); return; }
+  if (!ggCoins.spend(b.cost)) { toast(T.poor); return; }
+  ggCoins.give('town:' + id);
+  toast(T.bought(T.n[BUILDINGS.indexOf(b)]));
+  paint();
+}
+
+$('h1').textContent = T.t;
+$('sub').textContent = T.s;
+$('purseL').textContent = T.purse;
+$('note').textContent = T.note;
+
+// Գործիքակազմը defer-ով է գալիս — սպասում ենք, որ ոսկին իմանանք
+function boot() { paint(); }
+if (document.readyState === 'loading') addEventListener('DOMContentLoaded', boot);
+else boot();
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, թրթռոց, նկար, բեռնում -->
+<script src="../gg-kit.js" data-kind="info" defer></script>
+</body>
+</html>

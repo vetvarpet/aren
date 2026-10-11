@@ -323,6 +323,7 @@
   .c54 { background: linear-gradient(135deg, #f6f4ee, #dfe8e2); }
   .c55 { background: linear-gradient(135deg, #182043, #3a2f63); }
   .c56 { background: linear-gradient(135deg, #101a33, #2a2152); }
+  .c57 { background: linear-gradient(135deg, #1b2450, #2c4433); }
   .info { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
   .info h2 { font-size: 1.05rem; }
   .info .real { flex: 0 0 auto; color: var(--accent); font-size: 0.78rem; margin-top: -3px; }
@@ -2014,6 +2015,29 @@
       </div>
     </a>
 
+    <a class="game" href="./town/">
+      <div class="cover c57">
+        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="300" height="140" fill="#1b2450"/>
+          <rect y="78" width="300" height="62" fill="#2c4433"/>
+          <circle cx="258" cy="30" r="16" fill="#ffd166" opacity="0.9"/>
+          <g fill="#ffffff" opacity="0.16"><ellipse cx="60" cy="30" rx="24" ry="9"/><ellipse cx="82" cy="26" rx="16" ry="8"/></g>
+          <path d="M150 34 L158 52 L172 40 L178 78 L122 78 L128 40 L142 52 Z" fill="#ffd166" stroke="#b08327" stroke-width="2.5" stroke-linejoin="round"/>
+          <g><rect x="34" y="52" width="30" height="26" fill="#9aa3c0"/><rect x="26" y="44" width="10" height="34" fill="#aab3d0"/><rect x="62" y="44" width="10" height="34" fill="#aab3d0"/><rect x="44" y="64" width="10" height="14" fill="#6b4a2a"/></g>
+          <g><rect x="214" y="48" width="14" height="30" fill="#aab3d0"/><path d="M212 48 L221 38 L230 48 Z" fill="#6d4ec7"/></g>
+          <g><rect x="92" y="60" width="26" height="18" fill="#d9a05b"/><path d="M89 60 L105 48 L121 60 Z" fill="#b3452f"/></g>
+          <g><rect x="186" y="66" width="5" height="12" fill="#6b4a2a"/><circle cx="188" cy="62" r="11" fill="#3f9d57"/></g>
+          <rect y="78" width="300" height="5" fill="#4b4b55" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="info">
+        <h2>Golden Town</h2>
+        <p class="real">Ոսկե Քաղաք</p>
+        <p class="desc">Ոսկիդ ծախսիր ու քաղաք կառուցիր՝ ծառից մինչև ամրոց։ Որոշ շենքեր փողով չեն գնվում — դրանք պիտի վաստակես։</p>
+        <div class="play">▶ Կառուցել</div>
+      </div>
+    </a>
+
     <a class="game" href="./time/">
       <div class="cover c26">
         <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -2251,6 +2275,7 @@ const DICT = {
       './poly/': ['Многоугольник', 'Нажимай и набирай очки. Каждые 10 очков добавляют фигуре угол — от точки до миллионоугольника.', '▶ Нажимать'],
       './online/': ['Онлайн-Дуэль', 'Два разных телефона. Пройди три раунда, получи код и отправь другу — он играет те же раунды, и видно, кто сильнее.', '▶ В бой'],
       './rise/': ['Подъём', 'Оттяни мяч назад и отпусти. Двумя большими пальцами двигай ракетки по краям, чтобы мяч не улетел, и поднимайся как можно выше.', '▶ Вверх'],
+      './town/': ['Золотой Город', 'Трать золото и строй город — от дерева до замка. Некоторые постройки не купишь: их надо заслужить.', '▶ Строить'],
       './time/': ['Машина времени', 'Вся история сайта — от первого летающего кота до сегодня, день за днём.', '▶ В путь'],
       './museum/': ['Музей', 'Место отдыха удалённых игр: от пирата до золотого котёнка. Соблюдай тишину 🤫', '▶ Войти'],
     },
@@ -2328,6 +2353,7 @@ const DICT = {
       './poly/': ['Polygon', 'Tap to earn points. Every 10 points adds a corner to the shape — from a point to a million-gon.', '▶ Tap'],
       './online/': ['Online Duel', 'Two different phones. Play three rounds, get a code and send it to a friend — they play the same rounds and you see who is stronger.', '▶ Duel'],
       './rise/': ['Rise', 'Pull the ball back and let go. Move the paddles at the edges with both thumbs so the ball never escapes, and climb as high as you can.', '▶ Climb'],
+      './town/': ['Golden Town', 'Spend your gold and build a town, from a tree to a castle. Some buildings are not for sale — you have to earn them.', '▶ Build'],
       './time/': ['Time Machine', 'The whole story of the site — from the first flying cat to today, day by day.', '▶ Travel'],
       './museum/': ['Museum', 'The resting place of deleted games: from the pirate to the golden kitten. Keep quiet 🤫', '▶ Enter'],
     },
@@ -2405,6 +2431,7 @@ const DICT = {
       './poly/': ['Polígono', 'Toca para ganhar pontos. Cada 10 pontos acrescenta um canto à figura — de um ponto a um polígono de um milhão de lados.', '▶ Tocar'],
       './online/': ['Duelo Online', 'Dois telemóveis diferentes. Joga três rondas, recebe um código e envia-o a um amigo — ele joga as mesmas rondas e ficam a saber quem é o mais forte.', '▶ Duelo'],
       './rise/': ['Subida', 'Puxa a bola para trás e larga. Move as raquetes dos lados com os dois polegares para a bola não fugir, e sobe o mais alto que conseguires.', '▶ Subir'],
+      './town/': ['Cidade Dourada', 'Gasta o teu ouro e constrói uma cidade, da árvore ao castelo. Alguns edifícios não se compram — ganham-se.', '▶ Construir'],
       './time/': ['Máquina do Tempo', 'A história toda do site — do primeiro gato voador até hoje, dia a dia.', '▶ Viajar'],
       './museum/': ['Museu', 'O descanso dos jogos apagados: do pirata ao gatinho dourado. Silêncio 🤫', '▶ Entrar'],
     },
@@ -2482,6 +2509,7 @@ const DICT = {
       './poly/': ['Polígono', 'Toca y gana puntos. Cada 10 puntos añaden una esquina — del punto al millón de lados.', '▶ Tocar'],
       './online/': ['Duelo en Línea', 'Dos móviles distintos. Juega tres rondas, consigue un código y mándaselo a un amigo: juega las mismas rondas y se ve quién gana.', '▶ Duelo'],
       './rise/': ['Ascenso', 'Tira de la pelota hacia atrás y suéltala. Mueve las paletas de los lados con los dos pulgares para que no se escape, y sube lo más alto que puedas.', '▶ Subir'],
+      './town/': ['Ciudad Dorada', 'Gasta tu oro y construye una ciudad, del árbol al castillo. Algunos edificios no se compran: hay que ganárselos.', '▶ Construir'],
       './time/': ['Máquina del tiempo', 'Toda la historia del sitio, del primer gato volador hasta hoy, día a día.', '▶ Viajar'],
       './museum/': ['Museo', 'El descanso de los juegos borrados: del pirata al gatito dorado. Guarda silencio 🤫', '▶ Entrar'],
     },
@@ -2559,6 +2587,7 @@ const DICT = {
       './poly/': ['Polygone', 'Touche et gagne des points. Chaque 10 points ajoutent un coin — du point au million de côtés.', '▶ Toucher'],
       './online/': ['Duel en Ligne', 'Deux téléphones différents. Joue trois manches, récupère un code et envoie-le à un ami : il joue les mêmes manches et on voit qui gagne.', '▶ Duel'],
       './rise/': ['Ascension', 'Tire la balle en arrière et lâche. Déplace les raquettes sur les bords avec tes deux pouces pour qu’elle ne s’échappe pas, et monte le plus haut possible.', '▶ Monter'],
+      './town/': ['Ville Dorée', 'Dépense ton or et construis une ville, de l’arbre au château. Certains bâtiments ne s’achètent pas — ils se méritent.', '▶ Construire'],
       './time/': ['Machine à remonter le temps', 'Toute l’histoire du site, du premier chat volant à aujourd’hui, jour après jour.', '▶ Voyager'],
       './museum/': ['Musée', 'Le repos des jeux supprimés : du pirate au chaton doré. Silence, s’il te plaît 🤫', '▶ Entrer'],
     },
@@ -2636,6 +2665,7 @@ const DICT = {
       './poly/': ['Vieleck', 'Tippe und sammle Punkte. Je 10 Punkte geben eine Ecke dazu — vom Punkt bis zum Millioneneck.', '▶ Tippen'],
       './online/': ['Online-Duell', 'Zwei verschiedene Handys. Spiel drei Runden, hol den Code und schick ihn einem Freund — er spielt dieselben Runden, und man sieht, wer gewinnt.', '▶ Duell'],
       './rise/': ['Aufstieg', 'Zieh den Ball zurück und lass los. Bewege die Schläger an den Rändern mit beiden Daumen, damit der Ball nicht entwischt, und steig so hoch du kannst.', '▶ Aufsteigen'],
+      './town/': ['Goldene Stadt', 'Gib dein Gold aus und bau eine Stadt, vom Baum bis zur Burg. Manche Gebäude kann man nicht kaufen — die muss man sich verdienen.', '▶ Bauen'],
       './time/': ['Zeitmaschine', 'Die ganze Geschichte der Seite — von der ersten fliegenden Katze bis heute, Tag für Tag.', '▶ Reisen'],
       './museum/': ['Museum', 'Der Ruheort gelöschter Spiele: vom Piraten bis zum goldenen Kätzchen. Bitte leise 🤫', '▶ Eintreten'],
     },
@@ -2713,6 +2743,7 @@ const DICT = {
       './poly/': ['たかっけい', 'タップしてポイントをためよう。10ポイントごとにかどが1つふえる。てんから100まんかっけいまで。', '▶ タップ'],
       './online/': ['オンラインたいけつ', 'べつべつのスマホで。3ラウンドあそんでコードをともだちにおくると、おなじラウンドをあそんでどっちがつよいかわかる。', '▶ たいけつ'],
       './rise/': ['うえへのぼれ', 'ボールをひっぱって はなそう。りょうほうの おやゆびで はしのラケットを うごかして、ボールを にがさずに どこまでも たかく のぼろう。', '▶ のぼる'],
+      './town/': ['ゴールデンタウン', 'ゴールドを つかって まちを つくろう。きから おしろまで。かえない たてものも あるよ — じぶんで かちとろう。', '▶ たてる'],
       './time/': ['タイムマシン', 'サイトのぜんぶの歴史：さいしょの飛びネコから今日まで、1日ずつ。', '▶ たびする'],
       './museum/': ['ミュージアム', 'けされたゲームのおやすみの場所：海賊から金のこねこまで。おしずかに 🤫', '▶ はいる'],
     },
@@ -2790,6 +2821,7 @@ const DICT = {
       './poly/': ['多边形', '点击赚积分。每 10 分给图形加一个角。从一个点到一百万边形。', '▶ 点击'],
       './online/': ['在线对决', '两台不同的手机。玩三个回合拿到代码发给朋友，他玩同样的回合，就知道谁更强。', '▶ 对决'],
       './rise/': ['上升', '把球往后拉再放开。用两个大拇指移动两边的挡板，别让球跑掉，看你能升到多高。', '▶ 上升'],
+      './town/': ['黄金城', '花掉金币，建一座城，从一棵树到一座城堡。有些建筑买不到，要靠本事换。', '▶ 建造'],
       './time/': ['时光机', '网站的全部历史——从第一只飞猫到今天，一天一天看。', '▶ 出发'],
       './museum/': ['博物馆', '被删游戏的安息之地：从海盗到金色小猫。请保持安静 🤫', '▶ 进入'],
     },
@@ -2867,6 +2899,7 @@ const DICT = {
       './poly/': ['Poligono', 'Tocca e guadagna punti. Ogni 10 punti aggiungono un angolo — dal punto al milione di lati.', '▶ Tocca'],
       './online/': ['Duello Online', 'Due telefoni diversi. Gioca tre round, prendi il codice e mandalo a un amico: gioca gli stessi round e si vede chi vince.', '▶ Duello'],
       './rise/': ['Salita', 'Tira indietro la palla e lascia. Muovi le racchette ai bordi con i due pollici per non farla scappare, e sali più in alto che puoi.', '▶ Salire'],
+      './town/': ['Città Dorata', 'Spendi il tuo oro e costruisci una città, dall’albero al castello. Alcuni edifici non si comprano: vanno guadagnati.', '▶ Costruire'],
       './time/': ['Macchina del tempo', 'Tutta la storia del sito — dal primo gatto volante a oggi, giorno per giorno.', '▶ Parti'],
       './museum/': ['Museo', 'Il luogo di riposo dei giochi cancellati: dal pirata al gattino dorato. Silenzio 🤫', '▶ Entra'],
     },
@@ -2944,6 +2977,7 @@ const DICT = {
       './poly/': ['მრავალკუთხედი', 'შეეხე და დააგროვე ქულები. ყოველი 10 ქულა ერთ კუთხეს ამატებს — წერტილიდან მილიონკუთხედამდე.', '▶ შეხება'],
       './online/': ['ონლაინ დუელი', 'ორი სხვადასხვა ტელეფონი. ითამაშე სამი რაუნდი, მიიღე კოდი და გაუგზავნე მეგობარს — ის იმავე რაუნდებს თამაშობს და გამოჩნდება ვინ სჯობს.', '▶ დუელი'],
       './rise/': ['ასვლა', 'უკან წაწიე ბურთი და გაუშვი. ორივე ცერით ამოძრავე კიდეების ჩოგნები, რომ ბურთი არ გაექცეს, და ავედი რაც შეიძლება მაღლა.', '▶ ასვლა'],
+      './town/': ['ოქროს ქალაქი', 'დახარჯე ოქრო და ააშენე ქალაქი — ხიდან ციხემდე. ზოგი შენობა არ იყიდება, უნდა დაიმსახურო.', '▶ აშენება'],
       './time/': ['დროის მანქანა', 'საიტის მთელი ისტორია — პირველი მფრინავი კატიდან დღემდე, დღითი დღე.', '▶ გაემგზავრე'],
       './museum/': ['მუზეუმი', 'წაშლილი თამაშების დასასვენებელი ადგილი: მეკობრიდან ოქროს კატუნამდე. დაიცავი სიჩუმე 🤫', '▶ შედი'],
     },
@@ -3021,6 +3055,7 @@ const DICT = {
       './poly/': ['बहुभुज', 'छूकर अंक कमाओ। हर 10 अंक एक कोना जोड़ते हैं — बिंदु से दस लाख भुजाओं तक।', '▶ छुओ'],
       './online/': ['ऑनलाइन मुक़ाबला', 'दो अलग-अलग फ़ोन। तीन राउंड खेलो, कोड लो और दोस्त को भेजो — वह वही राउंड खेलेगा और पता चलेगा कौन बेहतर है।', '▶ मुक़ाबला'],
       './rise/': ['चढ़ाई', 'गेंद को पीछे खींचो और छोड़ो। दोनों अँगूठों से किनारों के पैडल चलाओ ताकि गेंद भाग न जाए, और जितना ऊँचा चढ़ सको चढ़ो।', '▶ चढ़ो'],
+      './town/': ['सुनहरा शहर', 'सोना खर्च करो और शहर बनाओ — पेड़ से क़िले तक। कुछ इमारतें ख़रीदी नहीं जातीं, कमानी पड़ती हैं।', '▶ बनाओ'],
       './time/': ['टाइम मशीन', 'साइट की पूरी कहानी — पहली उड़ने वाली बिल्ली से आज तक, दिन-ब-दिन।', '▶ चलो'],
       './museum/': ['संग्रहालय', 'हटाए गए खेलों के आराम की जगह: समुद्री डाकू से सुनहरी बिल्ली तक। शांति रखो 🤫', '▶ अंदर जाओ'],
     },
@@ -3493,6 +3528,7 @@ const MOODS = {
   './poly/': ['calm', 'fast'],
   './online/': ['two', 'fast'],
   './rise/': ['fast'],
+  './town/': ['calm'],
   // time-ն ու museum-ը խաղ չեն — զտելիս թաքնվում են
 };
 let mood = null;
