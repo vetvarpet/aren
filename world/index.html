@@ -258,7 +258,9 @@ $('joinBtn').addEventListener('click', () => {
   }).catch(e => {
     try { localStorage.setItem('gg-cloud-on', '0'); } catch (x) {}
     $('joinMsg').className = 'msg bad';
-    $('joinMsg').textContent = /anonymous/i.test((e && e.message) || '') ? T.noAnon : T.offline;
+    const why = (e && e.message) || '';
+    // Ընկերական բացատրությունը, իսկ փակագծում՝ սերվերի իսկական խոսքը, որ պապան կարդա
+    $('joinMsg').textContent = (/anonymous/i.test(why) ? T.noAnon : T.offline) + (why ? ' (' + why + ')' : '');
   }).then(() => { $('joinBtn').disabled = false; });
 });
 $('nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('joinBtn').click(); });
