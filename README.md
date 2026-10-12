@@ -68,6 +68,7 @@ and iterating on the code together with Claude, one change at a time.
 | [`shop`](./shop/) | 🪙 Golden Shop (Ոսկե Խանութ) | One gold purse shared by every game: 10 points of a record earn a coin, a daily challenge +20, a new trophy +50. Spend it on heroes, car paint and site colours |
 | [`me`](./me/) | 🪪 Golden Card (Անձնագիր) | Every number the site knows about you on one card: gold earned, trophies, secrets found, games played, days in a row and your most played game, with a level and a rank on top. Share it as a link and a friend sees your card next to theirs — the whole card travels inside the link, no server. |
 | [`town`](./town/) | 🏰 Golden Town (Ոսկե Քաղաք) | Spend the shared gold on a town that grows on screen: tree, house, fountain, bridge, tower, ferris wheel, stadium, castle and the Golden Crown. Money alone is not enough — the later buildings unlock on trophies, secrets, a streak of days, or having played a particular game. |
+| [`world`](./world/) | 🌍 World Records (Աշխարհի ռեկորդները) | The first piece with a server (Supabase): a board for every record, from players everywhere. Opt-in only — nothing leaves a phone until its player taps Join with a name. Aren's rules on names, ceilings and one record a minute live in the database itself, see `supabase/migrations/`. |
 | [`museum`](./museum/) | 🏛️ Golden Museum (Թանգարան) | Memorial hall of deleted projects, pedestals, epitaphs and all |
 
 Every project is a single self-contained `index.html` — no frameworks, no

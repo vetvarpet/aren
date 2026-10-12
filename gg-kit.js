@@ -1003,3 +1003,184 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 })();
+
+// ——————————————————————————————————————————————————————————
+//  🌍 GOLDEN CLOUD — աշխարհի ռեկորդների աղյուսակը
+//  Միայն եթե խաղացողը ԻՆՔԸ միացել է («Միանալ» կոճակով) ու անուն ունի։
+//  Մինչ այդ ոչ մի բան այս հեռախոսից դուրս չի գնում։
+//
+//  Սերվերը Supabase է։ Այստեղի բանալին հրապարակային է ու հենց այդպես էլ
+//  պիտի լինի — բոլոր կանոնները (անուններ, առավելագույն թիվ, րոպեում մեկ)
+//  սերվերի ներսում են, ոչ թե այստեղ, որ ոչ ոք չկարողանա շրջանցել։
+// ——————————————————————————————————————————————————————————
+(function () {
+  'use strict';
+  if (window.__ggCloud) return;
+  window.__ggCloud = true;
+
+  var SB_URL = 'https://otqrqnetqqlvbjqotfbz.supabase.co';
+  var SB_KEY = 'sb_publishable_N_QAv8DVyZZwx7vC98Pvow_NVRASQxZ';
+  var GAP = 61000;            // սերվերը րոպեում մեկ ռեկորդ է ընդունում
+
+  var ls = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+    del: function (k) { try { localStorage.removeItem(k); } catch (e) {} }
+  };
+  function json(k, d) { try { var v = JSON.parse(ls.get(k)); return (v && typeof v === 'object') ? v : d; } catch (e) { return d; } }
+
+  function on() { return ls.get('gg-cloud-on') === '1' && !!(ls.get('gg-name') || '').trim(); }
+  function isBoardKey(k) {
+    return typeof k === 'string' && window.ggKit && ggKit.isRecordKey && ggKit.isRecordKey(k);
+  }
+
+  // ——— Մուտք առանց գաղտնաբառի ———
+  // Ամեն հեռախոս իր սեփական լուռ ինքնությունն է ստանում։
+  function session() { return json('gg-cloud-session', null); }
+  function saveSession(r) {
+    if (!r || !r.access_token) return null;
+    var s = { a: r.access_token, r: r.refresh_token,
+              e: Date.now() + ((r.expires_in || 3600) - 60) * 1000 };
+    ls.set('gg-cloud-session', JSON.stringify(s));
+    return s;
+  }
+  function authPost(path, body) {
+    return fetch(SB_URL + '/auth/v1/' + path, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {})
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (j) {
+        if (!res.ok) { var err = new Error(j.msg || j.message || j.error_description || ('auth ' + res.status)); err.status = res.status; err.code = j.error_code || j.code; throw err; }
+        return j;
+      });
+    });
+  }
+  function signIn() {
+    return authPost('signup', { data: {} }).then(saveSession);
+  }
+  function ensureSession() {
+    var s = session();
+    if (s && s.a && Date.now() < s.e) return Promise.resolve(s);
+    if (s && s.r) {
+      return authPost('token?grant_type=refresh_token', { refresh_token: s.r })
+        .then(saveSession)
+        .catch(function () { ls.del('gg-cloud-session'); return signIn(); });
+    }
+    return signIn();
+  }
+
+  // ——— Սերվերի ֆունկցիաները ———
+  function rpc(name, args, withUser) {
+    var go = function (s) {
+      var h = { 'apikey': SB_KEY, 'Content-Type': 'application/json' };
+      if (s && s.a) h['Authorization'] = 'Bearer ' + s.a;
+      return fetch(SB_URL + '/rest/v1/rpc/' + name, {
+        method: 'POST', headers: h, body: JSON.stringify(args || {}), keepalive: true
+      }).then(function (res) {
+        return res.json().catch(function () { return null; }).then(function (j) {
+          if (!res.ok) { var err = new Error((j && (j.message || j.msg)) || ('rpc ' + res.status)); err.status = res.status; throw err; }
+          return j;
+        });
+      });
+    };
+    if (!withUser) return go(session());
+    return ensureSession().then(go);
+  }
+
+  // ——— Ուղարկելու հերթը ———
+  // Ի՞նչ ենք արդեն ուղարկել. ամեն ռեկորդի համար՝ վերջին ուղարկած արժեքը։
+  function sent() { return json('gg-cloud-sent', {}); }
+  function markSent(k, v) { var m = sent(); m[k] = v; ls.set('gg-cloud-sent', JSON.stringify(m)); }
+  function pending() {
+    var out = [], m = sent();
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (!isBoardKey(k)) continue;
+        var v = Number(localStorage.getItem(k));
+        if (!(v > 0) || !isFinite(v)) continue;
+        if (String(m[k]) !== String(Math.floor(v))) out.push([k, Math.floor(v)]);
+      }
+    } catch (e) {}
+    return out;
+  }
+
+  var busy = false, timer = 0;
+  function status(s) { ls.set('gg-cloud-status', s); }
+
+  function sync() {
+    if (busy || !on()) return Promise.resolve();
+    var name = (ls.get('gg-name') || '').trim();
+    // անունը փոխվե՞լ է — ամեն ինչ նորից, նոր անունով
+    if (ls.get('gg-cloud-name') !== name) { ls.set('gg-cloud-sent', '{}'); ls.set('gg-cloud-name', name); ls.del('gg-cloud-err'); }
+    if (ls.get('gg-cloud-err') === 'bad-name') return Promise.resolve();
+    var last = Number(ls.get('gg-cloud-last')) || 0;
+    if (Date.now() - last < GAP) return Promise.resolve();
+    var list = pending();
+    if (!list.length) { status('done'); return Promise.resolve(); }
+
+    busy = true;
+    var tries = 0;
+    function next() {
+      var item = pending()[0];
+      if (!item || tries++ >= 5) return Promise.resolve();
+      return rpc('submit_score', { p_game: item[0], p_name: name, p_score: item[1] }, true).then(function (r) {
+        if (r === 'new' || r === 'better' || r === 'renamed') {
+          markSent(item[0], item[1]); ls.set('gg-cloud-last', String(Date.now())); status('ok');
+          return;                                   // գրեցինք — հաջորդը րոպե հետո
+        }
+        if (r === 'not-better' || r === 'too-high' || r === 'unknown-game') {
+          markSent(item[0], item[1]);               // սա այլևս չենք կրկնում
+          return next();
+        }
+        if (r === 'too-soon') { ls.set('gg-cloud-last', String(Date.now())); return; }
+        if (r === 'bad-name') { ls.set('gg-cloud-err', 'bad-name'); status('bad-name'); return; }
+        if (r === 'not-signed-in') { ls.del('gg-cloud-session'); return; }
+      });
+    }
+    return next().catch(function (e) {
+      if (e && e.status === 401) ls.del('gg-cloud-session');
+      status(e && /anonymous/i.test(e.message || '') ? 'no-anon' : 'offline');
+    }).then(function () { busy = false; }, function () { busy = false; });
+  }
+
+  function schedule(ms) {
+    clearTimeout(timer);
+    timer = setTimeout(function () { sync(); }, ms == null ? 1500 : ms);
+  }
+
+  // Ամեն անգամ, երբ որևէ խաղ նոր ռեկորդ է գրում, հերթը արթնանում է
+  var prevSet = Storage.prototype.setItem;
+  Storage.prototype.setItem = function (k, v) {
+    prevSet.call(this, k, v);
+    try { if (this === window.localStorage && isBoardKey(k) && on()) schedule(); } catch (e) {}
+  };
+
+  window.ggCloud = {
+    on: on,
+    // Միանալ. անունը պահվում է նույն տեղում, ինչ Անձնագրում
+    join: function (name) {
+      name = String(name || '').trim().slice(0, 20);
+      if (!name) return Promise.reject(new Error('no-name'));
+      ls.set('gg-name', name);
+      ls.set('gg-cloud-on', '1');
+      ls.del('gg-cloud-err');
+      ls.set('gg-cloud-last', '0');
+      return ensureSession().then(function () { return sync(); });
+    },
+    leave: function () { ls.set('gg-cloud-on', '0'); },
+    top: function (board, limit) {
+      return rpc('top_scores', { p_game: board, p_limit: limit || 20 }, false);
+    },
+    pending: function () { return on() ? pending().length : 0; },
+    status: function () { return ls.get('gg-cloud-err') || ls.get('gg-cloud-status') || ''; },
+    sync: sync
+  };
+
+  // Էջը բացվելիս մի փոքր սպասում ենք, հետո՝ ամեն 65 վայրկյան, քանի էջը բաց է
+  if (on()) {
+    schedule(2500);
+    setInterval(function () { if (on()) sync(); }, 65000);
+  }
+})();

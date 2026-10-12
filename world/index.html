@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<title>Աշխարհի ռեկորդները 🌍 · Golden Games</title>
+<style>
+  :root { --bg:#12122b; --card:#1d1d3f; --ink:#eef0ff; --dim:#9a9ec7; --accent:#ffd166; --accent2:#6ee7b7; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink);
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, Helvetica, sans-serif;
+    padding: 56px 14px 34px; min-height: 100vh; touch-action: manipulation; }
+  .back { position: fixed; top: 10px; left: 10px; z-index: 30; color: var(--ink); text-decoration: none;
+    background: rgba(20,26,34,0.8); border: 2px solid rgba(255,255,255,0.4);
+    padding: 5px 12px; border-radius: 999px; font-size: 0.78rem; }
+  .wrap { max-width: 560px; margin: 0 auto; }
+  h1 { margin: 0 0 3px; font-size: 1.3rem; color: var(--accent); text-align: center; }
+  .sub { margin: 0 0 14px; font-size: 0.76rem; color: var(--dim); text-align: center; line-height: 1.5; }
+
+  .box { background: var(--card); border: 2px solid #33356b; border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+  .box.join { border-color: var(--accent); }
+  .box h2 { margin: 0 0 6px; font-size: 1rem; color: var(--accent); }
+  .box p { margin: 0 0 8px; font-size: 0.8rem; line-height: 1.55; color: var(--ink); }
+  .rules { margin: 6px 0 10px; padding: 0 0 0 18px; font-size: 0.74rem; color: var(--dim); line-height: 1.6; }
+  input { width: 100%; padding: 11px 12px; border-radius: 12px; border: 2px solid #33356b;
+    background: #0d0d22; color: var(--ink); font-family: inherit; font-size: 1rem; }
+  button { width: 100%; margin-top: 9px; padding: 12px; border-radius: 12px; border: none;
+    background: var(--accent); color: #2e2410; font-family: inherit; font-weight: bold; font-size: 0.95rem; cursor: pointer; }
+  button.ghost { background: transparent; color: var(--dim); border: 2px solid #33356b; font-weight: normal; font-size: 0.8rem; }
+  button:active { transform: scale(0.98); }
+  .msg { margin-top: 8px; font-size: 0.78rem; line-height: 1.5; }
+  .msg.bad { color: #ff9a8a; }
+  .msg.good { color: var(--accent2); }
+  .me { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.82rem; }
+  .me b { color: var(--accent); }
+
+  select { width: 100%; padding: 11px 12px; border-radius: 12px; border: 2px solid #33356b;
+    background: #0d0d22; color: var(--ink); font-family: inherit; font-size: 0.95rem; }
+  ol.board { list-style: none; margin: 10px 0 0; padding: 0; }
+  ol.board li { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center;
+    padding: 9px 10px; border-radius: 11px; margin-bottom: 6px; background: #15152f; font-size: 0.88rem; }
+  ol.board li.mine { background: rgba(255,209,102,0.16); border: 1px solid rgba(255,209,102,0.5); }
+  ol.board .r { font-weight: bold; color: var(--dim); text-align: center; }
+  ol.board li:nth-child(1) .r { color: #ffd166; } ol.board li:nth-child(2) .r { color: #d8dbe8; } ol.board li:nth-child(3) .r { color: #e0a06a; }
+  ol.board .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  ol.board .s { font-weight: bold; }
+  .empty { text-align: center; color: var(--dim); font-size: 0.82rem; padding: 14px 0 4px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<a class="back" href="../">← Golden Games</a>
+
+<div class="wrap">
+  <h1 id="h1">🌍 Աշխարհի ռեկորդները</h1>
+  <p class="sub" id="sub">—</p>
+
+  <div class="box join" id="joinBox" hidden>
+    <h2 id="joinT">—</h2>
+    <p id="joinP">—</p>
+    <ul class="rules" id="rules"></ul>
+    <input id="nameIn" maxlength="20" autocomplete="off" spellcheck="false">
+    <button id="joinBtn">—</button>
+    <div class="msg" id="joinMsg"></div>
+  </div>
+
+  <div class="box" id="meBox" hidden>
+    <div class="me"><span id="meTxt">—</span></div>
+    <div class="msg" id="meMsg"></div>
+    <button class="ghost" id="leaveBtn">—</button>
+  </div>
+
+  <div class="box">
+    <select id="pick"></select>
+    <ol class="board" id="board"></ol>
+    <div class="empty" id="empty" hidden></div>
+  </div>
+</div>
+
+<script>
+// ——————————————————————————————————————————————————————
+//  🌍 ԱՇԽԱՐՀԻ ՌԵԿՈՐԴՆԵՐԸ
+//  Կարդալը բաց է բոլորի համար։ Գրելը՝ միայն ով ինքն է միացել։
+//  Բոլոր կանոնները սերվերում են (supabase/migrations-ում)։
+// ——————————————————————————————————————————————————————
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+const BOARDS = [["cat-best", "Golden Cat"], ["aren-bird-best", "Golden Bird"], ["aren-rocket-best", "Golden Rocket"], ["aren-fish-best", "Golden Fishing"], ["aren-tower-best", "Golden Tower"], ["aren-moles-best", "Golden Moles"], ["aren-maze-max", "Golden Maze"], ["aren-race-level", "Golden Driver"], ["aren-memory-best", "Golden Memory 🃏"], ["aren-repeat-best", "Golden Memory 🔁"], ["aren-numbers-best", "Golden Memory 🔢"], ["aren-beat-best", "Golden Beat"], ["aren-ninja-best", "Golden Ninja"], ["aren-men-best", "Golden Men"], ["aren-runner-best", "Golden Runner"], ["aren-pipes-level", "Golden Pipes"], ["aren-blocks-best", "Golden Blocks"], ["aren-words-level", "Golden Words"], ["aren-map-best", "Golden Map"], ["aren-story-ends", "Golden Story"], ["aren-bridge-level", "Golden Bridge"], ["aren-detective-best", "Golden Detective"], ["aren-elevator-best", "Golden Elevator"], ["aren-traffic-best", "Golden Traffic"], ["aren-garden-best", "Golden Garden"], ["aren-bank-best", "Golden Bank"], ["aren-camera-best", "Golden Camera"], ["aren-wire-level", "Golden Wire"], ["aren-wind-level", "Golden Wind"], ["aren-domino-level", "Golden Domino"], ["aren-copy-best", "Golden Copy"], ["aren-alphabet-best", "Golden Alphabet"], ["aren-nardi-best", "Golden Nardi"], ["aren-lavash-best", "Golden Lavash"], ["aren-dance-best", "Golden Dance"], ["aren-sasuntsi-best", "Golden Sasuntsi"], ["aren-rewind-best", "Golden Rewind"], ["aren-two-best", "Golden Two"], ["aren-mirror-best", "Golden Mirror"], ["aren-grow-best", "Golden Grow"], ["aren-silence-best", "Golden Silence"], ["aren-onelife-best", "Golden Onelife"], ["aren-slow-best", "Golden Slow"], ["aren-swap-best", "Golden Swap"], ["aren-poly-best", "Golden Polygon"], ["aren-online-best", "Golden Online"], ["aren-rise-best", "Golden Rise"]];
+
+const TRL = {
+  hy: { t:'🌍 Աշխարհի ռեկորդները', s:'Ամեն խաղի լավագույնները՝ ամբողջ աշխարհից',
+        joinT:'Մտի՛ր աղյուսակ', joinP:'Միանալուց հետո ռեկորդներդ ինքնիրեն կգնան աղյուսակ՝ քո ընտրած անունով։ Մինչ այդ ոչինչ չի գնում։',
+        rules:['Մականուն կամ ազգանուն — կարելի է','Տարիք, դպրոց, հասցե, հեռախոս, էլ. փոստ — չի կարելի','Ռեկորդը րոպեում մեկ է գնում, ու միայն քո լավագույնը'],
+        name:'Քո անունը', joinBtn:'🌍 Միանալ', joining:'Միանում եմ…', you:n=>'Դու աղյուսակում ես՝ <b>'+n+'</b>',
+        pend:n=>'Սպասում են ուղարկվելու՝ '+n+' (րոպեում մեկ)', allSent:'Բոլոր ռեկորդներդ ուղարկված են ✓',
+        leave:'Դադարեցնել ուղարկելը', left:'Այլևս չի ուղարկվում։ Արդեն գրվածը ջնջելու համար ասա տնօրենին։',
+        badName:'Այդ անունը կանոններով չի անցնում։ Ընտրիր ուրիշը։', noAnon:'Սերվերը դեռ պատրաստ չէ։ Փորձիր ավելի ուշ։',
+        offline:'Սերվերին չհասա։ Կփորձեմ նորից։', loading:'Բեռնվում է…', empty:'Այստեղ դեռ ոչ ոք չկա։ Եղիր առաջինը 🏆', me:'դու' },
+  ru: { t:'🌍 Мировые рекорды', s:'Лучшие в каждой игре — со всего мира',
+        joinT:'Попади в таблицу', joinP:'После присоединения твои рекорды сами уйдут в таблицу под выбранным именем. До этого ничего не отправляется.',
+        rules:['Ник или фамилия — можно','Возраст, школа, адрес, телефон, email — нельзя','Один рекорд в минуту, и только твой лучший'],
+        name:'Твоё имя', joinBtn:'🌍 Присоединиться', joining:'Подключаюсь…', you:n=>'Ты в таблице: <b>'+n+'</b>',
+        pend:n=>'Ждут отправки: '+n+' (по одному в минуту)', allSent:'Все рекорды отправлены ✓',
+        leave:'Перестать отправлять', left:'Больше не отправляется. Чтобы удалить уже записанное, скажи директору.',
+        badName:'Это имя не проходит по правилам. Выбери другое.', noAnon:'Сервер ещё не готов. Попробуй позже.',
+        offline:'Не достучался до сервера. Попробую снова.', loading:'Загрузка…', empty:'Здесь пока никого. Стань первым 🏆', me:'ты' },
+  en: { t:'🌍 World Records', s:'The best in every game, from all over the world',
+        joinT:'Get on the board', joinP:'Once you join, your records go to the board on their own under the name you pick. Nothing is sent before that.',
+        rules:['A nickname or a surname is fine','No age, school, address, phone or email','One record a minute, and only your best'],
+        name:'Your name', joinBtn:'🌍 Join', joining:'Joining…', you:n=>'You are on the board as <b>'+n+'</b>',
+        pend:n=>'Waiting to send: '+n+' (one a minute)', allSent:'All your records are sent ✓',
+        leave:'Stop sending', left:'No longer sending. To remove what is already there, ask the director.',
+        badName:'That name does not pass the rules. Pick another.', noAnon:'The server is not ready yet. Try later.',
+        offline:'Could not reach the server. Will try again.', loading:'Loading…', empty:'Nobody here yet. Be the first 🏆', me:'you' },
+  pt: { t:'🌍 Recordes do Mundo', s:'Os melhores de cada jogo, do mundo inteiro',
+        joinT:'Entra na tabela', joinP:'Depois de entrares, os teus recordes vão sozinhos para a tabela com o nome que escolheres. Antes disso nada é enviado.',
+        rules:['Alcunha ou apelido — pode','Idade, escola, morada, telefone, email — não','Um recorde por minuto, e só o teu melhor'],
+        name:'O teu nome', joinBtn:'🌍 Entrar', joining:'A entrar…', you:n=>'Estás na tabela como <b>'+n+'</b>',
+        pend:n=>'À espera de envio: '+n+' (um por minuto)', allSent:'Todos os teus recordes foram enviados ✓',
+        leave:'Parar de enviar', left:'Já não envia. Para apagar o que já lá está, fala com o diretor.',
+        badName:'Esse nome não passa nas regras. Escolhe outro.', noAnon:'O servidor ainda não está pronto. Tenta mais tarde.',
+        offline:'Não consegui chegar ao servidor. Vou tentar de novo.', loading:'A carregar…', empty:'Ainda não há ninguém. Sê o primeiro 🏆', me:'tu' },
+  es: { t:'🌍 Récords del Mundo', s:'Los mejores de cada juego, de todo el mundo',
+        joinT:'Entra en la tabla', joinP:'Al unirte, tus récords irán solos a la tabla con el nombre que elijas. Antes de eso no se envía nada.',
+        rules:['Apodo o apellido — sí','Edad, colegio, dirección, teléfono, email — no','Un récord por minuto, y solo el mejor'],
+        name:'Tu nombre', joinBtn:'🌍 Unirme', joining:'Uniéndome…', you:n=>'Estás en la tabla como <b>'+n+'</b>',
+        pend:n=>'Esperando envío: '+n+' (uno por minuto)', allSent:'Todos tus récords están enviados ✓',
+        leave:'Dejar de enviar', left:'Ya no se envía. Para borrar lo que ya está, díselo al director.',
+        badName:'Ese nombre no cumple las reglas. Elige otro.', noAnon:'El servidor aún no está listo. Prueba más tarde.',
+        offline:'No llegué al servidor. Lo intentaré otra vez.', loading:'Cargando…', empty:'Aún no hay nadie. Sé el primero 🏆', me:'tú' },
+  fr: { t:'🌍 Records du Monde', s:'Les meilleurs de chaque jeu, du monde entier',
+        joinT:'Entre au tableau', joinP:'Une fois inscrit, tes records partent tout seuls au tableau sous le nom choisi. Rien n’est envoyé avant.',
+        rules:['Un surnom ou un nom de famille — oui','Âge, école, adresse, téléphone, email — non','Un record par minute, et seulement ton meilleur'],
+        name:'Ton nom', joinBtn:'🌍 Rejoindre', joining:'Connexion…', you:n=>'Tu es au tableau sous le nom <b>'+n+'</b>',
+        pend:n=>'En attente d’envoi : '+n+' (un par minute)', allSent:'Tous tes records sont envoyés ✓',
+        leave:'Arrêter l’envoi', left:'Plus d’envoi. Pour effacer ce qui y est déjà, demande au directeur.',
+        badName:'Ce nom ne respecte pas les règles. Choisis-en un autre.', noAnon:'Le serveur n’est pas encore prêt. Réessaie plus tard.',
+        offline:'Serveur injoignable. Je réessaierai.', loading:'Chargement…', empty:'Personne pour l’instant. Sois le premier 🏆', me:'toi' },
+  de: { t:'🌍 Weltrekorde', s:'Die Besten jedes Spiels aus der ganzen Welt',
+        joinT:'Komm auf die Liste', joinP:'Nach dem Beitreten gehen deine Rekorde von selbst unter deinem Namen auf die Liste. Vorher wird nichts gesendet.',
+        rules:['Spitzname oder Nachname — ja','Alter, Schule, Adresse, Telefon, E-Mail — nein','Ein Rekord pro Minute, nur dein bester'],
+        name:'Dein Name', joinBtn:'🌍 Beitreten', joining:'Verbinde…', you:n=>'Du stehst auf der Liste als <b>'+n+'</b>',
+        pend:n=>'Wartet auf Versand: '+n+' (einer pro Minute)', allSent:'Alle deine Rekorde sind gesendet ✓',
+        leave:'Nicht mehr senden', left:'Es wird nichts mehr gesendet. Zum Löschen frag den Direktor.',
+        badName:'Dieser Name passt nicht zu den Regeln. Nimm einen anderen.', noAnon:'Der Server ist noch nicht bereit. Später versuchen.',
+        offline:'Server nicht erreicht. Ich versuche es erneut.', loading:'Lädt…', empty:'Noch niemand hier. Sei der Erste 🏆', me:'du' },
+  ja: { t:'🌍 せかいの きろく', s:'せかいじゅうの いちばんを ゲームごとに',
+        joinT:'ランキングに さんか', joinP:'さんかすると、きろくが えらんだ なまえで じどうで おくられるよ。それまでは なにも おくられない。',
+        rules:['ニックネームや みょうじ — OK','ねんれい・がっこう・じゅうしょ・でんわ・メール — ダメ','きろくは 1ぷんに 1つ、いちばん いい きろくだけ'],
+        name:'きみの なまえ', joinBtn:'🌍 さんかする', joining:'つないでいるよ…', you:n=>'<b>'+n+'</b> として ランキングに いるよ',
+        pend:n=>'おくるのを まっている：'+n+'（1ぷんに 1つ）', allSent:'きろくは ぜんぶ おくったよ ✓',
+        leave:'おくるのを やめる', left:'もう おくらないよ。のこっているのを けすには ディレクターに いってね。',
+        badName:'その なまえは ルールで だめ。ほかのに してね。', noAnon:'サーバーが まだ じゅんび中。あとで ためしてね。',
+        offline:'サーバーに つながらない。また ためすね。', loading:'よみこみ中…', empty:'まだ だれも いない。いちばんのりを しよう 🏆', me:'きみ' },
+  zh: { t:'🌍 世界纪录', s:'每个游戏的最佳成绩，来自全世界',
+        joinT:'登上排行榜', joinP:'加入后，你的纪录会用你选的名字自动上传。加入前什么都不会发送。',
+        rules:['昵称或姓氏——可以','年龄、学校、地址、电话、邮箱——不行','每分钟一条纪录，只传你的最好成绩'],
+        name:'你的名字', joinBtn:'🌍 加入', joining:'连接中…', you:n=>'你在榜上，名字是 <b>'+n+'</b>',
+        pend:n=>'等待上传：'+n+'（每分钟一条）', allSent:'你的纪录都已上传 ✓',
+        leave:'停止上传', left:'不再上传。要删除已上传的，请告诉总监。',
+        badName:'这个名字不符合规则，请换一个。', noAnon:'服务器还没准备好，稍后再试。',
+        offline:'连不上服务器，稍后重试。', loading:'加载中…', empty:'还没有人。成为第一个吧 🏆', me:'你' },
+  it: { t:'🌍 Record del Mondo', s:'I migliori di ogni gioco, da tutto il mondo',
+        joinT:'Entra in classifica', joinP:'Dopo l’iscrizione i tuoi record vanno da soli in classifica col nome che scegli. Prima non viene inviato nulla.',
+        rules:['Soprannome o cognome — sì','Età, scuola, indirizzo, telefono, email — no','Un record al minuto, e solo il tuo migliore'],
+        name:'Il tuo nome', joinBtn:'🌍 Partecipa', joining:'Collegamento…', you:n=>'Sei in classifica come <b>'+n+'</b>',
+        pend:n=>'In attesa di invio: '+n+' (uno al minuto)', allSent:'Tutti i tuoi record sono inviati ✓',
+        leave:'Smetti di inviare', left:'Non si invia più. Per cancellare ciò che c’è già, chiedi al direttore.',
+        badName:'Quel nome non rispetta le regole. Scegline un altro.', noAnon:'Il server non è ancora pronto. Riprova più tardi.',
+        offline:'Server non raggiungibile. Riproverò.', loading:'Caricamento…', empty:'Ancora nessuno. Sii il primo 🏆', me:'tu' },
+  ka: { t:'🌍 მსოფლიო რეკორდები', s:'ყველა თამაშის საუკეთესოები მთელი მსოფლიოდან',
+        joinT:'მოხვდი ცხრილში', joinP:'შეერთების შემდეგ შენი რეკორდები თავად წავა ცხრილში შენი არჩეული სახელით. მანამდე არაფერი იგზავნება.',
+        rules:['მეტსახელი ან გვარი — შეიძლება','ასაკი, სკოლა, მისამართი, ტელეფონი, ელფოსტა — არა','წუთში ერთი რეკორდი, მხოლოდ საუკეთესო'],
+        name:'შენი სახელი', joinBtn:'🌍 შეერთება', joining:'ვუერთდები…', you:n=>'ცხრილში ხარ როგორც <b>'+n+'</b>',
+        pend:n=>'გასაგზავნად ელოდება: '+n+' (წუთში ერთი)', allSent:'ყველა რეკორდი გაგზავნილია ✓',
+        leave:'გაგზავნის შეწყვეტა', left:'აღარ იგზავნება. უკვე ჩაწერილის წასაშლელად უთხარი დირექტორს.',
+        badName:'ეს სახელი წესებს არ აკმაყოფილებს. აირჩიე სხვა.', noAnon:'სერვერი ჯერ მზად არ არის. სცადე მოგვიანებით.',
+        offline:'სერვერს ვერ მივწვდი. ისევ ვცდი.', loading:'იტვირთება…', empty:'აქ ჯერ არავინაა. იყავი პირველი 🏆', me:'შენ' },
+  hi: { t:'🌍 विश्व रिकॉर्ड', s:'हर खेल के सबसे अच्छे, पूरी दुनिया से',
+        joinT:'टेबल में आओ', joinP:'जुड़ने के बाद तुम्हारे रिकॉर्ड चुने हुए नाम से अपने आप टेबल में जाएँगे। उससे पहले कुछ नहीं भेजा जाता।',
+        rules:['उपनाम या सरनेम — चलेगा','उम्र, स्कूल, पता, फ़ोन, ईमेल — नहीं','एक मिनट में एक रिकॉर्ड, सिर्फ़ सबसे अच्छा'],
+        name:'तुम्हारा नाम', joinBtn:'🌍 जुड़ो', joining:'जुड़ रहा है…', you:n=>'तुम टेबल में <b>'+n+'</b> नाम से हो',
+        pend:n=>'भेजने के इंतज़ार में: '+n+' (एक मिनट में एक)', allSent:'तुम्हारे सारे रिकॉर्ड भेज दिए ✓',
+        leave:'भेजना बंद करो', left:'अब नहीं भेजा जाता। जो पहले से है उसे हटाने के लिए निदेशक से कहो।',
+        badName:'यह नाम नियमों में नहीं आता। दूसरा चुनो।', noAnon:'सर्वर अभी तैयार नहीं है। बाद में कोशिश करो।',
+        offline:'सर्वर तक नहीं पहुँचा। फिर कोशिश करूँगा।', loading:'लोड हो रहा है…', empty:'अभी कोई नहीं। पहले बनो 🏆', me:'तुम' }
+};
+const T = TRL[ggLang] || TRL.hy;
+const $ = id => document.getElementById(id);
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+function paintMe() {
+  const c = window.ggCloud;
+  const joined = c && c.on();
+  // Անունը չանցա՞վ — ձևը նորից բացում ենք, որ ուրիշը ընտրի
+  if (joined && c.status() === 'bad-name') {
+    $('joinBox').hidden = false;
+    $('meBox').hidden = true;
+    if (document.activeElement !== $('nameIn')) $('nameIn').value = lsGet('gg-name') || '';
+    $('joinMsg').className = 'msg bad';
+    $('joinMsg').textContent = T.badName;
+    return;
+  }
+  $('joinBox').hidden = !!joined;
+  $('meBox').hidden = !joined;
+  if (!joined) { if (document.activeElement !== $('nameIn')) $('nameIn').value = lsGet('gg-name') || ''; return; }
+  $('meTxt').innerHTML = T.you(esc(lsGet('gg-name') || ''));
+  const st = c.status(), n = c.pending();
+  const m = $('meMsg');
+  m.className = 'msg';
+  if (st === 'bad-name') { m.textContent = T.badName; m.className = 'msg bad'; }
+  else if (st === 'no-anon') { m.textContent = T.noAnon; m.className = 'msg bad'; }
+  else if (st === 'offline') { m.textContent = T.offline; m.className = 'msg bad'; }
+  else if (n > 0) m.textContent = T.pend(n);
+  else { m.textContent = T.allSent; m.className = 'msg good'; }
+}
+
+function loadBoard() {
+  const key = $('pick').value;
+  try { localStorage.setItem('gg-world-pick', key); } catch (e) {}
+  $('board').innerHTML = '';
+  $('empty').hidden = false;
+  $('empty').textContent = T.loading;
+  if (!window.ggCloud) return;
+  ggCloud.top(key, 20).then(rows => {
+    if (!Array.isArray(rows) || !rows.length) { $('empty').textContent = T.empty; return; }
+    $('empty').hidden = true;
+    $('board').innerHTML = rows.map(r =>
+      '<li class="' + (r.mine ? 'mine' : '') + '"><span class="r">' + r.rank + '</span>' +
+      '<span class="n">' + esc(r.name) + (r.mine ? ' · ' + T.me : '') + '</span>' +
+      '<span class="s">' + r.score + '</span></li>').join('');
+  }).catch(() => { $('empty').textContent = T.offline; });
+}
+
+$('h1').textContent = T.t;
+$('sub').textContent = T.s;
+$('joinT').textContent = T.joinT;
+$('joinP').textContent = T.joinP;
+$('rules').innerHTML = T.rules.map(r => '<li>' + esc(r) + '</li>').join('');
+$('nameIn').placeholder = T.name;
+$('joinBtn').textContent = T.joinBtn;
+$('leaveBtn').textContent = T.leave;
+$('pick').innerHTML = BOARDS.map(([k, n]) => '<option value="' + k + '">' + esc(n) + '</option>').join('');
+
+$('joinBtn').addEventListener('click', () => {
+  const name = $('nameIn').value.trim();
+  if (!name || !window.ggCloud) return;
+  $('joinBtn').disabled = true;
+  $('joinMsg').className = 'msg'; $('joinMsg').textContent = T.joining;
+  ggCloud.join(name).then(() => {
+    $('joinMsg').textContent = '';
+    paintMe(); loadBoard();
+  }).catch(e => {
+    try { localStorage.setItem('gg-cloud-on', '0'); } catch (x) {}
+    $('joinMsg').className = 'msg bad';
+    $('joinMsg').textContent = /anonymous/i.test((e && e.message) || '') ? T.noAnon : T.offline;
+  }).then(() => { $('joinBtn').disabled = false; });
+});
+$('nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('joinBtn').click(); });
+$('leaveBtn').addEventListener('click', () => {
+  if (window.ggCloud) ggCloud.leave();
+  paintMe();
+  $('joinMsg').className = 'msg'; $('joinMsg').textContent = T.left;
+});
+$('pick').addEventListener('change', loadBoard);
+
+function boot() {
+  const saved = lsGet('gg-world-pick');
+  if (saved && BOARDS.some(b => b[0] === saved)) $('pick').value = saved;
+  paintMe(); loadBoard();
+  setInterval(paintMe, 5000);
+}
+if (document.readyState === 'loading') addEventListener('DOMContentLoaded', boot); else boot();
+
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ -->
+<script src="../gg-kit.js" data-kind="info" defer></script>
+</body>
+</html>
