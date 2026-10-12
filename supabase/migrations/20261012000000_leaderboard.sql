@@ -1,54 +1,65 @@
 -- ════════════════════════════════════════════════════════════════════
---  Golden Games — world leaderboard, version 1
+--  Golden Games — world leaderboard
+--
+--  HOW TO RUN: paste this WHOLE file into a new query in the Supabase
+--  SQL Editor, make sure nothing is highlighted, and press Run.
+--  It is safe to run more than once, and safe to run on top of an
+--  earlier attempt that stopped halfway.
 --
 --  Aren's rules, as he set them:
 --    1. Names: a nickname or a surname is fine. Age, school, address,
 --       phone number and email are not.
---    2. Cheating: every game has a ceiling, a score above it is refused.
---       One record per minute per player.
+--    2. Cheating: every record has a ceiling, a score above it is
+--       refused. One record per minute per player.
 --    3. The director's button: only Aren and his father can delete.
 --
 --  How it is locked down:
 --    • RLS is on and there are NO table policies for the public roles,
---      so nobody can read or write the table directly — not even with the
---      anon key, which ships inside the web page and is public by design.
---    • Everything goes through four functions below. They check who is
+--      so nobody can read or write the tables directly — not even with
+--      the publishable key, which ships inside the web page.
+--    • Everything goes through three functions below. They check who is
 --      calling (auth.uid(), from Supabase anonymous sign-in), validate,
 --      rate-limit, and only ever return names, scores and dates.
 --
 --  Needs, in the dashboard: Authentication → Sign In / Providers →
---  "Allow anonymous sign-ins" switched on. Each phone then gets its own
---  quiet identity without an email or a password.
+--  "Allow anonymous sign-ins" switched on.
 -- ════════════════════════════════════════════════════════════════════
 
 
--- ─── The games the site knows ───────────────────────────────────────
--- A score for any other game id is refused, so nobody can invent games.
--- max_score is the anti-cheat ceiling. These are PLACEHOLDERS, set
--- generously so that no honest score is ever refused on day one; tighten
--- them once real scores show what each game can actually produce.
-create table public.games (
+-- ─── The records the site keeps ─────────────────────────────────────
+-- One board per record, under the exact localStorage key the game
+-- already writes. Golden Memory keeps three, Golden Cat two. A score for
+-- any other key is refused, so nobody can invent boards.
+-- max_score is the anti-cheat ceiling. These are PLACEHOLDERS, set high
+-- so no honest score is refused on day one; tighten them once real
+-- scores show what each game actually produces.
+create table if not exists public.games (
   id              text primary key,
   max_score       integer not null check (max_score > 0),
   lower_is_better boolean not null default false
 );
 
 insert into public.games (id, max_score) values
-  ('cat-jump', 100000), ('city-drive', 100000), ('piano', 100000), ('rocket', 100000),
-  ('memory', 100000),   ('fishing', 100000),    ('duel', 100000),  ('maze', 100000),
-  ('tower', 100000),    ('moles', 100000),      ('beat', 100000),  ('ninja', 100000),
-  ('men', 100000),      ('runner', 100000),     ('pipes', 100000), ('blocks', 100000),
-  ('words', 100000),    ('drums', 100000),      ('map', 100000),   ('story', 100000),
-  ('bridge', 100000),   ('detective', 100000),  ('elevator', 100000), ('traffic', 100000),
-  ('garden', 100000),   ('bank', 100000),       ('camera', 100000), ('wire', 100000),
-  ('wind', 100000),     ('domino', 100000),     ('copy', 100000),  ('alphabet', 100000),
-  ('nardi', 100000),    ('lavash', 100000),     ('dance', 100000), ('sasuntsi', 100000),
-  ('rewind', 100000),   ('two', 100000),        ('mirror', 100000), ('grow', 100000),
-  ('silence', 100000),  ('onelife', 100000),    ('slow', 100000),  ('swap', 100000),
-  ('poly', 100000),     ('online', 100000),     ('rise', 100000);
+  ('cat-best', 100000),            ('aren-bird-best', 100000),      ('aren-rocket-best', 100000),
+  ('aren-fish-best', 100000),      ('aren-tower-best', 100000),     ('aren-moles-best', 100000),
+  ('aren-maze-max', 100000),       ('aren-race-level', 100000),     ('aren-memory-best', 100000),
+  ('aren-repeat-best', 100000),    ('aren-numbers-best', 100000),   ('aren-beat-best', 100000),
+  ('aren-ninja-best', 100000),     ('aren-men-best', 100000),       ('aren-runner-best', 100000),
+  ('aren-pipes-level', 100000),    ('aren-blocks-best', 100000),    ('aren-words-level', 100000),
+  ('aren-map-best', 100000),       ('aren-story-ends', 100000),     ('aren-bridge-level', 100000),
+  ('aren-detective-best', 100000), ('aren-elevator-best', 100000),  ('aren-traffic-best', 100000),
+  ('aren-garden-best', 100000),    ('aren-bank-best', 100000),      ('aren-camera-best', 100000),
+  ('aren-wire-level', 100000),     ('aren-wind-level', 100000),     ('aren-domino-level', 100000),
+  ('aren-copy-best', 100000),      ('aren-alphabet-best', 100000),  ('aren-nardi-best', 100000),
+  ('aren-lavash-best', 100000),    ('aren-dance-best', 100000),     ('aren-sasuntsi-best', 100000),
+  ('aren-rewind-best', 100000),    ('aren-two-best', 100000),       ('aren-mirror-best', 100000),
+  ('aren-grow-best', 100000),      ('aren-silence-best', 100000),   ('aren-onelife-best', 100000),
+  ('aren-slow-best', 100000),      ('aren-swap-best', 100000),      ('aren-poly-best', 100000),
+  ('aren-online-best', 100000),    ('aren-rise-best', 100000)
+on conflict (id) do nothing;
 
--- Golden Memory counts moves: fewer is better.
-update public.games set lower_is_better = true where id = 'memory';
+-- Golden Memory's pairs count moves: fewer is better.
+update public.games set lower_is_better = (id = 'aren-memory-best');
 
 
 -- ─── Rule 1: is this name allowed? ──────────────────────────────────
@@ -56,25 +67,25 @@ update public.games set lower_is_better = true where id = 'memory';
 -- numbers, links, and the obvious words for age, school and street in
 -- Armenian, Russian and English. What it cannot catch — a school's real
 -- name, say — is exactly what the director's delete button is for.
-create function public.name_ok(n text)
+create or replace function public.name_ok(n text)
 returns boolean
 language sql
 immutable
 as $$
   select n is not null
      and char_length(btrim(n)) between 1 and 20
-     and n !~ '@'                                         -- email
-     and n !~ '[0-9].*[0-9].*[0-9].*[0-9].*[0-9]'          -- 5+ digits: a phone number
-     and n !~* '(https?://|www\.|\.com|\.am|\.ru|\.net|\.org)'  -- links
-     and n !~* '(տարեկ|տարիք|years? ?old|лет|годик|возраст)'   -- age
-     and n !~* '(դպրոց|школ|school|լիցեյ|лице|гимназ)'         -- school
-     and n !~* '(փողոց|улиц|street|проспект|պողոտա)'          -- address
+     and n !~ '@'                                               -- email
+     and n !~ '[0-9].*[0-9].*[0-9].*[0-9].*[0-9]'                -- 5+ digits: a phone number
+     and n !~* '(https?://|www\.|\.com|\.am|\.ru|\.net|\.org)'   -- links
+     and n !~* '(տարեկ|տարիք|years? ?old|лет|годик|возраст)'      -- age
+     and n !~* '(դպրոց|школ|school|լիցեյ|лице|гимназ)'            -- school
+     and n !~* '(փողոց|улиц|street|проспект|պողոտա)'             -- address
 $$;
 
 
 -- ─── The scores ─────────────────────────────────────────────────────
--- One row per player per game; it only ever holds that player's best.
-create table public.scores (
+-- One row per player per record; it only ever holds that player's best.
+create table if not exists public.scores (
   id         bigint generated always as identity primary key,
   player     uuid not null references auth.users(id) on delete cascade,
   game       text not null references public.games(id),
@@ -86,25 +97,33 @@ create table public.scores (
   unique (player, game)
 );
 
-create index scores_board on public.scores (game, score desc);
-
-alter table public.scores enable row level security;
-alter table public.games  enable row level security;
--- No policies on purpose: direct access is closed to everyone but the
--- functions below, which run as the table owner.
+create index if not exists scores_board on public.scores (game, score desc);
 
 
 -- ─── Rule 3: who may delete ─────────────────────────────────────────
 -- Filled by hand in the dashboard with the user ids of Aren and Kamo.
-create table public.admins (
+create table if not exists public.admins (
   user_id uuid primary key,
   label   text
 );
+
+
+-- An earlier attempt may have left board ids that are game folders
+-- rather than records. Drop the ones no score points at.
+delete from public.games g
+ where g.id not like 'aren-%' and g.id <> 'cat-best'
+   and not exists (select 1 from public.scores s where s.game = g.id);
+
+
+alter table public.games  enable row level security;
+alter table public.scores enable row level security;
 alter table public.admins enable row level security;
+-- No policies on purpose: direct access is closed to everyone but the
+-- functions below, which run as the table owner.
 
 
 -- ─── Sending a score ────────────────────────────────────────────────
-create function public.submit_score(p_game text, p_name text, p_score integer)
+create or replace function public.submit_score(p_game text, p_name text, p_score integer)
 returns text
 language plpgsql
 security definer
@@ -133,7 +152,7 @@ begin
     return 'too-high';                    -- rule 2: the ceiling
   end if;
 
-  -- rule 2: one record per minute, across all games
+  -- rule 2: one record per minute, across all boards
   if exists (select 1 from public.scores
               where player = me and updated_at > now() - interval '60 seconds') then
     return 'too-soon';
@@ -164,7 +183,7 @@ $$;
 
 -- ─── Reading a board ────────────────────────────────────────────────
 -- Names, scores and dates only. The player id never leaves the database.
-create function public.top_scores(p_game text, p_limit integer default 20)
+create or replace function public.top_scores(p_game text, p_limit integer default 20)
 returns table (rank bigint, name text, score integer, at timestamptz, mine boolean)
 language sql
 stable
@@ -186,8 +205,7 @@ $$;
 
 
 -- ─── The director's button ──────────────────────────────────────────
--- Deletes one entry by name and game. Refuses anyone not in admins.
-create function public.admin_delete(p_game text, p_name text)
+create or replace function public.admin_delete(p_game text, p_name text)
 returns integer
 language plpgsql
 security definer
@@ -207,10 +225,9 @@ $$;
 
 
 -- ─── Who may call what ──────────────────────────────────────────────
--- Careful: revoking from PUBLIC is not enough on Supabase. Its default
+-- Revoking from PUBLIC is not enough on Supabase: its default
 -- privileges grant EXECUTE on every new function straight to anon and
--- authenticated, so those direct grants have to be taken away by name.
--- (Caught by testing this file against Supabase's real default grants.)
+-- authenticated, so those direct grants are taken away by name too.
 revoke all on function public.submit_score(text, text, integer) from public, anon, authenticated;
 revoke all on function public.top_scores(text, integer)         from public, anon, authenticated;
 revoke all on function public.admin_delete(text, text)          from public, anon, authenticated;
@@ -219,3 +236,10 @@ revoke all on function public.name_ok(text)                     from public, ano
 grant execute on function public.top_scores(text, integer)         to anon, authenticated;
 grant execute on function public.submit_score(text, text, integer) to authenticated;
 grant execute on function public.admin_delete(text, text)          to authenticated;
+
+
+-- ─── Done — this last line is what you should see in the results ────
+select 'Golden Games leaderboard ready: '
+       || (select count(*) from public.games)  || ' boards, '
+       || (select count(*) from public.scores) || ' scores, '
+       || (select count(*) from public.admins) || ' admins' as status;
