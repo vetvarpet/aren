@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Ոսկե Քաղաք 🏙 · Golden Games</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #8fc6ea; overflow: hidden;
+               font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif; color: #f5eede;
+               user-select: none; -webkit-user-select: none; touch-action: none; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  .ov { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; text-align: center; padding: 24px;
+        background: rgba(12,16,38,0.78); }
+  .ov[hidden] { display: none !important; }
+  .ov h1 { margin: 0 0 4px; font-size: 1.6rem; color: #ffd166; }
+  .ov .step { margin: 0 0 14px; font-size: 0.85rem; color: #9fd0ee; letter-spacing: 1px; }
+  .ov ul { list-style: none; margin: 0 0 20px; padding: 0; font-size: 0.92rem; line-height: 1.7; max-width: 340px; }
+  .ov button { font-family: inherit; font-size: 1.05rem; font-weight: bold; padding: 13px 34px;
+               border-radius: 14px; border: none; background: #ffd166; color: #2e2410; cursor: pointer; }
+  #tip { position: fixed; left: 0; right: 0; bottom: 18px; z-index: 10; text-align: center;
+         font-size: 0.82rem; pointer-events: none; text-shadow: 0 2px 6px #000; transition: opacity 1s; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:30;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;font-family:Arial,sans-serif;">← Golden Games</a>
+
+<canvas id="cv"></canvas>
+<div id="tip"></div>
+
+<div class="ov" id="menu">
+  <h1 id="mT">Ոսկե Քաղաք 🏙</h1>
+  <p class="step" id="mStep"></p>
+  <ul id="mHow"></ul>
+  <button id="startBtn"></button>
+</div>
+
+<script>
+// ——————————————————————————————————————————————————————————
+//  ՈՍԿԵ ՔԱՂԱՔ 🏙 — Արենի մեծ ծրագիրը
+//  Քաղաք, որտեղ ազատ ման ես գալիս։ Ոչ մի գողություն ու կռիվ —
+//  հետաքրքիրը քաղաքն ու աշխատանքներն են։
+//
+//  ՔԱՅԼ 1. քաղաքը + քայլել նրա մեջ։
+//
+//  Ինչպես է 3D-ն աշխատում առանց գրադարանների.
+//   • աշխարհում ամեն ինչ կետերով է (x, y, z) — y-ը վերև է
+//   • տեսախցիկը կանգնած է խաղացողի հետևում
+//   • ամեն կետը «տեղափոխում» ենք տեսախցիկի աչքերի մեջ,
+//     հետո բաժանում հեռավորության վրա — հեռուն փոքր է երևում
+//   • նախ նկարում ենք ամենահեռուն, հետո մոտերը (նկարչի կանոնը)
+// ——————————————————————————————————————————————————————————
+
+// Լեզուն ընտրվում է գլխավոր էջում մեկ անգամ, այստեղ միայն կարդում ենք
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+const TRL = {
+  hy: { t:'Ոսկե Քաղաք 🏙', step:'Քայլ 1 · քաղաքն ու քայլելը', go:'▶ Մտնել քաղաք',
+        how:['🕹 Ձախ մատով՝ քայլիր ու շրջվիր', '🏃 Մատդ հեռու տար՝ վազիր', '👀 Աջ մատով՝ նայիր շուրջդ'],
+        tip:'Ման արի քաղաքում — շուտով մեքենա էլ կլինի 🚗' },
+  ru: { t:'Золотой Город 🏙', step:'Шаг 1 · город и прогулка', go:'▶ В город',
+        how:['🕹 Левым пальцем — иди и поворачивай', '🏃 Отведи палец дальше — беги', '👀 Правым пальцем — смотри вокруг'],
+        tip:'Гуляй по городу — скоро будет и машина 🚗' },
+  en: { t:'Golden City 🏙', step:'Step 1 · the city and walking', go:'▶ Enter the city',
+        how:['🕹 Left finger: walk and turn', '🏃 Push it further: run', '👀 Right finger: look around'],
+        tip:'Explore the city — a car is coming soon 🚗' },
+  es: { t:'Ciudad Dorada 🏙', step:'Paso 1 · la ciudad y caminar', go:'▶ Entrar en la ciudad',
+        how:['🕹 Dedo izquierdo: camina y gira', '🏃 Llévalo más lejos: corre', '👀 Dedo derecho: mira alrededor'],
+        tip:'Pasea por la ciudad — pronto habrá coche 🚗' },
+  fr: { t:'Ville Dorée 🏙', step:'Étape 1 · la ville et la marche', go:'▶ Entrer en ville',
+        how:['🕹 Doigt gauche : marche et tourne', '🏃 Va plus loin avec le doigt : cours', '👀 Doigt droit : regarde autour'],
+        tip:'Promène-toi en ville — bientôt une voiture 🚗' },
+  de: { t:'Goldene Stadt 🏙', step:'Schritt 1 · die Stadt und Laufen', go:'▶ In die Stadt',
+        how:['🕹 Linker Finger: gehen und drehen', '🏃 Weiter ziehen: rennen', '👀 Rechter Finger: umschauen'],
+        tip:'Erkunde die Stadt — bald gibt es ein Auto 🚗' },
+  ja: { t:'ゴールデンシティ 🏙', step:'ステップ1・まちを あるこう', go:'▶ まちへ いく',
+        how:['🕹 ひだりの ゆびで あるく・まがる', '🏃 ゆびを とおくへ: はしる', '👀 みぎの ゆびで まわりを みる'],
+        tip:'まちを たんけんしよう — もうすぐ くるまも 🚗' },
+  zh: { t:'黄金城市 🏙', step:'第1步 · 城市和散步', go:'▶ 进城',
+        how:['🕹 左手指：走路和转弯', '🏃 手指推远一点：跑步', '👀 右手指：看看四周'],
+        tip:'在城里逛逛吧 — 很快就有汽车了 🚗' },
+  it: { t:'Città d’Oro 🏙', step:'Passo 1 · la città e camminare', go:'▶ Entra in città',
+        how:['🕹 Dito sinistro: cammina e gira', '🏃 Spingilo più lontano: corri', '👀 Dito destro: guardati intorno'],
+        tip:'Esplora la città — presto arriva l’auto 🚗' },
+  ka: { t:'ოქროს ქალაქი 🏙', step:'ნაბიჯი 1 · ქალაქი და სეირნობა', go:'▶ ქალაქში შესვლა',
+        how:['🕹 მარცხენა თითით: იარე და მოუხვიე', '🏃 თითი უფრო შორს: ირბინე', '👀 მარჯვენა თითით: მიმოიხედე'],
+        tip:'გაისეირნე ქალაქში — მალე მანქანაც იქნება 🚗' },
+  hi: { t:'गोल्डन सिटी 🏙', step:'कदम 1 · शहर और घूमना', go:'▶ शहर में चलो',
+        how:['🕹 बाएँ उँगली से: चलो और मुड़ो', '🏃 उँगली और दूर ले जाओ: दौड़ो', '👀 दाएँ उँगली से: चारों ओर देखो'],
+        tip:'शहर में घूमो — जल्दी ही कार भी आएगी 🚗' },
+  pt: { t:'Cidade Dourada 🏙', step:'Passo 1 · a cidade e andar', go:'▶ Entrar na cidade',
+        how:['🕹 Dedo esquerdo: anda e vira', '🏃 Leva-o mais longe: corre', '👀 Dedo direito: olha à volta'],
+        tip:'Passeia pela cidade — em breve há carro 🚗' },
+};
+const T = TRL[ggLang] || TRL.hy;
+const $ = id => document.getElementById(id);
+$('mT').textContent = T.t; $('mStep').textContent = T.step; $('startBtn').textContent = T.go;
+T.how.forEach(s => { const li = document.createElement('li'); li.textContent = s; $('mHow').appendChild(li); });
+document.title = T.t + ' · Golden Games';
+document.documentElement.lang = ggLang;
+
+// ——— 🔊 Ձայնը (միանում է առաջին հպումով) ———
+let actx = null;
+function initAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
+function tone(f, d, type, vol) {
+  if (!actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'sine'; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.1, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.1));
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + (d || 0.1));
+}
+// Հեռախոսը հպումից հետո «կեղծ» մկնիկ է ուղարկում — դրանք անտեսում ենք
+let lastTouchAt = 0;
+function ghost() { return Date.now() - lastTouchAt < 700; }
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTapT = 0;
+document.addEventListener('touchend', (e) => { const n = Date.now(); if (n - lastTapT < 350) e.preventDefault(); lastTapT = n; }, { passive: false });
+
+// ——— 🎨 Կտավը ———
+const cv = $('cv'), g = cv.getContext('2d');
+let W = 0, H = 0, focal = 400, CX = 0, CY = 0;
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);   // ավելին հեռախոսը դանդաղեցնում է
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  focal = Math.sqrt(W * H) * 0.85;   // նույն տեսադաշտը թե ուղղահայաց, թե պառկած հեռախոսում
+  CX = W / 2; CY = H / 2;
+}
+addEventListener('resize', resize); resize();
+
+// Միշտ նույն քաղաքն է կառուցվում — «պատահական», բայց նույն սերմից
+let seed = 1015;
+function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+function pick(a) { return a[Math.floor(rnd() * a.length)]; }
+
+// ——— ☀️ Լույսն ու մշուշը ———
+// Արևը վերևից ու մի քիչ կողքից է — ամեն պատ իր ուղղությամբ է լուսավորվում
+const SUN = (() => { const v = [0.45, 0.8, 0.38], l = Math.hypot(...v); return v.map(c => c / l); })();
+function shadeOf(nx, ny, nz) { return 0.58 + 0.42 * Math.max(0, nx * SUN[0] + ny * SUN[1] + nz * SUN[2]); }
+const HAZE = [205, 226, 238];
+const FAR = 170;           // սրանից հեռու ոչինչ չենք նկարում — մշուշի մեջ է
+function colorOf(c, sh, d) {
+  let f = (d - 35) / (FAR - 35); f = f < 0 ? 0 : f > 1 ? 1 : f; f *= 0.9;
+  const r = c[0] * sh * (1 - f) + HAZE[0] * f, gg = c[1] * sh * (1 - f) + HAZE[1] * f, b = c[2] * sh * (1 - f) + HAZE[2] * f;
+  return 'rgb(' + (r | 0) + ',' + (gg | 0) + ',' + (b | 0) + ')';
+}
+
+// ——— 📷 Տեսախցիկը ———
+const cam = { x: 0, y: 3, z: 0, yaw: 0, pitch: 0.15 };
+let cY = 1, sY = 0, cP = 1, sP = 0;
+const NEAR = 0.2;
+// Կետը աշխարհից տեղափոխում ենք տեսախցիկի «աչքերի» մեջ
+function toCam(x, y, z) {
+  const dx = x - cam.x, dy = y - cam.y, dz = z - cam.z;
+  const x1 = dx * cY - dz * sY, z1 = dx * sY + dz * cY;
+  return [x1, dy * cP + z1 * sP, z1 * cP - dy * sP];
+}
+// Բազմանկյուն նկարել. p = [x,y,z, x,y,z, ...]
+// Տեսախցիկի հետևում մնացած մասը կտրում ենք, որ նկարը չշրջվի
+function fillPoly(p, color) {
+  const n = p.length / 3, c = [];
+  let front = 0;
+  for (let i = 0; i < n; i++) { const q = toCam(p[i * 3], p[i * 3 + 1], p[i * 3 + 2]); c.push(q); if (q[2] > NEAR) front++; }
+  if (!front) return;
+  let pts = c;
+  if (front < n) {
+    pts = [];
+    for (let i = 0; i < n; i++) {
+      const a = c[i], b = c[(i + 1) % n];
+      const ina = a[2] > NEAR, inb = b[2] > NEAR;
+      if (ina) pts.push(a);
+      if (ina !== inb) {
+        const t = (NEAR - a[2]) / (b[2] - a[2]);
+        pts.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, NEAR]);
+      }
+    }
+    if (pts.length < 3) return;
+  }
+  g.beginPath();
+  let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+  for (let i = 0; i < pts.length; i++) {
+    const q = pts[i], sx = CX + q[0] / q[2] * focal, sy = CY - q[1] / q[2] * focal;
+    if (sx < minX) minX = sx; if (sx > maxX) maxX = sx; if (sy < minY) minY = sy; if (sy > maxY) maxY = sy;
+    if (i) g.lineTo(sx, sy); else g.moveTo(sx, sy);
+  }
+  if (maxX < 0 || minX > W || maxY < 0 || minY > H) return;   // էկրանից դուրս է
+  g.fillStyle = color;
+  g.fill();
+}
+
+// ——— 🧱 Ձևեր. ամեն ձև նիստերից է (face) ———
+// Նիստ = { p: կետեր, n: ո՞ր կողմ է նայում, sh: լուսավորություն, c: գույն }
+function face(p, c, ctr) {
+  // Նիստի ուղղությունը հաշվում ենք ու շրջում դեպի ձևի կենտրոնից դուրս
+  const ax = p[3] - p[0], ay = p[4] - p[1], az = p[5] - p[2];
+  const bx = p[6] - p[0], by = p[7] - p[1], bz = p[8] - p[2];
+  let nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
+  const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
+  if ((p[0] - ctr[0]) * nx + (p[1] - ctr[1]) * ny + (p[2] - ctr[2]) * nz < 0) { nx = -nx; ny = -ny; nz = -nz; }
+  return { p, n: [nx, ny, nz], sh: shadeOf(nx, ny, nz), c };
+}
+// Արկղ (ուղիղ անկյուններով)
+function box(x0, y0, z0, x1, y1, z1, c, top) {
+  const ctr = [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2];
+  return [
+    face([x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1], top || c, ctr),
+    face([x0, y0, z0, x0, y0, z1, x0, y1, z1, x0, y1, z0], c, ctr),
+    face([x1, y0, z0, x1, y0, z1, x1, y1, z1, x1, y1, z0], c, ctr),
+    face([x0, y0, z0, x1, y0, z0, x1, y1, z0, x0, y1, z0], c, ctr),
+    face([x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1], c, ctr),
+  ];
+}
+// Պրիզմա (կլոր բան՝ շատ կողերով) ու կոն (ծառի գագաթ)
+function prism(x, z, r, y0, y1, k, c, top, rot) {
+  const out = [], ctr = [x, (y0 + y1) / 2, z], tp = [];
+  for (let i = 0; i < k; i++) {
+    const a = (rot || 0) + i / k * Math.PI * 2, b = (rot || 0) + (i + 1) / k * Math.PI * 2;
+    const ax = x + Math.cos(a) * r, az = z + Math.sin(a) * r, bx = x + Math.cos(b) * r, bz = z + Math.sin(b) * r;
+    out.push(face([ax, y0, az, bx, y0, bz, bx, y1, bz, ax, y1, az], c, ctr));
+    tp.push(ax, y1, az);
+  }
+  out.push(face(tp, top || c, ctr));
+  return out;
+}
+function cone(x, z, r, y0, y1, k, c, rot) {
+  const out = [], ctr = [x, y0 + (y1 - y0) / 3, z];
+  for (let i = 0; i < k; i++) {
+    const a = (rot || 0) + i / k * Math.PI * 2, b = (rot || 0) + (i + 1) / k * Math.PI * 2;
+    out.push(face([x + Math.cos(a) * r, y0, z + Math.sin(a) * r, x + Math.cos(b) * r, y0, z + Math.sin(b) * r, x, y1, z], c, ctr));
+  }
+  return out;
+}
+
+// ——————————————————————————————————————————————————————————
+//  🏙 ՔԱՂԱՔԸ ԿԱՌՈՒՑՈՒՄ ԵՆՔ
+//  6 × 6 թաղամաս, մեջտեղով փողոցներ։ Թաղամասերի մեծ մասը շենքեր են,
+//  մեկը՝ հրապարակ շատրվանով, երկուսը՝ այգի, մեկում՝ Ոսկե աշտարակը։
+// ——————————————————————————————————————————————————————————
+const NB = 6, BL = 44, RD = 12, PITCH = BL + RD, SPAN = NB * PITCH + RD, HALF = SPAN / 2, SW = 3;
+const roadAt = i => -HALF + i * PITCH;          // փողոց i-ն՝ [roadAt, roadAt+RD]
+const blockAt = j => -HALF + j * PITCH + RD;    // թաղամաս j-ն՝ [blockAt, blockAt+BL]
+
+const C = {
+  grass: [118, 168, 84], grassDark: [96, 148, 70], asphalt: [74, 78, 86], walk: [196, 190, 178], yard: [178, 170, 156],
+  paving: [214, 200, 176], line: [240, 236, 220], zebra: [236, 236, 236], path: [206, 186, 150],
+  trunk: [112, 78, 52], leaf: [72, 140, 64], leaf2: [96, 160, 70], pine: [48, 112, 70],
+  stone: [200, 190, 175], water: [90, 170, 220], gold: [236, 186, 64], goldDark: [176, 128, 36],
+  pole: [70, 74, 82], lamp: [255, 236, 170], bench: [140, 96, 60], glass: [[84, 116, 156], [104, 142, 180], [70, 96, 132]],
+};
+// Երևանյան տուֆի գույներ — վարդագույն, նարնջագույն, կրեմ
+const TUFF = [[214, 158, 146], [222, 176, 136], [196, 140, 120], [230, 214, 180], [186, 176, 166], [160, 182, 196], [176, 198, 168], [232, 196, 160]];
+
+const ground = [];   // գետնի շերտեր — հերթականությամբ
+const marks = [];    // գծեր ու զեբրաներ (նկարում ենք միայն մոտիկները)
+const things = [];   // կանգնած բաներ՝ շենքեր, ծառեր, լապտերներ
+const solids = [];   // ինչի միջով չես կարող անցնել
+function gquad(x0, z0, x1, z1, c, list) { (list || ground).push({ p: [x0, 0, z0, x1, 0, z0, x1, 0, z1, x0, 0, z1], c, x: (x0 + x1) / 2, z: (z0 + z1) / 2 }); }
+function addThing(faces, x0, z0, x1, z1, extra) { const t = { faces, x0, z0, x1, z1, d: 0 }; if (extra) Object.assign(t, extra); things.push(t); return t; }
+function solid(x0, z0, x1, z1, h) { solids.push({ x0, z0, x1, z1, h: h || 1 }); }
+
+// Պատուհաններ շենքի մեկ պատին
+function windowsFor(f, x0, z0, x1, z1, h, ground1) {
+  const ux = x1 - x0, uz = z1 - z0, L = Math.hypot(ux, uz), dx = ux / L, dz = uz / L;
+  const ox = f.n[0] * 0.04, oz = f.n[2] * 0.04, out = [];
+  const cols = Math.max(1, Math.floor((L - 1.2) / 3.4)), m = (L - cols * 3.4) / 2;
+  const win = (s0, s1, y0, y1, c) => {
+    const a = m + s0, b = m + s1;
+    out.push({ p: [x0 + dx * a + ox, y0, z0 + dz * a + oz, x0 + dx * b + ox, y0, z0 + dz * b + oz,
+                   x0 + dx * b + ox, y1, z0 + dz * b + oz, x0 + dx * a + ox, y1, z0 + dz * a + oz], c });
+  };
+  for (let i = 0; i < cols; i++) {
+    const s = i * 3.4;
+    if (ground1) win(s + 0.4, s + 3.0, 0.5, 2.7, C.glass[1]);          // խանութի մեծ ապակի
+    for (let y = 3.8; y + 1.7 < h - 0.8; y += 3.2) win(s + 0.95, s + 2.45, y, y + 1.7, pick(C.glass));
+  }
+  return out;
+}
+function building(x0, z0, x1, z1, h, c, roof, shop) {
+  const faces = box(x0, 0, z0, x1, h, z1, c, roof);
+  // Կողերի պատուհանները (0-ն տանիքն է)
+  const sides = [[x0, z1, x0, z0], [x1, z0, x1, z1], [x1, z0, x0, z0], [x0, z1, x1, z1]];
+  for (let i = 1; i < 5; i++) { const s = sides[i - 1]; faces[i].win = windowsFor(faces[i], s[0], s[1], s[2], s[3], h, shop); }
+  addThing(faces, x0, z0, x1, z1);
+  solid(x0, z0, x1, z1, h);
+}
+function tree(x, z, kind) {
+  const r = 0.9 + rnd() * 0.5, rot = rnd() * 3;
+  let f = box(x - 0.18, 0, z - 0.18, x + 0.18, 2.2, z + 0.18, C.trunk);
+  if (kind === 'pine') f = f.concat(cone(x, z, 1.9 * r, 1.6, 6.5 * r, 7, C.pine, rot));
+  else {
+    const lf = rnd() < 0.5 ? C.leaf : C.leaf2;
+    f = f.concat(prism(x, z, 1.7 * r, 2.0, 3.6 * r + 0.6, 7, lf, null, rot), cone(x, z, 1.7 * r, 3.6 * r + 0.6, 5.2 * r + 0.6, 7, lf, rot));
+  }
+  addThing(f, x - 1.6, z - 1.6, x + 1.6, z + 1.6);
+  solid(x - 0.3, z - 0.3, x + 0.3, z + 0.3);
+}
+function lamp(x, z) {
+  const f = box(x - 0.08, 0, z - 0.08, x + 0.08, 4.4, z + 0.08, C.pole).concat(box(x - 0.25, 4.4, z - 0.25, x + 0.25, 4.8, z + 0.25, C.lamp, C.pole));
+  addThing(f, x - 0.25, z - 0.25, x + 0.25, z + 0.25);
+  solid(x - 0.15, z - 0.15, x + 0.15, z + 0.15);
+}
+function bench(x, z, alongX) {
+  const w = alongX ? 1.0 : 0.25, d = alongX ? 0.25 : 1.0;
+  addThing(box(x - w, 0, z - d, x + w, 0.5, z + d, C.bench), x - w, z - d, x + w, z + d);
+  solid(x - w, z - d, x + w, z + d);
+}
+
+// 1) Գետինը. ամբողջ քաղաքը ասֆալտ է, թաղամասերը՝ մայթ
+gquad(-HALF, -HALF, HALF, HALF, C.asphalt);
+const TYPE = {}; // ո՞ր թաղամասում ինչ կա
+TYPE['2,2'] = 'square'; TYPE['3,3'] = 'park'; TYPE['0,5'] = 'park'; TYPE['3,2'] = 'tower'; TYPE['5,0'] = 'park';
+for (let j = 0; j < NB; j++) for (let i = 0; i < NB; i++) {
+  const x0 = blockAt(i), z0 = blockAt(j), x1 = x0 + BL, z1 = z0 + BL;
+  const type = TYPE[i + ',' + j] || 'city';
+  gquad(x0, z0, x1, z1, C.walk);
+  const ix0 = x0 + SW, iz0 = z0 + SW, ix1 = x1 - SW, iz1 = z1 - SW;   // մայթից ներս
+  // Մայթի եզրի լապտերները
+  for (let k = 0; k < 2; k++) {
+    const t = 0.25 + k * 0.5;
+    lamp(x0 + BL * t, z0 + 0.8); lamp(x0 + BL * t, z1 - 0.8);
+  }
+  if (type === 'park') {
+    gquad(ix0, iz0, ix1, iz1, C.grass);
+    gquad((ix0 + ix1) / 2 - 1.5, iz0, (ix0 + ix1) / 2 + 1.5, iz1, C.path);
+    gquad(ix0, (iz0 + iz1) / 2 - 1.5, ix1, (iz0 + iz1) / 2 + 1.5, C.path);
+    for (let q = 0; q < 4; q++) {
+      const qx = q % 2 ? (ix0 + ix1) / 2 + 2 : ix0, qz = q < 2 ? iz0 : (iz0 + iz1) / 2 + 2;
+      for (let k = 0; k < 4; k++) tree(qx + 3 + rnd() * 11, qz + 3 + rnd() * 11, rnd() < 0.35 ? 'pine' : 'round');
+    }
+    bench((ix0 + ix1) / 2 + 3, (iz0 + iz1) / 2 - 7, false);
+    bench((ix0 + ix1) / 2 - 7, (iz0 + iz1) / 2 + 3, true);
+  } else if (type === 'square') {
+    // ⛲ Հրապարակ՝ մեջտեղում շատրվան
+    gquad(ix0, iz0, ix1, iz1, C.paving);
+    const fx = (x0 + x1) / 2, fz = (z0 + z1) / 2;
+    const f = prism(fx, fz, 5, 0, 0.7, 10, C.stone, C.water, 0.31)
+      .concat(prism(fx, fz, 1.1, 0.7, 1.6, 8, C.stone, null, 0.2), prism(fx, fz, 0.35, 1.6, 3.3, 6, C.stone, C.water));
+    addThing(f, fx - 5, fz - 5, fx + 5, fz + 5);
+    solid(fx - 4.6, fz - 4.6, fx + 4.6, fz + 4.6);
+    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4; tree(fx + Math.cos(a) * 14, fz + Math.sin(a) * 14, 'round'); }
+    bench(fx, fz - 9, true); bench(fx, fz + 9, true); bench(fx - 9, fz, false); bench(fx + 9, fz, false);
+  } else if (type === 'tower') {
+    // 🏆 Ոսկե աշտարակը — քաղաքի ամենաբարձր շենքը, հեռվից երևում է
+    gquad(ix0, iz0, ix1, iz1, C.paving);
+    const tx = (x0 + x1) / 2, tz = (z0 + z1) / 2;
+    building(tx - 9, tz - 9, tx + 9, tz + 9, 62, C.gold, C.goldDark, true);
+    addThing(box(tx - 4, 62, tz - 4, tx + 4, 68, tz + 4, C.goldDark, C.gold), tx - 4, tz - 4, tx + 4, tz + 4);
+  } else {
+    // 🏢 Սովորական թաղամաս՝ 2-ից 4 շենք
+    gquad(ix0, iz0, ix1, iz1, C.yard);
+    const inner = BL - SW * 2, half = inner / 2;
+    const split = rnd();
+    const cells = split < 0.33 ? [[0, 0, 2, 1], [0, 1, 2, 2]] : split < 0.66 ? [[0, 0, 1, 2], [1, 0, 2, 2]] : [[0, 0, 1, 1], [1, 0, 2, 1], [0, 1, 1, 2], [1, 1, 2, 2]];
+    for (const cl of cells) {
+      const bx0 = ix0 + cl[0] * half + 1.2, bz0 = iz0 + cl[1] * half + 1.2, bx1 = ix0 + cl[2] * half - 1.2, bz1 = iz0 + cl[3] * half - 1.2;
+      const hgt = 3.2 * (3 + Math.floor(rnd() * 6)) + 1;
+      const col = pick(TUFF), roof = col.map(v => v * 0.72);
+      building(bx0, bz0, bx1, bz1, hgt, col, roof, rnd() < 0.6);
+    }
+  }
+}
+// 2) Փողոցների գծերն ու զեբրաները
+for (let i = 0; i <= NB; i++) {
+  const r = roadAt(i) + RD / 2;
+  for (let j = 0; j < NB; j++) {
+    const b = blockAt(j);
+    for (let s = b + 6; s < b + BL - 6; s += 7) {
+      gquad(r - 0.12, s, r + 0.12, s + 3, C.line, marks);     // հյուսիս-հարավ փողոց
+      gquad(s, r - 0.12, s + 3, r + 0.12, C.line, marks);     // արևելք-արևմուտք փողոց
+    }
+    // Զեբրաներ խաչմերուկների մոտ
+    for (const zz of [b + 0.6, b + BL - 3.4]) for (let k = 0; k < 6; k++) {
+      const x = roadAt(i) + 0.8 + k * 1.8;
+      gquad(x, zz, x + 1, zz + 2.8, C.zebra, marks);
+      gquad(zz, x, zz + 2.8, x + 1, C.zebra, marks);
+    }
+  }
+}
+// Քաղաքի եզրը՝ ցածր պատ, որ դուրս չընկնես
+solid(-HALF - 5, -HALF - 5, HALF + 5, -HALF + 0.5); solid(-HALF - 5, HALF - 0.5, HALF + 5, HALF + 5);
+solid(-HALF - 5, -HALF - 5, -HALF + 0.5, HALF + 5); solid(HALF - 0.5, -HALF - 5, HALF + 5, HALF + 5);
+for (const [x0, z0, x1, z1] of [[-HALF - 0.4, -HALF - 0.4, HALF + 0.4, -HALF], [-HALF - 0.4, HALF, HALF + 0.4, HALF + 0.4], [-HALF - 0.4, -HALF, -HALF, HALF], [HALF, -HALF, HALF + 0.4, HALF]])
+  addThing(box(x0, 0, z0, x1, 0.9, z1, C.stone), x0, z0, x1, z1, { big: true });
+// Քաղաքից դուրս՝ բլուրներ ու ծառեր
+for (let k = 0; k < 70; k++) {
+  const a = rnd() * Math.PI * 2, d = HALF + 8 + rnd() * 30;
+  tree(Math.cos(a) * d, Math.sin(a) * d, rnd() < 0.5 ? 'pine' : 'round');
+}
+
+// ——— 🧒 ԽԱՂԱՑՈՂԸ ———
+// Կանգնում է հրապարակի մոտ փողոցում, դեմքով դեպի շատրվանն ու Արարատը
+const P = { x: blockAt(2) + BL / 2, z: roadAt(3) + RD / 2, yaw: Math.PI, speed: 0, phase: 0, r: 0.35 };
+function hits(x, z) {
+  for (const s of solids) if (x > s.x0 - P.r && x < s.x1 + P.r && z > s.z0 - P.r && z < s.z1 + P.r) return true;
+  return false;
+}
+// Մարդուկը մի քանի արկղից է՝ ոտքեր, մարմին, ձեռքեր, գլուխ
+const SHIRT = [242, 190, 60], PANTS = [52, 74, 134], SKIN = [240, 200, 160], HAIR = [70, 46, 30], SHOE = [40, 40, 46], EYE = [30, 30, 40];
+function oBox(px, py, pz, hw, hh, hd, c, ox, oy, oz) {
+  // Արկղ խաղացողի «ներսի» կոորդինատներով, հետո պտտում ենք նրա ուղղությամբ
+  const cs = Math.cos(P.yaw), sn = Math.sin(P.yaw);
+  const pt = (lx, ly, lz) => [P.x + lx * cs + lz * sn, ly, P.z - lx * sn + lz * cs];
+  const v = [];
+  for (const [a, b, d] of [[-1, -1, -1], [1, -1, -1], [1, -1, 1], [-1, -1, 1], [-1, 1, -1], [1, 1, -1], [1, 1, 1], [-1, 1, 1]])
+    v.push(pt(ox + a * hw, oy + b * hh, oz + d * hd));
+  const ctr = pt(ox, oy, oz);
+  const F = (i, j, k, l) => face([...v[i], ...v[j], ...v[k], ...v[l]], c, ctr);
+  return { faces: [F(4, 5, 6, 7), F(0, 1, 5, 4), F(3, 2, 6, 7), F(0, 3, 7, 4), F(1, 2, 6, 5)], ctr };
+}
+function playerParts() {
+  const sw = Math.sin(P.phase) * Math.min(1, P.speed / 3), bob = Math.abs(Math.cos(P.phase)) * 0.04 * Math.min(1, P.speed / 3);
+  const legA = sw * 0.2, armA = -sw * 0.18;
+  return [
+    oBox(0, 0, 0, 0.085, 0.36, 0.1, PANTS, -0.11, 0.38 + Math.max(0, -sw) * 0.05, legA),
+    oBox(0, 0, 0, 0.085, 0.36, 0.1, PANTS, 0.11, 0.38 + Math.max(0, sw) * 0.05, -legA),
+    oBox(0, 0, 0, 0.09, 0.05, 0.13, SHOE, -0.11, 0.05 + Math.max(0, -sw) * 0.05, legA + 0.03),
+    oBox(0, 0, 0, 0.09, 0.05, 0.13, SHOE, 0.11, 0.05 + Math.max(0, sw) * 0.05, -legA + 0.03),
+    oBox(0, 0, 0, 0.23, 0.3, 0.13, SHIRT, 0, 1.05 + bob, 0),
+    oBox(0, 0, 0, 0.065, 0.28, 0.07, SHIRT, -0.3, 1.07 + bob, armA),
+    oBox(0, 0, 0, 0.065, 0.28, 0.07, SHIRT, 0.3, 1.07 + bob, -armA),
+    oBox(0, 0, 0, 0.17, 0.17, 0.17, SKIN, 0, 1.55 + bob, 0),
+    oBox(0, 0, 0, 0.18, 0.05, 0.18, HAIR, 0, 1.74 + bob, -0.01),
+    oBox(0, 0, 0, 0.18, 0.12, 0.04, HAIR, 0, 1.6 + bob, -0.16),
+    oBox(0, 0, 0, 0.03, 0.035, 0.012, EYE, -0.07, 1.58 + bob, 0.172),
+    oBox(0, 0, 0, 0.03, 0.035, 0.012, EYE, 0.07, 1.58 + bob, 0.172),
+  ];
+}
+
+// ——— 🏔 Արարատը հորիզոնում (Մասիս ու Սիս) ———
+// Շատ հեռու է — տեսախցիկի հետ «գնում է», ինչպես իսկական սարը
+const MT_DIR = Math.PI;   // հարավում է (z-ի բացասական կողմը)
+const MASIS = [[-0.16, -0.3], [-0.06, 1.6], [0.02, 3.4], [0.06, 4.6], [0.085, 5.6], [0.1, 5.9], [0.12, 5.5], [0.16, 4.2], [0.22, 2.6], [0.3, 1.0], [0.38, -0.3]];
+const MASIS_SNOW = [[0.03, 3.6], [0.06, 4.6], [0.085, 5.6], [0.1, 5.9], [0.12, 5.5], [0.16, 4.2], [0.19, 3.3], [0.15, 3.9], [0.12, 3.4], [0.09, 4.0], [0.06, 3.5]];
+const SIS = [[-0.36, -0.3], [-0.28, 1.0], [-0.22, 2.4], [-0.2, 2.7], [-0.17, 2.3], [-0.1, 0.9], [-0.04, -0.3]];
+const CLOUDS = [[0.3, 14, 70], [1.4, 18, 90], [2.3, 11, 60], [3.4, 16, 110], [4.3, 13, 80], [5.4, 20, 70]];
+function skyPoint(az, elDeg) {
+  const D = 4000, a = MT_DIR + az;
+  return [cam.x + Math.sin(a) * D, Math.tan(elDeg * Math.PI / 180) * D, cam.z + Math.cos(a) * D];
+}
+function drawMountain(list, color) { fillPoly(list.flatMap(([a, e]) => skyPoint(a, e)), color); }
+
+// ——————————————————————————————————————————————————————————
+//  🖐 ԿԱՌԱՎԱՐՈՒՄԸ
+//  Ձախ կեսում մատդ դնում ես — այնտեղ ջոյսթիք է հայտնվում։
+//  Վեր՝ առաջ, վար՝ հետ, կողքեր՝ շրջվել։ Հեռու տարար՝ վազում ես։
+//  Աջ կեսում քաշում ես — տեսախցիկը շուրջդ է նայում։
+// ——————————————————————————————————————————————————————————
+const stick = { id: null, ox: 0, oy: 0, x: 0, y: 0, on: false };
+const look = { id: null, lx: 0, ly: 0, yaw: 0, pitch: 0, idle: 0 };
+const keys = {};
+let state = 'menu';
+const STICK_R = 54;
+function stickDown(id, x, y) { stick.id = id; stick.ox = x; stick.oy = y; stick.x = 0; stick.y = 0; stick.on = true; }
+function stickMove(x, y) {
+  let dx = x - stick.ox, dy = y - stick.oy; const l = Math.hypot(dx, dy);
+  if (l > STICK_R) { dx *= STICK_R / l; dy *= STICK_R / l; }
+  stick.x = dx / STICK_R; stick.y = dy / STICK_R;
+}
+function lookMove(x, y) {
+  look.yaw -= (x - look.lx) * 0.008; look.pitch += (y - look.ly) * 0.004;
+  look.pitch = Math.max(-0.25, Math.min(0.35, look.pitch));
+  look.lx = x; look.ly = y; look.idle = 0;
+}
+function onDown(id, x, y) {
+  if (state !== 'play') return;
+  if (x < W * 0.5) { if (stick.id === null) stickDown(id, x, y); }
+  else if (look.id === null) { look.id = id; look.lx = x; look.ly = y; }
+}
+function onMove(id, x, y) { if (id === stick.id) stickMove(x, y); else if (id === look.id) lookMove(x, y); }
+function onUp(id) {
+  if (id === stick.id) { stick.id = null; stick.on = false; stick.x = 0; stick.y = 0; }
+  if (id === look.id) look.id = null;
+}
+cv.addEventListener('touchstart', (e) => {
+  e.preventDefault(); lastTouchAt = Date.now(); initAudio();
+  for (const t of e.changedTouches) onDown(t.identifier, t.clientX, t.clientY);
+}, { passive: false });
+cv.addEventListener('touchmove', (e) => { e.preventDefault(); for (const t of e.changedTouches) onMove(t.identifier, t.clientX, t.clientY); }, { passive: false });
+const tEnd = (e) => { lastTouchAt = Date.now(); for (const t of e.changedTouches) onUp(t.identifier); };
+cv.addEventListener('touchend', tEnd); cv.addEventListener('touchcancel', tEnd);
+cv.addEventListener('mousedown', (e) => { if (ghost()) return; initAudio(); onDown('m', e.clientX, e.clientY); });
+addEventListener('mousemove', (e) => { if (ghost()) return; onMove('m', e.clientX, e.clientY); });
+addEventListener('mouseup', () => { if (ghost()) return; onUp('m'); });
+addEventListener('keydown', (e) => { keys[e.code] = true; if (e.code.startsWith('Arrow') || e.code === 'Space') e.preventDefault(); });
+addEventListener('keyup', (e) => { keys[e.code] = false; });
+addEventListener('blur', () => { for (const k in keys) keys[k] = false; onUp(stick.id); onUp(look.id); });
+
+// ——— ▶ Սկիզբ ———
+let tipTimer = 0;
+$('startBtn').addEventListener('click', () => {
+  initAudio();
+  state = 'play';
+  $('menu').hidden = true;
+  $('tip').textContent = T.tip; $('tip').style.opacity = '1'; tipTimer = 6;
+  tone(523, 0.12, 'triangle', 0.08); setTimeout(() => tone(784, 0.18, 'triangle', 0.08), 110);
+});
+
+// ——————————————————————————————————————————————————————————
+//  🔁 ԱՄԵՆ ԿԱԴՐ. նախ շարժվում ենք, հետո նկարում
+// ——————————————————————————————————————————————————————————
+let camYaw = P.yaw, lastStep = 0;
+const CAM_DIST = 5.2, CAM_H = 2.7;
+function update(dt) {
+  // Ստեղնաշարն էլ է աշխատում՝ սլաքներ կամ WASD, Shift՝ վազել
+  let ix = stick.x, iy = stick.y;
+  const kx = (keys.ArrowRight || keys.KeyD ? 1 : 0) - (keys.ArrowLeft || keys.KeyA ? 1 : 0);
+  const ky = (keys.ArrowDown || keys.KeyS ? 1 : 0) - (keys.ArrowUp || keys.KeyW ? 1 : 0);
+  if (kx || ky) { ix = kx; iy = ky * (keys.ShiftLeft || keys.ShiftRight ? 1 : 0.7); }
+  if (state !== 'play') { ix = 0; iy = 0; }
+  const mag = Math.hypot(ix, iy);
+  // Շրջվել
+  if (Math.abs(ix) > 0.12) P.yaw += ix * 2.6 * dt;
+  // Առաջ-հետ. ուժեղ հրեցիր՝ վազում ես
+  let want = 0;
+  if (iy < -0.15) want = (mag > 0.88 ? 6.8 : 3.4) * Math.min(1, -iy / 0.7);
+  else if (iy > 0.25) want = -2.0;
+  P.speed += (want - P.speed) * Math.min(1, dt * 8);
+  const vx = Math.sin(P.yaw) * P.speed * dt, vz = Math.cos(P.yaw) * P.speed * dt;
+  if (!hits(P.x + vx, P.z)) P.x += vx;
+  if (!hits(P.x, P.z + vz)) P.z += vz;
+  P.phase += Math.abs(P.speed) * dt * 3.2;
+  // Քայլերի թեթև ձայնը
+  const stepN = Math.floor(P.phase / Math.PI);
+  if (stepN !== lastStep) { lastStep = stepN; if (Math.abs(P.speed) > 0.5) tone(Math.abs(P.speed) > 5 ? 150 : 120, 0.05, 'triangle', 0.035); }
+
+  // Տեսախցիկը կամաց գալիս է խաղացողի թիկունքը
+  if (look.id === null) { look.idle += dt; if (look.idle > 1.2) { look.yaw *= Math.pow(0.08, dt); look.pitch *= Math.pow(0.08, dt); } }
+  let dy = P.yaw - camYaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+  camYaw += dy * Math.min(1, dt * 5);
+  const yaw = camYaw + look.yaw;
+  // Եթե տեսախցիկը շենքի պատի մեջ է ընկնում՝ մոտեցնում ենք խաղացողին։
+  // Շատ մոտ չենք բերում. եթե էլի ներսում է, շենքը պարզապես «թափանցիկ» է դառնում։
+  let dist = CAM_DIST;
+  for (let s = 1.8; s <= CAM_DIST; s += 0.2) {
+    const x = P.x - Math.sin(yaw) * s, z = P.z - Math.cos(yaw) * s;
+    let inside = false;
+    for (const b of solids) if (b.h > 3 && x > b.x0 - 0.3 && x < b.x1 + 0.3 && z > b.z0 - 0.3 && z < b.z1 + 0.3) { inside = true; break; }
+    if (inside) { dist = Math.max(1.8, s - 0.3); break; }
+  }
+  const camH = 1.4 + (CAM_H - 1.4) * (dist / CAM_DIST);
+  cam.x = P.x - Math.sin(yaw) * dist; cam.z = P.z - Math.cos(yaw) * dist; cam.y = camH;
+  cam.yaw = yaw; cam.pitch = Math.atan2(camH - 1.9, dist + 2) + look.pitch;
+  cY = Math.cos(cam.yaw); sY = Math.sin(cam.yaw); cP = Math.cos(cam.pitch); sP = Math.sin(cam.pitch);
+
+  if (tipTimer > 0) { tipTimer -= dt; if (tipTimer <= 0) $('tip').style.opacity = '0'; }
+}
+
+// Ամենամոտ կետը ուղղանկյան վրա — սրանով ենք որոշում, ինչը նախ նկարել
+function nearDist(t) {
+  const x = Math.max(t.x0, Math.min(cam.x, t.x1)), z = Math.max(t.z0, Math.min(cam.z, t.z1));
+  return Math.hypot(x - cam.x, z - cam.z);
+}
+// Արդյոք տեսախցիկի առջևում է (թե չէ իզուր չնկարենք)
+function inView(t, r) {
+  const mx = (t.x0 + t.x1) / 2 - cam.x, mz = (t.z0 + t.z1) / 2 - cam.z;
+  const zf = mx * sY + mz * cY, xs = mx * cY - mz * sY;
+  return zf > -r && Math.abs(xs) < zf * (W / 2 / focal) + r * 1.5;
+}
+// Ո՞րն է ավելի մոտ տեսախցիկին — եթե իրար հետ չեն խառնվում, կողքից նայելով ճշգրիտ ենք որոշում
+function inFront(a, b) {
+  if (a.x1 <= b.x0) return cam.x < (a.x1 + b.x0) / 2;
+  if (b.x1 <= a.x0) return cam.x > (b.x1 + a.x0) / 2;
+  if (a.z1 <= b.z0) return cam.z < (a.z1 + b.z0) / 2;
+  if (b.z1 <= a.z0) return cam.z > (b.z1 + a.z0) / 2;
+  return a.d < b.d;
+}
+function drawThing(t) {
+  const d = t.d;
+  for (const f of t.faces) {
+    const p = f.p;
+    if ((cam.x - p[0]) * f.n[0] + (cam.y - p[1]) * f.n[1] + (cam.z - p[2]) * f.n[2] <= 0) continue;   // մեջքով է դեպի մեզ
+    fillPoly(p, colorOf(f.c, f.sh, d));
+    if (f.win && d < 80) for (const w of f.win) fillPoly(w.p, colorOf(w.c, f.sh, d));
+  }
+}
+function render() {
+  // 1) Երկինք
+  const hz = CY - Math.tan(cam.pitch) * focal;   // հորիզոնի գիծը
+  const sky = g.createLinearGradient(0, 0, 0, Math.max(1, hz));
+  sky.addColorStop(0, '#5fa8e2'); sky.addColorStop(1, '#cfe6f2');
+  g.fillStyle = sky; g.fillRect(0, 0, W, Math.max(0, hz) + 1);
+  // Ամպեր
+  g.fillStyle = 'rgba(255,255,255,0.85)';
+  for (const [a, el, w] of CLOUDS) {
+    const q = toCam(...skyPoint(a, el));
+    if (q[2] < 1) continue;
+    const sx = CX + q[0] / q[2] * focal, sy = CY - q[1] / q[2] * focal, s = focal / 500;
+    g.beginPath(); g.ellipse(sx, sy, w * s, w * 0.22 * s, 0, 0, Math.PI * 2);
+    g.ellipse(sx + w * 0.3 * s, sy - w * 0.12 * s, w * 0.45 * s, w * 0.2 * s, 0, 0, Math.PI * 2); g.fill();
+  }
+  // 2) Արարատը
+  drawMountain(SIS, 'rgb(158,150,178)');
+  drawMountain(MASIS, 'rgb(150,142,172)');
+  drawMountain(MASIS_SNOW, 'rgb(246,248,252)');
+  // 3) Գետինը՝ դաշտ, հետո քաղաքը
+  g.fillStyle = 'rgb(126,166,96)'; g.fillRect(0, hz, W, H - hz + 1);
+  for (const q of ground) {
+    if (Math.abs(q.x - cam.x) > FAR + 40 || Math.abs(q.z - cam.z) > FAR + 40) continue;
+    fillPoly(q.p, colorOf(q.c, 1, 0));
+  }
+  for (const q of marks) {
+    const dx = q.x - cam.x, dz = q.z - cam.z;
+    if (dx * dx + dz * dz > 60 * 60 || dx * sY + dz * cY < -3) continue;
+    fillPoly(q.p, colorOf(q.c, 1, 0));
+  }
+  // Մշուշը հորիզոնի մոտ
+  const hg = g.createLinearGradient(0, hz - 2, 0, hz + H * 0.14);
+  hg.addColorStop(0, 'rgba(205,226,238,1)'); hg.addColorStop(1, 'rgba(205,226,238,0)');
+  g.fillStyle = hg; g.fillRect(0, hz - 2, W, H * 0.14 + 2);
+
+  // 4) Կանգնած բաները՝ հեռվից մոտ
+  const list = [];
+  for (const t of things) {
+    t.d = nearDist(t);
+    if (t.d > FAR) continue;
+    const r = Math.max(t.x1 - t.x0, t.z1 - t.z0) * 0.75 + 2;
+    if (!t.big && !inView(t, r)) continue;
+    list.push(t);
+  }
+  // Խաղացողն էլ «բան» է — իր մասերով
+  const parts = playerParts();
+  const me = { x0: P.x - 0.3, x1: P.x + 0.3, z0: P.z - 0.3, z1: P.z + 0.3, me: true };
+  me.d = nearDist(me);
+  list.sort((a, b) => b.d - a.d);
+  // Խաղացողին ճիշտ տեղը դնելու համար՝ մոտիկ բաներից որոնք են նրա առջևում
+  const behind = [], ahead = [];
+  for (const t of list) (t.d < me.d + 25 && inFront(t, me) ? ahead : behind).push(t);
+  const order = behind.concat([me], ahead);
+  for (const t of order) {
+    if (t.me) {
+      parts.sort((a, b) => Math.hypot(b.ctr[0] - cam.x, b.ctr[1] - cam.y, b.ctr[2] - cam.z) - Math.hypot(a.ctr[0] - cam.x, a.ctr[1] - cam.y, a.ctr[2] - cam.z));
+      for (const pt of parts) drawThing({ faces: pt.faces, d: me.d });
+    } else drawThing(t);
+  }
+
+  // 5) Ջոյսթիքը
+  if (state === 'play') {
+    const bx = stick.on ? stick.ox : Math.min(110, W * 0.22), by = stick.on ? stick.oy : H - 120;
+    g.globalAlpha = stick.on ? 0.55 : 0.28;
+    g.fillStyle = '#141a22'; g.beginPath(); g.arc(bx, by, STICK_R + 8, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#ffffff'; g.lineWidth = 2; g.stroke();
+    g.globalAlpha = stick.on ? 0.9 : 0.45;
+    g.fillStyle = '#ffd166'; g.beginPath(); g.arc(bx + stick.x * STICK_R, by + stick.y * STICK_R, 24, 0, Math.PI * 2); g.fill();
+    g.globalAlpha = 1;
+  }
+}
+
+let lastT = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
+  update(dt);
+  render();
+  requestAnimationFrame(frame);
+}
+update(0);
+requestAnimationFrame(frame);
+
+// Թեստերի համար՝ դրսից նայելու դուռ
+window.__city = { P, cam, things, solids, get state() { return state; } };
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, նկար -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
+</body>
+</html>
