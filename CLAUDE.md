@@ -17,6 +17,7 @@ Site owner and director: **Aren Aghbalyan (Արեն)**, age 10, in Armenia — s
 2. `git push -u origin <branch>`
 3. `git checkout main && git merge --ff-only <branch> && git push origin main && git checkout <branch>`
 4. Vercel auto-deploys `main` → **https://aren-alpha.vercel.app** — always send Aren that link.
+5. **Every single reply to Aren ends with that link** — https://aren-alpha.vercel.app — whether or not anything was deployed in it (his rule). **Never** link `aren10.vercel.app`.
 
 ## Testing (non-negotiable)
 
