@@ -25,6 +25,12 @@
             box-shadow: 0 4px 14px rgba(0,0,0,0.35); touch-action: none; }
   #carBtn[hidden] { display: none !important; }
   #carBtn:active { transform: scale(0.94); }
+  #money { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 15; pointer-events: none;
+           font-weight: bold; font-size: 1.05rem; padding: 6px 14px; border-radius: 999px; white-space: nowrap;
+           background: rgba(20,26,34,0.78); border: 2px solid #7ed98f; color: #c8f5cf; }
+  #money[hidden] { display: none !important; }
+  #money.pop { animation: mpop 0.4s; }
+  @keyframes mpop { 40% { transform: translateX(-50%) scale(1.25); } }
   #tip { position: fixed; left: 0; right: 0; bottom: 18px; z-index: 10; text-align: center;
          font-size: 0.82rem; pointer-events: none; text-shadow: 0 2px 6px #000; transition: opacity 1s; }
 </style>
@@ -36,6 +42,7 @@
 <canvas id="cv"></canvas>
 <div id="tip"></div>
 <button id="carBtn" hidden></button>
+<div id="money" hidden>֏ 0</div>
 
 <div class="ov" id="menu">
   <h1 id="mT">Ոսկե Քաղաք 🏙</h1>
@@ -52,6 +59,7 @@
 //
 //  ՔԱՅԼ 1. քաղաքը + քայլել նրա մեջ։
 //  ՔԱՅԼ 2. մեքենա նստել ու քշել։
+//  ՔԱՅԼ 3. փոքր քարտեզ, ֏ փողեր ու փողոցներով քշող մեքենաներ։
 //
 //  Ինչպես է 3D-ն աշխատում առանց գրադարանների.
 //   • աշխարհում ամեն ինչ կետերով է (x, y, z) — y-ը վերև է
@@ -65,54 +73,66 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { t:'Ոսկե Քաղաք 🏙', step:'Քայլ 2 · մեքենան', go:'▶ Մտնել քաղաք',
-        how:['🕹 Ձախ մատով՝ քայլիր ու շրջվիր', '🏃 Մատդ հեռու տար՝ վազիր', '👀 Աջ մատով՝ նայիր շուրջդ', '🚗 Մոտեցիր մեքենային ու սեղմիր «Նստել»'],
+  hy: { t:'Ոսկե Քաղաք 🏙', step:'Քայլ 3 · քարտեզ, ֏ ու երթևեկություն', go:'▶ Մտնել քաղաք',
+        how:['🕹 Ձախ մատով՝ քայլիր ու շրջվիր', '🏃 Մատդ հեռու տար՝ վազիր', '👀 Աջ մատով՝ նայիր շուրջդ', '🚗 Մոտեցիր մեքենային ու սեղմիր «Նստել»', '֏ Հավաքիր փողերը փողոցներում'],
         tip:'Գտիր մեքենա ու նստիր 🚗',
-        enter:'🚗 Նստել', exit:'🚶 Իջնել', dtip:'Վեր՝ գազ · վար՝ արգելակ ու ետ · կողքեր՝ ղեկ' },
-  ru: { t:'Золотой Город 🏙', step:'Шаг 2 · машина', go:'▶ В город',
-        how:['🕹 Левым пальцем — иди и поворачивай', '🏃 Отведи палец дальше — беги', '👀 Правым пальцем — смотри вокруг', '🚗 Подойди к машине и нажми «Сесть»'],
+        enter:'🚗 Նստել', exit:'🚶 Իջնել', dtip:'Վեր՝ գազ · վար՝ արգելակ ու ետ · կողքեր՝ ղեկ',
+        ask:'🙋 Խնդրել', lend:'Վարորդը սիրով տվեց իր մեքենան 🙂' },
+  ru: { t:'Золотой Город 🏙', step:'Шаг 3 · карта, ֏ и движение', go:'▶ В город',
+        how:['🕹 Левым пальцем — иди и поворачивай', '🏃 Отведи палец дальше — беги', '👀 Правым пальцем — смотри вокруг', '🚗 Подойди к машине и нажми «Сесть»', '֏ Собирай деньги на улицах'],
         tip:'Найди машину и садись 🚗',
-        enter:'🚗 Сесть', exit:'🚶 Выйти', dtip:'Вверх — газ · вниз — тормоз и назад · в стороны — руль' },
-  en: { t:'Golden City 🏙', step:'Step 2 · the car', go:'▶ Enter the city',
-        how:['🕹 Left finger: walk and turn', '🏃 Push it further: run', '👀 Right finger: look around', '🚗 Walk up to a car and tap “Get in”'],
+        enter:'🚗 Сесть', exit:'🚶 Выйти', dtip:'Вверх — газ · вниз — тормоз и назад · в стороны — руль',
+        ask:'🙋 Попросить', lend:'Водитель с радостью отдал машину 🙂' },
+  en: { t:'Golden City 🏙', step:'Step 3 · map, ֏ and traffic', go:'▶ Enter the city',
+        how:['🕹 Left finger: walk and turn', '🏃 Push it further: run', '👀 Right finger: look around', '🚗 Walk up to a car and tap “Get in”', '֏ Pick up the money in the streets'],
         tip:'Find a car and get in 🚗',
-        enter:'🚗 Get in', exit:'🚶 Get out', dtip:'Up: gas · down: brake and reverse · sideways: steer' },
-  es: { t:'Ciudad Dorada 🏙', step:'Paso 2 · el coche', go:'▶ Entrar en la ciudad',
-        how:['🕹 Dedo izquierdo: camina y gira', '🏃 Llévalo más lejos: corre', '👀 Dedo derecho: mira alrededor', '🚗 Acércate a un coche y toca «Subir»'],
+        enter:'🚗 Get in', exit:'🚶 Get out', dtip:'Up: gas · down: brake and reverse · sideways: steer',
+        ask:'🙋 Ask', lend:'The driver happily lent you the car 🙂' },
+  es: { t:'Ciudad Dorada 🏙', step:'Paso 3 · mapa, ֏ y tráfico', go:'▶ Entrar en la ciudad',
+        how:['🕹 Dedo izquierdo: camina y gira', '🏃 Llévalo más lejos: corre', '👀 Dedo derecho: mira alrededor', '🚗 Acércate a un coche y toca «Subir»', '֏ Recoge el dinero de las calles'],
         tip:'Busca un coche y súbete 🚗',
-        enter:'🚗 Subir', exit:'🚶 Bajar', dtip:'Arriba: acelerar · abajo: frenar y atrás · a los lados: girar' },
-  fr: { t:'Ville Dorée 🏙', step:'Étape 2 · la voiture', go:'▶ Entrer en ville',
-        how:['🕹 Doigt gauche : marche et tourne', '🏃 Va plus loin avec le doigt : cours', '👀 Doigt droit : regarde autour', '🚗 Approche-toi d’une voiture et touche « Monter »'],
+        enter:'🚗 Subir', exit:'🚶 Bajar', dtip:'Arriba: acelerar · abajo: frenar y atrás · a los lados: girar',
+        ask:'🙋 Pedir', lend:'El conductor te prestó el coche encantado 🙂' },
+  fr: { t:'Ville Dorée 🏙', step:'Étape 3 · carte, ֏ et circulation', go:'▶ Entrer en ville',
+        how:['🕹 Doigt gauche : marche et tourne', '🏃 Va plus loin avec le doigt : cours', '👀 Doigt droit : regarde autour', '🚗 Approche-toi d’une voiture et touche « Monter »', '֏ Ramasse l’argent dans les rues'],
         tip:'Trouve une voiture et monte 🚗',
-        enter:'🚗 Monter', exit:'🚶 Descendre', dtip:'Haut : accélérer · bas : freiner et reculer · côtés : tourner' },
-  de: { t:'Goldene Stadt 🏙', step:'Schritt 2 · das Auto', go:'▶ In die Stadt',
-        how:['🕹 Linker Finger: gehen und drehen', '🏃 Weiter ziehen: rennen', '👀 Rechter Finger: umschauen', '🚗 Geh zu einem Auto und tippe „Einsteigen“'],
+        enter:'🚗 Monter', exit:'🚶 Descendre', dtip:'Haut : accélérer · bas : freiner et reculer · côtés : tourner',
+        ask:'🙋 Demander', lend:'Le conducteur t’a prêté sa voiture avec plaisir 🙂' },
+  de: { t:'Goldene Stadt 🏙', step:'Schritt 3 · Karte, ֏ und Verkehr', go:'▶ In die Stadt',
+        how:['🕹 Linker Finger: gehen und drehen', '🏃 Weiter ziehen: rennen', '👀 Rechter Finger: umschauen', '🚗 Geh zu einem Auto und tippe „Einsteigen“', '֏ Sammle das Geld auf den Straßen'],
         tip:'Such dir ein Auto und steig ein 🚗',
-        enter:'🚗 Einsteigen', exit:'🚶 Aussteigen', dtip:'Hoch: Gas · runter: Bremse und rückwärts · seitlich: lenken' },
-  ja: { t:'ゴールデンシティ 🏙', step:'ステップ2・くるま', go:'▶ まちへ いく',
-        how:['🕹 ひだりの ゆびで あるく・まがる', '🏃 ゆびを とおくへ: はしる', '👀 みぎの ゆびで まわりを みる', '🚗 くるまに ちかづいて「のる」を おそう'],
+        enter:'🚗 Einsteigen', exit:'🚶 Aussteigen', dtip:'Hoch: Gas · runter: Bremse und rückwärts · seitlich: lenken',
+        ask:'🙋 Fragen', lend:'Der Fahrer leiht dir gern sein Auto 🙂' },
+  ja: { t:'ゴールデンシティ 🏙', step:'ステップ3・ちず、֏、くるまの ながれ', go:'▶ まちへ いく',
+        how:['🕹 ひだりの ゆびで あるく・まがる', '🏃 ゆびを とおくへ: はしる', '👀 みぎの ゆびで まわりを みる', '🚗 くるまに ちかづいて「のる」を おそう', '֏ みちの おかねを あつめよう'],
         tip:'くるまを みつけて のろう 🚗',
-        enter:'🚗 のる', exit:'🚶 おりる', dtip:'うえ: アクセル・した: ブレーキと バック・よこ: ハンドル' },
-  zh: { t:'黄金城市 🏙', step:'第2步 · 汽车', go:'▶ 进城',
-        how:['🕹 左手指：走路和转弯', '🏃 手指推远一点：跑步', '👀 右手指：看看四周', '🚗 走到汽车旁边，点“上车”'],
+        enter:'🚗 のる', exit:'🚶 おりる', dtip:'うえ: アクセル・した: ブレーキと バック・よこ: ハンドル',
+        ask:'🙋 たのむ', lend:'うんてんしゅさんが くるまを かしてくれたよ 🙂' },
+  zh: { t:'黄金城市 🏙', step:'第3步 · 地图、֏ 和车流', go:'▶ 进城',
+        how:['🕹 左手指：走路和转弯', '🏃 手指推远一点：跑步', '👀 右手指：看看四周', '🚗 走到汽车旁边，点“上车”', '֏ 捡起街上的钱'],
         tip:'找一辆车坐上去 🚗',
-        enter:'🚗 上车', exit:'🚶 下车', dtip:'向上：油门 · 向下：刹车和倒车 · 左右：转方向' },
-  it: { t:'Città d’Oro 🏙', step:'Passo 2 · l’auto', go:'▶ Entra in città',
-        how:['🕹 Dito sinistro: cammina e gira', '🏃 Spingilo più lontano: corri', '👀 Dito destro: guardati intorno', '🚗 Avvicinati a un’auto e tocca «Sali»'],
+        enter:'🚗 上车', exit:'🚶 下车', dtip:'向上：油门 · 向下：刹车和倒车 · 左右：转方向',
+        ask:'🙋 请求', lend:'司机很乐意把车借给你 🙂' },
+  it: { t:'Città d’Oro 🏙', step:'Passo 3 · mappa, ֏ e traffico', go:'▶ Entra in città',
+        how:['🕹 Dito sinistro: cammina e gira', '🏃 Spingilo più lontano: corri', '👀 Dito destro: guardati intorno', '🚗 Avvicinati a un’auto e tocca «Sali»', '֏ Raccogli i soldi per strada'],
         tip:'Trova un’auto e sali 🚗',
-        enter:'🚗 Sali', exit:'🚶 Scendi', dtip:'Su: gas · giù: freno e retro · ai lati: sterza' },
-  ka: { t:'ოქროს ქალაქი 🏙', step:'ნაბიჯი 2 · მანქანა', go:'▶ ქალაქში შესვლა',
-        how:['🕹 მარცხენა თითით: იარე და მოუხვიე', '🏃 თითი უფრო შორს: ირბინე', '👀 მარჯვენა თითით: მიმოიხედე', '🚗 მიდი მანქანასთან და დააჭირე „ჩაჯდომა“'],
+        enter:'🚗 Sali', exit:'🚶 Scendi', dtip:'Su: gas · giù: freno e retro · ai lati: sterza',
+        ask:'🙋 Chiedi', lend:'L’autista ti ha prestato l’auto volentieri 🙂' },
+  ka: { t:'ოქროს ქალაქი 🏙', step:'ნაბიჯი 3 · რუკა, ֏ და მოძრაობა', go:'▶ ქალაქში შესვლა',
+        how:['🕹 მარცხენა თითით: იარე და მოუხვიე', '🏃 თითი უფრო შორს: ირბინე', '👀 მარჯვენა თითით: მიმოიხედე', '🚗 მიდი მანქანასთან და დააჭირე „ჩაჯდომა“', '֏ შეაგროვე ფული ქუჩებში'],
         tip:'იპოვე მანქანა და ჩაჯექი 🚗',
-        enter:'🚗 ჩაჯდომა', exit:'🚶 გადმოსვლა', dtip:'ზემოთ: გაზი · ქვემოთ: მუხრუჭი და უკან · გვერდზე: საჭე' },
-  hi: { t:'गोल्डन सिटी 🏙', step:'कदम 2 · कार', go:'▶ शहर में चलो',
-        how:['🕹 बाएँ उँगली से: चलो और मुड़ो', '🏃 उँगली और दूर ले जाओ: दौड़ो', '👀 दाएँ उँगली से: चारों ओर देखो', '🚗 कार के पास जाओ और «बैठो» दबाओ'],
+        enter:'🚗 ჩაჯდომა', exit:'🚶 გადმოსვლა', dtip:'ზემოთ: გაზი · ქვემოთ: მუხრუჭი და უკან · გვერდზე: საჭე',
+        ask:'🙋 თხოვნა', lend:'მძღოლმა სიამოვნებით გაგათხოვა მანქანა 🙂' },
+  hi: { t:'गोल्डन सिटी 🏙', step:'कदम 3 · नक्शा, ֏ और ट्रैफ़िक', go:'▶ शहर में चलो',
+        how:['🕹 बाएँ उँगली से: चलो और मुड़ो', '🏃 उँगली और दूर ले जाओ: दौड़ो', '👀 दाएँ उँगली से: चारों ओर देखो', '🚗 कार के पास जाओ और «बैठो» दबाओ', '֏ सड़कों पर पैसे उठाओ'],
         tip:'कोई कार ढूँढो और बैठ जाओ 🚗',
-        enter:'🚗 बैठो', exit:'🚶 उतरो', dtip:'ऊपर: गैस · नीचे: ब्रेक और पीछे · दाएँ-बाएँ: स्टीयरिंग' },
-  pt: { t:'Cidade Dourada 🏙', step:'Passo 2 · o carro', go:'▶ Entrar na cidade',
-        how:['🕹 Dedo esquerdo: anda e vira', '🏃 Leva-o mais longe: corre', '👀 Dedo direito: olha à volta', '🚗 Vai até um carro e toca «Entrar»'],
+        enter:'🚗 बैठो', exit:'🚶 उतरो', dtip:'ऊपर: गैस · नीचे: ब्रेक और पीछे · दाएँ-बाएँ: स्टीयरिंग',
+        ask:'🙋 माँगो', lend:'ड्राइवर ने ख़ुशी से अपनी कार दे दी 🙂' },
+  pt: { t:'Cidade Dourada 🏙', step:'Passo 3 · mapa, ֏ e trânsito', go:'▶ Entrar na cidade',
+        how:['🕹 Dedo esquerdo: anda e vira', '🏃 Leva-o mais longe: corre', '👀 Dedo direito: olha à volta', '🚗 Vai até um carro e toca «Entrar»', '֏ Apanha o dinheiro nas ruas'],
         tip:'Encontra um carro e entra 🚗',
-        enter:'🚗 Entrar', exit:'🚶 Sair', dtip:'Cima: acelerar · baixo: travar e marcha-atrás · lados: virar' },
+        enter:'🚗 Entrar', exit:'🚶 Sair', dtip:'Cima: acelerar · baixo: travar e marcha-atrás · lados: virar',
+        ask:'🙋 Pedir', lend:'O condutor emprestou-te o carro com gosto 🙂' },
 };
 const T = TRL[ggLang] || TRL.hy;
 const $ = id => document.getElementById(id);
@@ -275,6 +295,7 @@ const C = {
 const TUFF = [[214, 158, 146], [222, 176, 136], [196, 140, 120], [230, 214, 180], [186, 176, 166], [160, 182, 196], [176, 198, 168], [232, 196, 160]];
 
 const ground = [];   // գետնի շերտեր — հերթականությամբ
+const BLD = [], BLOCKS = [];   // քարտեզի համար՝ շենքերի տեղերն ու թաղամասերի տեսակները
 const marks = [];    // գծեր ու զեբրաներ (նկարում ենք միայն մոտիկները)
 const things = [];   // կանգնած բաներ՝ շենքեր, ծառեր, լապտերներ
 const solids = [];   // ինչի միջով չես կարող անցնել
@@ -306,6 +327,7 @@ function building(x0, z0, x1, z1, h, c, roof, shop) {
   for (let i = 1; i < 5; i++) { const s = sides[i - 1]; faces[i].win = windowsFor(faces[i], s[0], s[1], s[2], s[3], h, shop); }
   addThing(faces, x0, z0, x1, z1);
   solid(x0, z0, x1, z1, h);
+  BLD.push({ x0, z0, x1, z1, gold: c === C.gold });
 }
 function tree(x, z, kind) {
   const r = 0.9 + rnd() * 0.5, rot = rnd() * 3;
@@ -336,6 +358,7 @@ TYPE['2,2'] = 'square'; TYPE['3,3'] = 'park'; TYPE['0,5'] = 'park'; TYPE['3,2'] 
 for (let j = 0; j < NB; j++) for (let i = 0; i < NB; i++) {
   const x0 = blockAt(i), z0 = blockAt(j), x1 = x0 + BL, z1 = z0 + BL;
   const type = TYPE[i + ',' + j] || 'city';
+  BLOCKS.push({ x0, z0, type });
   gquad(x0, z0, x1, z1, C.walk);
   const ix0 = x0 + SW, iz0 = z0 + SW, ix1 = x1 - SW, iz1 = z1 - SW;   // մայթից ներս
   // Մայթի եզրի լապտերները
@@ -491,6 +514,14 @@ function ringPos(m) {
 for (const m of PEOPLE) { const r = ringPos(m); m.x = r[0]; m.z = r[1]; m.yaw = r[2] + (m.dir < 0 ? Math.PI : 0); }
 function updatePeople(dt) {
   for (const m of PEOPLE) {
+    if (m.goto) {
+      // Մեքենայից իջած վարորդը շտապում է մայթ, հետո սովորական քայլում է
+      const dx = m.goto[0] - m.x, dz = m.goto[1] - m.z, d = Math.hypot(dx, dz);
+      if (d < 0.2) { m.goto = null; continue; }
+      m.speed = 2.2; m.yaw = Math.atan2(dx, dz);
+      const st = Math.min(d, m.speed * dt); m.x += dx / d * st; m.z += dz / d * st; m.phase += m.speed * dt * 3.2;
+      continue;
+    }
     // Առջևում դու ես կամ ուրիշ մարդ՝ կանգնիր
     const fx = Math.sin(m.yaw), fz = Math.cos(m.yaw);
     let blocked = false;
@@ -547,12 +578,14 @@ function carPoints(x, z, yaw) {
   return out;
 }
 // Կարո՞ղ է մեքենան այստեղ կանգնել — պատեր, մարդիկ, ուրիշ մեքենաներ
-function carBlocked(c, x, z, yaw) {
+function carBlocked(c, x, z, yaw, road, noAI) {
   const pts = carPoints(x, z, yaw), me = { x, z, yaw };
-  for (const [px, pz] of pts) for (const s of solids) if (px > s.x0 && px < s.x1 && pz > s.z0 && pz < s.z1) return true;
+  if (!road) for (const [px, pz] of pts) for (const s of solids) if (px > s.x0 && px < s.x1 && pz > s.z0 && pz < s.z1) return true;
   for (const m of PEOPLE) if (inCar(me, m.x, m.z, 0.35)) return true;
+  if (!driving && inCar(me, P.x, P.z, P.r)) return true;
   for (const o of CARS) {
     if (o === c || Math.hypot(o.x - x, o.z - z) > 5) continue;
+    if (noAI && o.ai) continue;
     for (const [px, pz] of pts) if (inCar(o, px, pz, 0)) return true;
     for (const [px, pz] of carPoints(o.x, o.z, o.yaw)) if (inCar(me, px, pz, 0)) return true;
   }
@@ -562,7 +595,11 @@ function carParts(c) {
   const dark = c.c.map(v => v * 0.6);
   const wheels = [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => oBox(c, 0.14, 0.32, 0.32, TIRE, a * 0.8, 0.32, b * 1.3));
   const body = oBox(c, CAR_W, 0.33, CAR_L, c.c, 0, 0.68, 0);
-  const top = [oBox(c, 0.78, 0.27, 1.0, GLASS, 0, 1.28, -0.2), oBox(c, 0.8, 0.04, 1.02, c.c, 0, 1.58, -0.2)];
+  const top = [oBox(c, 0.78, 0.27, 1.0, GLASS, 0, 1.28, -0.2)];
+  // Վարորդի գլուխը երևում է ապակու միջից (քո մեքենայում՝ դու ես)
+  const dl = c === driving ? P.look : c.drv;
+  if (dl) top.push(oBox(c, 0.14, 0.14, 0.14, dl.skin, -0.36, 1.3, 0.1), oBox(c, 0.15, 0.04, 0.15, dl.hair, -0.36, 1.46, 0.1));
+  top.push(oBox(c, 0.8, 0.04, 1.02, c.c, 0, 1.58, -0.2));
   const bits = wheels.concat([
     oBox(c, 0.92, 0.06, 0.08, dark, 0, 0.42, 2.0), oBox(c, 0.92, 0.06, 0.08, dark, 0, 0.42, -2.0),
     oBox(c, 0.17, 0.08, 0.02, HEAD, -0.6, 0.82, 2.01), oBox(c, 0.17, 0.08, 0.02, HEAD, 0.6, 0.82, 2.01),
@@ -632,7 +669,7 @@ function exitCar() {
 function carButton() {
   if (state !== 'play') return;
   if (driving) { if (Math.abs(driving.v) < 2) exitCar(); else wantExit = true; }
-  else { const c = nearCar(); if (c) enterCar(c); }
+  else { const c = nearCar(); if (c) { if (c.ai) lendCar(c); else enterCar(c); } }
 }
 const carBtn = $('carBtn');
 carBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); lastTouchAt = Date.now(); initAudio(); carButton(); }, { passive: false });
@@ -640,7 +677,7 @@ carBtn.addEventListener('mousedown', (e) => { if (ghost()) return; e.preventDefa
 let carBtnLabel = '';
 function paintCarBtn() {
   let label = '';
-  if (state === 'play') label = driving ? T.exit : (nearCar() ? T.enter : '');
+  if (state === 'play') { const c = driving ? null : nearCar(); label = driving ? T.exit : c ? (c.ai ? T.ask : T.enter) : ''; }
   if (label === carBtnLabel) return;
   carBtnLabel = label; carBtn.hidden = !label; carBtn.textContent = label;
 }
@@ -669,6 +706,180 @@ function drive(dt, ix, iy) {
   else { if (Math.abs(c.v) > 3) tone(90, 0.14, 'square', 0.06); c.v *= -0.25; }
   P.x = c.x; P.z = c.z; P.yaw = c.yaw;
   if (wantExit && Math.abs(c.v) < 0.5) exitCar();
+}
+
+// ——————————————————————————————————————————————————————————
+//  🚦 ՔՇՈՂ ՄԵՔԵՆԱՆԵՐ (Քայլ 3, Արենի պատվերն է)
+//  Ամեն մեքենայի մեջ վարորդ կա։ Գնում են աջ կողմով (ինչպես Հայաստանում),
+//  խաչմերուկում ընտրում են՝ ուղիղ, աջ թե ձախ։ Առջևում ինչ-որ բան կա՝ կանգնում են։
+//  Իրար միջով ոչ ոք չի անցնում — միայն բախվում ենք։
+// ——————————————————————————————————————————————————————————
+const LANE = 2.3, NODE = k => roadAt(k) + RD / 2;
+const offL = (dx, dz) => [dz * LANE, -dx * LANE];        // աջ գոտին՝ ուղղության աջ կողմում
+function lineSeg(ax, az, bx, bz) { return { line: true, ax, az, bx, bz, len: Math.hypot(bx - ax, bz - az) }; }
+function curveSeg(p0, p1, p2) {
+  const sg = { p0, p1, p2, len: 0 };
+  let px = p0[0], pz = p0[1];
+  for (let k = 1; k <= 8; k++) { const q = bez(sg, k / 8); sg.len += Math.hypot(q[0] - px, q[1] - pz); px = q[0]; pz = q[1]; }
+  return sg;
+}
+function bez(sg, t) {
+  const a = (1 - t) * (1 - t), b = 2 * (1 - t) * t, c = t * t;
+  return [a * sg.p0[0] + b * sg.p1[0] + c * sg.p2[0], a * sg.p0[1] + b * sg.p1[1] + c * sg.p2[1]];
+}
+// Ճանապարհը մի խաչմերուկից մյուսը
+function roadSeg(ai) {
+  const ax = NODE(ai.i), az = NODE(ai.j), o = offL(ai.dx, ai.dz);
+  return lineSeg(ax + ai.dx * 6 + o[0], az + ai.dz * 6 + o[1], ax + ai.dx * (PITCH - 6) + o[0], az + ai.dz * (PITCH - 6) + o[1]);
+}
+// Խաչմերուկում շրջադարձ (կամ ուղիղ անցում)
+function turnSeg(ai) {
+  const bi = ai.i + ai.dx, bj = ai.j + ai.dz, bx = NODE(bi), bz = NODE(bj);
+  const opts = [[ai.dx, ai.dz], [-ai.dz, ai.dx], [ai.dz, -ai.dx]].filter(([dx, dz]) => bi + dx >= 0 && bi + dx <= NB && bj + dz >= 0 && bj + dz <= NB);
+  const [nx, nz] = opts[Math.floor(Math.random() * opts.length)];
+  const o1 = offL(ai.dx, ai.dz), o2 = offL(nx, nz);
+  const p0 = [bx - ai.dx * 6 + o1[0], bz - ai.dz * 6 + o1[1]], p2 = [bx + nx * 6 + o2[0], bz + nz * 6 + o2[1]];
+  const p1 = (nx === ai.dx && nz === ai.dz) ? [(p0[0] + p2[0]) / 2, (p0[1] + p2[1]) / 2] : [bx + o1[0] + o2[0], bz + o1[1] + o2[1]];
+  ai.i = bi; ai.j = bj; ai.dx = nx; ai.dz = nz;
+  return curveSeg(p0, p1, p2);
+}
+function segPose(sg, sv) {
+  if (sg.line) { const t = Math.min(1, sv / sg.len); return [sg.ax + (sg.bx - sg.ax) * t, sg.az + (sg.bz - sg.az) * t, Math.atan2(sg.bx - sg.ax, sg.bz - sg.az)]; }
+  const t = Math.min(1, sv / sg.len), q = bez(sg, t);
+  const tx = 2 * (1 - t) * (sg.p1[0] - sg.p0[0]) + 2 * t * (sg.p2[0] - sg.p1[0]), tz = 2 * (1 - t) * (sg.p1[1] - sg.p0[1]) + 2 * t * (sg.p2[1] - sg.p1[1]);
+  return [q[0], q[1], Math.atan2(tx, tz)];
+}
+const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+for (let k = 0, tries = 0; k < 16 && tries < 400; tries++) {
+  const i = Math.floor(rnd() * (NB + 1)), j = Math.floor(rnd() * (NB + 1)), [dx, dz] = DIRS[Math.floor(rnd() * 4)];
+  if (i + dx < 0 || i + dx > NB || j + dz < 0 || j + dz > NB) continue;
+  const ai = { i, j, dx, dz, wait: 0, ghost: 0 };
+  ai.seg = roadSeg(ai); ai.s = 4 + rnd() * (ai.seg.len - 8);
+  const [x, z, yaw] = segPose(ai.seg, ai.s);
+  if (CARS.some(o => Math.hypot(o.x - x, o.z - z) < 8)) continue;
+  CARS.push({ x, z, yaw, s: 1, v: 0, steer: 0, c: pick(CAR_COLORS), ai,
+              drv: { skin: pick(SKINS), hair: pick(HAIRS) } });
+  k++;
+}
+function updateTraffic(dt) {
+  for (const c of CARS) {
+    const ai = c.ai; if (!ai) continue;
+    const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
+    if (ai.ghost > 0) ai.ghost -= dt;
+    // Առջևում ինչ կա՞
+    let block = 0;   // 0՝ ազատ, 1՝ մարդ կամ դու, 2՝ ուրիշ քշող մեքենա
+    const see = (x, z, reach, side, kind) => {
+      const dx = x - c.x, dz = z - c.z, ah = dx * fx + dz * fz, sd = Math.abs(dx * fz - dz * fx);
+      if (ah > 0 && ah < reach && sd < side && kind > block) block = kind;
+    };
+    const reach = 4 + c.v * 0.7;
+    for (const m of PEOPLE) see(m.x, m.z, reach, 1.5, 1);
+    if (!driving) see(P.x, P.z, reach, 1.5, 1);
+    for (const o of CARS) if (o !== c && !(ai.ghost > 0 && o.ai)) see(o.x, o.z, reach + 2.2, 2.0, o.ai ? 2 : 1);
+    const want = block ? 0 : (ai.seg.line ? 9 : 5);
+    c.v += (want - c.v) * Math.min(1, dt * (want < c.v ? 6 : 1.5));
+    // Երկար խցանում ենք՝ մի պահ զիջում ենք իրար
+    if (block === 2 && c.v < 0.3) { ai.wait += dt; if (ai.wait > 5) { ai.ghost = 2.5; ai.wait = 0; } } else ai.wait = 0;
+    let ns = ai.s + c.v * dt, sg = ai.seg;
+    const save = { i: ai.i, j: ai.j, dx: ai.dx, dz: ai.dz };
+    if (ns >= sg.len) { ns -= sg.len; sg = sg.line ? turnSeg(ai) : roadSeg(ai); }
+    const [x, z, yaw] = segPose(sg, ns);
+    if (carBlocked(c, x, z, yaw, true, ai.ghost > 0)) { c.v = 0; Object.assign(ai, save); continue; }
+    ai.s = ns; ai.seg = sg; c.x = x; c.z = z; c.yaw = yaw;
+  }
+}
+// 🙋 Վարորդը սիրով իջնում է ու գնում մայթ, մեքենան տալիս է քեզ
+function lendCar(c) {
+  const cs = Math.cos(c.yaw), sn = Math.sin(c.yaw);
+  const ex = c.x - (CAR_W + 0.6) * cs, ez = c.z + (CAR_W + 0.6) * sn;
+  // Մոտակա թաղամասի մայթը
+  const bi = Math.max(0, Math.min(NB - 1, Math.round((ex - (-HALF + RD) - BL / 2) / PITCH)));
+  const bj = Math.max(0, Math.min(NB - 1, Math.round((ez - (-HALF + RD) - BL / 2) / PITCH)));
+  const m = { bx: blockAt(bi), bz: blockAt(bj), o: 1.5, side: BL - 3, dir: 1, t: 0, walk: 1.3, speed: 0, phase: 0,
+              x: ex, z: ez, yaw: c.yaw - Math.PI / 2, s: 1, look: { shirt: pick(SHIRTS), pants: pick(PANTSES), skin: c.drv.skin, hair: c.drv.hair } };
+  // Օղակի ամենամոտ կետը
+  const a = m.bx + m.o, b = m.bz + m.o, Lr = m.side, cl = v => Math.max(0, Math.min(Lr, v));
+  const cand = [[cl(ex - a), a + cl(ex - a), b], [cl(ez - b), a + Lr, b + cl(ez - b)], [cl(a + Lr - ex), a + Lr - cl(a + Lr - ex), b + Lr], [cl(b + Lr - ez), a, b + Lr - cl(b + Lr - ez)]];
+  let bestK = 0, bd = 1e9;
+  cand.forEach((q, k) => { const d = Math.hypot(q[1] - ex, q[2] - ez); if (d < bd) { bd = d; bestK = k; } });
+  m.t = bestK * Lr + cand[bestK][0];
+  m.goto = [cand[bestK][1], cand[bestK][2]];
+  PEOPLE.push(m);
+  c.ai = null; c.drv = null; c.v = 0;
+  tone(660, 0.1, 'triangle', 0.06); setTimeout(() => tone(880, 0.12, 'triangle', 0.06), 100);
+  enterCar(c);
+  $('tip').textContent = T.lend; $('tip').style.opacity = '1'; tipTimer = 4;
+}
+
+// ——————————————————————————————————————————————————————————
+//  ֏ ՓՈՂԵՐԸ (Քայլ 3)
+//  Փողոցներում կանաչ թղթադրամներ են պտտվում։ Մոտենում ես (ոտքով կամ մեքենայով)՝
+//  +100 ֏։ Փողդ պահվում է այս հեռախոսում ու չի կորչում։
+// ——————————————————————————————————————————————————————————
+let money = 0;
+try { money = Number(localStorage.getItem('aren-city-money') || 0) || 0; } catch (e) {}
+const CASH = [], CASH_C = [96, 178, 104], CASH_D = [52, 118, 66];
+function cashSpot(c) {
+  for (let k = 0; k < 50; k++) {
+    const i = Math.floor(Math.random() * (NB + 1)), along = -HALF + 8 + Math.random() * (SPAN - 16);
+    const off = roadAt(i) + 2 + Math.random() * (RD - 4);
+    const [x, z] = Math.random() < 0.5 ? [off, along] : [along, off];
+    if (CARS.some(o => inCar(o, x, z, 1)) || solids.some(s => x > s.x0 - 1 && x < s.x1 + 1 && z > s.z0 - 1 && z < s.z1 + 1)) continue;
+    if (Math.hypot(x - P.x, z - P.z) < 15) continue;
+    c.x = x; c.z = z; return c;
+  }
+  c.x = 0; c.z = 0; return c;
+}
+for (let k = 0; k < 24; k++) CASH.push(cashSpot({ x: 0, z: 0, yaw: Math.random() * 6, s: 1 }));
+function paintMoney(pop) {
+  const el = $('money'); el.textContent = '֏ ' + money.toLocaleString('en-US').replace(/,/g, ' ');
+  if (pop) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+}
+function updateCash(dt) {
+  const r = driving ? 2.4 : 1.2;
+  for (const c of CASH) {
+    c.yaw += dt * 2.2;
+    if (Math.hypot(c.x - P.x, c.z - P.z) < r) {
+      money += 100;
+      try { localStorage.setItem('aren-city-money', String(money)); } catch (e) {}
+      tone(988, 0.08, 'triangle', 0.07); setTimeout(() => tone(1319, 0.14, 'triangle', 0.07), 70);
+      paintMoney(true);
+      cashSpot(c);
+    }
+  }
+}
+function drawCash(c, d) {
+  const y = 1.0 + Math.sin(c.yaw * 1.3) * 0.12;
+  drawThing({ faces: oBox(c, 0.34, 0.18, 0.02, CASH_C, 0, y, 0).faces, d });
+  drawThing({ faces: oBox(c, 0.1, 0.1, 0.03, CASH_D, 0, y, 0).faces, d });
+}
+
+// ——— 🗺 ՓՈՔՐ ՔԱՐՏԵԶԸ (վերևի ձախ անկյունում, պտտվում է քեզ հետ) ———
+function drawMinimap() {
+  const R = Math.min(56, W * 0.14 + 10), mx = 12 + R, my = 54 + R, k = R / 70;
+  g.save();
+  g.beginPath(); g.arc(mx, my, R, 0, Math.PI * 2); g.clip();
+  g.fillStyle = 'rgb(126,166,96)'; g.fillRect(mx - R, my - R, R * 2, R * 2);
+  g.translate(mx, my);
+  g.transform(cY * k, -sY * k, -sY * k, -cY * k, 0, 0);
+  g.translate(-P.x, -P.z);
+  g.fillStyle = 'rgb(74,78,86)'; g.fillRect(-HALF, -HALF, SPAN, SPAN);
+  for (const b of BLOCKS) {
+    g.fillStyle = b.type === 'park' ? 'rgb(118,168,84)' : b.type === 'city' ? 'rgb(178,170,156)' : 'rgb(214,200,176)';
+    g.fillRect(b.x0 + 1, b.z0 + 1, BL - 2, BL - 2);
+  }
+  for (const b of BLD) { g.fillStyle = b.gold ? 'rgb(236,186,64)' : 'rgb(140,120,108)'; g.fillRect(b.x0, b.z0, b.x1 - b.x0, b.z1 - b.z0); }
+  g.fillStyle = 'rgb(126,231,143)';
+  for (const c of CASH) { g.beginPath(); g.arc(c.x, c.z, 3.2, 0, Math.PI * 2); g.fill(); }
+  for (const c of CARS) if (c !== driving) { g.fillStyle = c.ai ? 'rgb(255,255,255)' : 'rgb(160,170,190)'; g.fillRect(c.x - 1.6, c.z - 1.6, 3.2, 3.2); }
+  g.restore();
+  // Դու՝ ոսկե սլաք մեջտեղում
+  g.save(); g.translate(mx, my); g.rotate(P.yaw - cam.yaw);
+  g.fillStyle = '#ffd166'; g.strokeStyle = '#2e2410'; g.lineWidth = 1.5;
+  g.beginPath(); g.moveTo(0, -8); g.lineTo(6, 6); g.lineTo(0, 3); g.lineTo(-6, 6); g.closePath(); g.fill(); g.stroke();
+  g.restore();
+  g.strokeStyle = 'rgba(255,255,255,0.75)'; g.lineWidth = 2.5;
+  g.beginPath(); g.arc(mx, my, R, 0, Math.PI * 2); g.stroke();
 }
 
 // ——— 🏔 Արարատը հորիզոնում (Մասիս ու Սիս) ———
@@ -736,6 +947,7 @@ $('startBtn').addEventListener('click', () => {
   initAudio();
   state = 'play';
   $('menu').hidden = true;
+  $('money').hidden = false; paintMoney(false);
   $('tip').textContent = T.tip; $('tip').style.opacity = '1'; tipTimer = 6;
   tone(523, 0.12, 'triangle', 0.08); setTimeout(() => tone(784, 0.18, 'triangle', 0.08), 110);
 });
@@ -756,6 +968,8 @@ function update(dt) {
   if (driving) drive(dt, ix, iy);
   else walk(dt, ix, iy, mag);
   updatePeople(dt);
+  updateTraffic(dt);
+  if (state === 'play') updateCash(dt);
   paintCarBtn();
   followCam(dt);
   if (tipTimer > 0) { tipTimer -= dt; if (tipTimer <= 0) $('tip').style.opacity = '0'; }
@@ -878,6 +1092,12 @@ function render() {
     t.d = nearDist(t);
     if (t.d < 80 && inView(t, 2)) list.push(t);
   }
+  // Փողերը
+  for (const c of CASH) {
+    const t = { x0: c.x - 0.35, x1: c.x + 0.35, z0: c.z - 0.35, z1: c.z + 0.35, cash: c };
+    t.d = nearDist(t);
+    if (t.d < 70 && inView(t, 2)) list.push(t);
+  }
   // Մեքենաները
   for (const c of CARS) {
     if (c === driving) continue;
@@ -897,11 +1117,13 @@ function render() {
   for (const t of order) {
     if (t.me) { if (driving) drawCar(driving, me.d); else drawPerson(P, me.d); }
     else if (t.car) drawCar(t.car, t.d);
+    else if (t.cash) drawCash(t.cash, t.d);
     else if (t.person) drawPerson(t.person, t.d);
     else drawThing(t);
   }
 
-  // 5) Ջոյսթիքը
+  // 5) Քարտեզն ու ջոյսթիքը
+  if (state === 'play') drawMinimap();
   if (state === 'play') {
     const bx = stick.on ? stick.ox : Math.min(110, W * 0.22), by = stick.on ? stick.oy : H - 120;
     g.globalAlpha = stick.on ? 0.55 : 0.28;
@@ -924,7 +1146,7 @@ update(0);
 requestAnimationFrame(frame);
 
 // Թեստերի համար՝ դրսից նայելու դուռ
-window.__city = { P, PEOPLE, CARS, get driving() { return driving; }, cam, things, solids, get state() { return state; } };
+window.__city = { P, PEOPLE, CARS, CASH, get money() { return money; }, get driving() { return driving; }, cam, things, solids, get state() { return state; } };
 </script>
 
 <!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, նկար -->
