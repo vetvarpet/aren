@@ -397,14 +397,17 @@ for (let k = 0; k < 70; k++) {
 const P = { x: blockAt(2) + BL / 2, z: roadAt(3) + RD / 2, yaw: Math.PI, speed: 0, phase: 0, r: 0.35 };
 function hits(x, z) {
   for (const s of solids) if (x > s.x0 - P.r && x < s.x1 + P.r && z > s.z0 - P.r && z < s.z1 + P.r) return true;
+  for (const m of PEOPLE) { const dx = m.x - x, dz = m.z - z; if (dx * dx + dz * dz < 0.36) return true; }   // մարդկանց միջով էլ չես անցնի
   return false;
 }
-// Մարդուկը մի քանի արկղից է՝ ոտքեր, մարմին, ձեռքեր, գլուխ
-const SHIRT = [242, 190, 60], PANTS = [52, 74, 134], SKIN = [240, 200, 160], HAIR = [70, 46, 30], SHOE = [40, 40, 46], EYE = [30, 30, 40];
-function oBox(px, py, pz, hw, hh, hd, c, ox, oy, oz) {
-  // Արկղ խաղացողի «ներսի» կոորդինատներով, հետո պտտում ենք նրա ուղղությամբ
-  const cs = Math.cos(P.yaw), sn = Math.sin(P.yaw);
-  const pt = (lx, ly, lz) => [P.x + lx * cs + lz * sn, ly, P.z - lx * sn + lz * cs];
+// Մարդուկը մի քանի արկղից է՝ ոտքեր, մարմին, ձեռքեր, գլուխ։
+// Նույն ձևով են նկարվում և՛ դու, և՛ փողոցի մարդիկ — միայն գույներն ու հասակն են տարբեր։
+const SHOE = [40, 40, 46], EYE = [30, 30, 40];
+P.s = 1; P.look = { shirt: [242, 190, 60], pants: [52, 74, 134], skin: [240, 200, 160], hair: [70, 46, 30] };
+function oBox(B, hw, hh, hd, c, ox, oy, oz) {
+  // Արկղ մարդու «ներսի» կոորդինատներով, հետո պտտում ենք նրա ուղղությամբ
+  const cs = Math.cos(B.yaw), sn = Math.sin(B.yaw), k = B.s;
+  const pt = (lx, ly, lz) => [B.x + (lx * cs + lz * sn) * k, ly * k, B.z + (-lx * sn + lz * cs) * k];
   const v = [];
   for (const [a, b, d] of [[-1, -1, -1], [1, -1, -1], [1, -1, 1], [-1, -1, 1], [-1, 1, -1], [1, 1, -1], [1, 1, 1], [-1, 1, 1]])
     v.push(pt(ox + a * hw, oy + b * hh, oz + d * hd));
@@ -412,23 +415,77 @@ function oBox(px, py, pz, hw, hh, hd, c, ox, oy, oz) {
   const F = (i, j, k, l) => face([...v[i], ...v[j], ...v[k], ...v[l]], c, ctr);
   return { faces: [F(4, 5, 6, 7), F(0, 1, 5, 4), F(3, 2, 6, 7), F(0, 3, 7, 4), F(1, 2, 6, 5)], ctr };
 }
-function playerParts() {
-  const sw = Math.sin(P.phase) * Math.min(1, P.speed / 3), bob = Math.abs(Math.cos(P.phase)) * 0.04 * Math.min(1, P.speed / 3);
+function personParts(B) {
+  const L = B.look, go = Math.min(1, Math.abs(B.speed) / 3);
+  const sw = Math.sin(B.phase) * go, bob = Math.abs(Math.cos(B.phase)) * 0.04 * go;
   const legA = sw * 0.2, armA = -sw * 0.18;
   return [
-    oBox(0, 0, 0, 0.085, 0.36, 0.1, PANTS, -0.11, 0.38 + Math.max(0, -sw) * 0.05, legA),
-    oBox(0, 0, 0, 0.085, 0.36, 0.1, PANTS, 0.11, 0.38 + Math.max(0, sw) * 0.05, -legA),
-    oBox(0, 0, 0, 0.09, 0.05, 0.13, SHOE, -0.11, 0.05 + Math.max(0, -sw) * 0.05, legA + 0.03),
-    oBox(0, 0, 0, 0.09, 0.05, 0.13, SHOE, 0.11, 0.05 + Math.max(0, sw) * 0.05, -legA + 0.03),
-    oBox(0, 0, 0, 0.23, 0.3, 0.13, SHIRT, 0, 1.05 + bob, 0),
-    oBox(0, 0, 0, 0.065, 0.28, 0.07, SHIRT, -0.3, 1.07 + bob, armA),
-    oBox(0, 0, 0, 0.065, 0.28, 0.07, SHIRT, 0.3, 1.07 + bob, -armA),
-    oBox(0, 0, 0, 0.17, 0.17, 0.17, SKIN, 0, 1.55 + bob, 0),
-    oBox(0, 0, 0, 0.18, 0.05, 0.18, HAIR, 0, 1.74 + bob, -0.01),
-    oBox(0, 0, 0, 0.18, 0.12, 0.04, HAIR, 0, 1.6 + bob, -0.16),
-    oBox(0, 0, 0, 0.03, 0.035, 0.012, EYE, -0.07, 1.58 + bob, 0.172),
-    oBox(0, 0, 0, 0.03, 0.035, 0.012, EYE, 0.07, 1.58 + bob, 0.172),
+    oBox(B, 0.085, 0.36, 0.1, L.pants, -0.11, 0.38 + Math.max(0, -sw) * 0.05, legA),
+    oBox(B, 0.085, 0.36, 0.1, L.pants, 0.11, 0.38 + Math.max(0, sw) * 0.05, -legA),
+    oBox(B, 0.09, 0.05, 0.13, SHOE, -0.11, 0.05 + Math.max(0, -sw) * 0.05, legA + 0.03),
+    oBox(B, 0.09, 0.05, 0.13, SHOE, 0.11, 0.05 + Math.max(0, sw) * 0.05, -legA + 0.03),
+    oBox(B, 0.23, 0.3, 0.13, L.shirt, 0, 1.05 + bob, 0),
+    oBox(B, 0.065, 0.28, 0.07, L.shirt, -0.3, 1.07 + bob, armA),
+    oBox(B, 0.065, 0.28, 0.07, L.shirt, 0.3, 1.07 + bob, -armA),
+    oBox(B, 0.17, 0.17, 0.17, L.skin, 0, 1.55 + bob, 0),
+    oBox(B, 0.18, 0.05, 0.18, L.hair, 0, 1.74 + bob, -0.01),
+    oBox(B, 0.18, 0.12, 0.04, L.hair, 0, 1.6 + bob, -0.16),
+    oBox(B, 0.03, 0.035, 0.012, EYE, -0.07, 1.58 + bob, 0.172),
+    oBox(B, 0.03, 0.035, 0.012, EYE, 0.07, 1.58 + bob, 0.172),
   ];
+}
+function drawPerson(B, d) {
+  const parts = personParts(B);
+  parts.sort((a, b) => Math.hypot(b.ctr[0] - cam.x, b.ctr[1] - cam.y, b.ctr[2] - cam.z) - Math.hypot(a.ctr[0] - cam.x, a.ctr[1] - cam.y, a.ctr[2] - cam.z));
+  for (const pt of parts) drawThing({ faces: pt.faces, d });
+}
+
+// ——— 🚶 ՓՈՂՈՑԻ ՄԱՐԴԻԿ (Արենի պատվերն է) ———
+// Ամեն թաղամասի շուրջը մայթով երկու մարդ է քայլում։
+// Մեկը ժամացույցի սլաքի ուղղությամբ, մյուսը՝ հակառակ, տարբեր գծերով, որ իրար չբախվեն։
+// Եթե դու կանգնած ես նրա ճանապարհին՝ կանգնում ու սպասում է։
+const SHIRTS = [[220, 70, 70], [70, 130, 210], [90, 170, 100], [240, 240, 235], [150, 90, 180], [240, 140, 60], [60, 60, 70], [250, 200, 210], [80, 190, 190]];
+const PANTSES = [[52, 74, 134], [40, 40, 50], [110, 90, 70], [150, 150, 160], [70, 100, 60], [120, 40, 50]];
+const SKINS = [[240, 200, 160], [224, 178, 136], [196, 146, 104], [150, 104, 72], [250, 214, 180]];
+const HAIRS = [[70, 46, 30], [30, 26, 24], [150, 100, 50], [200, 170, 110], [170, 170, 170], [110, 50, 30]];
+const PEOPLE = [];
+for (let j = 0; j < NB; j++) for (let i = 0; i < NB; i++) for (const dir of [1, -1]) {
+  const o = dir > 0 ? 1.5 : 2.3;                   // հեռավորությունը մայթի եզրից
+  const kid = rnd() < 0.25;
+  PEOPLE.push({
+    bx: blockAt(i), bz: blockAt(j), o, side: BL - o * 2, dir,
+    t: rnd() * 4 * (BL - o * 2), walk: 1.1 + rnd() * 0.5, speed: 0, phase: rnd() * 6,
+    x: 0, z: 0, yaw: 0, s: kid ? 0.72 : 0.95 + rnd() * 0.12,
+    look: { shirt: pick(SHIRTS), pants: pick(PANTSES), skin: pick(SKINS), hair: pick(HAIRS) },
+  });
+}
+// Մայթի «օղակի» վրա t-ից գտնում ենք կետն ու ուղղությունը
+function ringPos(m) {
+  const L = m.side, T = 4 * L; let t = ((m.t % T) + T) % T;
+  const k = Math.floor(t / L), u = t - k * L, a = m.bx + m.o, b = m.bz + m.o;
+  if (k === 0) return [a + u, b, Math.PI / 2];
+  if (k === 1) return [a + L, b + u, 0];
+  if (k === 2) return [a + L - u, b + L, -Math.PI / 2];
+  return [a, b + L - u, Math.PI];
+}
+for (const m of PEOPLE) { const r = ringPos(m); m.x = r[0]; m.z = r[1]; m.yaw = r[2] + (m.dir < 0 ? Math.PI : 0); }
+function updatePeople(dt) {
+  for (const m of PEOPLE) {
+    // Առջևում դու ես կամ ուրիշ մարդ՝ կանգնիր
+    const fx = Math.sin(m.yaw), fz = Math.cos(m.yaw);
+    let blocked = false;
+    const px = P.x - m.x, pz = P.z - m.z;
+    if (px * px + pz * pz < 1.6 * 1.6 && px * fx + pz * fz > 0) blocked = true;
+    m.speed += ((blocked ? 0 : m.walk) - m.speed) * Math.min(1, dt * 6);
+    m.t += m.speed * m.dir * dt;
+    m.phase += m.speed * dt * 3.2;
+    const r = ringPos(m);
+    m.x = r[0]; m.z = r[1];
+    // Անկյունում սահուն շրջվում է
+    const want = r[2] + (m.dir < 0 ? Math.PI : 0);
+    let dy = want - m.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+    m.yaw += dy * Math.min(1, dt * 8);
+  }
 }
 
 // ——— 🏔 Արարատը հորիզոնում (Մասիս ու Սիս) ———
@@ -524,6 +581,7 @@ function update(dt) {
   if (!hits(P.x + vx, P.z)) P.x += vx;
   if (!hits(P.x, P.z + vz)) P.z += vz;
   P.phase += Math.abs(P.speed) * dt * 3.2;
+  updatePeople(dt);
   // Քայլերի թեթև ձայնը
   const stepN = Math.floor(P.phase / Math.PI);
   if (stepN !== lastStep) { lastStep = stepN; if (Math.abs(P.speed) > 0.5) tone(Math.abs(P.speed) > 5 ? 150 : 120, 0.05, 'triangle', 0.035); }
@@ -622,8 +680,13 @@ function render() {
     if (!t.big && !inView(t, r)) continue;
     list.push(t);
   }
+  // Փողոցի մարդիկ — միայն մոտիկներն ու տեսանելիները
+  for (const m of PEOPLE) {
+    const t = { x0: m.x - 0.3, x1: m.x + 0.3, z0: m.z - 0.3, z1: m.z + 0.3, person: m };
+    t.d = nearDist(t);
+    if (t.d < 80 && inView(t, 2)) list.push(t);
+  }
   // Խաղացողն էլ «բան» է — իր մասերով
-  const parts = playerParts();
   const me = { x0: P.x - 0.3, x1: P.x + 0.3, z0: P.z - 0.3, z1: P.z + 0.3, me: true };
   me.d = nearDist(me);
   list.sort((a, b) => b.d - a.d);
@@ -632,10 +695,9 @@ function render() {
   for (const t of list) (t.d < me.d + 25 && inFront(t, me) ? ahead : behind).push(t);
   const order = behind.concat([me], ahead);
   for (const t of order) {
-    if (t.me) {
-      parts.sort((a, b) => Math.hypot(b.ctr[0] - cam.x, b.ctr[1] - cam.y, b.ctr[2] - cam.z) - Math.hypot(a.ctr[0] - cam.x, a.ctr[1] - cam.y, a.ctr[2] - cam.z));
-      for (const pt of parts) drawThing({ faces: pt.faces, d: me.d });
-    } else drawThing(t);
+    if (t.me) drawPerson(P, me.d);
+    else if (t.person) drawPerson(t.person, t.d);
+    else drawThing(t);
   }
 
   // 5) Ջոյսթիքը
@@ -661,7 +723,7 @@ update(0);
 requestAnimationFrame(frame);
 
 // Թեստերի համար՝ դրսից նայելու դուռ
-window.__city = { P, cam, things, solids, get state() { return state; } };
+window.__city = { P, PEOPLE, cam, things, solids, get state() { return state; } };
 </script>
 
 <!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, նկար -->
