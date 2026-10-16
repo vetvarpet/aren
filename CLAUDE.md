@@ -34,3 +34,26 @@ Site owner and director: **Aren Aghbalyan (Արեն)**, age 10, in Armenia — s
 - **`time/index.html` is the site's diary, and Aren decides when it is written.** Do not add entries on your own initiative and do not fold them into unrelated commits — he will tell you when it is time. When he asks, write dated `.ev` entries (`.ev big` + a `.tag` for milestones) and deploy them as their own change.
 - Deleted things go to the museum (`museum/`) as an exhibit — nothing is truly deleted, git remembers.
 - **Never write certificate numbers on the site** (`№ GG-…`) — the owner had them removed and asked that they never come back. Names, roles and dates only.
+
+## 🏙 Golden City — the big one Aren is planning (`city/`, not built yet)
+
+Aren wants a GTA-shaped game: a city you roam freely. He chose **3D** (hand-written —
+the site loads no libraries, so it is a software renderer on a 2D canvas, camera behind
+the player). **No crime, no fighting, no stealing** — the fun is the open city and the jobs.
+
+Build it **one step at a time**, and stop after each step so Aren can look and say yes:
+
+1. The city + walking around it
+2. Getting into a car and driving
+3. Minimap + money (֏)
+4. The first job: 🥖 carry lavash from the bakery to the shop before it goes cold
+5. The rest of the jobs: 🚕 taxi · 🐱 find the lost cats · 🚑 ambulance · 🚓 catch the thief · 🏁 street race
+
+House conventions still apply: one self-contained `index.html`, 12 languages, real-touch
+phone testing, the new-game checklist. Record key: `aren-city-best`.
+
+## Working with Aren — keep it cheap
+
+He asked how to spend fewer tokens, so: prefer the narrow fix he named over a site-wide
+sweep, don't re-crawl all 77 pages unless the change could touch them, and say plainly
+when a job is big enough to deserve its own fresh session.
