@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Golden Games 👑</title>
 <link rel="icon" type="image/png" href="./logo-icon.png">
+<link rel="apple-touch-icon" href="./logo-icon.png">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#12122b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Golden Games">
 <meta name="description" content="Aren's Arcade — games and projects built by a 10-year-old maker">
 <style>
   :root {
@@ -3727,6 +3734,13 @@ addEventListener('keydown', (e) => {
   if (kpos === KONAMI.length) { kpos = 0; toggleGolden(); }
 });
 
+</script>
+
+<script>
+// 📱 Կայքը հեռախոսի էկրանին դնելու համար
+if ("serviceWorker" in navigator) {
+  addEventListener("load", () => { navigator.serviceWorker.register("./sw.js").catch(() => {}); });
+}
 </script>
 
 <!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, թրթռոց, նկար, բեռնում -->

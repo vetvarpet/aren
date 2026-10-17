@@ -1,0 +1,17 @@
+{
+  "name": "Golden Games",
+  "short_name": "Golden Games",
+  "description": "48 խաղ՝ 12 լեզվով։ Աշխարհը խաղում է միասին։",
+  "lang": "hy",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#12122b",
+  "theme_color": "#12122b",
+  "icons": [
+    { "src": "./logo-icon.png", "sizes": "256x256", "type": "image/png", "purpose": "any" },
+    { "src": "./logo.png", "sizes": "800x800", "type": "image/png", "purpose": "any" },
+    { "src": "./logo.png", "sizes": "800x800", "type": "image/png", "purpose": "maskable" }
+  ]
+}
