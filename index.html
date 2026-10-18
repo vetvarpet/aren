@@ -282,6 +282,15 @@
   }
   .game:hover .cover svg { transform: scale(1.07); }
   .c1 { background: linear-gradient(135deg, #2b6cb0, #90cdf4); }
+  .ccraft { background: linear-gradient(135deg, #1f2a5e, #6f86d6); }
+  /* 🚧 Անավարտ խաղի պիտակը՝ շապիկի անկյունում */
+  .wip {
+    position: absolute; top: 8px; left: 8px; z-index: 2;
+    background: rgba(18, 18, 43, 0.86); color: #ffd166;
+    border: 2px solid rgba(255, 209, 102, 0.65); border-radius: 999px;
+    padding: 3px 9px; font-size: 0.68rem; line-height: 1.2; white-space: nowrap;
+    pointer-events: none;
+  }
   .c2 { background: linear-gradient(135deg, #2f855a, #9ae6b4); }
   .c4 { background: linear-gradient(135deg, #44337a, #b794f4); }
   .c5 { background: linear-gradient(135deg, #0b1030, #3b4a8f); }
@@ -574,6 +583,65 @@
   <p class="nofind" id="nofind" hidden>Ոչինչ չգտնվեց 😿 Փորձիր ուրիշ բառ</p>
 
   <div class="grid">
+
+    <a class="game" href="./city/">
+      <div class="cover ccraft">
+        <span class="wip" id="wipTag">🚧 դեռ սարքվում է</span>
+        <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="cvCraftSky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#20306e"/><stop offset="1" stop-color="#8fa3e0"/>
+            </linearGradient>
+          </defs>
+          <rect width="300" height="140" fill="url(#cvCraftSky)"/>
+          <circle cx="248" cy="26" r="13" fill="#ffd166" opacity="0.85"/>
+          <!-- հեռվի շենքերը՝ գունատ, մոտինները՝ պարզ -->
+          <g fill="#2b376f" opacity="0.75">
+            <rect x="10" y="44" width="26" height="50"/><rect x="42" y="56" width="20" height="38"/>
+            <rect x="236" y="50" width="24" height="44"/><rect x="266" y="62" width="22" height="32"/>
+          </g>
+          <rect y="94" width="300" height="46" fill="#3a4064"/>
+          <!-- ճանապարհը՝ դեպի խորքը -->
+          <path d="M126 94 L174 94 L250 140 L50 140 Z" fill="#2a2d44"/>
+          <g stroke="#ffd166" stroke-width="3" opacity="0.8">
+            <line x1="149" y1="96" x2="150" y2="100"/>
+            <line x1="146" y1="130" x2="153" y2="140"/>
+          </g>
+          <!-- երկու մոտիկ շենք՝ ծավալով -->
+          <g>
+            <rect x="62" y="40" width="46" height="54" fill="#5a6bbd"/>
+            <path d="M62 40 L80 30 L126 30 L108 40 Z" fill="#7686cf"/>
+            <path d="M108 40 L126 30 L126 84 L108 94 Z" fill="#43529b"/>
+            <g fill="#ffe9a8" opacity="0.9">
+              <rect x="69" y="48" width="8" height="9"/><rect x="83" y="48" width="8" height="9"/>
+              <rect x="97" y="48" width="8" height="9"/><rect x="69" y="64" width="8" height="9"/>
+              <rect x="83" y="64" width="8" height="9"/><rect x="97" y="64" width="8" height="9"/>
+            </g>
+          </g>
+          <g>
+            <rect x="188" y="52" width="40" height="42" fill="#4d5cae"/>
+            <path d="M188 52 L204 43 L244 43 L228 52 Z" fill="#6c7cc6"/>
+            <path d="M228 52 L244 43 L244 85 L228 94 Z" fill="#3a488c"/>
+            <g fill="#ffe9a8" opacity="0.85">
+              <rect x="194" y="60" width="7" height="8"/><rect x="207" y="60" width="7" height="8"/>
+              <rect x="194" y="74" width="7" height="8"/><rect x="207" y="74" width="7" height="8"/>
+            </g>
+          </g>
+          <!-- փոքրիկ մեքենան ճանապարհին -->
+          <g transform="translate(150,116) scale(1.15)">
+            <rect x="-15" y="-6" width="30" height="12" rx="3" fill="#e05252"/>
+            <rect x="-9" y="-13" width="18" height="8" rx="3" fill="#f2f5fa"/>
+            <circle cx="-9" cy="7" r="4" fill="#1d2030"/><circle cx="9" cy="7" r="4" fill="#1d2030"/>
+          </g>
+        </svg>
+      </div>
+      <div class="info">
+        <h2>Golden Craft</h2>
+        <p class="real">Ոսկե Վարպետություն</p>
+        <p class="desc">Քաղաք, որտեղ ազատ ման ես գալիս՝ ոտքով կամ մեքենայով։ Լավաշ հասցրու, տաքսի վարիր, կորած կատուներ գտիր։</p>
+        <div class="play">▶ Մտնել քաղաք</div>
+      </div>
+    </a>
 
     <a class="game" href="./cat-jump/">
       <div class="cover c1">
@@ -2231,7 +2299,7 @@ const DICT = {
     },
     newT: '🆕 Новые игры',
     allT: '📚 Все',
-    findPH: '🔎 Найди игру…', nofind: 'Ничего не нашлось 😿 Попробуй другое слово', topQ: '🔥 Чаще всего играешь:', tag: 'Мир играет вместе', lang: '🌐 Язык',
+    findPH: '🔎 Найди игру…', nofind: 'Ничего не нашлось 😿 Попробуй другое слово', topQ: '🔥 Чаще всего играешь:', tag: 'Мир играет вместе', lang: '🌐 Язык', wip: '🚧 ещё строится',
     cats: ['⚡ Быстрые и аркады', '🧩 Головоломки и подумать', '🇦🇲 Армянские', '🎵 Музыка и ритм', '🌿 Спокойные', '🕰️ История сайта'],
     rand: '🎲 Случайная',
     moodQ: 'Во что сыграем?', moodFast: '⚡ Быстрое', moodCalm: '🌿 Спокойное', moodTwo: '👥 Вдвоём', moodThink: '🧠 Подумать',
@@ -2285,6 +2353,7 @@ const DICT = {
       './online/': ['Онлайн-Дуэль', 'Два разных телефона. Пройди три раунда, получи код и отправь другу — он играет те же раунды, и видно, кто сильнее.', '▶ В бой'],
       './rise/': ['Подъём', 'Оттяни мяч назад и отпусти. Двумя большими пальцами двигай ракетки по краям, чтобы мяч не улетел, и поднимайся как можно выше.', '▶ Вверх'],
       './town/': ['Золотой Город', 'Трать золото и строй город — от дерева до замка. Некоторые постройки не купишь: их надо заслужить.', '▶ Строить'],
+      './city/': ['Golden Craft', 'Город, где гуляешь свободно — пешком или на машине. Отвези лаваш, поработай такси, найди потерянных котят.', '▶ Войти в город'],
       './time/': ['Машина времени', 'Вся история сайта — от первого летающего кота до сегодня, день за днём.', '▶ В путь'],
       './museum/': ['Музей', 'Место отдыха удалённых игр: от пирата до золотого котёнка. Соблюдай тишину 🤫', '▶ Войти'],
     },
@@ -2310,7 +2379,7 @@ const DICT = {
     },
     newT: '🆕 New games',
     allT: '📚 All',
-    findPH: '🔎 Find a game…', nofind: 'Nothing found 😿 Try another word', topQ: '🔥 You play these most:', tag: 'The world plays together', lang: '🌐 Language',
+    findPH: '🔎 Find a game…', nofind: 'Nothing found 😿 Try another word', topQ: '🔥 You play these most:', tag: 'The world plays together', lang: '🌐 Language', wip: '🚧 still being built',
     cats: ['⚡ Fast and arcade', '🧩 Puzzles and thinking', '🇦🇲 Armenian', '🎵 Music and rhythm', '🌿 Calm', '🕰️ The site’s history'],
     rand: '🎲 Random',
     moodQ: 'What shall we play?', moodFast: '⚡ Fast', moodCalm: '🌿 Calm', moodTwo: '👥 Two players', moodThink: '🧠 Thinking',
@@ -2364,6 +2433,7 @@ const DICT = {
       './online/': ['Online Duel', 'Two different phones. Play three rounds, get a code and send it to a friend — they play the same rounds and you see who is stronger.', '▶ Duel'],
       './rise/': ['Rise', 'Pull the ball back and let go. Move the paddles at the edges with both thumbs so the ball never escapes, and climb as high as you can.', '▶ Climb'],
       './town/': ['Golden Town', 'Spend your gold and build a town, from a tree to a castle. Some buildings are not for sale — you have to earn them.', '▶ Build'],
+      './city/': ['Golden Craft', 'A city you roam freely, on foot or by car. Deliver the lavash, drive a taxi, find the lost cats.', '▶ Enter the city'],
       './time/': ['Time Machine', 'The whole story of the site — from the first flying cat to today, day by day.', '▶ Travel'],
       './museum/': ['Museum', 'The resting place of deleted games: from the pirate to the golden kitten. Keep quiet 🤫', '▶ Enter'],
     },
@@ -2389,7 +2459,7 @@ const DICT = {
     },
     newT: '🆕 Jogos novos',
     allT: '📚 Todos',
-    findPH: '🔎 Procura um jogo…', nofind: 'Não encontrei nada 😿 Tenta outra palavra', topQ: '🔥 É a isto que jogas mais:', tag: 'O mundo joga em conjunto', lang: '🌐 Idioma',
+    findPH: '🔎 Procura um jogo…', nofind: 'Não encontrei nada 😿 Tenta outra palavra', topQ: '🔥 É a isto que jogas mais:', tag: 'O mundo joga em conjunto', lang: '🌐 Idioma', wip: '🚧 ainda em construção',
     cats: ['⚡ Rápidos e arcade', '🧩 Puzzles e pensar', '🇦🇲 Arménios', '🎵 Música e ritmo', '🌿 Calmos', '🕰️ A história do site'],
     rand: '🎲 À sorte',
     moodQ: 'A que vamos jogar?', moodFast: '⚡ Rápido', moodCalm: '🌿 Calmo', moodTwo: '👥 A dois', moodThink: '🧠 Para pensar',
@@ -2443,6 +2513,7 @@ const DICT = {
       './online/': ['Duelo Online', 'Dois telemóveis diferentes. Joga três rondas, recebe um código e envia-o a um amigo — ele joga as mesmas rondas e ficam a saber quem é o mais forte.', '▶ Duelo'],
       './rise/': ['Subida', 'Puxa a bola para trás e larga. Move as raquetes dos lados com os dois polegares para a bola não fugir, e sobe o mais alto que conseguires.', '▶ Subir'],
       './town/': ['Cidade Dourada', 'Gasta o teu ouro e constrói uma cidade, da árvore ao castelo. Alguns edifícios não se compram — ganham-se.', '▶ Construir'],
+      './city/': ['Golden Craft', 'Uma cidade onde andas à vontade, a pé ou de carro. Leva o lavash, conduz um táxi, encontra os gatinhos perdidos.', '▶ Entrar na cidade'],
       './time/': ['Máquina do Tempo', 'A história toda do site — do primeiro gato voador até hoje, dia a dia.', '▶ Viajar'],
       './museum/': ['Museu', 'O descanso dos jogos apagados: do pirata ao gatinho dourado. Silêncio 🤫', '▶ Entrar'],
     },
@@ -2468,7 +2539,7 @@ const DICT = {
     },
     newT: '🆕 Juegos nuevos',
     allT: '📚 Todos',
-    findPH: '🔎 Busca un juego…', nofind: 'No hay nada 😿 Prueba otra palabra', topQ: '🔥 A lo que más juegas:', tag: 'El mundo juega junto', lang: '🌐 Idioma',
+    findPH: '🔎 Busca un juego…', nofind: 'No hay nada 😿 Prueba otra palabra', topQ: '🔥 A lo que más juegas:', tag: 'El mundo juega junto', lang: '🌐 Idioma', wip: '🚧 aún en construcción',
     cats: ['⚡ Rápidos y arcade', '🧩 Puzles y pensar', '🇦🇲 Armenios', '🎵 Música y ritmo', '🌿 Tranquilos', '🕰️ La historia del sitio'],
     rand: '🎲 Al azar',
     moodQ: '¿A qué jugamos?', moodFast: '⚡ Rápido', moodCalm: '🌿 Tranquilo', moodTwo: '👥 Entre dos', moodThink: '🧠 Para pensar',
@@ -2522,6 +2593,7 @@ const DICT = {
       './online/': ['Duelo en Línea', 'Dos móviles distintos. Juega tres rondas, consigue un código y mándaselo a un amigo: juega las mismas rondas y se ve quién gana.', '▶ Duelo'],
       './rise/': ['Ascenso', 'Tira de la pelota hacia atrás y suéltala. Mueve las paletas de los lados con los dos pulgares para que no se escape, y sube lo más alto que puedas.', '▶ Subir'],
       './town/': ['Ciudad Dorada', 'Gasta tu oro y construye una ciudad, del árbol al castillo. Algunos edificios no se compran: hay que ganárselos.', '▶ Construir'],
+      './city/': ['Golden Craft', 'Una ciudad por la que paseas libre, a pie o en coche. Lleva el lavash, conduce un taxi, encuentra los gatitos perdidos.', '▶ Entrar en la ciudad'],
       './time/': ['Máquina del tiempo', 'Toda la historia del sitio, del primer gato volador hasta hoy, día a día.', '▶ Viajar'],
       './museum/': ['Museo', 'El descanso de los juegos borrados: del pirata al gatito dorado. Guarda silencio 🤫', '▶ Entrar'],
     },
@@ -2547,7 +2619,7 @@ const DICT = {
     },
     newT: '🆕 Nouveaux jeux',
     allT: '📚 Tout',
-    findPH: '🔎 Cherche un jeu…', nofind: 'Rien trouvé 😿 Essaie un autre mot', topQ: '🔥 Tu y joues le plus :', tag: 'Le monde joue ensemble', lang: '🌐 Langue',
+    findPH: '🔎 Cherche un jeu…', nofind: 'Rien trouvé 😿 Essaie un autre mot', topQ: '🔥 Tu y joues le plus :', tag: 'Le monde joue ensemble', lang: '🌐 Langue', wip: '🚧 encore en travaux',
     cats: ['⚡ Rapides et arcade', '🧩 Casse-tête et réflexion', '🇦🇲 Arméniens', '🎵 Musique et rythme', '🌿 Calmes', '🕰️ L’histoire du site'],
     rand: '🎲 Au hasard',
     moodQ: 'On joue à quoi ?', moodFast: '⚡ Rapide', moodCalm: '🌿 Calme', moodTwo: '👥 À deux', moodThink: '🧠 Réfléchir',
@@ -2601,6 +2673,7 @@ const DICT = {
       './online/': ['Duel en Ligne', 'Deux téléphones différents. Joue trois manches, récupère un code et envoie-le à un ami : il joue les mêmes manches et on voit qui gagne.', '▶ Duel'],
       './rise/': ['Ascension', 'Tire la balle en arrière et lâche. Déplace les raquettes sur les bords avec tes deux pouces pour qu’elle ne s’échappe pas, et monte le plus haut possible.', '▶ Monter'],
       './town/': ['Ville Dorée', 'Dépense ton or et construis une ville, de l’arbre au château. Certains bâtiments ne s’achètent pas — ils se méritent.', '▶ Construire'],
+      './city/': ['Golden Craft', 'Une ville où tu te balades librement, à pied ou en voiture. Livre le lavash, conduis un taxi, retrouve les chats perdus.', '▶ Entrer en ville'],
       './time/': ['Machine à remonter le temps', 'Toute l’histoire du site, du premier chat volant à aujourd’hui, jour après jour.', '▶ Voyager'],
       './museum/': ['Musée', 'Le repos des jeux supprimés : du pirate au chaton doré. Silence, s’il te plaît 🤫', '▶ Entrer'],
     },
@@ -2626,7 +2699,7 @@ const DICT = {
     },
     newT: '🆕 Neue Spiele',
     allT: '📚 Alle',
-    findPH: '🔎 Spiel suchen…', nofind: 'Nichts gefunden 😿 Probier ein anderes Wort', topQ: '🔥 Das spielst du am meisten:', tag: 'Die Welt spielt zusammen', lang: '🌐 Sprache',
+    findPH: '🔎 Spiel suchen…', nofind: 'Nichts gefunden 😿 Probier ein anderes Wort', topQ: '🔥 Das spielst du am meisten:', tag: 'Die Welt spielt zusammen', lang: '🌐 Sprache', wip: '🚧 noch im Bau',
     cats: ['⚡ Schnell und Arcade', '🧩 Rätsel und Nachdenken', '🇦🇲 Armenisch', '🎵 Musik und Rhythmus', '🌿 Ruhig', '🕰️ Die Geschichte der Seite'],
     rand: '🎲 Zufall',
     moodQ: 'Was spielen wir?', moodFast: '⚡ Schnell', moodCalm: '🌿 Ruhig', moodTwo: '👥 Zu zweit', moodThink: '🧠 Nachdenken',
@@ -2680,6 +2753,7 @@ const DICT = {
       './online/': ['Online-Duell', 'Zwei verschiedene Handys. Spiel drei Runden, hol den Code und schick ihn einem Freund — er spielt dieselben Runden, und man sieht, wer gewinnt.', '▶ Duell'],
       './rise/': ['Aufstieg', 'Zieh den Ball zurück und lass los. Bewege die Schläger an den Rändern mit beiden Daumen, damit der Ball nicht entwischt, und steig so hoch du kannst.', '▶ Aufsteigen'],
       './town/': ['Goldene Stadt', 'Gib dein Gold aus und bau eine Stadt, vom Baum bis zur Burg. Manche Gebäude kann man nicht kaufen — die muss man sich verdienen.', '▶ Bauen'],
+      './city/': ['Golden Craft', 'Eine Stadt, durch die du frei läufst oder fährst. Bring das Lavash, fahr Taxi, finde die verlorenen Katzen.', '▶ In die Stadt'],
       './time/': ['Zeitmaschine', 'Die ganze Geschichte der Seite — von der ersten fliegenden Katze bis heute, Tag für Tag.', '▶ Reisen'],
       './museum/': ['Museum', 'Der Ruheort gelöschter Spiele: vom Piraten bis zum goldenen Kätzchen. Bitte leise 🤫', '▶ Eintreten'],
     },
@@ -2705,7 +2779,7 @@ const DICT = {
     },
     newT: '🆕 あたらしいゲーム',
     allT: '📚 ぜんぶ',
-    findPH: '🔎 ゲームをさがす…', nofind: 'なにも見つからないよ 😿 べつのことばでためしてね', topQ: '🔥 いちばんあそんでるの：', tag: '世界がいっしょにあそぶ', lang: '🌐 ことば',
+    findPH: '🔎 ゲームをさがす…', nofind: 'なにも見つからないよ 😿 べつのことばでためしてね', topQ: '🔥 いちばんあそんでるの：', tag: '世界がいっしょにあそぶ', lang: '🌐 ことば', wip: '🚧 まだ こうじちゅう',
     cats: ['⚡ はやい・アクション', '🧩 パズル・かんがえる', '🇦🇲 アルメニア', '🎵 おんがく・リズム', '🌿 のんびり', '🕰️ サイトのれきし'],
     rand: '🎲 ランダム',
     moodQ: 'なにであそぶ？', moodFast: '⚡ はやい', moodCalm: '🌿 のんびり', moodTwo: '👥 ふたりで', moodThink: '🧠 かんがえる',
@@ -2759,6 +2833,7 @@ const DICT = {
       './online/': ['オンラインたいけつ', 'べつべつのスマホで。3ラウンドあそんでコードをともだちにおくると、おなじラウンドをあそんでどっちがつよいかわかる。', '▶ たいけつ'],
       './rise/': ['うえへのぼれ', 'ボールをひっぱって はなそう。りょうほうの おやゆびで はしのラケットを うごかして、ボールを にがさずに どこまでも たかく のぼろう。', '▶ のぼる'],
       './town/': ['ゴールデンタウン', 'ゴールドを つかって まちを つくろう。きから おしろまで。かえない たてものも あるよ — じぶんで かちとろう。', '▶ たてる'],
+      './city/': ['Golden Craft', 'じゆうに あるける まち。くるまにも のれるよ。ラヴァシュを とどけて、タクシーを はしらせて、まいごの ねこを さがそう。', '▶ まちへ'],
       './time/': ['タイムマシン', 'サイトのぜんぶの歴史：さいしょの飛びネコから今日まで、1日ずつ。', '▶ たびする'],
       './museum/': ['ミュージアム', 'けされたゲームのおやすみの場所：海賊から金のこねこまで。おしずかに 🤫', '▶ はいる'],
     },
@@ -2784,7 +2859,7 @@ const DICT = {
     },
     newT: '🆕 新游戏',
     allT: '📚 全部',
-    findPH: '🔎 找游戏…', nofind: '什么也没找到 😿 换个词试试', topQ: '🔥 你玩得最多：', tag: '全世界一起玩', lang: '🌐 语言',
+    findPH: '🔎 找游戏…', nofind: '什么也没找到 😿 换个词试试', topQ: '🔥 你玩得最多：', tag: '全世界一起玩', lang: '🌐 语言', wip: '🚧 还在建设中',
     cats: ['⚡ 快节奏和街机', '🧩 解谜和动脑', '🇦🇲 亚美尼亚', '🎵 音乐和节奏', '🌿 安静', '🕰️ 网站的历史'],
     rand: '🎲 随机',
     moodQ: '玩什么好呢？', moodFast: '⚡ 快节奏', moodCalm: '🌿 安静', moodTwo: '👥 两个人', moodThink: '🧠 动脑',
@@ -2838,6 +2913,7 @@ const DICT = {
       './online/': ['在线对决', '两台不同的手机。玩三个回合拿到代码发给朋友，他玩同样的回合，就知道谁更强。', '▶ 对决'],
       './rise/': ['上升', '把球往后拉再放开。用两个大拇指移动两边的挡板，别让球跑掉，看你能升到多高。', '▶ 上升'],
       './town/': ['黄金城', '花掉金币，建一座城，从一棵树到一座城堡。有些建筑买不到，要靠本事换。', '▶ 建造'],
+      './city/': ['Golden Craft', '一座可以自由走动的城市，也能开车。送拉瓦什、开出租车、找走丢的猫咪。', '▶ 进入城市'],
       './time/': ['时光机', '网站的全部历史——从第一只飞猫到今天，一天一天看。', '▶ 出发'],
       './museum/': ['博物馆', '被删游戏的安息之地：从海盗到金色小猫。请保持安静 🤫', '▶ 进入'],
     },
@@ -2863,7 +2939,7 @@ const DICT = {
     },
     newT: '🆕 Giochi nuovi',
     allT: '📚 Tutti',
-    findPH: '🔎 Cerca un gioco…', nofind: 'Non ho trovato niente 😿 Prova un’altra parola', topQ: '🔥 Ci giochi di più:', tag: 'Il mondo gioca insieme', lang: '🌐 Lingua',
+    findPH: '🔎 Cerca un gioco…', nofind: 'Non ho trovato niente 😿 Prova un’altra parola', topQ: '🔥 Ci giochi di più:', tag: 'Il mondo gioca insieme', lang: '🌐 Lingua', wip: '🚧 ancora in costruzione',
     cats: ['⚡ Veloci e arcade', '🧩 Rompicapi e ragionare', '🇦🇲 Armeni', '🎵 Musica e ritmo', '🌿 Tranquilli', '🕰️ La storia del sito'],
     rand: '🎲 A caso',
     moodQ: 'A cosa giochiamo?', moodFast: '⚡ Veloce', moodCalm: '🌿 Tranquillo', moodTwo: '👥 In due', moodThink: '🧠 Da pensare',
@@ -2917,6 +2993,7 @@ const DICT = {
       './online/': ['Duello Online', 'Due telefoni diversi. Gioca tre round, prendi il codice e mandalo a un amico: gioca gli stessi round e si vede chi vince.', '▶ Duello'],
       './rise/': ['Salita', 'Tira indietro la palla e lascia. Muovi le racchette ai bordi con i due pollici per non farla scappare, e sali più in alto che puoi.', '▶ Salire'],
       './town/': ['Città Dorata', 'Spendi il tuo oro e costruisci una città, dall’albero al castello. Alcuni edifici non si comprano: vanno guadagnati.', '▶ Costruire'],
+      './city/': ['Golden Craft', 'Una città in cui giri libero, a piedi o in auto. Porta il lavash, fai il taxi, ritrova i gattini smarriti.', '▶ Entra in città'],
       './time/': ['Macchina del tempo', 'Tutta la storia del sito — dal primo gatto volante a oggi, giorno per giorno.', '▶ Parti'],
       './museum/': ['Museo', 'Il luogo di riposo dei giochi cancellati: dal pirata al gattino dorato. Silenzio 🤫', '▶ Entra'],
     },
@@ -2942,7 +3019,7 @@ const DICT = {
     },
     newT: '🆕 ახალი თამაშები',
     allT: '📚 ყველა',
-    findPH: '🔎 იპოვე თამაში…', nofind: 'ვერაფერი მოიძებნა 😿 სხვა სიტყვა სცადე', topQ: '🔥 ყველაზე მეტად თამაშობ:', tag: 'მსოფლიო ერთად თამაშობს', lang: '🌐 ენა',
+    findPH: '🔎 იპოვე თამაში…', nofind: 'ვერაფერი მოიძებნა 😿 სხვა სიტყვა სცადე', topQ: '🔥 ყველაზე მეტად თამაშობ:', tag: 'მსოფლიო ერთად თამაშობს', lang: '🌐 ენა', wip: '🚧 ჯერ შენდება',
     cats: ['⚡ სწრაფი და არკადა', '🧩 თავსატეხი და ფიქრი', '🇦🇲 სომხური', '🎵 მუსიკა და რიტმი', '🌿 მშვიდი', '🕰️ საიტის ისტორია'],
     rand: '🎲 შემთხვევითი',
     moodQ: 'რა ვითამაშოთ?', moodFast: '⚡ სწრაფი', moodCalm: '🌿 მშვიდი', moodTwo: '👥 ორნი', moodThink: '🧠 დასაფიქრებელი',
@@ -2996,6 +3073,7 @@ const DICT = {
       './online/': ['ონლაინ დუელი', 'ორი სხვადასხვა ტელეფონი. ითამაშე სამი რაუნდი, მიიღე კოდი და გაუგზავნე მეგობარს — ის იმავე რაუნდებს თამაშობს და გამოჩნდება ვინ სჯობს.', '▶ დუელი'],
       './rise/': ['ასვლა', 'უკან წაწიე ბურთი და გაუშვი. ორივე ცერით ამოძრავე კიდეების ჩოგნები, რომ ბურთი არ გაექცეს, და ავედი რაც შეიძლება მაღლა.', '▶ ასვლა'],
       './town/': ['ოქროს ქალაქი', 'დახარჯე ოქრო და ააშენე ქალაქი — ხიდან ციხემდე. ზოგი შენობა არ იყიდება, უნდა დაიმსახურო.', '▶ აშენება'],
+      './city/': ['Golden Craft', 'ქალაქი, სადაც თავისუფლად დადიხარ — ფეხით ან მანქანით. მიიტანე ლავაში, იმუშავე ტაქსად, იპოვე დაკარგული კატები.', '▶ ქალაქში'],
       './time/': ['დროის მანქანა', 'საიტის მთელი ისტორია — პირველი მფრინავი კატიდან დღემდე, დღითი დღე.', '▶ გაემგზავრე'],
       './museum/': ['მუზეუმი', 'წაშლილი თამაშების დასასვენებელი ადგილი: მეკობრიდან ოქროს კატუნამდე. დაიცავი სიჩუმე 🤫', '▶ შედი'],
     },
@@ -3021,7 +3099,7 @@ const DICT = {
     },
     newT: '🆕 नए खेल',
     allT: '📚 सब',
-    findPH: '🔎 खेल ढूँढो…', nofind: 'कुछ नहीं मिला 😿 दूसरा शब्द आज़माओ', topQ: '🔥 सबसे ज़्यादा यही खेलते हो:', tag: 'दुनिया साथ मिलकर खेलती है', lang: '🌐 भाषा',
+    findPH: '🔎 खेल ढूँढो…', nofind: 'कुछ नहीं मिला 😿 दूसरा शब्द आज़माओ', topQ: '🔥 सबसे ज़्यादा यही खेलते हो:', tag: 'दुनिया साथ मिलकर खेलती है', lang: '🌐 भाषा', wip: '🚧 अभी बन रहा है',
     cats: ['⚡ तेज़ और आर्केड', '🧩 पहेली और सोचना', '🇦🇲 आर्मेनियाई', '🎵 संगीत और ताल', '🌿 शांत', '🕰️ साइट का इतिहास'],
     rand: '🎲 कोई भी',
     moodQ: 'क्या खेलें?', moodFast: '⚡ तेज़', moodCalm: '🌿 शांत', moodTwo: '👥 दो लोग', moodThink: '🧠 सोचने वाला',
@@ -3075,6 +3153,7 @@ const DICT = {
       './online/': ['ऑनलाइन मुक़ाबला', 'दो अलग-अलग फ़ोन। तीन राउंड खेलो, कोड लो और दोस्त को भेजो — वह वही राउंड खेलेगा और पता चलेगा कौन बेहतर है।', '▶ मुक़ाबला'],
       './rise/': ['चढ़ाई', 'गेंद को पीछे खींचो और छोड़ो। दोनों अँगूठों से किनारों के पैडल चलाओ ताकि गेंद भाग न जाए, और जितना ऊँचा चढ़ सको चढ़ो।', '▶ चढ़ो'],
       './town/': ['सुनहरा शहर', 'सोना खर्च करो और शहर बनाओ — पेड़ से क़िले तक। कुछ इमारतें ख़रीदी नहीं जातीं, कमानी पड़ती हैं।', '▶ बनाओ'],
+      './city/': ['Golden Craft', 'एक शहर जहाँ तुम आज़ाद घूमते हो, पैदल या गाड़ी से। लवाश पहुँचाओ, टैक्सी चलाओ, खोई बिल्लियाँ ढूँढो।', '▶ शहर में जाओ'],
       './time/': ['टाइम मशीन', 'साइट की पूरी कहानी — पहली उड़ने वाली बिल्ली से आज तक, दिन-ब-दिन।', '▶ चलो'],
       './museum/': ['संग्रहालय', 'हटाए गए खेलों के आराम की जगह: समुद्री डाकू से सुनहरी बिल्ली तक। शांति रखो 🤫', '▶ अंदर जाओ'],
     },
@@ -3104,6 +3183,7 @@ function applyLang(lang) {
   document.getElementById('topQ').textContent = d.topQ;
   document.getElementById('tagline').textContent = d.tag;
   document.getElementById('langBtn').textContent = d.lang;
+  document.getElementById('wipTag').textContent = d.wip;
   NEW_T = d.newT;
   CATS.forEach((c, i) => {
     const sec = secEls[c.k];
@@ -3502,6 +3582,7 @@ applyFind();
 // Ամեն խաղ ունի պիտակներ. մենակ / ընկերոջ հետ / հանգիստ / ադրենալին
 const MOODS = {
   './cat-jump/': ['fast'],
+  './city/': ['calm', 'fast'],
   './city-drive/': ['fast'],
   './piano/': ['calm', 'two'],
   './rocket/': ['fast'],

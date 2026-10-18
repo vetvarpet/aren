@@ -323,18 +323,17 @@
     // Արենը խնդրեց՝ ինքը միանա։ Դիտարկիչները ձայնը թույլ չեն տալիս
     // մինչև առաջին հպումը, ուստի հենց առաջին հպմանն է սկսում։
     if (wantOn()) {
-      start();
-      if (!playing || (ctx && ctx.state !== 'running')) {
-        var go = function () {
-          document.removeEventListener('pointerdown', go, true);
-          document.removeEventListener('touchstart', go, true);
-          document.removeEventListener('keydown', go, true);
-          if (wantOn()) start();
-        };
-        document.addEventListener('pointerdown', go, true);
-        document.addEventListener('touchstart', go, true);
-        document.addEventListener('keydown', go, true);
-      }
+      // Ձայնը ծնվում է միայն առաջին հպումից հետո — այլապես դիտարկիչը
+      // բողոքում է կոնսոլում, ու իզուր ենք AudioContext բացում։
+      var go = function () {
+        document.removeEventListener('pointerdown', go, true);
+        document.removeEventListener('touchstart', go, true);
+        document.removeEventListener('keydown', go, true);
+        if (wantOn()) start();
+      };
+      document.addEventListener('pointerdown', go, true);
+      document.addEventListener('touchstart', go, true);
+      document.addEventListener('keydown', go, true);
     }
   }
 
