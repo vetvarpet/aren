@@ -36,7 +36,9 @@ Site owner and director: **Aren Aghbalyan (Արեն)**, age 10, in Armenia — s
 - Deleted things go to the museum (`museum/`) as an exhibit — nothing is truly deleted, git remembers.
 - **Never write certificate numbers on the site** (`№ GG-…`) — the owner had them removed and asked that they never come back. Names, roles and dates only.
 
-## 🏙 Golden City — the big one Aren is planning (`city/`, not built yet)
+## 🏙 Golden Craft — the big one, in `city/`
+
+Aren renamed it from Golden City; the folder and the URL stay `city/`.
 
 Aren wants a GTA-shaped game: a city you roam freely. He chose **3D** (hand-written —
 the site loads no libraries, so it is a software renderer on a 2D canvas, camera behind

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Ոսկե Քաղաք 🏙 · Golden Games</title>
+<title>Golden Craft 🏙 · Golden Games</title>
 <link rel="icon" type="image/png" href="../logo-icon.png">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -60,7 +60,7 @@
 <div id="job" hidden><span id="jobTxt"></span><div id="heat"><div id="heatIn"></div></div></div>
 
 <div class="ov" id="menu">
-  <h1 id="mT">Ոսկե Քաղաք 🏙</h1>
+  <h1 id="mT">Golden Craft 🏙</h1>
   <p class="step" id="mStep"></p>
   <ul id="mHow"></ul>
   <button id="startBtn"></button>
@@ -90,7 +90,7 @@
 let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
-  hy: { t:'Ոսկե Քաղաք 🏙', step:'Քայլ 5 · տաքսի ու կորած կատուներ', go:'▶ Մտնել քաղաք',
+  hy: { t:'Golden Craft 🏙', step:'Քայլ 5 · տաքսի ու կորած կատուներ', go:'▶ Մտնել քաղաք',
         how:['🕹 Ձախ մատով՝ քայլիր ու շրջվիր', '🏃 Մատդ հեռու տար՝ վազիր', '👀 Աջ մատով՝ նայիր շուրջդ', '🚗 Մոտեցիր մեքենային ու սեղմիր «Նստել»', '֏ Հավաքիր փողերը փողոցներում', '🥖 Փռից տաք լավաշ տար խանութ (քարտեզի նարնջագույն կետը)', '🚕 Մեքենայով մոտեցիր ձեռքը բարձրացրած ուղևորին (դեղին կետը)', '🐱 Այգում տատիկը կատուներն է կորցրել (մանուշակագույն կետը)'],
         tip:'Գտիր մեքենա ու նստիր 🚗',
         enter:'🚗 Նստել', exit:'🚶 Իջնել', dtip:'Վեր՝ գազ · վար՝ արգելակ ու ետ · կողքեր՝ ղեկ',
@@ -98,7 +98,7 @@ const TRL = {
         job:'🥖 Վերցնել լավաշը', carry:'Տար խանութ, քանի դեռ տաք է 🛒 Սլաքը ցույց կտա', cold:'Լավաշը սառեց 🥶 Փուռը նորն է թխում — արի նորից', done:'Տաք լավաշը հասավ 🥖 +֏ ', rec:'🏆 Նոր ռեկորդ՝ ', sec:'վ', m:'մ',
         taxi:'🚕 Նստեցնել ուղևորին', twalk:'Ուղևորը մեքենայով է ուզում գնալ — գտիր մեքենա 🚗', tgo:'Տար ուղևորին դեղին շրջանը 🚕 Սլաքը ցույց կտա', tstop:'Կանգնիր, որ ուղևորն իջնի ✋', tdone:'Ուղևորը հասավ 🚕 +֏ ', ttip:' · թեյավճար ✨', tcar:'Ուղևորը քո տաքսու մեջ է 🚕 Վերադարձիր մեքենային',
         cat:'🐱 Օգնել տատիկին', cgo:'Տատիկի 5 կատուները կորել են 🐱 Լսիր մլավոցը ու նայիր քարտեզին', cfound:'Գտար կատու 🐱 ', chome:'Բոլորը գտնվեցին 🎉 Տար տատիկի մոտ', cdone:'Տատիկը շատ ուրախ է 👵 +֏ ' },
-  ru: { t:'Золотой Город 🏙', step:'Шаг 5 · такси и потерянные котики', go:'▶ В город',
+  ru: { t:'Golden Craft 🏙', step:'Шаг 5 · такси и потерянные котики', go:'▶ В город',
         how:['🕹 Левым пальцем — иди и поворачивай', '🏃 Отведи палец дальше — беги', '👀 Правым пальцем — смотри вокруг', '🚗 Подойди к машине и нажми «Сесть»', '֏ Собирай деньги на улицах', '🥖 Отвези горячий лаваш из пекарни в магазин (оранжевая точка на карте)', '🚕 Подъезжай на машине к пассажиру с поднятой рукой (жёлтая точка)', '🐱 В парке бабушка потеряла котиков (фиолетовая точка)'],
         tip:'Найди машину и садись 🚗',
         enter:'🚗 Сесть', exit:'🚶 Выйти', dtip:'Вверх — газ · вниз — тормоз и назад · в стороны — руль',
@@ -106,7 +106,7 @@ const TRL = {
         job:'🥖 Взять лаваш', carry:'Вези в магазин, пока горячий 🛒 Стрелка покажет', cold:'Лаваш остыл 🥶 Пекарня печёт новый — приходи снова', done:'Горячий лаваш доставлен 🥖 +֏ ', rec:'🏆 Новый рекорд: ', sec:'с', m:'м',
         taxi:'🚕 Посадить пассажира', twalk:'Пассажир хочет ехать на машине — найди машину 🚗', tgo:'Отвези пассажира в жёлтый круг 🚕 Стрелка покажет', tstop:'Остановись, чтобы пассажир вышел ✋', tdone:'Пассажир доехал 🚕 +֏ ', ttip:' · чаевые ✨', tcar:'Пассажир ждёт в твоём такси 🚕 Вернись к машине',
         cat:'🐱 Помочь бабушке', cgo:'У бабушки потерялись 5 котиков 🐱 Слушай мяуканье и смотри на карту', cfound:'Котик найден 🐱 ', chome:'Все нашлись 🎉 Веди их к бабушке', cdone:'Бабушка очень рада 👵 +֏ ' },
-  en: { t:'Golden City 🏙', step:'Step 5 · taxi and lost cats', go:'▶ Enter the city',
+  en: { t:'Golden Craft 🏙', step:'Step 5 · taxi and lost cats', go:'▶ Enter the city',
         how:['🕹 Left finger: walk and turn', '🏃 Push it further: run', '👀 Right finger: look around', '🚗 Walk up to a car and tap “Get in”', '֏ Pick up the money in the streets', '🥖 Take hot lavash from the bakery to the shop (orange dot on the map)', '🚕 Drive up to a passenger with a raised hand (yellow dot)', '🐱 Grandma in the park lost her cats (purple dot)'],
         tip:'Find a car and get in 🚗',
         enter:'🚗 Get in', exit:'🚶 Get out', dtip:'Up: gas · down: brake and reverse · sideways: steer',
@@ -114,7 +114,7 @@ const TRL = {
         job:'🥖 Take the lavash', carry:'Get it to the shop while it’s hot 🛒 Follow the arrow', cold:'The lavash got cold 🥶 The bakery is baking a new one — come back', done:'Hot lavash delivered 🥖 +֏ ', rec:'🏆 New record: ', sec:'s', m:'m',
         taxi:'🚕 Pick up', twalk:'The passenger wants a ride — find a car 🚗', tgo:'Take the passenger to the yellow circle 🚕 Follow the arrow', tstop:'Stop so the passenger can get out ✋', tdone:'Passenger delivered 🚕 +֏ ', ttip:' · tip ✨', tcar:'Your passenger is waiting in the taxi 🚕 Go back to the car',
         cat:'🐱 Help grandma', cgo:'Grandma’s 5 cats are lost 🐱 Listen for meows and watch the map', cfound:'Found a cat 🐱 ', chome:'All found 🎉 Bring them to grandma', cdone:'Grandma is so happy 👵 +֏ ' },
-  es: { t:'Ciudad Dorada 🏙', step:'Paso 5 · taxi y gatitos perdidos', go:'▶ Entrar en la ciudad',
+  es: { t:'Golden Craft 🏙', step:'Paso 5 · taxi y gatitos perdidos', go:'▶ Entrar en la ciudad',
         how:['🕹 Dedo izquierdo: camina y gira', '🏃 Llévalo más lejos: corre', '👀 Dedo derecho: mira alrededor', '🚗 Acércate a un coche y toca «Subir»', '֏ Recoge el dinero de las calles', '🥖 Lleva lavash caliente de la panadería a la tienda (punto naranja en el mapa)', '🚕 Acércate en coche a un pasajero con la mano levantada (punto amarillo)', '🐱 La abuela del parque perdió sus gatos (punto morado)'],
         tip:'Busca un coche y súbete 🚗',
         enter:'🚗 Subir', exit:'🚶 Bajar', dtip:'Arriba: acelerar · abajo: frenar y atrás · a los lados: girar',
@@ -122,7 +122,7 @@ const TRL = {
         job:'🥖 Coger el lavash', carry:'Llévalo a la tienda mientras está caliente 🛒 Sigue la flecha', cold:'El lavash se enfrió 🥶 La panadería hornea otro — vuelve', done:'¡Lavash caliente entregado! 🥖 +֏ ', rec:'🏆 Nuevo récord: ', sec:'s', m:'m',
         taxi:'🚕 Recoger', twalk:'El pasajero quiere ir en coche — busca un coche 🚗', tgo:'Lleva al pasajero al círculo amarillo 🚕 Sigue la flecha', tstop:'Para para que el pasajero baje ✋', tdone:'¡Pasajero entregado! 🚕 +֏ ', ttip:' · propina ✨', tcar:'Tu pasajero espera en el taxi 🚕 Vuelve al coche',
         cat:'🐱 Ayudar a la abuela', cgo:'Se perdieron los 5 gatos de la abuela 🐱 Escucha los maullidos y mira el mapa', cfound:'¡Gato encontrado! 🐱 ', chome:'¡Todos encontrados! 🎉 Llévalos con la abuela', cdone:'La abuela está feliz 👵 +֏ ' },
-  fr: { t:'Ville Dorée 🏙', step:'Étape 5 · taxi et chats perdus', go:'▶ Entrer en ville',
+  fr: { t:'Golden Craft 🏙', step:'Étape 5 · taxi et chats perdus', go:'▶ Entrer en ville',
         how:['🕹 Doigt gauche : marche et tourne', '🏃 Va plus loin avec le doigt : cours', '👀 Doigt droit : regarde autour', '🚗 Approche-toi d’une voiture et touche « Monter »', '֏ Ramasse l’argent dans les rues', '🥖 Porte le lavash chaud de la boulangerie au magasin (point orange sur la carte)', '🚕 Approche-toi en voiture d’un passager qui lève la main (point jaune)', '🐱 La mamie du parc a perdu ses chats (point violet)'],
         tip:'Trouve une voiture et monte 🚗',
         enter:'🚗 Monter', exit:'🚶 Descendre', dtip:'Haut : accélérer · bas : freiner et reculer · côtés : tourner',
@@ -130,7 +130,7 @@ const TRL = {
         job:'🥖 Prendre le lavash', carry:'Porte-le au magasin tant qu’il est chaud 🛒 Suis la flèche', cold:'Le lavash a refroidi 🥶 La boulangerie en cuit un autre — reviens', done:'Lavash chaud livré ! 🥖 +֏ ', rec:'🏆 Nouveau record : ', sec:'s', m:'m',
         taxi:'🚕 Prendre le passager', twalk:'Le passager veut aller en voiture — trouve une voiture 🚗', tgo:'Emmène le passager au cercle jaune 🚕 Suis la flèche', tstop:'Arrête-toi pour que le passager descende ✋', tdone:'Passager déposé ! 🚕 +֏ ', ttip:' · pourboire ✨', tcar:'Ton passager attend dans le taxi 🚕 Retourne à la voiture',
         cat:'🐱 Aider mamie', cgo:'Les 5 chats de mamie sont perdus 🐱 Écoute les miaou et regarde la carte', cfound:'Chat trouvé ! 🐱 ', chome:'Tous trouvés 🎉 Ramène-les à mamie', cdone:'Mamie est si contente 👵 +֏ ' },
-  de: { t:'Goldene Stadt 🏙', step:'Schritt 5 · Taxi und verlorene Katzen', go:'▶ In die Stadt',
+  de: { t:'Golden Craft 🏙', step:'Schritt 5 · Taxi und verlorene Katzen', go:'▶ In die Stadt',
         how:['🕹 Linker Finger: gehen und drehen', '🏃 Weiter ziehen: rennen', '👀 Rechter Finger: umschauen', '🚗 Geh zu einem Auto und tippe „Einsteigen“', '֏ Sammle das Geld auf den Straßen', '🥖 Bring heißes Lavasch von der Bäckerei zum Laden (oranger Punkt auf der Karte)', '🚕 Fahr zu einem Fahrgast mit erhobener Hand (gelber Punkt)', '🐱 Oma im Park hat ihre Katzen verloren (lila Punkt)'],
         tip:'Such dir ein Auto und steig ein 🚗',
         enter:'🚗 Einsteigen', exit:'🚶 Aussteigen', dtip:'Hoch: Gas · runter: Bremse und rückwärts · seitlich: lenken',
@@ -138,7 +138,7 @@ const TRL = {
         job:'🥖 Lavasch nehmen', carry:'Bring es zum Laden, solange es heiß ist 🛒 Folge dem Pfeil', cold:'Das Lavasch ist kalt geworden 🥶 Die Bäckerei backt neues — komm wieder', done:'Heißes Lavasch geliefert! 🥖 +֏ ', rec:'🏆 Neuer Rekord: ', sec:'s', m:'m',
         taxi:'🚕 Einsteigen lassen', twalk:'Der Fahrgast will mit dem Auto fahren — such ein Auto 🚗', tgo:'Bring den Fahrgast zum gelben Kreis 🚕 Folge dem Pfeil', tstop:'Halt an, damit der Fahrgast aussteigt ✋', tdone:'Fahrgast angekommen! 🚕 +֏ ', ttip:' · Trinkgeld ✨', tcar:'Dein Fahrgast wartet im Taxi 🚕 Geh zurück zum Auto',
         cat:'🐱 Oma helfen', cgo:'Omas 5 Katzen sind weg 🐱 Hör auf das Miauen und schau auf die Karte', cfound:'Katze gefunden! 🐱 ', chome:'Alle gefunden 🎉 Bring sie zu Oma', cdone:'Oma freut sich riesig 👵 +֏ ' },
-  ja: { t:'ゴールデンシティ 🏙', step:'ステップ5・タクシーと まいごの ねこ', go:'▶ まちへ いく',
+  ja: { t:'Golden Craft 🏙', step:'ステップ5・タクシーと まいごの ねこ', go:'▶ まちへ いく',
         how:['🕹 ひだりの ゆびで あるく・まがる', '🏃 ゆびを とおくへ: はしる', '👀 みぎの ゆびで まわりを みる', '🚗 くるまに ちかづいて「のる」を おそう', '֏ みちの おかねを あつめよう', '🥖 パンやさんの あつい ラヴァシュを おみせへ (ちずの オレンジの てん)', '🚕 てを あげている おきゃくさんに くるまで ちかづこう (きいろの てん)', '🐱 こうえんの おばあちゃんが ねこを さがしてる (むらさきの てん)'],
         tip:'くるまを みつけて のろう 🚗',
         enter:'🚗 のる', exit:'🚶 おりる', dtip:'うえ: アクセル・した: ブレーキと バック・よこ: ハンドル',
@@ -146,7 +146,7 @@ const TRL = {
         job:'🥖 ラヴァシュを うけとる', carry:'あついうちに おみせへ 🛒 やじるしに ついていこう', cold:'ラヴァシュが さめちゃった 🥶 パンやさんが あたらしいのを やいてるよ', done:'あつい ラヴァシュを とどけた 🥖 +֏ ', rec:'🏆 しんきろく: ', sec:'びょう', m:'m',
         taxi:'🚕 のせる', twalk:'おきゃくさんは くるまで いきたいよ — くるまを さがそう 🚗', tgo:'おきゃくさんを きいろの わへ 🚕 やじるしに ついていこう', tstop:'とまって おきゃくさんを おろそう ✋', tdone:'おきゃくさんが ついた 🚕 +֏ ', ttip:'・チップ ✨', tcar:'おきゃくさんが タクシーで まってるよ 🚕 くるまに もどろう',
         cat:'🐱 おばあちゃんを たすける', cgo:'おばあちゃんの ねこ 5ひきが まいごに 🐱 にゃーの こえを きいて ちずを みよう', cfound:'ねこ みつけた 🐱 ', chome:'ぜんぶ みつけた 🎉 おばあちゃんの ところへ', cdone:'おばあちゃん おおよろこび 👵 +֏ ' },
-  zh: { t:'黄金城市 🏙', step:'第5步 · 出租车和走丢的猫咪', go:'▶ 进城',
+  zh: { t:'Golden Craft 🏙', step:'第5步 · 出租车和走丢的猫咪', go:'▶ 进城',
         how:['🕹 左手指：走路和转弯', '🏃 手指推远一点：跑步', '👀 右手指：看看四周', '🚗 走到汽车旁边，点“上车”', '֏ 捡起街上的钱', '🥖 把面包房的热拉瓦什送到商店（地图上的橙色点）', '🚕 开车靠近举手的乘客（黄色点）', '🐱 公园里的奶奶把猫咪弄丢了（紫色点）'],
         tip:'找一辆车坐上去 🚗',
         enter:'🚗 上车', exit:'🚶 下车', dtip:'向上：油门 · 向下：刹车和倒车 · 左右：转方向',
@@ -154,7 +154,7 @@ const TRL = {
         job:'🥖 拿拉瓦什', carry:'趁热送到商店 🛒 跟着箭头走', cold:'拉瓦什凉了 🥶 面包房在烤新的——再来一次', done:'热拉瓦什送到了 🥖 +֏ ', rec:'🏆 新纪录：', sec:'秒', m:'米',
         taxi:'🚕 接乘客', twalk:'乘客想坐车——去找一辆车 🚗', tgo:'把乘客送到黄色圆圈 🚕 跟着箭头走', tstop:'停下来让乘客下车 ✋', tdone:'乘客送到了 🚕 +֏ ', ttip:' · 小费 ✨', tcar:'乘客在出租车里等你 🚕 回到车上',
         cat:'🐱 帮助奶奶', cgo:'奶奶的5只猫咪走丢了 🐱 听喵喵声，看地图', cfound:'找到一只猫咪 🐱 ', chome:'全找到了 🎉 带它们去找奶奶', cdone:'奶奶非常开心 👵 +֏ ' },
-  it: { t:'Città d’Oro 🏙', step:'Passo 5 · taxi e gattini smarriti', go:'▶ Entra in città',
+  it: { t:'Golden Craft 🏙', step:'Passo 5 · taxi e gattini smarriti', go:'▶ Entra in città',
         how:['🕹 Dito sinistro: cammina e gira', '🏃 Spingilo più lontano: corri', '👀 Dito destro: guardati intorno', '🚗 Avvicinati a un’auto e tocca «Sali»', '֏ Raccogli i soldi per strada', '🥖 Porta il lavash caldo dal forno al negozio (punto arancione sulla mappa)', '🚕 Avvicinati in auto a un passeggero con la mano alzata (punto giallo)', '🐱 La nonna nel parco ha perso i suoi gatti (punto viola)'],
         tip:'Trova un’auto e sali 🚗',
         enter:'🚗 Sali', exit:'🚶 Scendi', dtip:'Su: gas · giù: freno e retro · ai lati: sterza',
@@ -162,7 +162,7 @@ const TRL = {
         job:'🥖 Prendi il lavash', carry:'Portalo al negozio finché è caldo 🛒 Segui la freccia', cold:'Il lavash si è raffreddato 🥶 Il forno ne cuoce un altro — torna', done:'Lavash caldo consegnato! 🥖 +֏ ', rec:'🏆 Nuovo record: ', sec:'s', m:'m',
         taxi:'🚕 Fai salire', twalk:'Il passeggero vuole andare in auto — trova un’auto 🚗', tgo:'Porta il passeggero al cerchio giallo 🚕 Segui la freccia', tstop:'Fermati per far scendere il passeggero ✋', tdone:'Passeggero arrivato! 🚕 +֏ ', ttip:' · mancia ✨', tcar:'Il passeggero ti aspetta nel taxi 🚕 Torna all’auto',
         cat:'🐱 Aiuta la nonna', cgo:'I 5 gatti della nonna si sono persi 🐱 Ascolta i miagolii e guarda la mappa', cfound:'Gatto trovato! 🐱 ', chome:'Tutti trovati 🎉 Portali dalla nonna', cdone:'La nonna è felicissima 👵 +֏ ' },
-  ka: { t:'ოქროს ქალაქი 🏙', step:'ნაბიჯი 5 · ტაქსი და დაკარგული კატები', go:'▶ ქალაქში შესვლა',
+  ka: { t:'Golden Craft 🏙', step:'ნაბიჯი 5 · ტაქსი და დაკარგული კატები', go:'▶ ქალაქში შესვლა',
         how:['🕹 მარცხენა თითით: იარე და მოუხვიე', '🏃 თითი უფრო შორს: ირბინე', '👀 მარჯვენა თითით: მიმოიხედე', '🚗 მიდი მანქანასთან და დააჭირე „ჩაჯდომა“', '֏ შეაგროვე ფული ქუჩებში', '🥖 ცხელი ლავაში საცხობიდან მაღაზიაში მიიტანე (ნარინჯისფერი წერტილი რუკაზე)', '🚕 მანქანით მიუახლოვდი ხელაწეულ მგზავრს (ყვითელი წერტილი)', '🐱 პარკში ბებიამ კატები დაკარგა (იისფერი წერტილი)'],
         tip:'იპოვე მანქანა და ჩაჯექი 🚗',
         enter:'🚗 ჩაჯდომა', exit:'🚶 გადმოსვლა', dtip:'ზემოთ: გაზი · ქვემოთ: მუხრუჭი და უკან · გვერდზე: საჭე',
@@ -170,7 +170,7 @@ const TRL = {
         job:'🥖 ლავაშის აღება', carry:'მიიტანე მაღაზიაში, სანამ ცხელია 🛒 მიჰყევი ისარს', cold:'ლავაში გაცივდა 🥶 საცხობი ახალს აცხობს — დაბრუნდი', done:'ცხელი ლავაში მიტანილია 🥖 +֏ ', rec:'🏆 ახალი რეკორდი: ', sec:'წმ', m:'მ',
         taxi:'🚕 მგზავრის აყვანა', twalk:'მგზავრს მანქანით უნდა წასვლა — იპოვე მანქანა 🚗', tgo:'მიიყვანე მგზავრი ყვითელ წრემდე 🚕 მიჰყევი ისარს', tstop:'გაჩერდი, რომ მგზავრი ჩამოვიდეს ✋', tdone:'მგზავრი მივიდა 🚕 +֏ ', ttip:' · ჩაის ფული ✨', tcar:'მგზავრი ტაქსიში გელოდება 🚕 დაბრუნდი მანქანასთან',
         cat:'🐱 ბებიას დახმარება', cgo:'ბებიას 5 კატა დაიკარგა 🐱 მოუსმინე კნავილს და უყურე რუკას', cfound:'კატა იპოვე 🐱 ', chome:'ყველა იპოვე 🎉 მიიყვანე ბებიასთან', cdone:'ბებია ძალიან გახარებულია 👵 +֏ ' },
-  hi: { t:'गोल्डन सिटी 🏙', step:'कदम 5 · टैक्सी और खोई हुई बिल्लियाँ', go:'▶ शहर में चलो',
+  hi: { t:'Golden Craft 🏙', step:'कदम 5 · टैक्सी और खोई हुई बिल्लियाँ', go:'▶ शहर में चलो',
         how:['🕹 बाएँ उँगली से: चलो और मुड़ो', '🏃 उँगली और दूर ले जाओ: दौड़ो', '👀 दाएँ उँगली से: चारों ओर देखो', '🚗 कार के पास जाओ और «बैठो» दबाओ', '֏ सड़कों पर पैसे उठाओ', '🥖 बेकरी से गरम लवाश दुकान तक ले जाओ (नक्शे पर नारंगी बिंदु)', '🚕 कार से हाथ उठाए यात्री के पास जाओ (पीला बिंदु)', '🐱 पार्क में दादी की बिल्लियाँ खो गई हैं (बैंगनी बिंदु)'],
         tip:'कोई कार ढूँढो और बैठ जाओ 🚗',
         enter:'🚗 बैठो', exit:'🚶 उतरो', dtip:'ऊपर: गैस · नीचे: ब्रेक और पीछे · दाएँ-बाएँ: स्टीयरिंग',
@@ -178,7 +178,7 @@ const TRL = {
         job:'🥖 लवाश लो', carry:'गरम रहते-रहते दुकान पहुँचाओ 🛒 तीर के पीछे चलो', cold:'लवाश ठंडा हो गया 🥶 बेकरी नया बना रही है — फिर आओ', done:'गरम लवाश पहुँच गया 🥖 +֏ ', rec:'🏆 नया रिकॉर्ड: ', sec:'से', m:'मी',
         taxi:'🚕 यात्री को बिठाओ', twalk:'यात्री कार से जाना चाहता है — कोई कार ढूँढो 🚗', tgo:'यात्री को पीले घेरे तक ले जाओ 🚕 तीर के पीछे चलो', tstop:'रुको, ताकि यात्री उतर सके ✋', tdone:'यात्री पहुँच गया 🚕 +֏ ', ttip:' · टिप ✨', tcar:'यात्री टैक्सी में इंतज़ार कर रहा है 🚕 कार पर लौटो',
         cat:'🐱 दादी की मदद करो', cgo:'दादी की 5 बिल्लियाँ खो गई हैं 🐱 म्याऊँ सुनो और नक्शा देखो', cfound:'बिल्ली मिल गई 🐱 ', chome:'सब मिल गईं 🎉 उन्हें दादी के पास ले जाओ', cdone:'दादी बहुत ख़ुश हैं 👵 +֏ ' },
-  pt: { t:'Cidade Dourada 🏙', step:'Passo 5 · táxi e gatinhos perdidos', go:'▶ Entrar na cidade',
+  pt: { t:'Golden Craft 🏙', step:'Passo 5 · táxi e gatinhos perdidos', go:'▶ Entrar na cidade',
         how:['🕹 Dedo esquerdo: anda e vira', '🏃 Leva-o mais longe: corre', '👀 Dedo direito: olha à volta', '🚗 Vai até um carro e toca «Entrar»', '֏ Apanha o dinheiro nas ruas', '🥖 Leva o lavash quente da padaria à loja (ponto laranja no mapa)', '🚕 Aproxima-te de carro de um passageiro de mão no ar (ponto amarelo)', '🐱 A avó do parque perdeu os gatos (ponto roxo)'],
         tip:'Encontra um carro e entra 🚗',
         enter:'🚗 Entrar', exit:'🚶 Sair', dtip:'Cima: acelerar · baixo: travar e marcha-atrás · lados: virar',
