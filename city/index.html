@@ -234,10 +234,28 @@ function pick(a) { return a[Math.floor(rnd() * a.length)]; }
 // Արևը վերևից ու մի քիչ կողքից է — ամեն պատ իր ուղղությամբ է լուսավորվում
 const SUN = (() => { const v = [0.45, 0.8, 0.38], l = Math.hypot(...v); return v.map(c => c / l); })();
 function shadeOf(nx, ny, nz) { return 0.58 + 0.42 * Math.max(0, nx * SUN[0] + ny * SUN[1] + nz * SUN[2]); }
-const HAZE = [205, 226, 238];
+const HAZE_DAY = [205, 226, 238], HAZE_NIGHT = [22, 30, 54], HAZE = HAZE_DAY.slice();
 const FAR = 170;           // սրանից հեռու ոչինչ չենք նկարում — մշուշի մեջ է
+// 🌙 Գիշեր ու ցերեկ (Արենի պատվերն է). մեկ լրիվ օրը 5 րոպե է։
+// NIGHT-ը 0 է ցերեկը, 1՝ խոր գիշերը։ LIGHT-ը՝ որքան լուսավոր է ամեն ինչ։
+// Վառվող բաները (լապտեր, լուսամուտ, մեքենայի լույս) գիշերն էլ պայծառ են։
+const DAY_LEN = 300;
+let clock = DAY_LEN * 0.9, NIGHT = 0, LIGHT = 1, DUSK = 0;
+const mixC = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+const rgbOf = (c) => 'rgb(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ')';
+function tickDay(dt) {
+  clock += dt;
+  const day = 0.5 + 0.5 * Math.cos(clock / DAY_LEN * Math.PI * 2);   // 1՝ կեսօր, 0՝ կեսգիշեր
+  let n = (0.62 - day) / 0.4; n = n < 0 ? 0 : n > 1 ? 1 : n;
+  NIGHT = n * n * (3 - 2 * n);
+  LIGHT = 1 - 0.7 * NIGHT;
+  DUSK = Math.max(0, 1 - Math.abs(NIGHT - 0.4) / 0.4);              // մայրամուտի նարնջագույնը
+  const h = mixC(HAZE_DAY, HAZE_NIGHT, NIGHT);
+  HAZE[0] = h[0] + DUSK * 30; HAZE[1] = h[1] + DUSK * 4; HAZE[2] = h[2] - DUSK * 20;
+}
 function colorOf(c, sh, d) {
   let f = (d - 35) / (FAR - 35); f = f < 0 ? 0 : f > 1 ? 1 : f; f *= 0.9;
+  if (!c.glow) sh *= LIGHT;
   const r = c[0] * sh * (1 - f) + HAZE[0] * f, gg = c[1] * sh * (1 - f) + HAZE[1] * f, b = c[2] * sh * (1 - f) + HAZE[2] * f;
   return 'rgb(' + (r | 0) + ',' + (gg | 0) + ',' + (b | 0) + ')';
 }
@@ -364,7 +382,7 @@ function windowsFor(f, x0, z0, x1, z1, h, ground1) {
   const win = (s0, s1, y0, y1, c) => {
     const a = m + s0, b = m + s1;
     out.push({ p: [x0 + dx * a + ox, y0, z0 + dz * a + oz, x0 + dx * b + ox, y0, z0 + dz * b + oz,
-                   x0 + dx * b + ox, y1, z0 + dz * b + oz, x0 + dx * a + ox, y1, z0 + dz * a + oz], c });
+                   x0 + dx * b + ox, y1, z0 + dz * b + oz, x0 + dx * a + ox, y1, z0 + dz * a + oz], c, lit: Math.random() < 0.4 });
   };
   for (let i = 0; i < cols; i++) {
     const s = i * 3.4;
@@ -393,8 +411,14 @@ function tree(x, z, kind) {
   addThing(f, x - 1.6, z - 1.6, x + 1.6, z + 1.6);
   solid(x - 0.3, z - 0.3, x + 0.3, z + 0.3);
 }
+const LAMP_ON = [255, 226, 140]; LAMP_ON.glow = true;
+const LIT_WIN = [255, 210, 120]; LIT_WIN.glow = true;
+const LAMPS = [];   // գիշերը նրանց տակ գետինը լուսավորվում է
 function lamp(x, z) {
-  const f = box(x - 0.08, 0, z - 0.08, x + 0.08, 4.4, z + 0.08, C.pole).concat(box(x - 0.25, 4.4, z - 0.25, x + 0.25, 4.8, z + 0.25, C.lamp, C.pole));
+  const head = box(x - 0.25, 4.4, z - 0.25, x + 0.25, 4.8, z + 0.25, C.lamp, C.pole);
+  for (const h of head) h.lamp = true;
+  const f = box(x - 0.08, 0, z - 0.08, x + 0.08, 4.4, z + 0.08, C.pole).concat(head);
+  LAMPS.push([x, z]);
   addThing(f, x - 0.25, z - 0.25, x + 0.25, z + 0.25);
   solid(x - 0.15, z - 0.15, x + 0.15, z + 0.15);
 }
@@ -489,7 +513,7 @@ for (let k = 0; k < 70; k++) {
 
 // ——— 🧒 ԽԱՂԱՑՈՂԸ ———
 // Կանգնում է հրապարակի մոտ փողոցում, դեմքով դեպի շատրվանն ու Արարատը
-const P = { x: blockAt(2) + BL / 2, z: roadAt(3) + RD / 2, yaw: Math.PI, speed: 0, phase: 0, r: 0.35 };
+const P = { x: blockAt(2) + BL / 2, z: roadAt(3) + RD / 2, yaw: Math.PI, speed: 0, turn: 0, phase: 0, r: 0.35 };
 function hits(x, z) {
   for (const s of solids) if (x > s.x0 - P.r && x < s.x1 + P.r && z > s.z0 - P.r && z < s.z1 + P.r) return true;
   for (const m of PEOPLE) { const dx = m.x - x, dz = m.z - z; if (dx * dx + dz * dz < 0.36) return true; }   // մարդկանց միջով էլ չես անցնի
@@ -605,6 +629,7 @@ function updatePeople(dt) {
 const CAR_W = 0.9, CAR_L = 2.0;
 const CAR_COLORS = [[214, 48, 49], [45, 110, 200], [240, 240, 236], [40, 150, 90], [120, 70, 170], [250, 130, 40], [60, 62, 70], [120, 200, 230], [190, 30, 90]];
 const TIRE = [34, 34, 38], GLASS = [52, 70, 94], HEAD = [255, 246, 200], TAIL = [220, 30, 40];
+HEAD.glow = true;
 const CARS = [];
 let driving = null, wantExit = false;
 function addCar(x, z, yaw, c) {
@@ -617,6 +642,21 @@ for (let i = 0; i <= NB; i++) for (let j = 0; j < NB; j++) {
   const mid = blockAt(j) + BL / 2;
   if (rnd() < 0.3) { const one = rnd() < 0.5; addCar(roadAt(i) + (one ? 1.6 : RD - 1.6), mid + (rnd() - 0.5) * 18, one ? 0 : Math.PI, pick(CAR_COLORS)); }
   if (rnd() < 0.3) { const one = rnd() < 0.5; addCar(mid + (rnd() - 0.5) * 18, roadAt(i) + (one ? RD - 1.6 : 1.6), one ? Math.PI / 2 : -Math.PI / 2, pick(CAR_COLORS)); }
+}
+// 🚗 Քո մեքենան հիշում է, թե որտեղ թողեցիր (Արենի պատվերն է)։
+// Պահվում է հեռախոսում — վաղն էլ գաս, այնտեղ կլինի։ Քարտեզին՝ ոսկե կետ։
+let myCar = null;
+try {
+  const sv = JSON.parse(localStorage.getItem('aren-city-car') || 'null');
+  if (sv && isFinite(sv.x) && isFinite(sv.z) && Math.abs(sv.x) < HALF && Math.abs(sv.z) < HALF && Math.hypot(sv.x - P.x, sv.z - P.z) > 3.5) {
+    for (let k = CARS.length - 1; k >= 0; k--) if (Math.hypot(CARS[k].x - sv.x, CARS[k].z - sv.z) < 7) CARS.splice(k, 1);
+    myCar = { x: sv.x, z: sv.z, yaw: sv.yaw || 0, s: 1, v: 0, steer: 0, c: Array.isArray(sv.c) ? sv.c : [214, 48, 49] };
+    CARS.push(myCar);
+  }
+} catch (e) {}
+function saveCar() {
+  if (!myCar) return;
+  try { localStorage.setItem('aren-city-car', JSON.stringify({ x: +myCar.x.toFixed(2), z: +myCar.z.toFixed(2), yaw: +myCar.yaw.toFixed(3), c: myCar.c })); } catch (e) {}
 }
 // Կետը մեքենայի «ներսի» կոորդինատներով՝ [կողք, առաջ]
 function toLocal(c, x, z) {
@@ -702,9 +742,41 @@ function engineOn() {
   engine = { o, gn };
 }
 function engineOff() { if (!engine) return; try { engine.o.stop(); } catch (e) {} engine = null; }
+// 🔊 Ամենամոտ քշող մեքենայի բզզոցը (Արենի պատվերն է)։ Որքան մոտ, այնքան բարձր,
+// իսկ ձախից գալիսը՝ ձախ ականջում է, աջից գալիսը՝ աջ։ Այդպես քաղաքը «եռաչափ» է հնչում։
+let street = null;
+function streetOn() {
+  if (!actx || street) return;
+  const o = actx.createOscillator(), f = actx.createBiquadFilter(), gn = actx.createGain();
+  o.type = 'sawtooth'; o.frequency.value = 45; f.type = 'lowpass'; f.frequency.value = 380; gn.gain.value = 0;
+  o.connect(f); f.connect(gn);
+  let pan = null;
+  if (actx.createStereoPanner) { pan = actx.createStereoPanner(); gn.connect(pan); pan.connect(actx.destination); } else gn.connect(actx.destination);
+  o.start();
+  street = { o, gn, pan };
+}
+function streetSound() {
+  if (!street) return;
+  let best = null, bd = 32;
+  for (const c of CARS) {
+    if (!c.ai || c.v < 0.5) continue;
+    const d = Math.hypot(c.x - cam.x, c.z - cam.z);
+    if (d < bd) { bd = d; best = c; }
+  }
+  const quiet = document.hidden || (window.ggKit && window.ggKit.isPaused()) || state !== 'play';
+  const k = best && !quiet ? 1 - bd / 32 : 0;
+  street.gn.gain.setTargetAtTime(k * k * 0.05, actx.currentTime, 0.08);
+  if (best) {
+    street.o.frequency.setTargetAtTime(40 + best.v * 4, actx.currentTime, 0.1);
+    if (street.pan) {
+      const dx = best.x - cam.x, dz = best.z - cam.z;
+      street.pan.pan.setTargetAtTime(Math.max(-1, Math.min(1, (dx * cY - dz * sY) / Math.max(4, bd))) * 0.85, actx.currentTime, 0.08);
+    }
+  }
+}
 let shownDriveTip = false;
 function enterCar(c) {
-  driving = c; wantExit = false; c.v = 0; c.steer = 0; P.speed = 0;
+  driving = c; myCar = c; wantExit = false; c.v = 0; c.steer = 0; P.speed = 0;
   tone(330, 0.08, 'square', 0.05); setTimeout(() => tone(220, 0.1, 'square', 0.05), 90);
   engineOn();
   if (!shownDriveTip) { shownDriveTip = true; $('tip').textContent = T.dtip; $('tip').style.opacity = '1'; tipTimer = 7; }
@@ -719,6 +791,7 @@ function exitCar() {
       P.x = x; P.z = z; P.yaw = c.yaw; P.speed = 0; c.v = 0;
       tone(220, 0.08, 'square', 0.05); setTimeout(() => tone(330, 0.1, 'square', 0.05), 90);
       engineOff(); wantExit = false;
+      myCar = c; saveCar();
       return;
     }
   }
@@ -746,6 +819,7 @@ setInterval(() => {
   engine.gn.gain.value = quiet ? 0 : 0.022 + Math.min(1, Math.abs(driving ? driving.v : 0) / 17) * 0.02;
   engine.o.frequency.value = 38 + Math.abs(driving ? driving.v : 0) * 5;
 }, 100);
+setInterval(streetSound, 100);
 
 function drive(dt, ix, iy) {
   const c = driving;
@@ -1264,10 +1338,11 @@ function drawMinimap() {
   for (const b of BLD) { g.fillStyle = b.gold ? 'rgb(236,186,64)' : 'rgb(140,120,108)'; g.fillRect(b.x0, b.z0, b.x1 - b.x0, b.z1 - b.z0); }
   g.fillStyle = 'rgb(126,231,143)';
   for (const c of CASH) { g.beginPath(); g.arc(c.x, c.z, 3.2, 0, Math.PI * 2); g.fill(); }
-  for (const c of CARS) if (c !== driving) { g.fillStyle = c.ai ? 'rgb(255,255,255)' : 'rgb(160,170,190)'; g.fillRect(c.x - 1.6, c.z - 1.6, 3.2, 3.2); }
-  // Մոտիկ կորած կատուները (45 մետրից մոտ)
+  for (const c of CARS) if (c !== driving && c !== myCar) { g.fillStyle = c.ai ? 'rgb(255,255,255)' : 'rgb(160,170,190)'; g.fillRect(c.x - 1.6, c.z - 1.6, 3.2, 3.2); }
+  // Մոտիկ կորած կատուները (45 մետրից մոտ, գիշերը՝ միայն 20 մետրից)
   g.fillStyle = 'rgb(' + CAT_C.join(',') + ')';
-  for (const c of CATS) if (!c.found && Math.hypot(c.x - P.x, c.z - P.z) < 45) { g.beginPath(); g.arc(c.x, c.z, 4.5, 0, Math.PI * 2); g.fill(); }
+  const catSee = 45 - 25 * NIGHT;
+  for (const c of CATS) if (!c.found && Math.hypot(c.x - P.x, c.z - P.z) < catSee) { g.beginPath(); g.arc(c.x, c.z, 4.5, 0, Math.PI * 2); g.fill(); }
   g.restore();
   // Աշխատանքների տեղերը — եթե հեռու են, քարտեզի եզրին են երևում
   const mark = (s, rad) => {
@@ -1277,6 +1352,7 @@ function drawMinimap() {
     g.fillStyle = 'rgb(' + s.col.join(',') + ')'; g.strokeStyle = '#fff'; g.lineWidth = 2;
     g.beginPath(); g.arc(mx + sx, my + sy, rad, 0, Math.PI * 2); g.fill(); g.stroke();
   };
+  if (myCar && myCar !== driving) mark({ x: myCar.x, z: myCar.z, col: [255, 209, 102] }, 4.5);   // 🚗 քո մեքենան
   const tg = target();
   if (tg) mark(tg, 6); else if (job.st === 'idle') for (const s of goals()) mark(s, 5);
   // Դու՝ ոսկե սլաք մեջտեղում
@@ -1294,6 +1370,8 @@ const MT_DIR = Math.PI;   // հարավում է (z-ի բացասական կող
 const MASIS = [[-0.16, -0.3], [-0.06, 1.6], [0.02, 3.4], [0.06, 4.6], [0.085, 5.6], [0.1, 5.9], [0.12, 5.5], [0.16, 4.2], [0.22, 2.6], [0.3, 1.0], [0.38, -0.3]];
 const MASIS_SNOW = [[0.03, 3.6], [0.06, 4.6], [0.085, 5.6], [0.1, 5.9], [0.12, 5.5], [0.16, 4.2], [0.19, 3.3], [0.15, 3.9], [0.12, 3.4], [0.09, 4.0], [0.06, 3.5]];
 const SIS = [[-0.36, -0.3], [-0.28, 1.0], [-0.22, 2.4], [-0.2, 2.7], [-0.17, 2.3], [-0.1, 0.9], [-0.04, -0.3]];
+const STARS = [];
+for (let k = 0; k < 90; k++) STARS.push([Math.random() * Math.PI * 2, 6 + Math.random() * 60, Math.random() < 0.2 ? 2 : 1.3]);
 const CLOUDS = [[0.3, 14, 70], [1.4, 18, 90], [2.3, 11, 60], [3.4, 16, 110], [4.3, 13, 80], [5.4, 20, 70]];
 function skyPoint(az, elDeg) {
   const D = 4000, a = MT_DIR + az;
@@ -1350,7 +1428,7 @@ addEventListener('blur', () => { for (const k in keys) keys[k] = false; onUp(sti
 // ——— ▶ Սկիզբ ———
 let tipTimer = 0;
 $('startBtn').addEventListener('click', () => {
-  initAudio();
+  initAudio(); streetOn();
   state = 'play';
   $('menu').hidden = true;
   $('money').hidden = false; paintMoney(false);
@@ -1373,6 +1451,7 @@ function update(dt) {
   const mag = Math.hypot(ix, iy);
   if (driving) drive(dt, ix, iy);
   else walk(dt, ix, iy, mag);
+  tickDay(dt);
   updatePeople(dt);
   updateTraffic(dt);
   if (state === 'play') { updateCash(dt); updateJob(dt); paxHint(); }
@@ -1382,9 +1461,31 @@ function update(dt) {
   followCam(dt);
   if (tipTimer > 0) { tipTimer -= dt; if (tipTimer <= 0) $('tip').style.opacity = '0'; }
 }
+// 👟 Ոտնաձայն՝ կարճ «խշշոց» (աղմուկ), մի ոտքը մի քիչ ձախից, մյուսը՝ աջից։
+// Այգում՝ խոտի վրա, ավելի փափուկ է։
+let noiseBuf = null;
+function footstep(run, foot) {
+  if (!actx) return;
+  if (!noiseBuf) {
+    noiseBuf = actx.createBuffer(1, Math.floor(actx.sampleRate * 0.12), actx.sampleRate);
+    const ch = noiseBuf.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / ch.length, 3);
+  }
+  const grass = BLOCKS.some(b => b.type === 'park' && P.x > b.x0 + SW && P.x < b.x0 + BL - SW && P.z > b.z0 + SW && P.z < b.z0 + BL - SW);
+  const src = actx.createBufferSource(), f = actx.createBiquadFilter(), gn = actx.createGain();
+  src.buffer = noiseBuf; src.playbackRate.value = (run ? 1.15 : 0.95) + (foot ? 0.06 : 0);
+  f.type = 'bandpass'; f.frequency.value = grass ? 900 : (run ? 520 : 420); f.Q.value = grass ? 0.6 : 1.4;
+  gn.gain.value = (run ? 0.22 : 0.15) * (grass ? 0.7 : 1);
+  src.connect(f); f.connect(gn);
+  if (actx.createStereoPanner) { const pn = actx.createStereoPanner(); pn.pan.value = foot ? 0.15 : -0.15; gn.connect(pn); pn.connect(actx.destination); }
+  else gn.connect(actx.destination);
+  src.start();
+}
 function walk(dt, ix, iy, mag) {
-  // Շրջվել
-  if (Math.abs(ix) > 0.12) P.yaw += ix * 2.6 * dt;
+  // Շրջվել — մի քիչ իներցիայով. սկզբում կամաց է պտտվում, հետո արագանում, բաց թողեցիր՝ փափուկ կանգնում
+  const turnTo = Math.abs(ix) > 0.12 ? ix * 2.6 : 0;
+  P.turn += (turnTo - P.turn) * Math.min(1, dt * 7);
+  P.yaw += P.turn * dt;
   // Առաջ-հետ. ուժեղ հրեցիր՝ վազում ես
   let want = 0;
   if (iy < -0.15) want = (mag > 0.88 ? 6.8 : 3.4) * Math.min(1, -iy / 0.7);
@@ -1396,7 +1497,7 @@ function walk(dt, ix, iy, mag) {
   P.phase += Math.abs(P.speed) * dt * 3.2;
   // Քայլերի թեթև ձայնը
   const stepN = Math.floor(P.phase / Math.PI);
-  if (stepN !== lastStep) { lastStep = stepN; if (Math.abs(P.speed) > 0.5) tone(Math.abs(P.speed) > 5 ? 150 : 120, 0.05, 'triangle', 0.035); }
+  if (stepN !== lastStep) { lastStep = stepN; if (Math.abs(P.speed) > 0.5) footstep(Math.abs(P.speed) > 5, stepN & 1); }
 }
 function followCam(dt) {
   // Մեքենայում տեսախցիկն ավելի հեռու ու բարձր է
@@ -1419,6 +1520,8 @@ function followCam(dt) {
   const camH = 1.4 + (FH - 1.4) * (dist / FD);
   cam.x = P.x - Math.sin(yaw) * dist; cam.z = P.z - Math.cos(yaw) * dist; cam.y = camH;
   cam.yaw = yaw; cam.pitch = Math.atan2(camH - aim, dist + 2) + look.pitch;
+  // Քայլելիս տեսախցիկը թեթև վեր-վար է գնում՝ ամեն քայլին մի անգամ (վազելիս՝ ավելի շատ)
+  if (!driving) { const sp = Math.min(1, Math.abs(P.speed) / 3.4); cam.y += (Math.abs(Math.sin(P.phase)) - 0.6) * (Math.abs(P.speed) > 5 ? 0.11 : 0.07) * sp; }
   cY = Math.cos(cam.yaw); sY = Math.sin(cam.yaw); cP = Math.cos(cam.pitch); sP = Math.sin(cam.pitch);
 }
 
@@ -1446,8 +1549,8 @@ function drawThing(t) {
   for (const f of t.faces) {
     const p = f.p;
     if ((cam.x - p[0]) * f.n[0] + (cam.y - p[1]) * f.n[1] + (cam.z - p[2]) * f.n[2] <= 0) continue;   // մեջքով է դեպի մեզ
-    fillPoly(p, colorOf(f.c, f.sh, d));
-    if (f.win && d < 80) for (const w of f.win) fillPoly(w.p, colorOf(w.c, f.sh, d));
+    fillPoly(p, colorOf(f.lamp && NIGHT > 0.3 ? LAMP_ON : f.c, f.sh, d));
+    if (f.win && d < 80) for (const w of f.win) fillPoly(w.p, colorOf(w.lit && NIGHT > 0.45 ? LIT_WIN : w.c, f.sh, d));
   }
   const fr = t.front;
   if (t.decor && ((fr.alongX ? cam.z : cam.x) - fr.wall) * fr.out > 0) drawThing({ faces: t.decor, d });
@@ -1456,10 +1559,24 @@ function render() {
   // 1) Երկինք
   const hz = CY - Math.tan(cam.pitch) * focal;   // հորիզոնի գիծը
   const sky = g.createLinearGradient(0, 0, 0, Math.max(1, hz));
-  sky.addColorStop(0, '#5fa8e2'); sky.addColorStop(1, '#cfe6f2');
+  sky.addColorStop(0, rgbOf(mixC([95, 168, 226], [8, 12, 34], NIGHT)));
+  sky.addColorStop(1, rgbOf(mixC(mixC([207, 230, 242], [36, 46, 82], NIGHT), [250, 150, 90], DUSK * 0.7)));
   g.fillStyle = sky; g.fillRect(0, 0, W, Math.max(0, hz) + 1);
+  // Աստղերն ու լուսինը (գիշերը)
+  if (NIGHT > 0.3) {
+    g.fillStyle = 'rgba(255,255,240,' + ((NIGHT - 0.3) / 0.7).toFixed(2) + ')';
+    for (const [a, el, r] of STARS) {
+      const q = toCam(...skyPoint(a, el));
+      if (q[2] < 1) continue;
+      const sx = CX + q[0] / q[2] * focal, sy = CY - q[1] / q[2] * focal;
+      if (sy < hz) g.fillRect(sx, sy, r, r);
+    }
+    const q = toCam(...skyPoint(2.6, 32));
+    if (q[2] > 1) { g.beginPath(); g.arc(CX + q[0] / q[2] * focal, CY - q[1] / q[2] * focal, focal * 0.03, 0, Math.PI * 2); g.fill(); }
+  }
   // Ամպեր
-  g.fillStyle = 'rgba(255,255,255,0.85)';
+  const cl = mixC(mixC([255, 255, 255], [70, 78, 104], NIGHT), [255, 190, 150], DUSK * 0.6);
+  g.fillStyle = 'rgba(' + (cl[0] | 0) + ',' + (cl[1] | 0) + ',' + (cl[2] | 0) + ',0.85)';
   for (const [a, el, w] of CLOUDS) {
     const q = toCam(...skyPoint(a, el));
     if (q[2] < 1) continue;
@@ -1468,11 +1585,11 @@ function render() {
     g.ellipse(sx + w * 0.3 * s, sy - w * 0.12 * s, w * 0.45 * s, w * 0.2 * s, 0, 0, Math.PI * 2); g.fill();
   }
   // 2) Արարատը
-  drawMountain(SIS, 'rgb(158,150,178)');
-  drawMountain(MASIS, 'rgb(150,142,172)');
-  drawMountain(MASIS_SNOW, 'rgb(246,248,252)');
+  drawMountain(SIS, rgbOf(mixC([158, 150, 178], [40, 42, 70], NIGHT)));
+  drawMountain(MASIS, rgbOf(mixC([150, 142, 172], [36, 38, 66], NIGHT)));
+  drawMountain(MASIS_SNOW, rgbOf(mixC(mixC([246, 248, 252], [120, 128, 160], NIGHT), [255, 200, 170], DUSK * 0.5)));
   // 3) Գետինը՝ դաշտ, հետո քաղաքը
-  g.fillStyle = 'rgb(126,166,96)'; g.fillRect(0, hz, W, H - hz + 1);
+  g.fillStyle = rgbOf([126 * LIGHT, 166 * LIGHT, 96 * LIGHT]); g.fillRect(0, hz, W, H - hz + 1);
   for (const q of ground) {
     if (Math.abs(q.x - cam.x) > FAR + 40 || Math.abs(q.z - cam.z) > FAR + 40) continue;
     fillPoly(q.p, colorOf(q.c, 1, 0));
@@ -1485,9 +1602,20 @@ function render() {
   // Աշխատանքի շրջանները գետնին
   const gl = goals();
   for (const s of gl) if (Math.hypot(s.x - cam.x, s.z - cam.z) < 120) drawRing(s, performance.now() / 1000);
+  // Գիշերը լապտերների տակ գետինը դեղնավուն լույսի շրջան է
+  if (NIGHT > 0.3) {
+    g.fillStyle = 'rgba(255,214,130,' + (0.22 * (NIGHT - 0.3) / 0.7).toFixed(3) + ')';
+    for (const [lx, lz] of LAMPS) {
+      const dx = lx - cam.x, dz = lz - cam.z;
+      if (dx * dx + dz * dz > 70 * 70 || dx * sY + dz * cY < -6) continue;
+      const pts = [];
+      for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2; pts.push(lx + Math.cos(a) * 4.5, 0.03, lz + Math.sin(a) * 4.5); }
+      fillPoly(pts, g.fillStyle);
+    }
+  }
   // Մշուշը հորիզոնի մոտ
-  const hg = g.createLinearGradient(0, hz - 2, 0, hz + H * 0.14);
-  hg.addColorStop(0, 'rgba(205,226,238,1)'); hg.addColorStop(1, 'rgba(205,226,238,0)');
+  const hg = g.createLinearGradient(0, hz - 2, 0, hz + H * 0.14), hs = (HAZE[0] | 0) + ',' + (HAZE[1] | 0) + ',' + (HAZE[2] | 0);
+  hg.addColorStop(0, 'rgba(' + hs + ',1)'); hg.addColorStop(1, 'rgba(' + hs + ',0)');
   g.fillStyle = hg; g.fillRect(0, hz - 2, W, H * 0.14 + 2);
 
   // 4) Կանգնած բաները՝ հեռվից մոտ
@@ -1575,7 +1703,7 @@ update(0);
 requestAnimationFrame(frame);
 
 // Թեստերի համար՝ դրսից նայելու դուռ
-window.__city = { P, PEOPLE, CARS, CASH, get money() { return money; }, job, BAKERY, SHOPS, GRANNY, CATS, get PAX() { return PAX; }, get driving() { return driving; }, cam, things, solids, get state() { return state; } };
+window.__city = { P, PEOPLE, CARS, CASH, get money() { return money; }, job, BAKERY, SHOPS, GRANNY, CATS, get PAX() { return PAX; }, get driving() { return driving; }, cam, things, solids, get state() { return state; }, get myCar() { return myCar; }, get NIGHT() { return NIGHT; }, setClock(v) { clock = v; } };
 </script>
 
 <!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, նկար -->
