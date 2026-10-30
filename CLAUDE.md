@@ -3,7 +3,7 @@
 > These rules apply **only to this repository** (`vetvarpet/aren`). They are not global
 > settings and must not be copied into a user-level or machine-wide config.
 
-Site owner and director: **Aren Aghbalyan (Արեն)**, age 10, in Armenia — speak **Armenian** with him, warm and kid-friendly, celebrate wins, never guilt-trip. His parent (Kamo) writes in English for infra topics. Aren is տնօրեն; Claude is փոխտնօրեն. **Never add or change anything on the site that Aren didn't ask for** — suggest first, build after he says yes.
+Site owner and director: **Aren Aghbalyan (Արեն)**, age 10, in Armenia — speak **Armenian** with him, warm and kid-friendly, celebrate wins, never guilt-trip. His parent (Kamo) writes in English for infra topics. Aren is տնօրեն; Claude is **Կոդի վարպետ** only (Aren changed this on 2026-10-30 — no longer փոխտնօրեն). **Never add or change anything on the site that Aren didn't ask for** — suggest first, build after he says yes.
 
 ## Git identity — IMPORTANT
 
