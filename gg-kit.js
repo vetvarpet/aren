@@ -72,7 +72,9 @@
     '#ggPause .t{color:#ffd166;font-weight:bold;font-size:clamp(1.6rem,8vw,2.4rem);letter-spacing:0.12em}',
     '#ggPause .s{color:#9a9ec7;font-size:0.9rem}',
     '#ggToast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:140;background:#ffd166;color:#2e2410;',
-    'font-weight:bold;padding:10px 18px;border-radius:999px;font-size:0.88rem;font-family:"Arial Rounded MT Bold","Noto Sans Armenian",Arial,sans-serif}',
+    'font-weight:bold;padding:10px 18px;border-radius:999px;font-size:0.88rem;font-family:"Arial Rounded MT Bold","Noto Sans Armenian",Arial,sans-serif;',
+    // Ծանուցումը միայն ցույց է տալիս։ հպումը պիտի անցնի նրա միջուց ու դիպչի ներքևի կոճակին
+    'pointer-events:none}',
     '#ggLoad{position:fixed;inset:0;z-index:150;background:#12122b;display:flex;align-items:center;justify-content:center}',
     '#ggLoad svg{width:96px;height:96px;animation:ggSpin 1.1s linear infinite}',
     '@keyframes ggSpin{to{transform:rotate(360deg)}}',

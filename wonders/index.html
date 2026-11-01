@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Golden Wonders 🗽</title>
+<link rel="icon" type="image/png" href="../logo-icon.png">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { min-height: 100%; }
+  body {
+    background: linear-gradient(#1c2858, #0f1630);
+    background-color: #0f1630;
+    color: #f4efe2;
+    font-family: "Arial Rounded MT Bold", "Noto Sans Armenian", Arial, sans-serif;
+    min-height: 100dvh;
+    padding: 58px 14px 24px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    overflow-x: hidden;
+  }
+  .app { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+  /* Վերևի շերտը՝ կյանքեր ու մետաղադրամներ */
+  .hud { display: flex; align-items: center; gap: 8px; }
+  .brand { font-weight: bold; color: #f2c14e; font-size: 1.05rem; margin-right: auto; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; background: #18224a; border: 1px solid #2c3870; border-radius: 999px; padding: 5px 11px; font-weight: bold; }
+
+  /* Ճանապարհը ու ինքնաթիռը */
+  .route { position: relative; height: 34px; }
+  .route-line { position: absolute; left: 10px; right: 10px; top: 17px; border-top: 2px dashed #3a4682; }
+  .route-dots { position: absolute; inset: 0 10px; display: flex; justify-content: space-between; align-items: center; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: #222e60; border: 2px solid #3a4682; }
+  .dot.ok { background: #f2c14e; border-color: #f2c14e; }
+  .dot.miss { background: #ef6a5b; border-color: #ef6a5b; }
+  .plane { position: absolute; top: 2px; font-size: 22px; transform: translateX(-50%); transition: left .9s cubic-bezier(.5,0,.2,1); }
+
+  .card { background: linear-gradient(180deg, #18224a, #151e42); border: 1px solid #2c3870; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  h1 { font-size: clamp(1.6rem, 7vw, 2.2rem); line-height: 1.15; color: #f2c14e; }
+  h2 { font-size: 1.3rem; line-height: 1.25; }
+  .eyebrow { font-size: 0.75rem; letter-spacing: .12em; text-transform: uppercase; color: #a9b0cf; font-weight: bold; }
+  p { line-height: 1.5; }
+  .muted { color: #a9b0cf; }
+  .center { text-align: center; }
+
+  /* Հրաշալիքի նկարը. սկզբում սև ուրվագիծ է */
+  .art { width: min(170px, 46vw); aspect-ratio: 1; margin: 0 auto; border-radius: 18px; background: #26346d; overflow: hidden; }
+  .art svg { width: 100%; height: 100%; display: block; transition: filter .6s ease; }
+  .art.shadow svg { filter: brightness(0) opacity(.75); }
+
+  .hints { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .hints li { background: #1e2a5a; border-radius: 12px; padding: 10px 12px; line-height: 1.45; animation: pop .35s ease; }
+  .hints li b { color: #f2c14e; margin-right: 6px; }
+  @keyframes pop { from { transform: translateY(6px); opacity: .3; } to { transform: none; opacity: 1; } }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 340px) { .options { grid-template-columns: 1fr; } }
+  .opt { background: #222e60; color: #f4efe2; border: 2px solid #34418a; border-radius: 14px; padding: 12px 8px; font-family: inherit; font-size: 0.95rem; font-weight: bold; line-height: 1.3; text-align: center; min-height: 56px; cursor: pointer; transition: transform .1s; }
+  .opt:active:not(:disabled) { transform: scale(0.95); }
+  .opt.right { background: #1d4a3a; border-color: #4fc28a; }
+  .opt.wrong { background: #4e2430; border-color: #ef6a5b; }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .btn { flex: 1 1 auto; background: #f2c14e; color: #2a1d05; border: 0; border-radius: 14px; padding: 14px 16px; font-family: inherit; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #c8952c; }
+  .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #c8952c; }
+  .btn.ghost { background: transparent; color: #f4efe2; border: 2px solid #3a4682; box-shadow: none; }
+  .btn.small { flex: 0 1 auto; padding: 10px 12px; font-size: 0.85rem; }
+  .btn:disabled { opacity: 0.4; }
+
+  .fb { font-weight: bold; text-align: center; min-height: 1.4em; }
+  .fb.good { color: #4fc28a; }
+  .fb.bad { color: #ef6a5b; }
+
+  /* Անձնագրի կնիքը */
+  .stamp { width: 150px; height: 150px; margin: 4px auto; border-radius: 50%; border: 4px double #f2c14e; color: #f2c14e; display: grid; place-items: center; text-align: center; transform: rotate(-12deg); font-weight: bold; padding: 14px; animation: stampIn .5s cubic-bezier(.2,1.6,.4,1); }
+  .stamp small { display: block; font-size: 0.68rem; letter-spacing: .12em; }
+  .stamp span { font-size: 1rem; line-height: 1.2; }
+  .stamp.missed { color: #a9b0cf; border-color: #a9b0cf; }
+  @keyframes stampIn { from { transform: rotate(-12deg) scale(2.2); opacity: 0; } to { transform: rotate(-12deg) scale(1); opacity: 1; } }
+  .fact { background: #1e2a5a; border-radius: 14px; padding: 14px; line-height: 1.5; }
+  .fact b { color: #f2c14e; }
+
+  .passport { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .pp { background: #1e2a5a; border-radius: 14px; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font-size: 0.72rem; line-height: 1.3; }
+  .pp .mini { width: 100%; aspect-ratio: 1; border-radius: 10px; background: #26346d; overflow: hidden; }
+  .pp .mini svg { width: 100%; height: 100%; display: block; }
+  .pp.locked .mini svg { filter: brightness(0) opacity(.35); }
+  .pp.locked { color: #a9b0cf; }
+
+  .big { font-size: 3.2rem; font-weight: bold; color: #f2c14e; text-align: center; line-height: 1; }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; text-align: center; }
+  .stat { background: #1e2a5a; border-radius: 14px; padding: 10px 4px; }
+  .stat b { display: block; font-size: 1.3rem; }
+  .stat span { font-size: 0.72rem; color: #a9b0cf; }
+</style>
+</head>
+<body>
+
+<a href="../" style="position:fixed;top:10px;left:10px;z-index:10;color:#f5eede;text-decoration:none;background:rgba(20,26,34,0.75);border:2px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:999px;font-size:0.78rem;">← Golden Games</a>
+
+<div class="app">
+  <div class="hud">
+    <div class="brand">Golden Wonders</div>
+    <div class="pill" id="lives">❤️ 3</div>
+    <div class="pill" id="coins">🪙 0</div>
+  </div>
+  <div class="route" id="route" hidden>
+    <div class="route-line"></div>
+    <div class="route-dots" id="dots"></div>
+    <div class="plane" id="plane">✈️</div>
+  </div>
+  <main id="view"></main>
+</div>
+
+<script>
+// ——————————————————————————————————————
+//  GOLDEN WONDERS 🗽 — ճամփորդիր աշխարհով, հուշումներով գուշակիր
+//  հրաշալիքը, հետո ասա՝ որ երկրում է, ու կնիք հավաքիր անձնագրիդ մեջ։
+//  Արենի «Աշխարհի հրաշալիքները» գրքի շնորհանդեսից է ծնվել։
+// ——————————————————————————————————————
+
+let ggLang = 'hy';
+try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
+
+// Ամեն լեզվի համար՝ կոճակների բառերը, իսկ w-ում՝ ամեն հրաշալիքի
+// [անունը, երկիրը, հուշում 1, հուշում 2, հուշում 3, «Գիտե՞ս, որ»]
+const TRL = {
+  hy: {
+    title: "Աշխարհի հրաշալիքները", intro: "Ճամփորդիր աշխարհով։ Ամեն կանգառում հուշումներով գուշակիր հրաշալիքը, հետո ասա՝ որ երկրում է այն։ Ճիշտ պատասխանների համար կնիք կստանաս անձնագրիդ մեջ։",
+    stops: "կանգառ", lives: "կյանք", stamps: "կնիք", go: "Սկսել ճամփորդությունը ✈️", pp: "Անձնագիր", best: "Ռեկորդ՝",
+    stop: "Կանգառ", q: "Ո՞ր հրաշալիքն է սա", more: "Եվս մեկ հուշում", worth: "Ճիշտ պատասխան՝", yes: "Ճի՛շտ է՝", no: "Ոչ, ճիշտ պատասխանը՝",
+    whereE: "Ուր ենք թռչում", where: "Ո՞ր երկրում է այն", cYes: "Ճիշտ երկիր։ +5 🪙", stamp: "ԿՆԻՔ", missed: "ԲԱՑ ԹՈՂՆՎԱԾ", know: "Գիտե՞ս, որ",
+    next: "Թռչել հաջորդ կանգառ ✈️", result: "Տեսնել արդյունքը", outLives: "Կյանքերը վերջացան", tripDone: "Ճամփորդությունն ավարտվեց",
+    newRec: "Նոր ռեկորդ։ 🏆", rec: "Ռեկորդդ՝", sRight: "ճիշտ հրաշալիք", sNew: "նոր կնիք", sPass: "անձնագրում", again: "Նորից ճամփորդել",
+    ppEye: "Իմ անձնագիրը", ppW: "հրաշալիք", ppP: "Ամեն ճիշտ գուշակած հրաշալիքը կնիք է դնում քո անձնագրում։ Հավաքիր բոլոր 12-ը։", back: "Հետ",
+    w: {
+      pyramids: ["Գիզայի բուրգերը", "Եգիպտոս", "Կանգնած է անապատում՝ Նեղոս գետի մոտ։", "Կառուցվել է մոտ 4500 տարի առաջ։", "Ներսում փարավոնների դամբարաններն են։", "Մեծ բուրգը մոտ 3800 տարի աշխարհի ամենաբարձր կառույցն էր։"],
+      wall: ["Չինական մեծ պարիսպ", "Չինաստան", "Ձգվում է հազարավոր կիլոմետրեր՝ սարերի ու անապատների վրայով։", "Կառուցվել է երկիրը թշնամիներից պաշտպանելու համար։", "Վրան կան դիտաշտարակներ։", "Բոլոր հատվածներով այն ավելի քան 21 000 կմ է։ Բայց Լուսնից աչքով չի երևում, դա միֆ է։"],
+      christ: ["Քրիստոս Փրկչի արձանը", "Բրազիլիա", "Կանգնած է սարի գագաթին՝ մեծ քաղաքի վերևում։", "Ձեռքերը լայն բացած է։", "Քաղաքը հայտնի է կառնավալով և լողափերով։", "Արձանը 30 մետր է, իսկ պատվանդանով՝ 38 մետր։ Բացվել է 1931 թվականին։"],
+      colosseum: ["Կոլիզեյ", "Իտալիա", "Հին հռոմեական հսկա ամֆիթատրոն է։", "Այստեղ գլադիատորներն էին մենամարտում։", "Գտնվում է Հռոմում։", "Կոլիզեյը տեղավորում էր մոտ 50 000 հանդիսատես։ Այն գրեթե 2000 տարեկան է։"],
+      taj: ["Թաջ Մահալ", "Հնդկաստան", "Կառուցված է սպիտակ մարմարից։", "Կայսրը այն կառուցել է իր սիրելի կնոջ հիշատակին։", "Ունի մեծ գմբեթ և չորս բարձր մինարեթ։", "Թաջ Մահալը կառուցել են մոտ 20 000 վարպետներ, և աշխատանքը տևել է մոտ 20 տարի։"],
+      machu: ["Մաչու Պիկչու", "Պերու", "Հին քաղաք է բարձր լեռներում։", "Այն կառուցել են ինկերը։", "Գտնվում է Անդերի լեռներում՝ Հարավային Ամերիկայում։", "Քաղաքը մոտ 2400 մետր բարձրության վրա է։ Աշխարհը նրա մասին լայնորեն իմացավ 1911 թվականին։"],
+      chichen: ["Չիչեն Իցա", "Մեքսիկա", "Աստիճանաձև բուրգ է ջունգլիների մոտ։", "Այն կառուցել են մայաները։", "Աստիճաններ ունի չորս կողմից։", "Բուրգն ունի 365 աստիճան, ճիշտ այնքան, որքան օր կա տարում։"],
+      petra: ["Պետրա", "Հորդանան", "Ամբողջ քաղաքը փորված է ժայռի մեջ։", "Ժայռերը վարդագույն-կարմիր են։", "Գտնվում է Մերձավոր Արևելքի անապատում։", "Պետրային անվանում են «վարդագույն քաղաք»՝ ժայռերի գույնի համար։"],
+      eiffel: ["Էյֆելյան աշտարակ", "Ֆրանսիա", "Պատրաստված է երկաթից։", "Կառուցվել է 1889 թվականին՝ համաշխարհային ցուցահանդեսի համար։", "Գտնվում է Փարիզում։", "Աշտարակը մոտ 330 մետր է, և այն ներկում են մոտավորապես 7 տարին մեկ։"],
+      liberty: ["Ազատության արձան", "ԱՄՆ", "Ձեռքին ջահ է բռնած։", "Նվեր է Ֆրանսիայից։", "Կանգնած է կղզում՝ Նյու Յորքի մոտ։", "Արձանը պղնձից է։ Սկզբում այն շագանակագույն էր, իսկ ժամանակի ընթացքում կանաչեց։"],
+      opera: ["Սիդնեյի օպերային թատրոն", "Ավստրալիա", "Տանիքը նման է առագաստների կամ խեցիների։", "Կանգնած է ծովածոցի ափին։", "Բացվել է 1973 թվականին։", "Տանիքը ծածկված է ավելի քան մեկ միլիոն սալիկով։"],
+      garni: ["Գառնիի տաճար", "Հայաստան", "Հին հեթանոսական տաճար է՝ սյուներով։", "Կառուցվել է մ.թ. 1-ին դարում։", "Կանգնած է ձորի եզրին՝ Ազատ գետի վերևում։", "Գառնին հունահռոմեական ոճի միակ սյունազարդ տաճարն է, որ պահպանվել է նախկին ԽՍՀՄ տարածքում։"],
+    },
+  },
+  ru: {
+    title: "Чудеса света", intro: "Путешествуй по миру. На каждой остановке угадай чудо по подсказкам, а потом скажи, в какой оно стране. За правильные ответы получишь штамп в паспорт.",
+    stops: "остановок", lives: "жизни", stamps: "штампов", go: "Начать путешествие ✈️", pp: "Паспорт", best: "Рекорд:",
+    stop: "Остановка", q: "Какое это чудо?", more: "Ещё подсказка", worth: "Правильный ответ:", yes: "Верно!", no: "Нет, правильный ответ:",
+    whereE: "Куда летим", where: "В какой это стране?", cYes: "Верная страна! +5 🪙", stamp: "ШТАМП", missed: "ПРОПУЩЕНО", know: "А ты знаешь?",
+    next: "Лететь дальше ✈️", result: "Посмотреть результат", outLives: "Жизни закончились", tripDone: "Путешествие окончено",
+    newRec: "Новый рекорд! 🏆", rec: "Твой рекорд:", sRight: "чудес угадано", sNew: "новых штампов", sPass: "в паспорте", again: "Путешествовать снова",
+    ppEye: "Мой паспорт", ppW: "чудес", ppP: "Каждое угаданное чудо ставит штамп в твой паспорт. Собери все 12.", back: "Назад",
+    w: {
+      pyramids: ["Пирамиды Гизы", "Египет", "Стоят в пустыне возле реки Нил.", "Построены около 4500 лет назад.", "Внутри — гробницы фараонов.", "Великая пирамида около 3800 лет была самым высоким сооружением в мире."],
+      wall: ["Великая Китайская стена", "Китай", "Тянется на тысячи километров через горы и пустыни.", "Её построили, чтобы защищать страну от врагов.", "На ней есть сторожевые башни.", "Со всеми участками она длиннее 21 000 км. Но с Луны её глазами не видно — это миф."],
+      christ: ["Статуя Христа-Искупителя", "Бразилия", "Стоит на вершине горы над большим городом.", "Руки широко раскинуты.", "Город славится карнавалом и пляжами.", "Статуя высотой 30 метров, а с постаментом — 38. Её открыли в 1931 году."],
+      colosseum: ["Колизей", "Италия", "Огромный древнеримский амфитеатр.", "Здесь сражались гладиаторы.", "Находится в Риме.", "Колизей вмещал около 50 000 зрителей. Ему почти 2000 лет."],
+      taj: ["Тадж-Махал", "Индия", "Построен из белого мрамора.", "Император построил его в память о любимой жене.", "У него большой купол и четыре высоких минарета.", "Тадж-Махал строили около 20 000 мастеров, и работа длилась около 20 лет."],
+      machu: ["Мачу-Пикчу", "Перу", "Древний город высоко в горах.", "Его построили инки.", "Находится в Андах, в Южной Америке.", "Город лежит на высоте около 2400 метров. Широко мир узнал о нём в 1911 году."],
+      chichen: ["Чичен-Ица", "Мексика", "Ступенчатая пирамида возле джунглей.", "Её построили майя.", "Лестницы у неё с четырёх сторон.", "У пирамиды 365 ступеней — ровно столько, сколько дней в году."],
+      petra: ["Петра", "Иордания", "Весь город высечен в скале.", "Скалы розово-красные.", "Находится в пустыне на Ближнем Востоке.", "Петру называют «розовым городом» из-за цвета скал."],
+      eiffel: ["Эйфелева башня", "Франция", "Сделана из железа.", "Построена в 1889 году для Всемирной выставки.", "Находится в Париже.", "Башня высотой около 330 метров, и её перекрашивают примерно раз в 7 лет."],
+      liberty: ["Статуя Свободы", "США", "В руке держит факел.", "Это подарок Франции.", "Стоит на острове возле Нью-Йорка.", "Статуя сделана из меди. Сначала она была коричневой, а со временем позеленела."],
+      opera: ["Сиднейский оперный театр", "Австралия", "Крыша похожа на паруса или ракушки.", "Стоит на берегу залива.", "Открыт в 1973 году.", "Крыша покрыта более чем миллионом плиток."],
+      garni: ["Храм Гарни", "Армения", "Древний языческий храм с колоннами.", "Построен в I веке н. э.", "Стоит на краю ущелья над рекой Азат.", "Гарни — единственный сохранившийся греко-римский храм с колоннами на территории бывшего СССР."],
+    },
+  },
+  en: {
+    title: "Wonders of the World", intro: "Travel around the world. At every stop, guess the wonder from the hints, then say which country it is in. Right answers get you a stamp in your passport.",
+    stops: "stops", lives: "lives", stamps: "stamps", go: "Start the trip ✈️", pp: "Passport", best: "Record:",
+    stop: "Stop", q: "Which wonder is this?", more: "One more hint", worth: "Right answer:", yes: "Correct!", no: "No, the answer is",
+    whereE: "Where are we flying", where: "Which country is it in?", cYes: "Right country! +5 🪙", stamp: "STAMP", missed: "MISSED", know: "Did you know?",
+    next: "Fly to the next stop ✈️", result: "See the result", outLives: "Out of lives", tripDone: "The trip is over",
+    newRec: "New record! 🏆", rec: "Your record:", sRight: "wonders right", sNew: "new stamps", sPass: "in passport", again: "Travel again",
+    ppEye: "My passport", ppW: "wonders", ppP: "Every wonder you guess right puts a stamp in your passport. Collect all 12.", back: "Back",
+    w: {
+      pyramids: ["Pyramids of Giza", "Egypt", "They stand in the desert near the Nile river.", "They were built about 4,500 years ago.", "The tombs of pharaohs are inside.", "The Great Pyramid was the tallest building in the world for about 3,800 years."],
+      wall: ["Great Wall of China", "China", "It stretches for thousands of kilometres over mountains and deserts.", "It was built to protect the country from enemies.", "It has watchtowers on it.", "With all its parts it is more than 21,000 km long. But you can’t see it from the Moon with your eyes — that’s a myth."],
+      christ: ["Christ the Redeemer", "Brazil", "It stands on a mountain top above a big city.", "Its arms are spread wide.", "The city is famous for its carnival and beaches.", "The statue is 30 metres tall, and 38 with its base. It opened in 1931."],
+      colosseum: ["Colosseum", "Italy", "A giant ancient Roman amphitheatre.", "Gladiators fought here.", "It is in Rome.", "The Colosseum held about 50,000 spectators. It is almost 2,000 years old."],
+      taj: ["Taj Mahal", "India", "It is built of white marble.", "An emperor built it in memory of his beloved wife.", "It has a big dome and four tall minarets.", "About 20,000 craftsmen built the Taj Mahal, and the work took about 20 years."],
+      machu: ["Machu Picchu", "Peru", "An ancient city high in the mountains.", "The Incas built it.", "It is in the Andes, in South America.", "The city is about 2,400 metres high. The world widely learned about it in 1911."],
+      chichen: ["Chichen Itza", "Mexico", "A step pyramid near the jungle.", "The Maya built it.", "It has stairs on all four sides.", "The pyramid has 365 steps — exactly as many as there are days in a year."],
+      petra: ["Petra", "Jordan", "The whole city is carved into rock.", "The rocks are pinkish red.", "It is in a desert in the Middle East.", "Petra is called the “rose city” because of the colour of its rocks."],
+      eiffel: ["Eiffel Tower", "France", "It is made of iron.", "It was built in 1889 for a world’s fair.", "It is in Paris.", "The tower is about 330 metres tall, and it is repainted about every 7 years."],
+      liberty: ["Statue of Liberty", "USA", "It holds a torch in its hand.", "It was a gift from France.", "It stands on an island near New York.", "The statue is made of copper. At first it was brown, and over time it turned green."],
+      opera: ["Sydney Opera House", "Australia", "Its roof looks like sails or shells.", "It stands on the shore of a harbour.", "It opened in 1973.", "The roof is covered with more than a million tiles."],
+      garni: ["Garni Temple", "Armenia", "An ancient pagan temple with columns.", "It was built in the 1st century AD.", "It stands at the edge of a gorge above the Azat river.", "Garni is the only Greco-Roman colonnaded temple preserved in the former USSR."],
+    },
+  },
+  es: {
+    title: "Maravillas del mundo", intro: "Viaja por el mundo. En cada parada, adivina la maravilla con las pistas y luego di en qué país está. Por cada respuesta correcta te ponen un sello en el pasaporte.",
+    stops: "paradas", lives: "vidas", stamps: "sellos", go: "Empezar el viaje ✈️", pp: "Pasaporte", best: "Récord:",
+    stop: "Parada", q: "¿Qué maravilla es esta?", more: "Otra pista", worth: "Respuesta correcta:", yes: "¡Correcto!", no: "No, la respuesta es",
+    whereE: "A dónde volamos", where: "¿En qué país está?", cYes: "¡País correcto! +5 🪙", stamp: "SELLO", missed: "PERDIDO", know: "¿Sabías que…?",
+    next: "Volar a la siguiente parada ✈️", result: "Ver el resultado", outLives: "Se acabaron las vidas", tripDone: "El viaje terminó",
+    newRec: "¡Nuevo récord! 🏆", rec: "Tu récord:", sRight: "maravillas acertadas", sNew: "sellos nuevos", sPass: "en el pasaporte", again: "Viajar otra vez",
+    ppEye: "Mi pasaporte", ppW: "maravillas", ppP: "Cada maravilla que aciertas pone un sello en tu pasaporte. Junta las 12.", back: "Volver",
+    w: {
+      pyramids: ["Pirámides de Guiza", "Egipto", "Están en el desierto, cerca del río Nilo.", "Se construyeron hace unos 4500 años.", "Dentro están las tumbas de los faraones.", "La Gran Pirámide fue la construcción más alta del mundo durante unos 3800 años."],
+      wall: ["Gran Muralla China", "China", "Se extiende miles de kilómetros por montañas y desiertos.", "Se construyó para proteger el país de los enemigos.", "Tiene torres de vigilancia.", "Con todos sus tramos mide más de 21 000 km. Pero no se ve a simple vista desde la Luna: es un mito."],
+      christ: ["Cristo Redentor", "Brasil", "Está en la cima de una montaña sobre una gran ciudad.", "Tiene los brazos bien abiertos.", "La ciudad es famosa por su carnaval y sus playas.", "La estatua mide 30 metros, y con el pedestal, 38. Se inauguró en 1931."],
+      colosseum: ["Coliseo", "Italia", "Un enorme anfiteatro de la antigua Roma.", "Aquí luchaban los gladiadores.", "Está en Roma.", "El Coliseo tenía sitio para unos 50 000 espectadores. Tiene casi 2000 años."],
+      taj: ["Taj Mahal", "India", "Está hecho de mármol blanco.", "Un emperador lo construyó en memoria de su querida esposa.", "Tiene una gran cúpula y cuatro minaretes altos.", "Lo construyeron unos 20 000 artesanos, y la obra duró unos 20 años."],
+      machu: ["Machu Picchu", "Perú", "Una ciudad antigua en lo alto de las montañas.", "La construyeron los incas.", "Está en los Andes, en Sudamérica.", "La ciudad está a unos 2400 metros de altura. El mundo la conoció de verdad en 1911."],
+      chichen: ["Chichén Itzá", "México", "Una pirámide escalonada cerca de la selva.", "La construyeron los mayas.", "Tiene escaleras en sus cuatro lados.", "La pirámide tiene 365 escalones, tantos como días tiene el año."],
+      petra: ["Petra", "Jordania", "Toda la ciudad está tallada en la roca.", "Las rocas son de color rosa rojizo.", "Está en un desierto de Oriente Medio.", "A Petra la llaman la «ciudad rosa» por el color de sus rocas."],
+      eiffel: ["Torre Eiffel", "Francia", "Está hecha de hierro.", "Se construyó en 1889 para una exposición universal.", "Está en París.", "La torre mide unos 330 metros, y la pintan más o menos cada 7 años."],
+      liberty: ["Estatua de la Libertad", "Estados Unidos", "Sostiene una antorcha en la mano.", "Fue un regalo de Francia.", "Está en una isla cerca de Nueva York.", "La estatua es de cobre. Al principio era marrón y con el tiempo se volvió verde."],
+      opera: ["Ópera de Sídney", "Australia", "Su techo parece velas o conchas.", "Está a la orilla de una bahía.", "Se inauguró en 1973.", "El techo está cubierto con más de un millón de azulejos."],
+      garni: ["Templo de Garni", "Armenia", "Un antiguo templo pagano con columnas.", "Se construyó en el siglo I d. C.", "Está al borde de un desfiladero, sobre el río Azat.", "Garni es el único templo grecorromano con columnas conservado en la antigua URSS."],
+    },
+  },
+  fr: {
+    title: "Merveilles du monde", intro: "Voyage autour du monde. À chaque étape, devine la merveille grâce aux indices, puis dis dans quel pays elle se trouve. Les bonnes réponses te donnent un tampon dans ton passeport.",
+    stops: "étapes", lives: "vies", stamps: "tampons", go: "Partir en voyage ✈️", pp: "Passeport", best: "Record :",
+    stop: "Étape", q: "Quelle merveille est-ce ?", more: "Encore un indice", worth: "Bonne réponse :", yes: "Bravo !", no: "Non, la réponse :",
+    whereE: "Où allons-nous", where: "Dans quel pays ?", cYes: "Bon pays ! +5 🪙", stamp: "TAMPON", missed: "MANQUÉ", know: "Le savais-tu ?",
+    next: "Voler à l’étape suivante ✈️", result: "Voir le résultat", outLives: "Plus de vies", tripDone: "Le voyage est fini",
+    newRec: "Nouveau record ! 🏆", rec: "Ton record :", sRight: "merveilles trouvées", sNew: "nouveaux tampons", sPass: "dans le passeport", again: "Repartir en voyage",
+    ppEye: "Mon passeport", ppW: "merveilles", ppP: "Chaque merveille trouvée met un tampon dans ton passeport. Collectionne les 12.", back: "Retour",
+    w: {
+      pyramids: ["Pyramides de Gizeh", "Égypte", "Elles sont dans le désert, près du Nil.", "Elles ont été construites il y a environ 4500 ans.", "À l’intérieur se trouvent les tombeaux des pharaons.", "La Grande Pyramide a été la construction la plus haute du monde pendant environ 3800 ans."],
+      wall: ["Grande Muraille de Chine", "Chine", "Elle s’étend sur des milliers de kilomètres, à travers montagnes et déserts.", "Elle a été construite pour protéger le pays des ennemis.", "Elle a des tours de guet.", "Avec toutes ses parties, elle mesure plus de 21 000 km. Mais on ne la voit pas à l’œil nu depuis la Lune : c’est un mythe."],
+      christ: ["Christ Rédempteur", "Brésil", "Il se dresse au sommet d’une montagne, au-dessus d’une grande ville.", "Ses bras sont grand ouverts.", "La ville est célèbre pour son carnaval et ses plages.", "La statue mesure 30 mètres, et 38 avec son socle. Elle a été inaugurée en 1931."],
+      colosseum: ["Colisée", "Italie", "Un immense amphithéâtre de la Rome antique.", "Les gladiateurs y combattaient.", "Il se trouve à Rome.", "Le Colisée accueillait environ 50 000 spectateurs. Il a presque 2000 ans."],
+      taj: ["Taj Mahal", "Inde", "Il est construit en marbre blanc.", "Un empereur l’a fait construire en mémoire de sa femme bien-aimée.", "Il a un grand dôme et quatre hauts minarets.", "Environ 20 000 artisans ont construit le Taj Mahal, et les travaux ont duré environ 20 ans."],
+      machu: ["Machu Picchu", "Pérou", "Une ancienne cité perchée dans les montagnes.", "Ce sont les Incas qui l’ont construite.", "Elle se trouve dans les Andes, en Amérique du Sud.", "La cité est à environ 2400 mètres d’altitude. Le monde l’a vraiment découverte en 1911."],
+      chichen: ["Chichén Itzá", "Mexique", "Une pyramide à degrés près de la jungle.", "Ce sont les Mayas qui l’ont construite.", "Elle a des escaliers sur ses quatre côtés.", "La pyramide a 365 marches, autant que de jours dans l’année."],
+      petra: ["Petra", "Jordanie", "Toute la ville est taillée dans la roche.", "Les rochers sont rose-rouge.", "Elle se trouve dans un désert du Moyen-Orient.", "On appelle Petra la « cité rose » à cause de la couleur de ses rochers."],
+      eiffel: ["Tour Eiffel", "France", "Elle est en fer.", "Elle a été construite en 1889 pour une Exposition universelle.", "Elle se trouve à Paris.", "La tour mesure environ 330 mètres, et on la repeint à peu près tous les 7 ans."],
+      liberty: ["Statue de la Liberté", "États-Unis", "Elle tient une torche à la main.", "C’est un cadeau de la France.", "Elle se dresse sur une île près de New York.", "La statue est en cuivre. Au début elle était brune, puis avec le temps elle est devenue verte."],
+      opera: ["Opéra de Sydney", "Australie", "Son toit ressemble à des voiles ou à des coquillages.", "Il est au bord d’une baie.", "Il a ouvert en 1973.", "Le toit est couvert de plus d’un million de tuiles."],
+      garni: ["Temple de Garni", "Arménie", "Un ancien temple païen avec des colonnes.", "Il a été construit au Ier siècle apr. J.-C.", "Il se dresse au bord d’une gorge, au-dessus de la rivière Azat.", "Garni est le seul temple gréco-romain à colonnes conservé dans l’ex-URSS."],
+    },
+  },
+  de: {
+    title: "Weltwunder", intro: "Reise um die Welt. Errate an jedem Halt das Wunder mit Hinweisen und sag dann, in welchem Land es steht. Für richtige Antworten bekommst du einen Stempel in deinen Pass.",
+    stops: "Halte", lives: "Leben", stamps: "Stempel", go: "Reise starten ✈️", pp: "Pass", best: "Rekord:",
+    stop: "Halt", q: "Welches Wunder ist das?", more: "Noch ein Hinweis", worth: "Richtige Antwort:", yes: "Richtig!", no: "Nein, die Antwort:",
+    whereE: "Wohin fliegen wir", where: "In welchem Land?", cYes: "Richtiges Land! +5 🪙", stamp: "STEMPEL", missed: "VERPASST", know: "Wusstest du?",
+    next: "Zum nächsten Halt fliegen ✈️", result: "Ergebnis ansehen", outLives: "Keine Leben mehr", tripDone: "Die Reise ist vorbei",
+    newRec: "Neuer Rekord! 🏆", rec: "Dein Rekord:", sRight: "Wunder erraten", sNew: "neue Stempel", sPass: "im Pass", again: "Nochmal reisen",
+    ppEye: "Mein Pass", ppW: "Wunder", ppP: "Jedes erratene Wunder bringt einen Stempel in deinen Pass. Sammle alle 12.", back: "Zurück",
+    w: {
+      pyramids: ["Pyramiden von Gizeh", "Ägypten", "Sie stehen in der Wüste am Fluss Nil.", "Sie wurden vor etwa 4500 Jahren gebaut.", "Drinnen liegen die Gräber der Pharaonen.", "Die Große Pyramide war etwa 3800 Jahre lang das höchste Bauwerk der Welt."],
+      wall: ["Chinesische Mauer", "China", "Sie zieht sich Tausende Kilometer über Berge und Wüsten.", "Sie wurde gebaut, um das Land vor Feinden zu schützen.", "Auf ihr stehen Wachtürme.", "Mit allen Teilen ist sie über 21 000 km lang. Aber vom Mond aus sieht man sie mit bloßem Auge nicht – das ist ein Mythos."],
+      christ: ["Christus der Erlöser", "Brasilien", "Sie steht auf einem Berg über einer großen Stadt.", "Die Arme sind weit ausgebreitet.", "Die Stadt ist für ihren Karneval und ihre Strände berühmt.", "Die Statue ist 30 Meter hoch, mit Sockel 38 Meter. Sie wurde 1931 eingeweiht."],
+      colosseum: ["Kolosseum", "Italien", "Ein riesiges Amphitheater aus dem alten Rom.", "Hier kämpften Gladiatoren.", "Es steht in Rom.", "Ins Kolosseum passten etwa 50 000 Zuschauer. Es ist fast 2000 Jahre alt."],
+      taj: ["Taj Mahal", "Indien", "Es ist aus weißem Marmor gebaut.", "Ein Kaiser ließ es zur Erinnerung an seine geliebte Frau bauen.", "Es hat eine große Kuppel und vier hohe Minarette.", "Etwa 20 000 Handwerker bauten das Taj Mahal, und die Arbeit dauerte etwa 20 Jahre."],
+      machu: ["Machu Picchu", "Peru", "Eine alte Stadt hoch in den Bergen.", "Die Inka haben sie gebaut.", "Sie liegt in den Anden in Südamerika.", "Die Stadt liegt auf etwa 2400 Metern Höhe. Weltbekannt wurde sie 1911."],
+      chichen: ["Chichén Itzá", "Mexiko", "Eine Stufenpyramide nahe dem Dschungel.", "Die Maya haben sie gebaut.", "Sie hat Treppen an allen vier Seiten.", "Die Pyramide hat 365 Stufen – genau so viele, wie das Jahr Tage hat."],
+      petra: ["Petra", "Jordanien", "Die ganze Stadt ist in den Fels gehauen.", "Die Felsen sind rosarot.", "Sie liegt in einer Wüste im Nahen Osten.", "Petra wird wegen der Farbe ihrer Felsen die „rosarote Stadt“ genannt."],
+      eiffel: ["Eiffelturm", "Frankreich", "Er ist aus Eisen.", "Er wurde 1889 für eine Weltausstellung gebaut.", "Er steht in Paris.", "Der Turm ist etwa 330 Meter hoch und wird ungefähr alle 7 Jahre neu gestrichen."],
+      liberty: ["Freiheitsstatue", "USA", "Sie hält eine Fackel in der Hand.", "Sie war ein Geschenk aus Frankreich.", "Sie steht auf einer Insel bei New York.", "Die Statue ist aus Kupfer. Am Anfang war sie braun, mit der Zeit wurde sie grün."],
+      opera: ["Opernhaus Sydney", "Australien", "Sein Dach sieht aus wie Segel oder Muscheln.", "Es steht am Ufer einer Bucht.", "Es wurde 1973 eröffnet.", "Das Dach ist mit über einer Million Fliesen bedeckt."],
+      garni: ["Tempel von Garni", "Armenien", "Ein alter heidnischer Tempel mit Säulen.", "Er wurde im 1. Jahrhundert n. Chr. gebaut.", "Er steht am Rand einer Schlucht über dem Fluss Azat.", "Garni ist der einzige erhaltene griechisch-römische Säulentempel in der ehemaligen Sowjetunion."],
+    },
+  },
+  ja: {
+    title: "世界のふしぎ", intro: "世界をたびしよう。それぞれのスポットで、ヒントからふしぎな建物をあてて、どの国にあるかこたえよう。せいかいするとパスポートにスタンプがもらえるよ。",
+    stops: "スポット", lives: "ライフ", stamps: "スタンプ", go: "たびに出発 ✈️", pp: "パスポート", best: "さいこう記録：",
+    stop: "スポット", q: "これはどのふしぎ？", more: "ヒントをもう1つ", worth: "せいかいで", yes: "せいかい！", no: "ざんねん、こたえは",
+    whereE: "どこへとぶ？", where: "どの国にある？", cYes: "国もせいかい！+5 🪙", stamp: "スタンプ", missed: "のがした", know: "しってた？",
+    next: "つぎのスポットへ ✈️", result: "けっかを見る", outLives: "ライフがなくなった", tripDone: "たびはおしまい",
+    newRec: "しん記録！🏆", rec: "さいこう記録：", sRight: "せいかい", sNew: "あたらしいスタンプ", sPass: "パスポート", again: "もう一回たびする",
+    ppEye: "ぼくのパスポート", ppW: "ふしぎ", ppP: "あてたふしぎごとに、パスポートにスタンプがおされるよ。12こ全部あつめよう。", back: "もどる",
+    w: {
+      pyramids: ["ギザのピラミッド", "エジプト", "ナイル川の近くのさばくに立っている。", "約4500年前にたてられた。", "中にはファラオのおはかがある。", "大ピラミッドは約3800年のあいだ、世界でいちばん高い建物だった。"],
+      wall: ["万里の長城", "中国", "山やさばくをこえて、何千キロもつづいている。", "てきから国をまもるためにつくられた。", "見はりのとうがある。", "ぜんぶあわせると21000km以上。でも月から目では見えない。それはただのうわさ。"],
+      christ: ["コルコバードのキリスト像", "ブラジル", "大きな町の上の、山のてっぺんに立っている。", "りょううでを大きく広げている。", "その町はカーニバルとビーチで有名。", "像の高さは30m、台をふくめると38m。1931年にかんせいした。"],
+      colosseum: ["コロッセオ", "イタリア", "古代ローマの大きな円形とうぎじょう。", "ここでグラディエーターがたたかった。", "ローマにある。", "コロッセオには約5万人が入れた。もうすぐ2000さい。"],
+      taj: ["タージ・マハル", "インド", "白い大理石でできている。", "皇帝が、大すきなおきさきのためにたてた。", "大きなドームと4本の高い塔がある。", "約2万人の職人が、約20年かけてたてた。"],
+      machu: ["マチュ・ピチュ", "ペルー", "高い山の上にある古い町。", "インカの人たちがつくった。", "南アメリカのアンデス山脈にある。", "町は高さ約2400mのところにある。1911年に世界中に知られるようになった。"],
+      chichen: ["チチェン・イッツァ", "メキシコ", "ジャングルの近くにある階段のピラミッド。", "マヤの人たちがつくった。", "4つの面ぜんぶに階段がある。", "ピラミッドの階段は365段。1年の日数とおなじ！"],
+      petra: ["ペトラ", "ヨルダン", "町ぜんたいが岩をほってつくられている。", "岩はピンクっぽい赤色。", "中東のさばくにある。", "岩の色から「バラ色の町」とよばれている。"],
+      eiffel: ["エッフェル塔", "フランス", "鉄でできている。", "1889年、万国博覧会のためにたてられた。", "パリにある。", "高さは約330m。だいたい7年ごとにぬりなおされる。"],
+      liberty: ["自由の女神", "アメリカ", "手にたいまつを持っている。", "フランスからのプレゼント。", "ニューヨークの近くの島に立っている。", "像は銅でできている。さいしょは茶色だったけど、だんだん緑色になった。"],
+      opera: ["シドニー・オペラハウス", "オーストラリア", "屋根がヨットの帆や貝がらみたい。", "湾のきしに立っている。", "1973年にオープンした。", "屋根は100万まい以上のタイルでおおわれている。"],
+      garni: ["ガルニ神殿", "アルメニア", "柱がならぶ古い神殿。", "1世紀にたてられた。", "アザト川の上、谷のふちに立っている。", "ガルニは、むかしのソ連の国々にのこる、ただ1つのギリシャ・ローマ風の柱の神殿。"],
+    },
+  },
+  zh: {
+    title: "世界奇迹", intro: "环游世界吧！每一站根据提示猜出奇迹，再说出它在哪个国家。答对了，护照上就会盖一个印章。",
+    stops: "站", lives: "条命", stamps: "印章", go: "开始旅行 ✈️", pp: "护照", best: "纪录：",
+    stop: "站点", q: "这是哪个奇迹？", more: "再来一个提示", worth: "答对得", yes: "答对了！", no: "不对，答案是",
+    whereE: "飞往哪里", where: "它在哪个国家？", cYes: "国家也对了！+5 🪙", stamp: "印章", missed: "错过", know: "你知道吗？",
+    next: "飞往下一站 ✈️", result: "查看结果", outLives: "生命用完了", tripDone: "旅行结束了",
+    newRec: "新纪录！🏆", rec: "你的纪录：", sRight: "答对的奇迹", sNew: "新印章", sPass: "护照里", again: "再次旅行",
+    ppEye: "我的护照", ppW: "个奇迹", ppP: "每猜对一个奇迹，护照上就盖一个印章。把12个都集齐吧。", back: "返回",
+    w: {
+      pyramids: ["吉萨金字塔", "埃及", "它在沙漠里，靠近尼罗河。", "大约4500年前建成。", "里面是法老的陵墓。", "大金字塔在大约3800年里都是世界上最高的建筑。"],
+      wall: ["万里长城", "中国", "它绵延几千公里，翻过高山和沙漠。", "建它是为了保护国家不受敌人侵犯。", "上面有瞭望塔。", "所有部分加起来超过21000公里。但从月球上用肉眼是看不到的，那只是个传说。"],
+      christ: ["基督救世主像", "巴西", "它站在一座大城市上方的山顶上。", "双臂张得很开。", "这座城市以狂欢节和海滩闻名。", "雕像高30米，加上底座有38米。1931年落成。"],
+      colosseum: ["罗马斗兽场", "意大利", "一座巨大的古罗马圆形剧场。", "角斗士曾在这里搏斗。", "它在罗马。", "斗兽场能容纳大约5万名观众。它快2000岁了。"],
+      taj: ["泰姬陵", "印度", "用白色大理石建成。", "一位皇帝为了纪念心爱的妻子建造了它。", "有一个大圆顶和四座高高的尖塔。", "大约2万名工匠建造了泰姬陵，用了大约20年。"],
+      machu: ["马丘比丘", "秘鲁", "高山上的一座古城。", "是印加人建造的。", "位于南美洲的安第斯山脉。", "古城海拔大约2400米。1911年全世界才广泛知道它。"],
+      chichen: ["奇琴伊察", "墨西哥", "丛林附近的一座阶梯金字塔。", "是玛雅人建造的。", "四面都有台阶。", "金字塔有365级台阶，正好和一年的天数一样。"],
+      petra: ["佩特拉", "约旦", "整座城市都是在岩石里凿出来的。", "岩石是粉红色的。", "位于中东的沙漠里。", "因为岩石的颜色，佩特拉被称为“玫瑰之城”。"],
+      eiffel: ["埃菲尔铁塔", "法国", "它是用铁建成的。", "1889年为世界博览会而建。", "它在巴黎。", "铁塔高约330米，大约每7年重新刷一次漆。"],
+      liberty: ["自由女神像", "美国", "手里举着火炬。", "是法国送的礼物。", "站在纽约附近的一座小岛上。", "雕像是铜做的。一开始是棕色的，后来慢慢变成了绿色。"],
+      opera: ["悉尼歌剧院", "澳大利亚", "屋顶像船帆或贝壳。", "它在海湾的岸边。", "1973年开放。", "屋顶上铺着一百多万块瓷砖。"],
+      garni: ["加尔尼神庙", "亚美尼亚", "一座有柱子的古老异教神庙。", "建于公元1世纪。", "它在峡谷边上，下面是阿扎特河。", "加尔尼是前苏联地区唯一保存下来的希腊罗马式柱廊神庙。"],
+    },
+  },
+  it: {
+    title: "Meraviglie del mondo", intro: "Viaggia per il mondo. A ogni tappa indovina la meraviglia con gli indizi, poi di’ in quale paese si trova. Per le risposte giuste ricevi un timbro sul passaporto.",
+    stops: "tappe", lives: "vite", stamps: "timbri", go: "Inizia il viaggio ✈️", pp: "Passaporto", best: "Record:",
+    stop: "Tappa", q: "Quale meraviglia è questa?", more: "Un altro indizio", worth: "Risposta giusta:", yes: "Giusto!", no: "No, la risposta:",
+    whereE: "Dove voliamo", where: "In quale paese?", cYes: "Paese giusto! +5 🪙", stamp: "TIMBRO", missed: "PERSO", know: "Lo sapevi?",
+    next: "Vola alla prossima tappa ✈️", result: "Vedi il risultato", outLives: "Vite finite", tripDone: "Il viaggio è finito",
+    newRec: "Nuovo record! 🏆", rec: "Il tuo record:", sRight: "meraviglie indovinate", sNew: "timbri nuovi", sPass: "nel passaporto", again: "Viaggia ancora",
+    ppEye: "Il mio passaporto", ppW: "meraviglie", ppP: "Ogni meraviglia indovinata mette un timbro sul tuo passaporto. Raccoglile tutte e 12.", back: "Indietro",
+    w: {
+      pyramids: ["Piramidi di Giza", "Egitto", "Si trovano nel deserto, vicino al fiume Nilo.", "Sono state costruite circa 4500 anni fa.", "Dentro ci sono le tombe dei faraoni.", "La Grande Piramide è stata la costruzione più alta del mondo per circa 3800 anni."],
+      wall: ["Grande Muraglia cinese", "Cina", "Si allunga per migliaia di chilometri tra montagne e deserti.", "È stata costruita per difendere il paese dai nemici.", "Ha delle torri di guardia.", "Con tutte le sue parti è lunga più di 21 000 km. Ma dalla Luna a occhio nudo non si vede: è un mito."],
+      christ: ["Cristo Redentore", "Brasile", "Si trova in cima a un monte, sopra una grande città.", "Ha le braccia spalancate.", "La città è famosa per il carnevale e le spiagge.", "La statua è alta 30 metri, 38 con il piedistallo. È stata inaugurata nel 1931."],
+      colosseum: ["Colosseo", "Italia", "Un enorme anfiteatro dell’antica Roma.", "Qui combattevano i gladiatori.", "Si trova a Roma.", "Il Colosseo ospitava circa 50 000 spettatori. Ha quasi 2000 anni."],
+      taj: ["Taj Mahal", "India", "È costruito in marmo bianco.", "Un imperatore lo fece costruire in ricordo dell’amata moglie.", "Ha una grande cupola e quattro alti minareti.", "Circa 20 000 artigiani hanno costruito il Taj Mahal, e il lavoro è durato circa 20 anni."],
+      machu: ["Machu Picchu", "Perù", "Un’antica città in alto sulle montagne.", "L’hanno costruita gli Inca.", "Si trova sulle Ande, in Sud America.", "La città è a circa 2400 metri di altezza. Il mondo l’ha conosciuta davvero nel 1911."],
+      chichen: ["Chichén Itzá", "Messico", "Una piramide a gradoni vicino alla giungla.", "L’hanno costruita i Maya.", "Ha scalinate su tutti e quattro i lati.", "La piramide ha 365 gradini, tanti quanti i giorni dell’anno."],
+      petra: ["Petra", "Giordania", "Tutta la città è scolpita nella roccia.", "Le rocce sono rosa e rosse.", "Si trova in un deserto del Medio Oriente.", "Petra è chiamata la «città rosa» per il colore delle sue rocce."],
+      eiffel: ["Torre Eiffel", "Francia", "È fatta di ferro.", "È stata costruita nel 1889 per un’Esposizione universale.", "Si trova a Parigi.", "La torre è alta circa 330 metri e viene ridipinta più o meno ogni 7 anni."],
+      liberty: ["Statua della Libertà", "Stati Uniti", "Tiene in mano una torcia.", "È stata un regalo della Francia.", "Si trova su un’isola vicino a New York.", "La statua è di rame. All’inizio era marrone, poi col tempo è diventata verde."],
+      opera: ["Opera House di Sydney", "Australia", "Il tetto sembra fatto di vele o conchiglie.", "Si trova sulla riva di una baia.", "È stata inaugurata nel 1973.", "Il tetto è coperto da più di un milione di piastrelle."],
+      garni: ["Tempio di Garni", "Armenia", "Un antico tempio pagano con colonne.", "È stato costruito nel I secolo d.C.", "Si trova sul bordo di una gola, sopra il fiume Azat.", "Garni è l’unico tempio greco-romano con colonnato conservato nell’ex URSS."],
+    },
+  },
+  ka: {
+    title: "მსოფლიოს საოცრებები", intro: "იმოგზაურე მსოფლიოში. ყოველ გაჩერებაზე მინიშნებებით გამოიცანი საოცრება, მერე თქვი, რომელ ქვეყანაშია. სწორ პასუხებზე პასპორტში ბეჭედს მიიღებ.",
+    stops: "გაჩერება", lives: "სიცოცხლე", stamps: "ბეჭედი", go: "მოგზაურობის დაწყება ✈️", pp: "პასპორტი", best: "რეკორდი:",
+    stop: "გაჩერება", q: "რომელი საოცრებაა ეს?", more: "კიდევ ერთი მინიშნება", worth: "სწორი პასუხი:", yes: "სწორია!", no: "არა, სწორი პასუხია:",
+    whereE: "სად მივფრინავთ", where: "რომელ ქვეყანაშია?", cYes: "სწორი ქვეყანაა! +5 🪙", stamp: "ბეჭედი", missed: "გამოტოვებული", know: "იცოდი?",
+    next: "შემდეგ გაჩერებაზე ✈️", result: "შედეგის ნახვა", outLives: "სიცოცხლეები დამთავრდა", tripDone: "მოგზაურობა დასრულდა",
+    newRec: "ახალი რეკორდი! 🏆", rec: "შენი რეკორდი:", sRight: "გამოცნობილი", sNew: "ახალი ბეჭედი", sPass: "პასპორტში", again: "ისევ მოგზაურობა",
+    ppEye: "ჩემი პასპორტი", ppW: "საოცრება", ppP: "ყოველი გამოცნობილი საოცრება პასპორტში ბეჭედს გიტოვებს. შეაგროვე ყველა 12.", back: "უკან",
+    w: {
+      pyramids: ["გიზის პირამიდები", "ეგვიპტე", "უდაბნოში დგას, მდინარე ნილოსთან.", "აშენდა დაახლოებით 4500 წლის წინ.", "შიგნით ფარაონების სამარხებია.", "დიდი პირამიდა დაახლოებით 3800 წელი მსოფლიოში ყველაზე მაღალი ნაგებობა იყო."],
+      wall: ["ჩინეთის დიდი კედელი", "ჩინეთი", "ათასობით კილომეტრზეა გადაჭიმული მთებსა და უდაბნოებზე.", "ააშენეს ქვეყნის მტრებისგან დასაცავად.", "მასზე საგუშაგო კოშკებია.", "ყველა მონაკვეთით 21 000 კმ-ზე მეტია. მაგრამ მთვარიდან თვალით არ ჩანს — ეს მითია."],
+      christ: ["ქრისტე მხსნელის ქანდაკება", "ბრაზილია", "მთის მწვერვალზე დგას, დიდი ქალაქის თავზე.", "ხელები ფართოდ აქვს გაშლილი.", "ქალაქი ცნობილია კარნავალითა და პლაჟებით.", "ქანდაკება 30 მეტრია, კვარცხლბეკით — 38. გაიხსნა 1931 წელს."],
+      colosseum: ["კოლიზეუმი", "იტალია", "ძველი რომის უზარმაზარი ამფითეატრი.", "აქ გლადიატორები იბრძოდნენ.", "რომში მდებარეობს.", "კოლიზეუმში დაახლოებით 50 000 მაყურებელი ეტეოდა. ის თითქმის 2000 წლისაა."],
+      taj: ["ტაჯ-მაჰალი", "ინდოეთი", "აშენებულია თეთრი მარმარილოსგან.", "იმპერატორმა ააშენა საყვარელი ცოლის სახსოვრად.", "აქვს დიდი გუმბათი და ოთხი მაღალი მინარეთი.", "ტაჯ-მაჰალს დაახლოებით 20 000 ოსტატი აშენებდა, სამუშაო კი დაახლოებით 20 წელი გაგრძელდა."],
+      machu: ["მაჩუ-პიკჩუ", "პერუ", "ძველი ქალაქი მაღლა მთებში.", "ააშენეს ინკებმა.", "მდებარეობს ანდებში, სამხრეთ ამერიკაში.", "ქალაქი დაახლოებით 2400 მეტრ სიმაღლეზეა. მსოფლიომ მის შესახებ ფართოდ 1911 წელს გაიგო."],
+      chichen: ["ჩიჩენ-იცა", "მექსიკა", "საფეხურებიანი პირამიდა ჯუნგლების ახლოს.", "ააშენეს მაიებმა.", "კიბეები ოთხივე მხარეს აქვს.", "პირამიდას 365 საფეხური აქვს — ზუსტად იმდენი, რამდენი დღეცაა წელიწადში."],
+      petra: ["პეტრა", "იორდანია", "მთელი ქალაქი კლდეშია გამოკვეთილი.", "კლდეები ვარდისფერ-წითელია.", "მდებარეობს ახლო აღმოსავლეთის უდაბნოში.", "პეტრას კლდეების ფერის გამო „ვარდისფერ ქალაქს“ უწოდებენ."],
+      eiffel: ["ეიფელის კოშკი", "საფრანგეთი", "რკინისგან არის გაკეთებული.", "აშენდა 1889 წელს მსოფლიო გამოფენისთვის.", "პარიზში მდებარეობს.", "კოშკი დაახლოებით 330 მეტრია და მას დაახლოებით ყოველ 7 წელიწადში ხელახლა ღებავენ."],
+      liberty: ["თავისუფლების ქანდაკება", "აშშ", "ხელში ჩირაღდანი უჭირავს.", "საფრანგეთის საჩუქარია.", "დგას კუნძულზე, ნიუ-იორკთან.", "ქანდაკება სპილენძისაა. თავიდან ყავისფერი იყო, დროთა განმავლობაში კი გამწვანდა."],
+      opera: ["სიდნეის ოპერის თეატრი", "ავსტრალია", "სახურავი იალქნებს ან ნიჟარებს ჰგავს.", "ყურის ნაპირზე დგას.", "გაიხსნა 1973 წელს.", "სახურავი მილიონზე მეტი ფილით არის დაფარული."],
+      garni: ["გარნის ტაძარი", "სომხეთი", "ძველი წარმართული ტაძარი სვეტებით.", "აშენდა ჩვენი წელთაღრიცხვის I საუკუნეში.", "ხეობის კიდეზე დგას, მდინარე აზატის თავზე.", "გარნი ყოფილი სსრკ-ის ტერიტორიაზე შემორჩენილი ერთადერთი ბერძნულ-რომაული სვეტებიანი ტაძარია."],
+    },
+  },
+  hi: {
+    title: "दुनिया के अजूबे", intro: "दुनिया की सैर करो। हर पड़ाव पर संकेतों से अजूबा पहचानो, फिर बताओ कि वह किस देश में है। सही जवाबों पर तुम्हारे पासपोर्ट में मुहर लगेगी।",
+    stops: "पड़ाव", lives: "जानें", stamps: "मुहरें", go: "यात्रा शुरू करो ✈️", pp: "पासपोर्ट", best: "रिकॉर्ड:",
+    stop: "पड़ाव", q: "यह कौन-सा अजूबा है?", more: "एक और संकेत", worth: "सही जवाब:", yes: "सही!", no: "नहीं, सही जवाब:",
+    whereE: "कहाँ उड़ रहे हैं", where: "यह किस देश में है?", cYes: "देश भी सही! +5 🪙", stamp: "मुहर", missed: "छूट गया", know: "क्या तुम जानते हो?",
+    next: "अगले पड़ाव पर उड़ो ✈️", result: "नतीजा देखो", outLives: "जानें खत्म हो गईं", tripDone: "यात्रा पूरी हुई",
+    newRec: "नया रिकॉर्ड! 🏆", rec: "तुम्हारा रिकॉर्ड:", sRight: "सही अजूबे", sNew: "नई मुहरें", sPass: "पासपोर्ट में", again: "फिर से यात्रा करो",
+    ppEye: "मेरा पासपोर्ट", ppW: "अजूबे", ppP: "हर सही पहचाना अजूबा तुम्हारे पासपोर्ट में मुहर लगाता है। सभी 12 इकट्ठा करो।", back: "वापस",
+    w: {
+      pyramids: ["गीज़ा के पिरामिड", "मिस्र", "ये रेगिस्तान में नील नदी के पास हैं।", "इन्हें लगभग 4500 साल पहले बनाया गया था।", "इनके अंदर फ़िरौनों की कब्रें हैं।", "महान पिरामिड लगभग 3800 साल तक दुनिया की सबसे ऊँची इमारत रहा।"],
+      wall: ["चीन की महान दीवार", "चीन", "यह पहाड़ों और रेगिस्तानों से होकर हज़ारों किलोमीटर तक फैली है।", "इसे देश को दुश्मनों से बचाने के लिए बनाया गया था।", "इस पर निगरानी मीनारें हैं।", "सारे हिस्से मिलाकर यह 21,000 किमी से ज़्यादा लंबी है। पर चाँद से यह आँखों से नहीं दिखती — यह एक मिथक है।"],
+      christ: ["क्राइस्ट द रिडीमर", "ब्राज़ील", "यह एक बड़े शहर के ऊपर पहाड़ की चोटी पर खड़ी है।", "इसकी बाँहें खुली फैली हुई हैं।", "यह शहर अपने कार्निवल और समुद्र तटों के लिए मशहूर है।", "मूर्ति 30 मीटर ऊँची है, और चबूतरे के साथ 38 मीटर। यह 1931 में खुली।"],
+      colosseum: ["कोलोसियम", "इटली", "प्राचीन रोम का एक विशाल अखाड़ा।", "यहाँ ग्लैडिएटर लड़ते थे।", "यह रोम में है।", "कोलोसियम में लगभग 50,000 दर्शक बैठ सकते थे। यह लगभग 2000 साल पुराना है।"],
+      taj: ["ताजमहल", "भारत", "यह सफ़ेद संगमरमर से बना है।", "एक बादशाह ने इसे अपनी प्यारी पत्नी की याद में बनवाया।", "इसमें एक बड़ा गुंबद और चार ऊँची मीनारें हैं।", "ताजमहल को लगभग 20,000 कारीगरों ने बनाया, और काम लगभग 20 साल चला।"],
+      machu: ["माचू पिच्चू", "पेरू", "ऊँचे पहाड़ों पर बसा एक प्राचीन शहर।", "इसे इंका लोगों ने बनाया था।", "यह दक्षिण अमेरिका के एंडीज़ पहाड़ों में है।", "यह शहर लगभग 2400 मीटर की ऊँचाई पर है। दुनिया को इसके बारे में 1911 में अच्छे से पता चला।"],
+      chichen: ["चिचेन इट्ज़ा", "मेक्सिको", "जंगल के पास एक सीढ़ीदार पिरामिड।", "इसे माया लोगों ने बनाया था।", "इसकी चारों तरफ़ सीढ़ियाँ हैं।", "पिरामिड में 365 सीढ़ियाँ हैं — ठीक उतनी, जितने साल में दिन होते हैं।"],
+      petra: ["पेट्रा", "जॉर्डन", "पूरा शहर चट्टान को काटकर बनाया गया है।", "चट्टानें गुलाबी-लाल हैं।", "यह मध्य पूर्व के रेगिस्तान में है।", "चट्टानों के रंग की वजह से पेट्रा को “गुलाबी शहर” कहते हैं।"],
+      eiffel: ["एफ़िल टॉवर", "फ़्रांस", "यह लोहे से बना है।", "इसे 1889 में एक विश्व मेले के लिए बनाया गया था।", "यह पेरिस में है।", "टॉवर लगभग 330 मीटर ऊँचा है, और इसे लगभग हर 7 साल में दोबारा रंगा जाता है।"],
+      liberty: ["स्टैच्यू ऑफ़ लिबर्टी", "अमेरिका", "इसके हाथ में मशाल है।", "यह फ़्रांस का तोहफ़ा है।", "यह न्यूयॉर्क के पास एक द्वीप पर खड़ी है।", "मूर्ति ताँबे की बनी है। पहले यह भूरी थी, फिर समय के साथ हरी हो गई।"],
+      opera: ["सिडनी ओपेरा हाउस", "ऑस्ट्रेलिया", "इसकी छत पाल या सीपियों जैसी दिखती है।", "यह एक खाड़ी के किनारे खड़ा है।", "यह 1973 में खुला।", "छत दस लाख से ज़्यादा टाइलों से ढकी है।"],
+      garni: ["गार्नी मंदिर", "आर्मेनिया", "खंभों वाला एक प्राचीन मूर्तिपूजक मंदिर।", "इसे पहली सदी ईस्वी में बनाया गया था।", "यह अज़ात नदी के ऊपर, एक घाटी के किनारे खड़ा है।", "गार्नी पूर्व सोवियत संघ में बचा हुआ इकलौता यूनानी-रोमन खंभों वाला मंदिर है।"],
+    },
+  },
+  pt: {
+    title: "Maravilhas do Mundo", intro: "Viaja pelo mundo. Em cada paragem, adivinha a maravilha com as pistas e depois diz em que país fica. As respostas certas dão-te um carimbo no passaporte.",
+    stops: "paragens", lives: "vidas", stamps: "carimbos", go: "Começar a viagem ✈️", pp: "Passaporte", best: "Recorde:",
+    stop: "Paragem", q: "Que maravilha é esta?", more: "Mais uma pista", worth: "Resposta certa:", yes: "Certo!", no: "Não, a resposta é",
+    whereE: "Para onde voamos", where: "Em que país fica?", cYes: "País certo! +5 🪙", stamp: "CARIMBO", missed: "FALHADO", know: "Sabias que…",
+    next: "Voar para a próxima paragem ✈️", result: "Ver o resultado", outLives: "Acabaram as vidas", tripDone: "A viagem acabou",
+    newRec: "Novo recorde! 🏆", rec: "O teu recorde:", sRight: "maravilhas certas", sNew: "carimbos novos", sPass: "no passaporte", again: "Viajar outra vez",
+    ppEye: "O meu passaporte", ppW: "maravilhas", ppP: "Cada maravilha que acertas põe um carimbo no teu passaporte. Junta as 12.", back: "Voltar",
+    w: {
+      pyramids: ["Pirâmides de Gizé", "Egito", "Ficam no deserto, perto do rio Nilo.", "Foram construídas há cerca de 4500 anos.", "Lá dentro estão os túmulos dos faraós.", "A Grande Pirâmide foi a construção mais alta do mundo durante cerca de 3800 anos."],
+      wall: ["Grande Muralha da China", "China", "Estende-se por milhares de quilómetros, por montanhas e desertos.", "Foi construída para proteger o país dos inimigos.", "Tem torres de vigia.", "Com todas as partes, tem mais de 21 000 km. Mas não se vê a olho nu da Lua: é um mito."],
+      christ: ["Cristo Redentor", "Brasil", "Fica no topo de um monte, por cima de uma grande cidade.", "Tem os braços bem abertos.", "A cidade é famosa pelo carnaval e pelas praias.", "A estátua tem 30 metros, e 38 com o pedestal. Foi inaugurada em 1931."],
+      colosseum: ["Coliseu", "Itália", "Um enorme anfiteatro da Roma Antiga.", "Aqui lutavam os gladiadores.", "Fica em Roma.", "O Coliseu levava cerca de 50 000 espectadores. Tem quase 2000 anos."],
+      taj: ["Taj Mahal", "Índia", "É feito de mármore branco.", "Um imperador mandou construí-lo em memória da sua amada mulher.", "Tem uma grande cúpula e quatro minaretes altos.", "Cerca de 20 000 artesãos construíram o Taj Mahal, e a obra durou cerca de 20 anos."],
+      machu: ["Machu Picchu", "Peru", "Uma cidade antiga no alto das montanhas.", "Foi construída pelos incas.", "Fica nos Andes, na América do Sul.", "A cidade fica a cerca de 2400 metros de altitude. O mundo ficou a conhecê-la em 1911."],
+      chichen: ["Chichén Itzá", "México", "Uma pirâmide em degraus perto da selva.", "Foi construída pelos maias.", "Tem escadas nos quatro lados.", "A pirâmide tem 365 degraus, tantos como os dias do ano."],
+      petra: ["Petra", "Jordânia", "A cidade inteira foi escavada na rocha.", "As rochas são cor-de-rosa e vermelhas.", "Fica num deserto do Médio Oriente.", "Petra é chamada «cidade rosa» por causa da cor das rochas."],
+      eiffel: ["Torre Eiffel", "França", "É feita de ferro.", "Foi construída em 1889 para uma Exposição Universal.", "Fica em Paris.", "A torre tem cerca de 330 metros e é pintada de novo mais ou menos de 7 em 7 anos."],
+      liberty: ["Estátua da Liberdade", "EUA", "Segura uma tocha na mão.", "Foi um presente da França.", "Fica numa ilha perto de Nova Iorque.", "A estátua é de cobre. Ao princípio era castanha e, com o tempo, ficou verde."],
+      opera: ["Ópera de Sydney", "Austrália", "O telhado parece velas ou conchas.", "Fica à beira de uma baía.", "Abriu em 1973.", "O telhado está coberto por mais de um milhão de azulejos."],
+      garni: ["Templo de Garni", "Arménia", "Um antigo templo pagão com colunas.", "Foi construído no século I d.C.", "Fica à beira de um desfiladeiro, sobre o rio Azat.", "Garni é o único templo greco-romano com colunas que se conservou na antiga URSS."],
+    },
+  },
+};
+const T = TRL[ggLang] || TRL.hy;
+document.title = 'Golden Wonders — ' + T.title;
+
+// ——— Հրաշալիքների նկարները՝ պարզ ձևերով (100×100 կտավ) ———
+// Երկինքը նկարում չէ, այլ շրջանակի ֆոնն է — այդպես սև ուրվագիծը միայն շենքն է, ոչ ամբողջ քառակուսին
+function arches(y, h) { let s = ''; for (let x = 15; x <= 80; x += 10) s += `<rect x="${x}" y="${y}" width="5" height="${h}" rx="2.5" fill="#7a4f2a"/>`; return s; }
+function cols(xs, y, h, w, c) { return xs.map(x => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`).join(''); }
+const ART = {
+  pyramids: '<circle cx="76" cy="24" r="9" fill="#ffd36b"/><rect y="84" width="100" height="16" fill="#d8b46a"/><path d="M6 85 L38 33 L70 85Z" fill="#e0b25a"/><path d="M38 33 L70 85 L54 85Z" fill="#b8873a"/><path d="M52 85 L74 50 L96 85Z" fill="#d4a24c"/><path d="M74 50 L96 85 L85 85Z" fill="#a9772f"/>',
+  wall: '<path d="M0 78 Q30 54 50 68 T100 52 V100 H0Z" fill="#3f7d4e"/><path d="M0 72 L20 60 L40 66 L60 52 L80 58 L100 46" stroke="#c9b28a" stroke-width="8" fill="none" stroke-linejoin="round"/><rect x="15" y="49" width="11" height="14" fill="#b39a72"/><rect x="55" y="41" width="11" height="14" fill="#b39a72"/><rect x="86" y="36" width="11" height="13" fill="#b39a72"/>',
+  christ: '<path d="M4 100 L50 62 L96 100Z" fill="#3f7d4e"/><rect x="46" y="30" width="8" height="36" rx="3" fill="#eae6dc"/><rect x="24" y="34" width="52" height="6" rx="3" fill="#eae6dc"/><circle cx="50" cy="25" r="5.5" fill="#eae6dc"/><rect x="42" y="64" width="16" height="6" fill="#cfc8b8"/>',
+  colosseum: '<rect y="84" width="100" height="16" fill="#6b7d4a"/><path d="M8 84 V44 Q50 30 92 44 V84Z" fill="#c9915a"/><path d="M8 44 Q50 30 92 44 V50 Q50 37 8 50Z" fill="#a8743f"/>' + arches(53, 10) + arches(68, 12),
+  taj: '<rect y="86" width="100" height="14" fill="#5b8f6a"/><rect x="25" y="55" width="50" height="31" fill="#f2efe8"/><path d="M34 55 Q34 30 50 22 Q66 30 66 55Z" fill="#f7f4ee"/><rect x="49" y="12" width="2" height="11" fill="#e0b25a"/><rect x="12" y="38" width="6" height="48" fill="#f2efe8"/><rect x="82" y="38" width="6" height="48" fill="#f2efe8"/><circle cx="15" cy="37" r="4" fill="#f7f4ee"/><circle cx="85" cy="37" r="4" fill="#f7f4ee"/><path d="M44 86 V68 Q50 60 56 68 V86Z" fill="#c9c2b4"/>',
+  machu: '<path d="M44 92 L72 18 L98 92Z" fill="#2f6b45"/><path d="M2 92 L30 58 L58 92Z" fill="#4c8c5a"/><rect x="14" y="76" width="34" height="5" fill="#9c8a6a"/><rect x="20" y="68" width="22" height="5" fill="#9c8a6a"/><rect x="0" y="92" width="100" height="8" fill="#3d7a52"/>',
+  chichen: '<rect y="86" width="100" height="14" fill="#3f7d4e"/><rect x="14" y="76" width="72" height="10" fill="#bfa26e"/><rect x="21" y="66" width="58" height="10" fill="#cbb07a"/><rect x="28" y="56" width="44" height="10" fill="#bfa26e"/><rect x="35" y="46" width="30" height="10" fill="#cbb07a"/><rect x="41" y="33" width="18" height="13" fill="#a88a55"/><rect x="45" y="46" width="10" height="40" fill="#8f7444"/>',
+  petra: '<path d="M0 0 H18 L24 30 V100 H0Z M100 0 H82 L76 30 V100 H100Z" fill="#b5654a"/><rect x="24" y="22" width="52" height="70" fill="#d08a6c"/><path d="M20 50 H80 L50 36Z" fill="#c27a5c"/>' + cols([29, 39, 57, 67], 50, 42, 4, '#e6a283') + '<rect x="45" y="66" width="10" height="26" fill="#5a2a1e"/><rect x="0" y="92" width="100" height="8" fill="#9a5038"/>',
+  eiffel: '<rect y="90" width="100" height="10" fill="#5b8f6a"/><path d="M50 6 L56 40 L64 62 L77 92 H63 Q50 72 37 92 H23 L36 62 L44 40Z" fill="#8a6a4a"/><rect x="36" y="60" width="28" height="4" fill="#6b5038"/><rect x="43" y="38" width="14" height="3" fill="#6b5038"/>',
+  liberty: '<rect y="88" width="100" height="12" fill="#2f6fa3"/><rect x="35" y="70" width="30" height="20" fill="#9aa6a0"/><path d="M41 70 L44 38 Q50 32 56 38 L59 70Z" fill="#5fae96"/><circle cx="50" cy="31" r="6" fill="#5fae96"/><path d="M42 27 L44 22 L47 26 L50 20 L53 26 L56 22 L58 27Z" fill="#5fae96"/><rect x="57" y="12" width="4" height="26" fill="#5fae96"/><path d="M59 3 Q65 9 59 13 Q53 9 59 3Z" fill="#ffd36b"/>',
+  opera: '<rect y="80" width="100" height="20" fill="#2f6fa3"/><rect x="8" y="74" width="84" height="7" fill="#d9d2c3"/><path d="M16 74 Q20 42 44 36 Q35 54 39 74Z" fill="#f6f3ec"/><path d="M37 74 Q43 36 71 28 Q60 52 62 74Z" fill="#f6f3ec"/><path d="M60 74 Q66 50 86 45 Q78 60 81 74Z" fill="#f6f3ec"/>',
+  garni: '<path d="M0 100 V70 L30 58 L60 66 L100 54 V100Z" fill="#6f6a4a"/><rect x="18" y="80" width="64" height="8" fill="#9a8f84"/><path d="M14 40 L50 22 L86 40Z" fill="#a69a8d"/><rect x="18" y="40" width="64" height="5" fill="#8f8478"/>' + cols([22, 32, 42, 52, 62, 72], 45, 35, 5, '#c4b9ab'),
+};
+const svg = id => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${ART[id]}</svg>`;
+
+// Ամեն հրաշալիք՝ ընտրված լեզվով. անուն, երկիր, 3 հուշում ու հետաքրքիր փաստ
+const IDS = Object.keys(ART);
+const WONDERS = IDS.map(id => {
+  const r = T.w[id];
+  return { id, name: r[0], country: r[1], hints: [r[2], r[3], r[4]], fact: r[5] };
+});
+
+// ——— Ձայները ———
+let actx = null;
+function initAudio() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+}
+function tone(freq, dur, type, vol, delay) {
+  if (!actx) return;
+  const t = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator();
+  const g = actx.createGain();
+  o.type = type || 'triangle';
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t + dur);
+}
+const sTap = () => tone(520 + Math.random() * 80, 0.06, 'square', 0.07);
+const sYes = () => [660, 880].forEach((f, k) => tone(f, 0.18, 'triangle', 0.16, k * 0.11));
+const sNo = () => { tone(220, 0.15, 'sawtooth', 0.1); tone(160, 0.2, 'sawtooth', 0.08, 0.12); };
+const sStamp = () => [520, 780, 1040].forEach((f, k) => tone(f, 0.18, 'triangle', 0.16, k * 0.11));
+const sBig = () => [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, k) => tone(f, 0.22, 'triangle', 0.18, k * 0.11));
+// Ձայնը կարող է միանալ միայն մատի առաջին հպումից հետո
+document.addEventListener('pointerdown', initAudio);
+
+// ——— Պահեստ. ռեկորդն ու անձնագրի կնիքները ———
+function getBest() { try { return Number(localStorage.getItem('aren-wonders-best') || 0); } catch (e) { return 0; } }
+function setBest(v) { try { localStorage.setItem('aren-wonders-best', v); } catch (e) {} }
+function getStamps() { try { return JSON.parse(localStorage.getItem('aren-wonders-stamps') || '[]'); } catch (e) { return []; } }
+function setStamps(a) { try { localStorage.setItem('aren-wonders-stamps', JSON.stringify(a)); } catch (e) {} }
+
+const ROUNDS = 8;
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const ptsFor = h => Math.max(4, 13 - h * 3);   // 1 հուշում՝ 10, 2՝ 7, 3՝ 4
+
+// Խաղի վիճակը. S.phase-ը ասում է՝ որ էկրանին ենք
+let S = null;
+let busy = false;   // պատասխանից հետո կարճ դադար, որ երկու անգամ չսեղմվի
+let endAt = 0;      // երբ բացվեց վերջնական էկրանը
+
+function hud() {
+  $('lives').textContent = '❤️ ' + (S ? S.lives : 3);
+  $('coins').textContent = '🪙 ' + (S ? S.score : 0);
+  $('route').hidden = !S || S.phase === 'end';
+  if (!S) return;
+  let dots = '';
+  for (let i = 0; i < ROUNDS; i++) {
+    const r = S.results[i];
+    dots += `<span class="dot ${r === true ? 'ok' : r === false ? 'miss' : ''}"></span>`;
+  }
+  $('dots').innerHTML = dots;
+  const pos = Math.min(S.idx, ROUNDS - 1) / (ROUNDS - 1);
+  $('plane').style.left = `calc(10px + (100% - 20px) * ${pos})`;
+}
+
+function newGame() {
+  S = { queue: shuffle(WONDERS).slice(0, ROUNDS), idx: 0, score: 0, lives: 3, results: [], hints: 1, phase: 'guess', got: [], guessed: false };
+  showGuess();
+}
+const current = () => S.queue[S.idx];
+
+// 1️⃣ Գուշակիր հրաշալիքը սև ուրվագծից ու հուշումներից
+function showGuess() {
+  S.phase = 'guess';
+  busy = false;
+  const w = current();
+  if (!S.opts) S.opts = shuffle([w, ...shuffle(WONDERS.filter(x => x.id !== w.id)).slice(0, 3)]);
+  $('view').innerHTML = `
+    <section class="card">
+      <div class="eyebrow">${T.stop} ${S.idx + 1} / ${ROUNDS}</div>
+      <h2>${T.q}</h2>
+      <div class="art shadow" id="art">${svg(w.id)}</div>
+      <ul class="hints">${w.hints.slice(0, S.hints).map((h, i) => `<li><b>${i + 1}.</b>${h}</li>`).join('')}</ul>
+      <div class="row">
+        <button class="btn ghost small" id="more" type="button" ${S.hints >= 3 ? 'disabled' : ''}>${T.more} (−3 🪙)</button>
+        <span class="pill" style="margin-left:auto">${T.worth} +${ptsFor(S.hints)} 🪙</span>
+      </div>
+      <div class="options" id="opts">${S.opts.map(o => `<button class="opt" type="button" data-id="${o.id}">${o.name}</button>`).join('')}</div>
+      <div class="fb" id="fb"></div>
+    </section>`;
+  $('more').onclick = () => { if (busy || S.hints >= 3) return; sTap(); S.hints++; showGuess(); };
+  document.querySelectorAll('#opts .opt').forEach(b => b.onclick = () => answerGuess(b));
+  hud();
+}
+
+function answerGuess(btn) {
+  if (busy) return;
+  busy = true;
+  const w = current();
+  const ok = btn.dataset.id === w.id;
+  document.querySelectorAll('#opts .opt').forEach(b => { b.disabled = true; if (b.dataset.id === w.id) b.classList.add('right'); });
+  $('more').disabled = true;
+  $('art').classList.remove('shadow');   // նկարը գունավորվում է
+  const fb = $('fb');
+  S.guessed = ok;
+  if (ok) {
+    const p = ptsFor(S.hints);
+    S.score += p;
+    fb.className = 'fb good';
+    fb.textContent = `${T.yes} ${w.name} +${p} 🪙`;
+    sYes();
+    setTimeout(showCountry, 1100);
+  } else {
+    btn.classList.add('wrong');
+    S.lives--;
+    fb.className = 'fb bad';
+    fb.textContent = `${T.no} ${w.name}. −1 ❤️`;
+    sNo();
+    setTimeout(showFact, 1500);
+  }
+  hud();
+}
+
+// 2️⃣ Ճիշտ գուշակեցի՞ր — հիմա ասա՝ որ երկրում է
+function showCountry() {
+  S.phase = 'country';
+  busy = false;
+  const w = current();
+  const others = WONDERS.map(x => x.country).filter(c => c !== w.country);
+  const opts = shuffle([w.country, ...shuffle(others).slice(0, 3)]);
+  $('view').innerHTML = `
+    <section class="card">
+      <div class="eyebrow">${T.stop} ${S.idx + 1} / ${ROUNDS} · ${T.whereE}</div>
+      <h2>${T.where}</h2>
+      <p class="muted">${w.name}</p>
+      <div class="art">${svg(w.id)}</div>
+      <div class="options" id="opts">${opts.map((c, i) => `<button class="opt" type="button" data-i="${i}">${c}</button>`).join('')}</div>
+      <div class="fb" id="fb"></div>
+    </section>`;
+  document.querySelectorAll('#opts .opt').forEach(b => b.onclick = () => {
+    if (busy) return;
+    busy = true;
+    const ok = opts[b.dataset.i] === w.country;
+    document.querySelectorAll('#opts .opt').forEach(x => { x.disabled = true; if (opts[x.dataset.i] === w.country) x.classList.add('right'); });
+    const fb = $('fb');
+    if (ok) { S.score += 5; fb.className = 'fb good'; fb.textContent = T.cYes; sYes(); }
+    else { b.classList.add('wrong'); fb.className = 'fb bad'; fb.textContent = `${T.no} ${w.country}.`; sNo(); }
+    hud();
+    setTimeout(showFact, 1100);
+  });
+  hud();
+}
+
+// 3️⃣ Կնիքը ու «Գիտե՞ս, որ»
+function showFact() {
+  S.phase = 'fact';
+  busy = false;
+  const w = current();
+  const got = S.guessed;
+  if (got) {
+    S.got.push(w.id);
+    const all = getStamps();
+    if (!all.includes(w.id)) { all.push(w.id); setStamps(all); }
+  }
+  S.results.push(got);
+  const last = S.idx === ROUNDS - 1 || S.lives <= 0;
+  $('view').innerHTML = `
+    <section class="card">
+      <div class="stamp ${got ? '' : 'missed'}"><div><small>${got ? T.stamp : T.missed}</small><span>${w.country}</span></div></div>
+      <h2 class="center">${w.name}</h2>
+      <div class="fact"><b>${T.know}</b> ${w.fact}</div>
+      <button class="btn" id="next" type="button">${last ? T.result : T.next}</button>
+    </section>`;
+  if (got) sStamp();
+  $('next').onclick = () => {
+    sTap();
+    if (last) return showEnd();
+    S.idx++; S.hints = 1; S.opts = null; showGuess();
+  };
+  hud();
+}
+
+// 4️⃣ Վերջ. միավորներ, ռեկորդ, անձնագիր
+function showEnd() {
+  // Ռեկորդն ու դադարը միայն առաջին անգամ. անձնագրից վերադառնալիս նույն էկրանն է
+  const first = S.phase !== 'end';
+  if (first) {
+    S.phase = 'end';
+    endAt = Date.now();
+    S.old = getBest();
+    S.isNew = S.score > S.old;
+    if (S.isNew) setBest(S.score);
+  }
+  const old = S.old, isNew = S.isNew;
+  const right = S.results.filter(Boolean).length;
+  $('view').innerHTML = `
+    <section class="card">
+      <div class="eyebrow center">${S.lives <= 0 ? T.outLives : T.tripDone}</div>
+      <div class="big">${S.score} 🪙</div>
+      <p class="muted center">${isNew ? T.newRec : T.rec + ' ' + old + ' 🪙'}</p>
+      <div class="stats">
+        <div class="stat"><b>${right}/${S.results.length}</b><span>${T.sRight}</span></div>
+        <div class="stat"><b>${S.got.length}</b><span>${T.sNew}</span></div>
+        <div class="stat"><b>${getStamps().length}/12</b><span>${T.sPass}</span></div>
+      </div>
+      <div class="row">
+        <button class="btn" id="again" type="button">${T.again}</button>
+        <button class="btn ghost" id="pp" type="button">${T.pp}</button>
+      </div>
+    </section>`;
+  if (first && isNew) sBig();
+  // Խաղը վերջացավ — 1.1 վայրկյան հպումները չենք ընդունում, որ պատահմամբ նորից չսկսվի
+  const cool = fn => () => { if (Date.now() - endAt < 1100) return; sTap(); fn(); };
+  $('again').onclick = cool(newGame);
+  $('pp').onclick = cool(showPassport);
+  hud();
+}
+
+function showPassport() {
+  const have = new Set(getStamps());
+  const back = S ? showEnd : showStart;
+  $('view').innerHTML = `
+    <section class="card">
+      <div class="eyebrow">${T.ppEye}</div>
+      <h2>${have.size} / 12 ${T.ppW}</h2>
+      <p class="muted">${T.ppP}</p>
+      <div class="passport">${WONDERS.map(w => `
+        <div class="pp ${have.has(w.id) ? '' : 'locked'}">
+          <div class="mini">${svg(w.id)}</div>
+          <div>${have.has(w.id) ? w.name : '???'}</div>
+        </div>`).join('')}</div>
+      <button class="btn ghost" id="back" type="button">${T.back}</button>
+    </section>`;
+  $('back').onclick = () => { sTap(); back(); };
+  hud();
+}
+
+function showStart() {
+  S = null;
+  $('view').innerHTML = `
+    <section class="card">
+      <div class="art">${svg('pyramids')}</div>
+      <h1>${T.title}</h1>
+      <p>${T.intro}</p>
+      <div class="stats">
+        <div class="stat"><b>${ROUNDS}</b><span>${T.stops}</span></div>
+        <div class="stat"><b>3</b><span>${T.lives}</span></div>
+        <div class="stat"><b>${getStamps().length}/12</b><span>${T.stamps}</span></div>
+      </div>
+      <div class="row">
+        <button class="btn" id="go" type="button">${T.go}</button>
+        <button class="btn ghost" id="pp" type="button">${T.pp}</button>
+      </div>
+      <p class="muted" style="font-size:0.85rem">${T.best} ${getBest()} 🪙</p>
+    </section>`;
+  $('go').onclick = () => { sTap(); newGame(); };
+  $('pp').onclick = () => { sTap(); showPassport(); };
+  hud();
+}
+
+// Կրկնակի արագ հպումը էկրանը մեծացնում էր — արգելում ենք
+let lastTap = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTap < 350) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+showStart();
+</script>
+
+<!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, թրթռոց, նկար, բեռնում -->
+<script src="../gg-kit.js" data-kind="game" defer></script>
+</body>
+</html>
