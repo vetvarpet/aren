@@ -76,7 +76,7 @@
 //  ՔԱՅԼ 2. մեքենա նստել ու քշել։
 //  ՔԱՅԼ 3. փոքր քարտեզ, ֏ փողեր ու փողոցներով քշող մեքենաներ։
 //  ՔԱՅԼ 4. առաջին աշխատանքը՝ 🥖 տաք լավաշը փռից տանել խանութ։
-//  ՔԱՅԼ 5. 🚕 տաքսի ու 🐱 տատիկի կորած կատուները։ Հետո՝ 🚑 շտապօգնություն։
+//  ՔԱՅԼ 5. 🚕 տաքսի ու 🐱 տատիկի կորած կատուները։ Հետո՝ 🚑 շտապօգնություն ու 🚓 բռնիր գողին։
 //
 //  Ինչպես է 3D-ն աշխատում առանց գրադարանների.
 //   • աշխարհում ամեն ինչ կետերով է (x, y, z) — y-ը վերև է
@@ -91,112 +91,124 @@ let ggLang = 'hy';
 try { ggLang = localStorage.getItem('gg-lang') || 'hy'; } catch (e) {}
 const TRL = {
   hy: { t:'Golden Craft 🏙', step:'Քայլ 5 · տաքսի ու կորած կատուներ', go:'▶ Մտնել քաղաք',
-        how:['🕹 Ձախ մատով՝ քայլիր ու շրջվիր', '🏃 Մատդ հեռու տար՝ վազիր', '👀 Աջ մատով՝ նայիր շուրջդ', '🚗 Մոտեցիր մեքենային ու սեղմիր «Նստել»', '֏ Հավաքիր փողերը փողոցներում', '🥖 Փռից տաք լավաշ տար խանութ (քարտեզի նարնջագույն կետը)', '🚕 Մեքենայով մոտեցիր ձեռքը բարձրացրած ուղևորին (դեղին կետը)', '🐱 Այգում տատիկը կատուներն է կորցրել (մանուշակագույն կետը)', '🚑 Հիվանդանոցի մոտ սպիտակ շտապօգնություն կա՝ նստիր ու օգնիր մարդկանց'],
+        how:['🕹 Ձախ մատով՝ քայլիր ու շրջվիր', '🏃 Մատդ հեռու տար՝ վազիր', '👀 Աջ մատով՝ նայիր շուրջդ', '🚗 Մոտեցիր մեքենային ու սեղմիր «Նստել»', '֏ Հավաքիր փողերը փողոցներում', '🥖 Փռից տաք լավաշ տար խանութ (քարտեզի նարնջագույն կետը)', '🚕 Մեքենայով մոտեցիր ձեռքը բարձրացրած ուղևորին (դեղին կետը)', '🐱 Այգում տատիկը կատուներն է կորցրել (մանուշակագույն կետը)', '🚑 Հիվանդանոցի մոտ սպիտակ շտապօգնություն կա՝ նստիր ու օգնիր մարդկանց', '🚓 Ոստիկանատան մոտ կապույտ ոստիկանական մեքենա կա՝ նստիր ու բռնիր գողին'],
         tip:'Գտիր մեքենա ու նստիր 🚗',
         enter:'🚗 Նստել', exit:'🚶 Իջնել', dtip:'Վեր՝ գազ · վար՝ արգելակ ու ետ · կողքեր՝ ղեկ',
         ask:'🙋 Խնդրել', lend:'Վարորդը սիրով տվեց իր մեքենան 🙂',
         job:'🥖 Վերցնել լավաշը', carry:'Տար խանութ, քանի դեռ տաք է 🛒 Սլաքը ցույց կտա', cold:'Լավաշը սառեց 🥶 Փուռը նորն է թխում — արի նորից', done:'Տաք լավաշը հասավ 🥖 +֏ ', rec:'🏆 Նոր ռեկորդ՝ ', sec:'վ', m:'մ',
         taxi:'🚕 Նստեցնել ուղևորին', twalk:'Ուղևորը մեքենայով է ուզում գնալ — գտիր մեքենա 🚗', tgo:'Տար ուղևորին դեղին շրջանը 🚕 Սլաքը ցույց կտա', tstop:'Կանգնիր, որ ուղևորն իջնի ✋', tdone:'Ուղևորը հասավ 🚕 +֏ ', ttip:' · թեյավճար ✨', tcar:'Ուղևորը քո տաքսու մեջ է 🚕 Վերադարձիր մեքենային',
         amb:'🚑 Ընդունել կանչը', ago:'Մարդուն օգնություն է պետք 🚑 Արագ գնա կարմիր շրջանը', astop:'Կանգնիր, որ հիվանդը նստի ✋', ahosp:'Տար հիվանդանոց 🏥 Սլաքը ցույց կտա', adone:'Հիվանդը հիվանդանոցում է, բժիշկները կօգնեն 🏥 +֏ ', afast:' · շատ արագ էիր ⚡', acar:'Հիվանդը շտապօգնության մեջ է 🚑 Վերադարձիր մեքենային',
+        pol:'🚓 Ընդունել կանչը', pgo:'Գողը փախցրել է տատիկի պայուսակը 👜 Հասիր կապույտ շրջանով մեքենային', pnear:'Մնա նրա կողքին 🚓 Քիչ մնաց', pgot:'Բռնեցիր 🎉 Պայուսակը վերադարձավ տատիկին 👜 Հիմա գողին տար ոստիկանատուն', pstop:'Կանգնիր ոստիկանատան մոտ ✋', pdone:'Գողը ոստիկանատանն է, էլ չի գողանա 🚓 +֏ ', pesc:'Գողն այս անգամ փախավ 💨 Ոչինչ, փորձիր նորից', pcar:'Նստիր ոստիկանական մեքենան 🚓',
         cat:'🐱 Օգնել տատիկին', cgo:'Տատիկի 5 կատուները կորել են 🐱 Լսիր մլավոցը ու նայիր քարտեզին', cfound:'Գտար կատու 🐱 ', chome:'Բոլորը գտնվեցին 🎉 Տար տատիկի մոտ', cdone:'Տատիկը շատ ուրախ է 👵 +֏ ' },
   ru: { t:'Golden Craft 🏙', step:'Шаг 5 · такси и потерянные котики', go:'▶ В город',
-        how:['🕹 Левым пальцем — иди и поворачивай', '🏃 Отведи палец дальше — беги', '👀 Правым пальцем — смотри вокруг', '🚗 Подойди к машине и нажми «Сесть»', '֏ Собирай деньги на улицах', '🥖 Отвези горячий лаваш из пекарни в магазин (оранжевая точка на карте)', '🚕 Подъезжай на машине к пассажиру с поднятой рукой (жёлтая точка)', '🐱 В парке бабушка потеряла котиков (фиолетовая точка)', '🚑 У больницы стоит белая скорая — садись и помогай людям'],
+        how:['🕹 Левым пальцем — иди и поворачивай', '🏃 Отведи палец дальше — беги', '👀 Правым пальцем — смотри вокруг', '🚗 Подойди к машине и нажми «Сесть»', '֏ Собирай деньги на улицах', '🥖 Отвези горячий лаваш из пекарни в магазин (оранжевая точка на карте)', '🚕 Подъезжай на машине к пассажиру с поднятой рукой (жёлтая точка)', '🐱 В парке бабушка потеряла котиков (фиолетовая точка)', '🚑 У больницы стоит белая скорая — садись и помогай людям', '🚓 У полиции стоит синяя полицейская машина — садись и лови вора'],
         tip:'Найди машину и садись 🚗',
         enter:'🚗 Сесть', exit:'🚶 Выйти', dtip:'Вверх — газ · вниз — тормоз и назад · в стороны — руль',
         ask:'🙋 Попросить', lend:'Водитель с радостью отдал машину 🙂',
         job:'🥖 Взять лаваш', carry:'Вези в магазин, пока горячий 🛒 Стрелка покажет', cold:'Лаваш остыл 🥶 Пекарня печёт новый — приходи снова', done:'Горячий лаваш доставлен 🥖 +֏ ', rec:'🏆 Новый рекорд: ', sec:'с', m:'м',
         taxi:'🚕 Посадить пассажира', twalk:'Пассажир хочет ехать на машине — найди машину 🚗', tgo:'Отвези пассажира в жёлтый круг 🚕 Стрелка покажет', tstop:'Остановись, чтобы пассажир вышел ✋', tdone:'Пассажир доехал 🚕 +֏ ', ttip:' · чаевые ✨', tcar:'Пассажир ждёт в твоём такси 🚕 Вернись к машине',
         amb:'🚑 Принять вызов', ago:'Человеку нужна помощь 🚑 Быстрее в красный круг', astop:'Остановись, чтобы больной сел ✋', ahosp:'Вези в больницу 🏥 Стрелка покажет', adone:'Больной в больнице, врачи помогут 🏥 +֏ ', afast:' · очень быстро ⚡', acar:'Больной ждёт в скорой 🚑 Вернись к машине',
+        pol:'🚓 Принять вызов', pgo:'Вор утащил бабушкину сумку 👜 Догони машину с синим кругом', pnear:'Держись рядом 🚓 Почти поймал', pgot:'Поймал 🎉 Сумка вернулась к бабушке 👜 Теперь вези вора в полицию', pstop:'Остановись у полиции ✋', pdone:'Вор в полиции и больше не будет воровать 🚓 +֏ ', pesc:'В этот раз вор убежал 💨 Ничего, попробуй снова', pcar:'Садись в полицейскую машину 🚓',
         cat:'🐱 Помочь бабушке', cgo:'У бабушки потерялись 5 котиков 🐱 Слушай мяуканье и смотри на карту', cfound:'Котик найден 🐱 ', chome:'Все нашлись 🎉 Веди их к бабушке', cdone:'Бабушка очень рада 👵 +֏ ' },
   en: { t:'Golden Craft 🏙', step:'Step 5 · taxi and lost cats', go:'▶ Enter the city',
-        how:['🕹 Left finger: walk and turn', '🏃 Push it further: run', '👀 Right finger: look around', '🚗 Walk up to a car and tap “Get in”', '֏ Pick up the money in the streets', '🥖 Take hot lavash from the bakery to the shop (orange dot on the map)', '🚕 Drive up to a passenger with a raised hand (yellow dot)', '🐱 Grandma in the park lost her cats (purple dot)', '🚑 A white ambulance waits by the hospital — get in and help people'],
+        how:['🕹 Left finger: walk and turn', '🏃 Push it further: run', '👀 Right finger: look around', '🚗 Walk up to a car and tap “Get in”', '֏ Pick up the money in the streets', '🥖 Take hot lavash from the bakery to the shop (orange dot on the map)', '🚕 Drive up to a passenger with a raised hand (yellow dot)', '🐱 Grandma in the park lost her cats (purple dot)', '🚑 A white ambulance waits by the hospital — get in and help people', '🚓 A blue police car waits by the police station — get in and catch the thief'],
         tip:'Find a car and get in 🚗',
         enter:'🚗 Get in', exit:'🚶 Get out', dtip:'Up: gas · down: brake and reverse · sideways: steer',
         ask:'🙋 Ask', lend:'The driver happily lent you the car 🙂',
         job:'🥖 Take the lavash', carry:'Get it to the shop while it’s hot 🛒 Follow the arrow', cold:'The lavash got cold 🥶 The bakery is baking a new one — come back', done:'Hot lavash delivered 🥖 +֏ ', rec:'🏆 New record: ', sec:'s', m:'m',
         taxi:'🚕 Pick up', twalk:'The passenger wants a ride — find a car 🚗', tgo:'Take the passenger to the yellow circle 🚕 Follow the arrow', tstop:'Stop so the passenger can get out ✋', tdone:'Passenger delivered 🚕 +֏ ', ttip:' · tip ✨', tcar:'Your passenger is waiting in the taxi 🚕 Go back to the car',
         amb:'🚑 Take the call', ago:'Someone needs help 🚑 Hurry to the red circle', astop:'Stop so the patient can get in ✋', ahosp:'Take them to the hospital 🏥 Follow the arrow', adone:'The patient is at the hospital, the doctors will help 🏥 +֏ ', afast:' · super fast ⚡', acar:'The patient is waiting in the ambulance 🚑 Go back to it',
+        pol:'🚓 Take the call', pgo:'A thief grabbed grandma’s bag 👜 Catch the car with the blue circle', pnear:'Stay close 🚓 Almost there', pgot:'Got him 🎉 Grandma has her bag back 👜 Now take the thief to the police station', pstop:'Stop at the police station ✋', pdone:'The thief is at the police station and won’t steal again 🚓 +֏ ', pesc:'The thief got away this time 💨 That’s ok, try again', pcar:'Get back in the police car 🚓',
         cat:'🐱 Help grandma', cgo:'Grandma’s 5 cats are lost 🐱 Listen for meows and watch the map', cfound:'Found a cat 🐱 ', chome:'All found 🎉 Bring them to grandma', cdone:'Grandma is so happy 👵 +֏ ' },
   es: { t:'Golden Craft 🏙', step:'Paso 5 · taxi y gatitos perdidos', go:'▶ Entrar en la ciudad',
-        how:['🕹 Dedo izquierdo: camina y gira', '🏃 Llévalo más lejos: corre', '👀 Dedo derecho: mira alrededor', '🚗 Acércate a un coche y toca «Subir»', '֏ Recoge el dinero de las calles', '🥖 Lleva lavash caliente de la panadería a la tienda (punto naranja en el mapa)', '🚕 Acércate en coche a un pasajero con la mano levantada (punto amarillo)', '🐱 La abuela del parque perdió sus gatos (punto morado)', '🚑 Junto al hospital hay una ambulancia blanca — súbete y ayuda a la gente'],
+        how:['🕹 Dedo izquierdo: camina y gira', '🏃 Llévalo más lejos: corre', '👀 Dedo derecho: mira alrededor', '🚗 Acércate a un coche y toca «Subir»', '֏ Recoge el dinero de las calles', '🥖 Lleva lavash caliente de la panadería a la tienda (punto naranja en el mapa)', '🚕 Acércate en coche a un pasajero con la mano levantada (punto amarillo)', '🐱 La abuela del parque perdió sus gatos (punto morado)', '🚑 Junto al hospital hay una ambulancia blanca — súbete y ayuda a la gente', '🚓 Junto a la comisaría hay un coche de policía azul — súbete y atrapa al ladrón'],
         tip:'Busca un coche y súbete 🚗',
         enter:'🚗 Subir', exit:'🚶 Bajar', dtip:'Arriba: acelerar · abajo: frenar y atrás · a los lados: girar',
         ask:'🙋 Pedir', lend:'El conductor te prestó el coche encantado 🙂',
         job:'🥖 Coger el lavash', carry:'Llévalo a la tienda mientras está caliente 🛒 Sigue la flecha', cold:'El lavash se enfrió 🥶 La panadería hornea otro — vuelve', done:'¡Lavash caliente entregado! 🥖 +֏ ', rec:'🏆 Nuevo récord: ', sec:'s', m:'m',
         taxi:'🚕 Recoger', twalk:'El pasajero quiere ir en coche — busca un coche 🚗', tgo:'Lleva al pasajero al círculo amarillo 🚕 Sigue la flecha', tstop:'Para para que el pasajero baje ✋', tdone:'¡Pasajero entregado! 🚕 +֏ ', ttip:' · propina ✨', tcar:'Tu pasajero espera en el taxi 🚕 Vuelve al coche',
         amb:'🚑 Aceptar el aviso', ago:'Alguien necesita ayuda 🚑 Corre al círculo rojo', astop:'Para para que suba el paciente ✋', ahosp:'Llévalo al hospital 🏥 Sigue la flecha', adone:'El paciente está en el hospital, los médicos lo ayudarán 🏥 +֏ ', afast:' · rapidísimo ⚡', acar:'El paciente espera en la ambulancia 🚑 Vuelve a ella',
+        pol:'🚓 Aceptar el aviso', pgo:'Un ladrón se llevó el bolso de la abuela 👜 Alcanza el coche del círculo azul', pnear:'Quédate cerca 🚓 Ya casi', pgot:'¡Atrapado! 🎉 La abuela recuperó su bolso 👜 Ahora lleva al ladrón a la comisaría', pstop:'Para en la comisaría ✋', pdone:'El ladrón está en la comisaría y no robará más 🚓 +֏ ', pesc:'Esta vez el ladrón escapó 💨 No pasa nada, inténtalo otra vez', pcar:'Vuelve al coche de policía 🚓',
         cat:'🐱 Ayudar a la abuela', cgo:'Se perdieron los 5 gatos de la abuela 🐱 Escucha los maullidos y mira el mapa', cfound:'¡Gato encontrado! 🐱 ', chome:'¡Todos encontrados! 🎉 Llévalos con la abuela', cdone:'La abuela está feliz 👵 +֏ ' },
   fr: { t:'Golden Craft 🏙', step:'Étape 5 · taxi et chats perdus', go:'▶ Entrer en ville',
-        how:['🕹 Doigt gauche : marche et tourne', '🏃 Va plus loin avec le doigt : cours', '👀 Doigt droit : regarde autour', '🚗 Approche-toi d’une voiture et touche « Monter »', '֏ Ramasse l’argent dans les rues', '🥖 Porte le lavash chaud de la boulangerie au magasin (point orange sur la carte)', '🚕 Approche-toi en voiture d’un passager qui lève la main (point jaune)', '🐱 La mamie du parc a perdu ses chats (point violet)', '🚑 Une ambulance blanche attend près de l’hôpital — monte et aide les gens'],
+        how:['🕹 Doigt gauche : marche et tourne', '🏃 Va plus loin avec le doigt : cours', '👀 Doigt droit : regarde autour', '🚗 Approche-toi d’une voiture et touche « Monter »', '֏ Ramasse l’argent dans les rues', '🥖 Porte le lavash chaud de la boulangerie au magasin (point orange sur la carte)', '🚕 Approche-toi en voiture d’un passager qui lève la main (point jaune)', '🐱 La mamie du parc a perdu ses chats (point violet)', '🚑 Une ambulance blanche attend près de l’hôpital — monte et aide les gens', '🚓 Une voiture de police bleue attend près du commissariat — monte et attrape le voleur'],
         tip:'Trouve une voiture et monte 🚗',
         enter:'🚗 Monter', exit:'🚶 Descendre', dtip:'Haut : accélérer · bas : freiner et reculer · côtés : tourner',
         ask:'🙋 Demander', lend:'Le conducteur t’a prêté sa voiture avec plaisir 🙂',
         job:'🥖 Prendre le lavash', carry:'Porte-le au magasin tant qu’il est chaud 🛒 Suis la flèche', cold:'Le lavash a refroidi 🥶 La boulangerie en cuit un autre — reviens', done:'Lavash chaud livré ! 🥖 +֏ ', rec:'🏆 Nouveau record : ', sec:'s', m:'m',
         taxi:'🚕 Prendre le passager', twalk:'Le passager veut aller en voiture — trouve une voiture 🚗', tgo:'Emmène le passager au cercle jaune 🚕 Suis la flèche', tstop:'Arrête-toi pour que le passager descende ✋', tdone:'Passager déposé ! 🚕 +֏ ', ttip:' · pourboire ✨', tcar:'Ton passager attend dans le taxi 🚕 Retourne à la voiture',
         amb:'🚑 Prendre l’appel', ago:'Quelqu’un a besoin d’aide 🚑 Vite au cercle rouge', astop:'Arrête-toi pour que le patient monte ✋', ahosp:'Emmène-le à l’hôpital 🏥 Suis la flèche', adone:'Le patient est à l’hôpital, les médecins vont l’aider 🏥 +֏ ', afast:' · super rapide ⚡', acar:'Le patient attend dans l’ambulance 🚑 Retournes-y',
+        pol:'🚓 Prendre l’appel', pgo:'Un voleur a pris le sac de mamie 👜 Rattrape la voiture au cercle bleu', pnear:'Reste tout près 🚓 Presque', pgot:'Attrapé ! 🎉 Mamie a retrouvé son sac 👜 Emmène le voleur au commissariat', pstop:'Arrête-toi au commissariat ✋', pdone:'Le voleur est au commissariat et ne volera plus 🚓 +֏ ', pesc:'Le voleur s’est échappé cette fois 💨 Pas grave, réessaie', pcar:'Retourne à la voiture de police 🚓',
         cat:'🐱 Aider mamie', cgo:'Les 5 chats de mamie sont perdus 🐱 Écoute les miaou et regarde la carte', cfound:'Chat trouvé ! 🐱 ', chome:'Tous trouvés 🎉 Ramène-les à mamie', cdone:'Mamie est si contente 👵 +֏ ' },
   de: { t:'Golden Craft 🏙', step:'Schritt 5 · Taxi und verlorene Katzen', go:'▶ In die Stadt',
-        how:['🕹 Linker Finger: gehen und drehen', '🏃 Weiter ziehen: rennen', '👀 Rechter Finger: umschauen', '🚗 Geh zu einem Auto und tippe „Einsteigen“', '֏ Sammle das Geld auf den Straßen', '🥖 Bring heißes Lavasch von der Bäckerei zum Laden (oranger Punkt auf der Karte)', '🚕 Fahr zu einem Fahrgast mit erhobener Hand (gelber Punkt)', '🐱 Oma im Park hat ihre Katzen verloren (lila Punkt)', '🚑 Beim Krankenhaus steht ein weißer Krankenwagen — steig ein und hilf den Leuten'],
+        how:['🕹 Linker Finger: gehen und drehen', '🏃 Weiter ziehen: rennen', '👀 Rechter Finger: umschauen', '🚗 Geh zu einem Auto und tippe „Einsteigen“', '֏ Sammle das Geld auf den Straßen', '🥖 Bring heißes Lavasch von der Bäckerei zum Laden (oranger Punkt auf der Karte)', '🚕 Fahr zu einem Fahrgast mit erhobener Hand (gelber Punkt)', '🐱 Oma im Park hat ihre Katzen verloren (lila Punkt)', '🚑 Beim Krankenhaus steht ein weißer Krankenwagen — steig ein und hilf den Leuten', '🚓 Bei der Polizeiwache steht ein blaues Polizeiauto — steig ein und fang den Dieb'],
         tip:'Such dir ein Auto und steig ein 🚗',
         enter:'🚗 Einsteigen', exit:'🚶 Aussteigen', dtip:'Hoch: Gas · runter: Bremse und rückwärts · seitlich: lenken',
         ask:'🙋 Fragen', lend:'Der Fahrer leiht dir gern sein Auto 🙂',
         job:'🥖 Lavasch nehmen', carry:'Bring es zum Laden, solange es heiß ist 🛒 Folge dem Pfeil', cold:'Das Lavasch ist kalt geworden 🥶 Die Bäckerei backt neues — komm wieder', done:'Heißes Lavasch geliefert! 🥖 +֏ ', rec:'🏆 Neuer Rekord: ', sec:'s', m:'m',
         taxi:'🚕 Einsteigen lassen', twalk:'Der Fahrgast will mit dem Auto fahren — such ein Auto 🚗', tgo:'Bring den Fahrgast zum gelben Kreis 🚕 Folge dem Pfeil', tstop:'Halt an, damit der Fahrgast aussteigt ✋', tdone:'Fahrgast angekommen! 🚕 +֏ ', ttip:' · Trinkgeld ✨', tcar:'Dein Fahrgast wartet im Taxi 🚕 Geh zurück zum Auto',
         amb:'🚑 Einsatz annehmen', ago:'Jemand braucht Hilfe 🚑 Schnell zum roten Kreis', astop:'Halt an, damit der Patient einsteigt ✋', ahosp:'Bring ihn ins Krankenhaus 🏥 Folge dem Pfeil', adone:'Der Patient ist im Krankenhaus, die Ärzte helfen 🏥 +֏ ', afast:' · superschnell ⚡', acar:'Der Patient wartet im Krankenwagen 🚑 Geh zurück',
+        pol:'🚓 Einsatz annehmen', pgo:'Ein Dieb hat Omas Tasche geschnappt 👜 Hol das Auto mit dem blauen Kreis ein', pnear:'Bleib dicht dran 🚓 Gleich hast du ihn', pgot:'Erwischt! 🎉 Oma hat ihre Tasche wieder 👜 Bring den Dieb zur Polizeiwache', pstop:'Halt an der Polizeiwache ✋', pdone:'Der Dieb ist auf der Wache und klaut nie wieder 🚓 +֏ ', pesc:'Diesmal ist der Dieb entkommen 💨 Macht nichts, versuch es nochmal', pcar:'Steig wieder ins Polizeiauto 🚓',
         cat:'🐱 Oma helfen', cgo:'Omas 5 Katzen sind weg 🐱 Hör auf das Miauen und schau auf die Karte', cfound:'Katze gefunden! 🐱 ', chome:'Alle gefunden 🎉 Bring sie zu Oma', cdone:'Oma freut sich riesig 👵 +֏ ' },
   ja: { t:'Golden Craft 🏙', step:'ステップ5・タクシーと まいごの ねこ', go:'▶ まちへ いく',
-        how:['🕹 ひだりの ゆびで あるく・まがる', '🏃 ゆびを とおくへ: はしる', '👀 みぎの ゆびで まわりを みる', '🚗 くるまに ちかづいて「のる」を おそう', '֏ みちの おかねを あつめよう', '🥖 パンやさんの あつい ラヴァシュを おみせへ (ちずの オレンジの てん)', '🚕 てを あげている おきゃくさんに くるまで ちかづこう (きいろの てん)', '🐱 こうえんの おばあちゃんが ねこを さがしてる (むらさきの てん)', '🚑 びょういんの そばに しろい きゅうきゅうしゃが あるよ — のって ひとを たすけよう'],
+        how:['🕹 ひだりの ゆびで あるく・まがる', '🏃 ゆびを とおくへ: はしる', '👀 みぎの ゆびで まわりを みる', '🚗 くるまに ちかづいて「のる」を おそう', '֏ みちの おかねを あつめよう', '🥖 パンやさんの あつい ラヴァシュを おみせへ (ちずの オレンジの てん)', '🚕 てを あげている おきゃくさんに くるまで ちかづこう (きいろの てん)', '🐱 こうえんの おばあちゃんが ねこを さがしてる (むらさきの てん)', '🚑 びょういんの そばに しろい きゅうきゅうしゃが あるよ — のって ひとを たすけよう', '🚓 けいさつしょの そばに あおい パトカーが あるよ — のって どろぼうを つかまえよう'],
         tip:'くるまを みつけて のろう 🚗',
         enter:'🚗 のる', exit:'🚶 おりる', dtip:'うえ: アクセル・した: ブレーキと バック・よこ: ハンドル',
         ask:'🙋 たのむ', lend:'うんてんしゅさんが くるまを かしてくれたよ 🙂',
         job:'🥖 ラヴァシュを うけとる', carry:'あついうちに おみせへ 🛒 やじるしに ついていこう', cold:'ラヴァシュが さめちゃった 🥶 パンやさんが あたらしいのを やいてるよ', done:'あつい ラヴァシュを とどけた 🥖 +֏ ', rec:'🏆 しんきろく: ', sec:'びょう', m:'m',
         taxi:'🚕 のせる', twalk:'おきゃくさんは くるまで いきたいよ — くるまを さがそう 🚗', tgo:'おきゃくさんを きいろの わへ 🚕 やじるしに ついていこう', tstop:'とまって おきゃくさんを おろそう ✋', tdone:'おきゃくさんが ついた 🚕 +֏ ', ttip:'・チップ ✨', tcar:'おきゃくさんが タクシーで まってるよ 🚕 くるまに もどろう',
         amb:'🚑 しゅつどうする', ago:'たすけが ひつような ひとが いるよ 🚑 あかい わへ いそごう', astop:'とまって かんじゃさんを のせよう ✋', ahosp:'びょういんへ はこぼう 🏥 やじるしに ついていこう', adone:'かんじゃさんは びょういんに ついた、おいしゃさんが たすけるよ 🏥 +֏ ', afast:'・すごく はやい ⚡', acar:'かんじゃさんが きゅうきゅうしゃで まってるよ 🚑 もどろう',
+        pol:'🚓 しゅつどうする', pgo:'どろぼうが おばあちゃんの かばんを とった 👜 あおい わの くるまを おいかけよう', pnear:'そばに いて 🚓 もうすこし', pgot:'つかまえた 🎉 かばんは おばあちゃんに もどったよ 👜 どろぼうを けいさつしょへ つれていこう', pstop:'けいさつしょで とまろう ✋', pdone:'どろぼうは けいさつしょに ついた、もう ぬすまないよ 🚓 +֏ ', pesc:'こんかいは にげられた 💨 だいじょうぶ、もういちど', pcar:'パトカーに もどろう 🚓',
         cat:'🐱 おばあちゃんを たすける', cgo:'おばあちゃんの ねこ 5ひきが まいごに 🐱 にゃーの こえを きいて ちずを みよう', cfound:'ねこ みつけた 🐱 ', chome:'ぜんぶ みつけた 🎉 おばあちゃんの ところへ', cdone:'おばあちゃん おおよろこび 👵 +֏ ' },
   zh: { t:'Golden Craft 🏙', step:'第5步 · 出租车和走丢的猫咪', go:'▶ 进城',
-        how:['🕹 左手指：走路和转弯', '🏃 手指推远一点：跑步', '👀 右手指：看看四周', '🚗 走到汽车旁边，点“上车”', '֏ 捡起街上的钱', '🥖 把面包房的热拉瓦什送到商店（地图上的橙色点）', '🚕 开车靠近举手的乘客（黄色点）', '🐱 公园里的奶奶把猫咪弄丢了（紫色点）', '🚑 医院旁边有一辆白色救护车——上车去帮助大家'],
+        how:['🕹 左手指：走路和转弯', '🏃 手指推远一点：跑步', '👀 右手指：看看四周', '🚗 走到汽车旁边，点“上车”', '֏ 捡起街上的钱', '🥖 把面包房的热拉瓦什送到商店（地图上的橙色点）', '🚕 开车靠近举手的乘客（黄色点）', '🐱 公园里的奶奶把猫咪弄丢了（紫色点）', '🚑 医院旁边有一辆白色救护车——上车去帮助大家', '🚓 警察局旁边有一辆蓝色警车——上车去抓小偷'],
         tip:'找一辆车坐上去 🚗',
         enter:'🚗 上车', exit:'🚶 下车', dtip:'向上：油门 · 向下：刹车和倒车 · 左右：转方向',
         ask:'🙋 请求', lend:'司机很乐意把车借给你 🙂',
         job:'🥖 拿拉瓦什', carry:'趁热送到商店 🛒 跟着箭头走', cold:'拉瓦什凉了 🥶 面包房在烤新的——再来一次', done:'热拉瓦什送到了 🥖 +֏ ', rec:'🏆 新纪录：', sec:'秒', m:'米',
         taxi:'🚕 接乘客', twalk:'乘客想坐车——去找一辆车 🚗', tgo:'把乘客送到黄色圆圈 🚕 跟着箭头走', tstop:'停下来让乘客下车 ✋', tdone:'乘客送到了 🚕 +֏ ', ttip:' · 小费 ✨', tcar:'乘客在出租车里等你 🚕 回到车上',
         amb:'🚑 接受呼叫', ago:'有人需要帮助 🚑 快去红色圆圈', astop:'停下来让病人上车 ✋', ahosp:'把病人送到医院 🏥 跟着箭头走', adone:'病人到医院了，医生会帮他 🏥 +֏ ', afast:' · 超级快 ⚡', acar:'病人在救护车里等你 🚑 回到车上',
+        pol:'🚓 接受呼叫', pgo:'小偷抢走了奶奶的包 👜 追上蓝色圆圈的车', pnear:'跟紧它 🚓 快抓到了', pgot:'抓到了 🎉 奶奶拿回了她的包 👜 现在把小偷送到警察局', pstop:'在警察局停车 ✋', pdone:'小偷到警察局了，再也不偷东西了 🚓 +֏ ', pesc:'这次小偷跑掉了 💨 没关系，再试一次', pcar:'回到警车上 🚓',
         cat:'🐱 帮助奶奶', cgo:'奶奶的5只猫咪走丢了 🐱 听喵喵声，看地图', cfound:'找到一只猫咪 🐱 ', chome:'全找到了 🎉 带它们去找奶奶', cdone:'奶奶非常开心 👵 +֏ ' },
   it: { t:'Golden Craft 🏙', step:'Passo 5 · taxi e gattini smarriti', go:'▶ Entra in città',
-        how:['🕹 Dito sinistro: cammina e gira', '🏃 Spingilo più lontano: corri', '👀 Dito destro: guardati intorno', '🚗 Avvicinati a un’auto e tocca «Sali»', '֏ Raccogli i soldi per strada', '🥖 Porta il lavash caldo dal forno al negozio (punto arancione sulla mappa)', '🚕 Avvicinati in auto a un passeggero con la mano alzata (punto giallo)', '🐱 La nonna nel parco ha perso i suoi gatti (punto viola)', '🚑 Vicino all’ospedale c’è un’ambulanza bianca — sali e aiuta la gente'],
+        how:['🕹 Dito sinistro: cammina e gira', '🏃 Spingilo più lontano: corri', '👀 Dito destro: guardati intorno', '🚗 Avvicinati a un’auto e tocca «Sali»', '֏ Raccogli i soldi per strada', '🥖 Porta il lavash caldo dal forno al negozio (punto arancione sulla mappa)', '🚕 Avvicinati in auto a un passeggero con la mano alzata (punto giallo)', '🐱 La nonna nel parco ha perso i suoi gatti (punto viola)', '🚑 Vicino all’ospedale c’è un’ambulanza bianca — sali e aiuta la gente', '🚓 Vicino alla questura c’è un’auto della polizia blu — sali e acchiappa il ladro'],
         tip:'Trova un’auto e sali 🚗',
         enter:'🚗 Sali', exit:'🚶 Scendi', dtip:'Su: gas · giù: freno e retro · ai lati: sterza',
         ask:'🙋 Chiedi', lend:'L’autista ti ha prestato l’auto volentieri 🙂',
         job:'🥖 Prendi il lavash', carry:'Portalo al negozio finché è caldo 🛒 Segui la freccia', cold:'Il lavash si è raffreddato 🥶 Il forno ne cuoce un altro — torna', done:'Lavash caldo consegnato! 🥖 +֏ ', rec:'🏆 Nuovo record: ', sec:'s', m:'m',
         taxi:'🚕 Fai salire', twalk:'Il passeggero vuole andare in auto — trova un’auto 🚗', tgo:'Porta il passeggero al cerchio giallo 🚕 Segui la freccia', tstop:'Fermati per far scendere il passeggero ✋', tdone:'Passeggero arrivato! 🚕 +֏ ', ttip:' · mancia ✨', tcar:'Il passeggero ti aspetta nel taxi 🚕 Torna all’auto',
         amb:'🚑 Accetta la chiamata', ago:'Qualcuno ha bisogno d’aiuto 🚑 Corri al cerchio rosso', astop:'Fermati per far salire il paziente ✋', ahosp:'Portalo all’ospedale 🏥 Segui la freccia', adone:'Il paziente è in ospedale, i medici lo aiuteranno 🏥 +֏ ', afast:' · velocissimo ⚡', acar:'Il paziente aspetta nell’ambulanza 🚑 Torna da lei',
+        pol:'🚓 Accetta la chiamata', pgo:'Un ladro ha preso la borsa della nonna 👜 Raggiungi l’auto col cerchio blu', pnear:'Stagli vicino 🚓 Ci sei quasi', pgot:'Preso! 🎉 La nonna ha di nuovo la sua borsa 👜 Ora porta il ladro in questura', pstop:'Fermati alla questura ✋', pdone:'Il ladro è in questura e non ruberà più 🚓 +֏ ', pesc:'Stavolta il ladro è scappato 💨 Niente paura, riprova', pcar:'Torna sull’auto della polizia 🚓',
         cat:'🐱 Aiuta la nonna', cgo:'I 5 gatti della nonna si sono persi 🐱 Ascolta i miagolii e guarda la mappa', cfound:'Gatto trovato! 🐱 ', chome:'Tutti trovati 🎉 Portali dalla nonna', cdone:'La nonna è felicissima 👵 +֏ ' },
   ka: { t:'Golden Craft 🏙', step:'ნაბიჯი 5 · ტაქსი და დაკარგული კატები', go:'▶ ქალაქში შესვლა',
-        how:['🕹 მარცხენა თითით: იარე და მოუხვიე', '🏃 თითი უფრო შორს: ირბინე', '👀 მარჯვენა თითით: მიმოიხედე', '🚗 მიდი მანქანასთან და დააჭირე „ჩაჯდომა“', '֏ შეაგროვე ფული ქუჩებში', '🥖 ცხელი ლავაში საცხობიდან მაღაზიაში მიიტანე (ნარინჯისფერი წერტილი რუკაზე)', '🚕 მანქანით მიუახლოვდი ხელაწეულ მგზავრს (ყვითელი წერტილი)', '🐱 პარკში ბებიამ კატები დაკარგა (იისფერი წერტილი)', '🚑 საავადმყოფოსთან თეთრი სასწრაფო დგას — ჩაჯექი და დაეხმარე ხალხს'],
+        how:['🕹 მარცხენა თითით: იარე და მოუხვიე', '🏃 თითი უფრო შორს: ირბინე', '👀 მარჯვენა თითით: მიმოიხედე', '🚗 მიდი მანქანასთან და დააჭირე „ჩაჯდომა“', '֏ შეაგროვე ფული ქუჩებში', '🥖 ცხელი ლავაში საცხობიდან მაღაზიაში მიიტანე (ნარინჯისფერი წერტილი რუკაზე)', '🚕 მანქანით მიუახლოვდი ხელაწეულ მგზავრს (ყვითელი წერტილი)', '🐱 პარკში ბებიამ კატები დაკარგა (იისფერი წერტილი)', '🚑 საავადმყოფოსთან თეთრი სასწრაფო დგას — ჩაჯექი და დაეხმარე ხალხს', '🚓 პოლიციასთან ლურჯი პოლიციის მანქანა დგას — ჩაჯექი და დაიჭირე ქურდი'],
         tip:'იპოვე მანქანა და ჩაჯექი 🚗',
         enter:'🚗 ჩაჯდომა', exit:'🚶 გადმოსვლა', dtip:'ზემოთ: გაზი · ქვემოთ: მუხრუჭი და უკან · გვერდზე: საჭე',
         ask:'🙋 თხოვნა', lend:'მძღოლმა სიამოვნებით გაგათხოვა მანქანა 🙂',
         job:'🥖 ლავაშის აღება', carry:'მიიტანე მაღაზიაში, სანამ ცხელია 🛒 მიჰყევი ისარს', cold:'ლავაში გაცივდა 🥶 საცხობი ახალს აცხობს — დაბრუნდი', done:'ცხელი ლავაში მიტანილია 🥖 +֏ ', rec:'🏆 ახალი რეკორდი: ', sec:'წმ', m:'მ',
         taxi:'🚕 მგზავრის აყვანა', twalk:'მგზავრს მანქანით უნდა წასვლა — იპოვე მანქანა 🚗', tgo:'მიიყვანე მგზავრი ყვითელ წრემდე 🚕 მიჰყევი ისარს', tstop:'გაჩერდი, რომ მგზავრი ჩამოვიდეს ✋', tdone:'მგზავრი მივიდა 🚕 +֏ ', ttip:' · ჩაის ფული ✨', tcar:'მგზავრი ტაქსიში გელოდება 🚕 დაბრუნდი მანქანასთან',
         amb:'🚑 გამოძახების მიღება', ago:'ვიღაცას დახმარება სჭირდება 🚑 იჩქარე წითელ წრემდე', astop:'გაჩერდი, რომ პაციენტი ჩაჯდეს ✋', ahosp:'წაიყვანე საავადმყოფოში 🏥 მიჰყევი ისარს', adone:'პაციენტი საავადმყოფოშია, ექიმები დაეხმარებიან 🏥 +֏ ', afast:' · ძალიან სწრაფად ⚡', acar:'პაციენტი სასწრაფოში გელოდება 🚑 დაბრუნდი',
+        pol:'🚓 გამოძახების მიღება', pgo:'ქურდმა ბებიას ჩანთა წაიღო 👜 დაეწიე ლურჯწრიან მანქანას', pnear:'ახლოს იყავი 🚓 ცოტაც', pgot:'დაიჭირე 🎉 ბებიას ჩანთა დაუბრუნდა 👜 ახლა ქურდი პოლიციაში წაიყვანე', pstop:'გაჩერდი პოლიციასთან ✋', pdone:'ქურდი პოლიციაშია და აღარ მოიპარავს 🚓 +֏ ', pesc:'ამჯერად ქურდი გაიქცა 💨 არაფერია, კიდევ სცადე', pcar:'დაბრუნდი პოლიციის მანქანაში 🚓',
         cat:'🐱 ბებიას დახმარება', cgo:'ბებიას 5 კატა დაიკარგა 🐱 მოუსმინე კნავილს და უყურე რუკას', cfound:'კატა იპოვე 🐱 ', chome:'ყველა იპოვე 🎉 მიიყვანე ბებიასთან', cdone:'ბებია ძალიან გახარებულია 👵 +֏ ' },
   hi: { t:'Golden Craft 🏙', step:'कदम 5 · टैक्सी और खोई हुई बिल्लियाँ', go:'▶ शहर में चलो',
-        how:['🕹 बाएँ उँगली से: चलो और मुड़ो', '🏃 उँगली और दूर ले जाओ: दौड़ो', '👀 दाएँ उँगली से: चारों ओर देखो', '🚗 कार के पास जाओ और «बैठो» दबाओ', '֏ सड़कों पर पैसे उठाओ', '🥖 बेकरी से गरम लवाश दुकान तक ले जाओ (नक्शे पर नारंगी बिंदु)', '🚕 कार से हाथ उठाए यात्री के पास जाओ (पीला बिंदु)', '🐱 पार्क में दादी की बिल्लियाँ खो गई हैं (बैंगनी बिंदु)', '🚑 अस्पताल के पास सफ़ेद एम्बुलेंस खड़ी है — बैठो और लोगों की मदद करो'],
+        how:['🕹 बाएँ उँगली से: चलो और मुड़ो', '🏃 उँगली और दूर ले जाओ: दौड़ो', '👀 दाएँ उँगली से: चारों ओर देखो', '🚗 कार के पास जाओ और «बैठो» दबाओ', '֏ सड़कों पर पैसे उठाओ', '🥖 बेकरी से गरम लवाश दुकान तक ले जाओ (नक्शे पर नारंगी बिंदु)', '🚕 कार से हाथ उठाए यात्री के पास जाओ (पीला बिंदु)', '🐱 पार्क में दादी की बिल्लियाँ खो गई हैं (बैंगनी बिंदु)', '🚑 अस्पताल के पास सफ़ेद एम्बुलेंस खड़ी है — बैठो और लोगों की मदद करो', '🚓 थाने के पास नीली पुलिस कार खड़ी है — बैठो और चोर को पकड़ो'],
         tip:'कोई कार ढूँढो और बैठ जाओ 🚗',
         enter:'🚗 बैठो', exit:'🚶 उतरो', dtip:'ऊपर: गैस · नीचे: ब्रेक और पीछे · दाएँ-बाएँ: स्टीयरिंग',
         ask:'🙋 माँगो', lend:'ड्राइवर ने ख़ुशी से अपनी कार दे दी 🙂',
         job:'🥖 लवाश लो', carry:'गरम रहते-रहते दुकान पहुँचाओ 🛒 तीर के पीछे चलो', cold:'लवाश ठंडा हो गया 🥶 बेकरी नया बना रही है — फिर आओ', done:'गरम लवाश पहुँच गया 🥖 +֏ ', rec:'🏆 नया रिकॉर्ड: ', sec:'से', m:'मी',
         taxi:'🚕 यात्री को बिठाओ', twalk:'यात्री कार से जाना चाहता है — कोई कार ढूँढो 🚗', tgo:'यात्री को पीले घेरे तक ले जाओ 🚕 तीर के पीछे चलो', tstop:'रुको, ताकि यात्री उतर सके ✋', tdone:'यात्री पहुँच गया 🚕 +֏ ', ttip:' · टिप ✨', tcar:'यात्री टैक्सी में इंतज़ार कर रहा है 🚕 कार पर लौटो',
         amb:'🚑 कॉल लो', ago:'किसी को मदद चाहिए 🚑 जल्दी लाल घेरे तक जाओ', astop:'रुको, ताकि मरीज़ बैठ सके ✋', ahosp:'मरीज़ को अस्पताल ले जाओ 🏥 तीर के पीछे चलो', adone:'मरीज़ अस्पताल पहुँच गया, डॉक्टर मदद करेंगे 🏥 +֏ ', afast:' · बहुत तेज़ ⚡', acar:'मरीज़ एम्बुलेंस में इंतज़ार कर रहा है 🚑 वापस जाओ',
+        pol:'🚓 कॉल लो', pgo:'चोर दादी का बैग ले भागा 👜 नीले घेरे वाली कार को पकड़ो', pnear:'पास में रहो 🚓 बस थोड़ा और', pgot:'पकड़ लिया 🎉 दादी को बैग वापस मिल गया 👜 अब चोर को थाने ले जाओ', pstop:'थाने पर रुको ✋', pdone:'चोर थाने में है, अब चोरी नहीं करेगा 🚓 +֏ ', pesc:'इस बार चोर भाग गया 💨 कोई बात नहीं, फिर कोशिश करो', pcar:'पुलिस कार में वापस बैठो 🚓',
         cat:'🐱 दादी की मदद करो', cgo:'दादी की 5 बिल्लियाँ खो गई हैं 🐱 म्याऊँ सुनो और नक्शा देखो', cfound:'बिल्ली मिल गई 🐱 ', chome:'सब मिल गईं 🎉 उन्हें दादी के पास ले जाओ', cdone:'दादी बहुत ख़ुश हैं 👵 +֏ ' },
   pt: { t:'Golden Craft 🏙', step:'Passo 5 · táxi e gatinhos perdidos', go:'▶ Entrar na cidade',
-        how:['🕹 Dedo esquerdo: anda e vira', '🏃 Leva-o mais longe: corre', '👀 Dedo direito: olha à volta', '🚗 Vai até um carro e toca «Entrar»', '֏ Apanha o dinheiro nas ruas', '🥖 Leva o lavash quente da padaria à loja (ponto laranja no mapa)', '🚕 Aproxima-te de carro de um passageiro de mão no ar (ponto amarelo)', '🐱 A avó do parque perdeu os gatos (ponto roxo)', '🚑 Junto ao hospital há uma ambulância branca — entra e ajuda as pessoas'],
+        how:['🕹 Dedo esquerdo: anda e vira', '🏃 Leva-o mais longe: corre', '👀 Dedo direito: olha à volta', '🚗 Vai até um carro e toca «Entrar»', '֏ Apanha o dinheiro nas ruas', '🥖 Leva o lavash quente da padaria à loja (ponto laranja no mapa)', '🚕 Aproxima-te de carro de um passageiro de mão no ar (ponto amarelo)', '🐱 A avó do parque perdeu os gatos (ponto roxo)', '🚑 Junto ao hospital há uma ambulância branca — entra e ajuda as pessoas', '🚓 Junto à esquadra há um carro da polícia azul — entra e apanha o ladrão'],
         tip:'Encontra um carro e entra 🚗',
         enter:'🚗 Entrar', exit:'🚶 Sair', dtip:'Cima: acelerar · baixo: travar e marcha-atrás · lados: virar',
         ask:'🙋 Pedir', lend:'O condutor emprestou-te o carro com gosto 🙂',
         job:'🥖 Pegar no lavash', carry:'Leva-o à loja enquanto está quente 🛒 Segue a seta', cold:'O lavash arrefeceu 🥶 A padaria está a cozer outro — volta', done:'Lavash quente entregue! 🥖 +֏ ', rec:'🏆 Novo recorde: ', sec:'s', m:'m',
         taxi:'🚕 Apanhar', twalk:'O passageiro quer ir de carro — encontra um carro 🚗', tgo:'Leva o passageiro ao círculo amarelo 🚕 Segue a seta', tstop:'Pára para o passageiro sair ✋', tdone:'Passageiro entregue! 🚕 +֏ ', ttip:' · gorjeta ✨', tcar:'O teu passageiro espera no táxi 🚕 Volta ao carro',
         amb:'🚑 Aceitar a chamada', ago:'Alguém precisa de ajuda 🚑 Depressa ao círculo vermelho', astop:'Pára para o doente entrar ✋', ahosp:'Leva-o ao hospital 🏥 Segue a seta', adone:'O doente está no hospital, os médicos vão ajudar 🏥 +֏ ', afast:' · rapidíssimo ⚡', acar:'O doente espera na ambulância 🚑 Volta lá',
+        pol:'🚓 Aceitar a chamada', pgo:'Um ladrão levou a mala da avó 👜 Alcança o carro do círculo azul', pnear:'Fica perto 🚓 Quase', pgot:'Apanhado! 🎉 A avó tem a mala de volta 👜 Agora leva o ladrão à esquadra', pstop:'Pára na esquadra ✋', pdone:'O ladrão está na esquadra e não vai roubar mais 🚓 +֏ ', pesc:'Desta vez o ladrão fugiu 💨 Não faz mal, tenta outra vez', pcar:'Volta ao carro da polícia 🚓',
         cat:'🐱 Ajudar a avó', cgo:'Os 5 gatos da avó perderam-se 🐱 Ouve os miaus e olha para o mapa', cfound:'Gato encontrado! 🐱 ', chome:'Todos encontrados 🎉 Leva-os à avó', cdone:'A avó está tão feliz 👵 +֏ ' },
 };
 const T = TRL[ggLang] || TRL.hy;
@@ -707,16 +719,18 @@ function carParts(c) {
   const dl = c === driving ? P.look : c.drv;
   if (dl) top.push(oBox(c, 0.14, 0.14, 0.14, dl.skin, -0.36, 1.3, 0.1), oBox(c, 0.15, 0.04, 0.15, dl.hair, -0.36, 1.46, 0.1));
   // Տաքսու ուղևորը նստած է հետևում, տանիքին՝ դեղին ցուցանակ
-  if (c.pas) top.push(oBox(c, 0.14, 0.14, 0.14, c.pas.skin, 0.36, 1.3, -0.55), oBox(c, 0.15, 0.04, 0.15, c.pas.hair, 0.36, 1.46, -0.55),
-                      oBox(c, 0.26, 0.07, 0.1, TAXI_C, 0, 1.69, -0.2));
+  if (c.pas) top.push(oBox(c, 0.14, 0.14, 0.14, c.pas.skin, 0.36, 1.3, -0.55), oBox(c, 0.15, 0.04, 0.15, c.pas.hair, 0.36, 1.46, -0.55));
+  if (c.pas && !c.amb && !c.pol) top.push(oBox(c, 0.26, 0.07, 0.1, TAXI_C, 0, 1.69, -0.2));
   top.push(oBox(c, 0.8, 0.04, 1.02, c.c, 0, 1.58, -0.2));
   // 🚑 Շտապօգնությունը՝ տանիքին փարոս (կանչի ժամանակ կարմիր-կապույտ թարթում է), կողքերին կարմիր գիծ
-  if (c.amb) {
-    const on = c === driving && (job.st === 'amb1' || job.st === 'amb2'), fl = Math.floor(performance.now() / 250) % 2;
+  // 🚓 Ոստիկանականը՝ նույնը, միայն կապույտ մեքենա ու սպիտակ գիծ
+  if (c.amb || c.pol) {
+    const on = c === driving && (c.amb ? job.st === 'amb1' || job.st === 'amb2' : job.st === 'pol1' || job.st === 'pol2'), fl = Math.floor(performance.now() / 250) % 2;
     top.push(oBox(c, 0.22, 0.07, 0.1, on && fl ? [255, 60, 60] : [200, 70, 70], -0.24, 1.69, -0.2),
              oBox(c, 0.22, 0.07, 0.1, on && !fl ? [70, 140, 255] : [70, 100, 190], 0.24, 1.69, -0.2));
   }
-  const bits = wheels.concat(c.amb ? [oBox(c, 0.01, 0.07, 1.7, AMB_C, -0.905, 0.82, 0), oBox(c, 0.01, 0.07, 1.7, AMB_C, 0.905, 0.82, 0)] : [], [
+  const stripe = c.amb ? AMB_C : c.pol ? [250, 250, 250] : null;
+  const bits = wheels.concat(stripe ? [oBox(c, 0.01, 0.07, 1.7, stripe, -0.905, 0.82, 0), oBox(c, 0.01, 0.07, 1.7, stripe, 0.905, 0.82, 0)] : [], [
     oBox(c, 0.92, 0.06, 0.08, dark, 0, 0.42, 2.0), oBox(c, 0.92, 0.06, 0.08, dark, 0, 0.42, -2.0),
     oBox(c, 0.17, 0.08, 0.02, HEAD, -0.6, 0.82, 2.01), oBox(c, 0.17, 0.08, 0.02, HEAD, 0.6, 0.82, 2.01),
     oBox(c, 0.17, 0.07, 0.02, TAIL, -0.6, 0.82, -2.01), oBox(c, 0.17, 0.07, 0.02, TAIL, 0.6, 0.82, -2.01),
@@ -744,6 +758,7 @@ function carBox(c) {
 function nearCar() {
   let best = null, bd = 2.0;
   for (const c of CARS) {
+    if (c.thief) continue;   // գողի մեքենան կանգ չի առնում
     const l = toLocal(c, P.x, P.z);
     const d = Math.hypot(Math.max(0, Math.abs(l[0]) - CAR_W), Math.max(0, Math.abs(l[1]) - CAR_L));
     if (d < bd) { bd = d; best = c; }
@@ -926,7 +941,8 @@ function updateTraffic(dt) {
     for (const m of PEOPLE) see(m.x, m.z, reach, 1.5, 1);
     if (!driving) see(P.x, P.z, reach, 1.5, 1);
     for (const o of CARS) if (o !== c && !(ai.ghost > 0 && o.ai)) see(o.x, o.z, reach + 2.2, 2.0, o.ai ? 2 : 1);
-    const want = block ? 0 : (ai.seg.line ? 9 : 5);
+    if (c.thief) ai.ghost = 1;   // 🦹 գողը շտապում է ու սահում է մյուս մեքենաների կողքով
+    const want = block ? 0 : c.thief ? (ai.seg.line ? 12 : 6.5) : (ai.seg.line ? 9 : 5);
     c.v += (want - c.v) * Math.min(1, dt * (want < c.v ? 6 : 1.5));
     // Երկար խցանում ենք՝ մի պահ զիջում ենք իրար
     if (block === 2 && c.v < 0.3) { ai.wait += dt; if (ai.wait > 5) { ai.ghost = 2.5; ai.wait = 0; } } else ai.wait = 0;
@@ -1048,6 +1064,11 @@ function storeAt(i, j, side, col, kind) {
     // Սպիտակ ցուցանակ ու վրան կարմիր խաչ
     slab(-1.1, 1.1, 0.12, 0.17, 3.5, 4.7, [250, 250, 250]);
     slab(-0.18, 0.18, 0.17, 0.22, 3.65, 4.55, col); slab(-0.62, 0.62, 0.17, 0.22, 3.92, 4.28, col);
+  } else if (kind === 'pol') {
+    // Կապույտ ցուցանակ ու վրան սպիտակ աստղ (շեղանկյուն ու խաչ)
+    slab(-1.1, 1.1, 0.12, 0.17, 3.5, 4.7, col);
+    slab(-0.1, 0.1, 0.17, 0.22, 3.7, 4.5, [250, 250, 250]); slab(-0.4, 0.4, 0.17, 0.22, 4.0, 4.2, [250, 250, 250]);
+    slab(-0.25, 0.25, 0.17, 0.21, 3.85, 4.35, [250, 250, 250]);
   } else {
     slab(-1.0, 1.0, 0.12, 0.17, 3.65, 4.2, col);
     slab(-0.7, -0.5, 0.12, 0.17, 4.2, 4.55, col); slab(0.5, 0.7, 0.12, 0.17, 4.2, 4.55, col); slab(-0.7, 0.7, 0.12, 0.17, 4.45, 4.55, col);
@@ -1078,6 +1099,7 @@ function updateJob(dt) {
   if (job.st === 'taxi') return updateTaxi(dt);
   if (job.st === 'cats') return updateCats(dt);
   if (job.st === 'amb1' || job.st === 'amb2') return updateAmb(dt);
+  if (job.st === 'pol1' || job.st === 'pol2') return updatePol(dt);
   if (job.st !== 'carry') return;
   job.left -= dt; job.t += dt;
   if (job.left <= 0) {
@@ -1100,15 +1122,15 @@ function updateJob(dt) {
 }
 // Վերևի տախտակը՝ որքան ժամանակ ու որքան ճանապարհ է մնացել
 let jobShown = '', jobKind = '', jobLabel = '';
-const JOB_COL = { carry: '#f08a3c', taxi: '#f5c84a', cats: '#b06ce0', amb1: '#e23434', amb2: '#e23434' };
+const JOB_COL = { carry: '#f08a3c', taxi: '#f5c84a', cats: '#b06ce0', amb1: '#e23434', amb2: '#e23434', pol1: '#3c6ee6', pol2: '#3c6ee6' };
 function paintJob() {
   const on = state === 'play' && job.st !== 'idle';
   $('job').hidden = !on;
   // Կոճակը՝ ո՞ր աշխատանքի մոտ ես կանգնած
-  const o = offer(), label = o ? (o === 'lavash' ? T.job : o === 'taxi' ? T.taxi : o === 'amb' ? T.amb : T.cat) : '';
+  const o = offer(), label = o ? (o === 'lavash' ? T.job : o === 'taxi' ? T.taxi : o === 'amb' ? T.amb : o === 'pol' ? T.pol : T.cat) : '';
   if (label !== jobLabel) {
     jobLabel = label; jobBtn.hidden = !label; jobBtn.textContent = label;
-    jobBtn.style.background = o === 'taxi' ? '#e2ad18' : o === 'cats' ? '#a066d4' : o === 'amb' ? '#e85050' : '#f08a3c';
+    jobBtn.style.background = o === 'taxi' ? '#e2ad18' : o === 'cats' ? '#a066d4' : o === 'amb' ? '#e85050' : o === 'pol' ? '#3c6ee6' : '#f08a3c';
   }
   if (!on) return;
   if (jobKind !== job.st) { jobKind = job.st; $('job').style.borderColor = JOB_COL[job.st]; $('heat').style.display = job.st === 'cats' ? 'none' : ''; }
@@ -1116,12 +1138,15 @@ function paintJob() {
   const txt = job.st === 'carry' ? '🥖 ' + Math.ceil(job.left) + ' ' + T.sec + ' · ' + far
             : job.st === 'taxi' ? '🚕 ' + far
             : job.st === 'amb1' || job.st === 'amb2' ? (job.st === 'amb1' ? '🚑 ' : '🏥 ') + Math.ceil(job.left) + ' ' + T.sec + ' · ' + far
+            : job.st === 'pol1' ? '🚓 ' + Math.ceil(job.left) + ' ' + T.sec + ' · ' + far
+            : job.st === 'pol2' ? '🚓 ' + far
             : '🐱 ' + job.found + ' / ' + CATS.length + (tg ? ' · 👵 ' + far : '');
   if (txt !== jobShown) { jobShown = txt; $('jobTxt').textContent = txt; }
   if (job.st === 'cats') return;
-  const h = job.left / job.limit, el = $('heatIn');
+  // Գողին բռնելիս տախտակը ցույց է տալիս, թե որքան է մնացել բռնելուն
+  const h = job.st === 'pol1' && job.catch > 0 ? job.catch : job.st === 'pol2' ? 1 : job.left / job.limit, el = $('heatIn');
   el.style.width = (h * 100).toFixed(1) + '%';
-  el.style.background = job.st === 'taxi' ? '#f5c84a' : job.st === 'amb1' || job.st === 'amb2' ? '#e85050' : h > 0.5 ? '#f08a3c' : h > 0.25 ? '#e6c25a' : '#7cc0ef';
+  el.style.background = job.st === 'pol1' || job.st === 'pol2' ? (job.catch > 0 ? '#7cc0ef' : '#3c6ee6') : job.st === 'taxi' ? '#f5c84a' : job.st === 'amb1' || job.st === 'amb2' ? '#e85050' : h > 0.5 ? '#f08a3c' : h > 0.25 ? '#e6c25a' : '#7cc0ef';
 }
 const jobBtn = $('jobBtn');
 jobBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); lastTouchAt = Date.now(); initAudio(); doJob(); }, { passive: false });
@@ -1206,9 +1231,10 @@ function offer() {
   if (PAX && driving && near(PAX, 4.5)) return 'taxi';
   if (near(GRANNY, driving ? 4 : 2.6)) return 'cats';
   if (driving && driving.amb) return 'amb';
+  if (driving && driving.pol) return 'pol';
   return null;
 }
-function doJob() { const o = offer(); if (o === 'lavash') takeLavash(); else if (o === 'taxi') pickUp(); else if (o === 'cats') startCats(); else if (o === 'amb') startAmb(); }
+function doJob() { const o = offer(); if (o === 'lavash') takeLavash(); else if (o === 'taxi') pickUp(); else if (o === 'cats') startCats(); else if (o === 'amb') startAmb(); else if (o === 'pol') startPol(); }
 // Գետնի շրջանները՝ ուր կարող ես գնալ հիմա
 function goals() {
   if (job.st === 'carry') return [job.shop];
@@ -1216,8 +1242,11 @@ function goals() {
   if (job.st === 'cats') return job.found === CATS.length ? [GRANNY] : [];
   if (job.st === 'amb1') return [job.pat];
   if (job.st === 'amb2') return [HOSP];
+  if (job.st === 'pol1') return [THIEF_MARK];
+  if (job.st === 'pol2') return [STATION];
   const idle = PAX ? [BAKERY, PAX, GRANNY] : [BAKERY, GRANNY];
   if (driving !== AMBU) { AMB_MARK.x = AMBU.x; AMB_MARK.z = AMBU.z; idle.push(AMB_MARK); }
+  if (driving !== POLC) { POL_MARK.x = POLC.x; POL_MARK.z = POLC.z; idle.push(POL_MARK); }
   return idle;
 }
 function target() { return job.st === 'idle' ? null : goals()[0] || null; }
@@ -1400,6 +1429,72 @@ function updateAmb(dt) {
   driving.pas = null; job.st = 'idle';
   let msg = T.adone + pay + (fast ? T.afast : '');
   if (!ambBest || t < ambBest) { ambBest = t; msg += ' · ' + T.rec + t + ' ' + T.sec; try { localStorage.setItem('aren-city-amb-best', String(t)); } catch (e) {} }
+  cheer(); say(msg, 6);
+}
+
+// ——— 🚓 Բռնիր գողին (Քայլ 5) ———
+// Ոստիկանատան դիմաց կապույտ ոստիկանական մեքենա է կանգնած։ Նստում ես՝ «Ընդունել կանչը»։
+// Գողը փախցրել է տատիկի պայուսակը ու մեքենայով փախչում է (կապույտ շրջանը)։
+// Հասնում ես ու մի քիչ մնում նրա կողքին՝ բռնված է։ Ոչ ոք չի կռվում, ոչ ոք չի վնասվում։
+// Գողը նստում է հետևում, տանում ես ոստիկանատուն։ Ժամանակին չհասար՝ փախավ, ոչինչ, նորից կփորձես։
+const POL_C = [60, 110, 230];
+const STATION = storeAt(2, 4, 's', POL_C, 'pol');
+const POLC = { x: STATION.x + 7, z: blockAt(4) + BL + 1.6, yaw: Math.PI / 2, s: 1, v: 0, steer: 0, c: [44, 76, 170], pol: true };
+for (let k = CARS.length - 1; k >= 0; k--) if (!CARS[k].ai && CARS[k] !== myCar && Math.hypot(CARS[k].x - POLC.x, CARS[k].z - POLC.z) < 7) CARS.splice(k, 1);
+CARS.push(POLC);
+const POL_MARK = { x: POLC.x, z: POLC.z, col: POL_C, yaw: 0, s: 1, by: 3.6 };
+const THIEF_MARK = { x: 0, z: 0, col: POL_C, yaw: 0, s: 1, by: 3.4 };
+const THIEF_LOOK = { shirt: [44, 44, 52], pants: [40, 40, 50], skin: [224, 178, 136], hair: [30, 26, 24] };
+let polBest = 0;
+try { polBest = Number(localStorage.getItem('aren-city-pol-best') || 0) || 0; } catch (e) {}
+function startPol() {
+  // Գողը՝ հեռվում քշող մեքենաներից մեկը
+  const far = CARS.filter(c => c.ai && Math.hypot(c.x - P.x, c.z - P.z) > 45 && Math.hypot(c.x - P.x, c.z - P.z) < 150);
+  const pool = far.length ? far : CARS.filter(c => c.ai);
+  if (!pool.length) return;
+  const c = pool[Math.floor(Math.random() * pool.length)];
+  c.thief = true; c.drv = { skin: THIEF_LOOK.skin, hair: THIEF_LOOK.hair };
+  job.st = 'pol1'; job.thief = c; job.car = driving; job.t = 0; job.catch = 0; job.told = false; job.slow = false; job.nearSaid = false;
+  job.limit = job.left = Math.round(Math.hypot(c.x - P.x, c.z - P.z) / 4 + 45);
+  THIEF_MARK.x = c.x; THIEF_MARK.z = c.z;
+  siren(); say(T.pgo, 5);
+}
+function updatePol(dt) {
+  job.t += dt;
+  if (job.st === 'pol1') {
+    const c = job.thief;
+    THIEF_MARK.x = c.x; THIEF_MARK.z = c.z;
+    job.left = Math.max(0, job.left - dt);
+    if (job.left <= 0) {
+      // Փախավ — դառնում է սովորական մեքենա
+      c.thief = false; job.st = 'idle'; job.thief = null;
+      tone(392, 0.15, 'triangle', 0.07); setTimeout(() => tone(330, 0.22, 'triangle', 0.07), 150);
+      say(T.pesc, 5); return;
+    }
+  }
+  if (driving !== job.car) { if (!job.told) { job.told = true; say(T.pcar, 4); } job.catch = 0; return; }
+  job.told = false;
+  sirenT -= dt; if (sirenT <= 0) { sirenT = 2.4; siren(); }
+  if (job.st === 'pol1') {
+    const c = job.thief, d = Math.hypot(c.x - P.x, c.z - P.z);
+    // Մոտ ես՝ բռնելը լցվում է, հեռացար՝ դատարկվում
+    if (d < 7) { job.catch = Math.min(1, job.catch + dt / 1.5); if (!job.nearSaid) { job.nearSaid = true; say(T.pnear, 2); } }
+    else { job.catch = Math.max(0, job.catch - dt / 3); if (d > 14) job.nearSaid = false; }
+    if (job.catch < 1) return;
+    // Բռնեցիր։ Գողի մեքենան կանգնում է, ինքը նստում է քո մեքենայի հետևում
+    c.thief = false; c.ai = null; c.drv = null; c.v = 0;
+    driving.pas = THIEF_LOOK; job.st = 'pol2'; job.thief = null; job.catchT = Math.round(job.t); job.slow = false;
+    cheer(); say(T.pgot, 6);
+    return;
+  }
+  if (!near(STATION, 6.5)) { job.slow = false; return; }
+  if (Math.abs(driving.v) > 4) { if (!job.slow) { job.slow = true; say(T.pstop, 3); } return; }
+  // Հասանք ոստիկանատուն — գողը ներս է գնում
+  const t = job.catchT, fast = t < 30, pay = 400 + (fast ? 200 : 0);
+  earn(pay);
+  driving.pas = null; job.st = 'idle';
+  let msg = T.pdone + pay;
+  if (!polBest || t < polBest) { polBest = t; msg += ' · ' + T.rec + t + ' ' + T.sec; try { localStorage.setItem('aren-city-pol-best', String(t)); } catch (e) {} }
   cheer(); say(msg, 6);
 }
 
@@ -1785,7 +1880,7 @@ update(0);
 requestAnimationFrame(frame);
 
 // Թեստերի համար՝ դրսից նայելու դուռ
-window.__city = { HOSP, AMBU, P, PEOPLE, CARS, CASH, get money() { return money; }, job, BAKERY, SHOPS, GRANNY, CATS, get PAX() { return PAX; }, get driving() { return driving; }, cam, things, solids, get state() { return state; }, get myCar() { return myCar; }, get NIGHT() { return NIGHT; }, setClock(v) { clock = v; } };
+window.__city = { STATION, POLC, THIEF_MARK, HOSP, AMBU, P, PEOPLE, CARS, CASH, get money() { return money; }, job, BAKERY, SHOPS, GRANNY, CATS, get PAX() { return PAX; }, get driving() { return driving; }, cam, things, solids, get state() { return state; }, get myCar() { return myCar; }, get NIGHT() { return NIGHT; }, setClock(v) { clock = v; } };
 </script>
 
 <!-- ⚙️ Ընդհանուր գործիքակազմ. դադար, ձայն, նկար -->
